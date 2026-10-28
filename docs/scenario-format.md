@@ -43,7 +43,9 @@ Koordinaten sind relativ zur Schematic (Min-Ecke = `(0,0,0)`).
 ## 2. Ablauf (für Simulator und Oracle identisch)
 
 1. **Aufbau**: Alle Blöcke werden exakt im gespeicherten Zustand gesetzt, **ohne** Block- oder
-   Shape-Updates (Flags `UPDATE_CLIENTS | UPDATE_KNOWN_SHAPE`, keine Neighbor-Updates). Vorhandene
+   Shape-Updates und ohne `onPlace` (Flags 818 = `UPDATE_CLIENTS | UPDATE_KNOWN_SHAPE |
+   UPDATE_SUPPRESS_DROPS | UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS | UPDATE_SKIP_ON_PLACE`, wie
+   `/setblock … strict`). Vorhandene
    geplante Ticks werden verworfen. Block-Entities werden aus den Schematic-Daten geladen.
    Die Umgebung ist Luft (Void-Welt); im Oracle liegt die Min-Ecke an einer festen, chunk-ausgerichteten
    Position, die Chunks sind geladen (force-loaded) und das Spiel ist eingefroren.

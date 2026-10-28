@@ -1,0 +1,57 @@
+{
+ "format": 1,
+ "scenario": "qc-bud",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 40,
+ "probes": {
+  "piston": [
+   1,
+   1,
+   0
+  ],
+  "head": [
+   2,
+   1,
+   0
+  ]
+ },
+ "samples": {
+  "piston": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=east]"
+   ],
+   [
+    11,
+    "minecraft:piston[extended=true,facing=east]"
+   ],
+   [
+    31,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    33,
+    "minecraft:piston[extended=false,facing=east]"
+   ]
+  ],
+  "head": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    11,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    13,
+    "minecraft:piston_head[facing=east,short=false,type=normal]"
+   ],
+   [
+    31,
+    "minecraft:air"
+   ]
+  ]
+ }
+}

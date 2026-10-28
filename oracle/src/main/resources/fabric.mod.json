@@ -1,0 +1,18 @@
+{
+	"schemaVersion": 1,
+	"id": "rsx-oracle",
+	"version": "${version}",
+	"name": "rsx oracle",
+	"description": "Runs compiled redstone scenarios on a dedicated server and writes probe traces.",
+	"license": "MIT",
+	"environment": "server",
+	"entrypoints": {
+		"main": ["redstone.oracle.OracleMod"]
+	},
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

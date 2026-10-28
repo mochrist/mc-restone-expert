@@ -1,0 +1,113 @@
+{
+ "format": 1,
+ "scenario": "observer-clock",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 30,
+ "probes": {
+  "a": [
+   0,
+   0,
+   0
+  ],
+  "b": [
+   1,
+   0,
+   0
+  ]
+ },
+ "samples": {
+  "a": [
+   [
+    0,
+    "minecraft:observer[facing=east,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:observer[facing=east,powered=true]"
+   ],
+   [
+    6,
+    "minecraft:observer[facing=east,powered=false]"
+   ],
+   [
+    10,
+    "minecraft:observer[facing=east,powered=true]"
+   ],
+   [
+    12,
+    "minecraft:observer[facing=east,powered=false]"
+   ],
+   [
+    16,
+    "minecraft:observer[facing=east,powered=true]"
+   ],
+   [
+    18,
+    "minecraft:observer[facing=east,powered=false]"
+   ],
+   [
+    22,
+    "minecraft:observer[facing=east,powered=true]"
+   ],
+   [
+    24,
+    "minecraft:observer[facing=east,powered=false]"
+   ],
+   [
+    28,
+    "minecraft:observer[facing=east,powered=true]"
+   ],
+   [
+    30,
+    "minecraft:observer[facing=east,powered=false]"
+   ]
+  ],
+  "b": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    2,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    6,
+    "minecraft:observer[facing=west,powered=true]"
+   ],
+   [
+    8,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    12,
+    "minecraft:observer[facing=west,powered=true]"
+   ],
+   [
+    14,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    18,
+    "minecraft:observer[facing=west,powered=true]"
+   ],
+   [
+    20,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    24,
+    "minecraft:observer[facing=west,powered=true]"
+   ],
+   [
+    26,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    30,
+    "minecraft:observer[facing=west,powered=true]"
+   ]
+  ]
+ }
+}

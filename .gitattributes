@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.bat text eol=crlf
+*.jar binary
+*.litematic binary
+*.schem binary
+*.nbt binary

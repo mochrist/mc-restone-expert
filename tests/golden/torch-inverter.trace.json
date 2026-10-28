@@ -1,0 +1,68 @@
+{
+ "format": 1,
+ "scenario": "torch-inverter",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 40,
+ "probes": {
+  "lever": [
+   0,
+   1,
+   0
+  ],
+  "torch": [
+   2,
+   1,
+   0
+  ],
+  "lamp": [
+   3,
+   1,
+   0
+  ]
+ },
+ "samples": {
+  "lever": [
+   [
+    0,
+    "minecraft:lever[face=wall,facing=west,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=wall,facing=west,powered=true]"
+   ],
+   [
+    20,
+    "minecraft:lever[face=wall,facing=west,powered=false]"
+   ]
+  ],
+  "torch": [
+   [
+    0,
+    "minecraft:redstone_wall_torch[facing=east,lit=true]"
+   ],
+   [
+    4,
+    "minecraft:redstone_wall_torch[facing=east,lit=false]"
+   ],
+   [
+    22,
+    "minecraft:redstone_wall_torch[facing=east,lit=true]"
+   ]
+  ],
+  "lamp": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    8,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    22,
+    "minecraft:redstone_lamp[lit=true]"
+   ]
+  ]
+ }
+}

@@ -1,0 +1,163 @@
+{
+ "format": 1,
+ "scenario": "repeater-delays",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 40,
+ "probes": {
+  "rep1": [
+   1,
+   1,
+   0
+  ],
+  "rep2": [
+   1,
+   1,
+   1
+  ],
+  "rep3": [
+   1,
+   1,
+   2
+  ],
+  "rep4": [
+   1,
+   1,
+   3
+  ],
+  "lamp1": [
+   2,
+   1,
+   0
+  ],
+  "lamp2": [
+   2,
+   1,
+   1
+  ],
+  "lamp3": [
+   2,
+   1,
+   2
+  ],
+  "lamp4": [
+   2,
+   1,
+   3
+  ]
+ },
+ "samples": {
+  "rep1": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ],
+   [
+    22,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ]
+  ],
+  "rep2": [
+   [
+    0,
+    "minecraft:repeater[delay=2,facing=west,locked=false,powered=false]"
+   ],
+   [
+    6,
+    "minecraft:repeater[delay=2,facing=west,locked=false,powered=true]"
+   ],
+   [
+    24,
+    "minecraft:repeater[delay=2,facing=west,locked=false,powered=false]"
+   ]
+  ],
+  "rep3": [
+   [
+    0,
+    "minecraft:repeater[delay=3,facing=west,locked=false,powered=false]"
+   ],
+   [
+    8,
+    "minecraft:repeater[delay=3,facing=west,locked=false,powered=true]"
+   ],
+   [
+    26,
+    "minecraft:repeater[delay=3,facing=west,locked=false,powered=false]"
+   ]
+  ],
+  "rep4": [
+   [
+    0,
+    "minecraft:repeater[delay=4,facing=west,locked=false,powered=false]"
+   ],
+   [
+    10,
+    "minecraft:repeater[delay=4,facing=west,locked=false,powered=true]"
+   ],
+   [
+    28,
+    "minecraft:repeater[delay=4,facing=west,locked=false,powered=false]"
+   ]
+  ],
+  "lamp1": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    4,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    28,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "lamp2": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    4,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    30,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "lamp3": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    6,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    32,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "lamp4": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    8,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    32,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ]
+ }
+}

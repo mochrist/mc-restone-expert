@@ -1,0 +1,149 @@
+{
+ "format": 1,
+ "scenario": "piston-timing",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 30,
+ "probes": {
+  "piston": [
+   1,
+   1,
+   0
+  ],
+  "head": [
+   2,
+   1,
+   0
+  ],
+  "target": [
+   3,
+   1,
+   0
+  ],
+  "sticky": [
+   1,
+   1,
+   2
+  ],
+  "sticky_head": [
+   2,
+   1,
+   2
+  ],
+  "sticky_target": [
+   3,
+   1,
+   2
+  ]
+ },
+ "samples": {
+  "piston": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:piston[extended=true,facing=east]"
+   ],
+   [
+    16,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    18,
+    "minecraft:piston[extended=false,facing=east]"
+   ]
+  ],
+  "head": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:piston_head[facing=east,short=false,type=normal]"
+   ],
+   [
+    16,
+    "minecraft:air"
+   ]
+  ],
+  "target": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ]
+  ],
+  "sticky": [
+   [
+    0,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:sticky_piston[extended=true,facing=east]"
+   ],
+   [
+    16,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    18,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ]
+  ],
+  "sticky_head": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    5,
+    "minecraft:piston_head[facing=east,short=false,type=sticky]"
+   ],
+   [
+    16,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    18,
+    "minecraft:stone"
+   ]
+  ],
+  "sticky_target": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ],
+   [
+    16,
+    "minecraft:air"
+   ]
+  ]
+ }
+}

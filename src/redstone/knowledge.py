@@ -118,7 +118,9 @@ def index() -> str:
         "",
         "Generiert mit `uv run python -m redstone.knowledge index`. Nicht von Hand bearbeiten.",
         "",
-        f"Stand: {len(open_claims)} offene von {len(all_claims())} Aussagen.",
+        f"Stand: {len(open_claims)} offene von {len(all_claims())} Aussagen; "
+        f"{sum(c.status == 'im-Spiel-verifiziert' for c in all_claims())} davon sind im Spiel verifiziert, "
+        "die übrigen sind durch Quellen (meist den Spielcode) belegt.",
         "",
         "| ID | Status | Konfidenz | Aussage | Datei |",
         "|---|---|---|---|---|",
