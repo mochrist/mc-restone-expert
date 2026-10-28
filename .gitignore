@@ -6,3 +6,5 @@ __pycache__/
 oracle/build/
 oracle/.gradle/
 oracle/run/
+.cache/
+tests/fixtures/external/

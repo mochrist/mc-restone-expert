@@ -1,0 +1,31 @@
+[project]
+name = "redstone"
+version = "0.1.0"
+description = "Minecraft Java redstone analysis, simulation and redesign toolkit"
+authors = [
+    { name = "mochrist", email = "morit.christ10@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "nbtlib>=2.0.4",
+    "pyyaml>=6.0.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.29,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.170.13",
+    "litemapy>=0.11.0b0",
+    "pytest>=9.2.0",
+]
+
+[project.scripts]
+rsx = "redstone.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["oracle: needs a running Fabric oracle server", "external: needs fetched external fixtures"]
+filterwarnings = ["ignore::redstone.io.DataVersionWarning"]
