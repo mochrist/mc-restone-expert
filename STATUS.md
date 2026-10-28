@@ -50,7 +50,7 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    - Mehr Muster erkennen: RS-Latch, Pulsverkürzer, Decoder.
    - Sonderfall-Notizen für Kolben einbauen (`quasi_connectivity`, `bud`, `piston_spit`, `zero_tick` in `sim/notes.py` vorgesehen, aber noch nicht im Kolben-Code aufgerufen).
    - Optional ein SVG-Timing-Diagramm.
-4. **M4 Redesign:**
+4. **M4 Redesign:** Vorher **`docs/m4-search-and-performance.md`** lesen. Kurz: keine Rust-Neuschreibung, sondern zweistufige Bewertung, Topologie per SAT/SMT, gezielte Suche und Symmetrien. Zuerst die Simulator-Geschwindigkeit messen; Rust erst später und nur für den Simulator-Kern (PyO3), falls er der Engpass ist.
    - Spezifikation (Wahrheitstabelle oder Timing) aus `analysis` ableiten.
    - Constraints (Bounding Box, erlaubte Blöcke, QC ja/nein).
    - Kandidaten aus Templates und Suche erzeugen, simulieren, ranken und als `.litematic` exportieren.
