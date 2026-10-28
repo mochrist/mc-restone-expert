@@ -132,8 +132,38 @@ def index() -> str:
     return "\n".join(lines) + "\n"
 
 
+def mark_verified(claim_ids: list[str], scenario: str, note: str | None = None) -> list[str]:
+    """Set Status of the given claims to im-Spiel-verifiziert (scenario). Returns ids not found."""
+    if not (ROOT / scenario).exists():
+        raise FileNotFoundError(scenario)
+    missing = set(claim_ids)
+    by_file: dict[Path, list[Claim]] = {}
+    for c in all_claims():
+        if c.id in missing:
+            by_file.setdefault(c.file, []).append(c)
+            missing.discard(c.id)
+    for path, claims in by_file.items():
+        lines = path.read_text(encoding="utf-8").splitlines()
+        targets = {c.line for c in claims}
+        current = False
+        for i, line in enumerate(lines):
+            if _HEADING.match(line):
+                current = (i + 1) in targets
+            elif current and line.startswith("- Status:"):
+                lines[i] = f"- Status: im-Spiel-verifiziert ({scenario})"
+            elif current and note and line.startswith("- Hinweise:"):
+                lines[i] = f"{line} {note}"
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return sorted(missing)
+
+
 def main(argv: list[str]) -> int:
     cmd = argv[0] if argv else "lint"
+    if cmd == "mark":
+        # mark <scenario path> <ID>...
+        missing = mark_verified(argv[2:], argv[1])
+        print(f"marked {len(argv) - 2 - len(missing)} claims" + (f"; not found: {missing}" if missing else ""))
+        return 1 if missing else 0
     if cmd == "lint":
         errors = lint()
         for e in errors:

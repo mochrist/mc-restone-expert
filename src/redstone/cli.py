@@ -44,6 +44,18 @@ def _cmd_oracle(args: argparse.Namespace) -> int:
     from . import oracle
     from .verify.trace import Trace, timing_diagram
 
+    if args.dump_blocks:
+        try:
+            path = oracle.dump_blocks(timeout=args.timeout, verbose=args.verbose)
+        except oracle.OracleError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        print(f"wrote {path} ({path.stat().st_size / 1024:.0f} KiB)")
+        if not args.scenarios:
+            return 0
+    elif not args.scenarios:
+        print("error: no scenarios given", file=sys.stderr)
+        return 2
     try:
         traces = oracle.run([Path(s) for s in args.scenarios], timeout=args.timeout, verbose=args.verbose)
     except oracle.OracleError as e:
@@ -93,6 +105,28 @@ def _cmd_sim(args: argparse.Namespace) -> int:
     return status
 
 
+def _cmd_explain(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from .analysis.analyze import analyze
+    from .analysis.explain import explain
+
+    path = Path(args.file)
+    if path.suffix in (".yaml", ".yml"):
+        from .verify import load_scenario
+
+        grid, title = load_scenario(path).grid, path.stem
+    else:
+        grid, title = io.load(path), path.stem
+    text = explain(analyze(grid), title)
+    if args.out:
+        Path(args.out).write_text(text, encoding="utf-8")
+        print(f"wrote {args.out}")
+    else:
+        print(text)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -118,8 +152,10 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=_cmd_compile)
 
     p = sub.add_parser("oracle", help="run scenarios on the Fabric oracle server and record traces")
-    p.add_argument("scenarios", nargs="+", metavar="scenario.yaml")
+    p.add_argument("scenarios", nargs="*", metavar="scenario.yaml")
     p.add_argument("--golden", action="store_true", help="copy the traces to tests/golden/")
+    p.add_argument("--dump-blocks", action="store_true",
+                   help="regenerate the block state table src/redstone/sim/data/blocks_26.3.json")
     p.add_argument("--timeout", type=float, default=900, help="seconds until the server is killed (default 900)")
     p.add_argument("-v", "--verbose", action="store_true", help="print the full server log")
     p.set_defaults(func=_cmd_oracle)
@@ -130,6 +166,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--limit", type=int, default=20, help="max mismatches to print")
     p.add_argument("--out", help="directory to write simulator traces to")
     p.set_defaults(func=_cmd_sim)
+
+    p = sub.add_parser("explain", help="analyse a schematic or scenario by simulation and explain it (German)")
+    p.add_argument("file", help=".litematic/.schem/.nbt or scenario .yaml")
+    p.add_argument("-o", "--out", help="write the Markdown report to this file")
+    p.set_defaults(func=_cmd_explain)
 
     args = parser.parse_args(argv)
     return args.func(args)

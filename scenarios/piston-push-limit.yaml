@@ -1,0 +1,45 @@
+name: piston-push-limit
+description: >
+  Push-Limit und Sonderblöcke. z=0: 12 Steine (geht). z=2: 13 Steine (fährt nicht aus). z=4: zwei Steine und ein
+  Teppich (Teppich wird zerstört, Steine geschoben). z=6: Stein vor Obsidian (fährt nicht aus).
+  Die Pistons werden per Redstone-Block bestromt (setblock) und später wieder abgeschaltet.
+build:
+  size: [16, 2, 7]
+  fill:
+    - [0, 0, 0, 15, 0, 6, "stone"]
+    - [2, 1, 0, 13, 1, 0, "stone"]
+    - [2, 1, 2, 14, 1, 2, "stone"]
+  blocks:
+    - [1, 1, 0, "piston[extended=false,facing=east]"]
+    - [1, 1, 2, "piston[extended=false,facing=east]"]
+    - [1, 1, 4, "piston[extended=false,facing=east]"]
+    - [2, 1, 4, "stone"]
+    - [3, 1, 4, "stone"]
+    - [4, 1, 4, "white_carpet"]
+    - [1, 1, 6, "piston[extended=false,facing=east]"]
+    - [2, 1, 6, "stone"]
+    - [3, 1, 6, "obsidian"]
+ticks: 20
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: setblock, state: "redstone_block"}
+  - {tick: 2, pos: [0, 1, 2], action: setblock, state: "redstone_block"}
+  - {tick: 2, pos: [0, 1, 4], action: setblock, state: "redstone_block"}
+  - {tick: 2, pos: [0, 1, 6], action: setblock, state: "redstone_block"}
+  - {tick: 12, pos: [0, 1, 0], action: setblock, state: "air"}
+  - {tick: 12, pos: [0, 1, 2], action: setblock, state: "air"}
+  - {tick: 12, pos: [0, 1, 4], action: setblock, state: "air"}
+  - {tick: 12, pos: [0, 1, 6], action: setblock, state: "air"}
+probes:
+  p12: [1, 1, 0]
+  p12_head: [2, 1, 0]
+  p12_mid: [8, 1, 0]
+  p12_last: [13, 1, 0]
+  p12_end: [14, 1, 0]
+  p13: [1, 1, 2]
+  p13_head: [2, 1, 2]
+  p13_end: [15, 1, 2]
+  pc: [1, 1, 4]
+  pc_second: [4, 1, 4]
+  pc_after: [5, 1, 4]
+  po: [1, 1, 6]
+  po_head: [2, 1, 6]

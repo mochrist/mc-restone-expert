@@ -15,14 +15,14 @@ Leiter), reagieren also auf schwache und starke Ladung. Zeiten in Game-Ticks (gt
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneLampBlock#neighborChanged`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-delay-2.yaml)
 
 ### OUT-002: Redstone-Lampe geht erst 4 gt verzögert aus
 - Aussage: Verliert eine leuchtende Lampe ihr Signal, plant sie einen Tick nach 4 gt (Priorität NORMAL) und schaltet nur aus, wenn dann immer noch kein Signal anliegt.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneLampBlock#neighborChanged`, `RedstoneLampBlock#tick`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/torch-inverter.yaml)
 - Hinweise: Aus-Pulse kürzer als 4 gt sind daher an der Lampe nicht sichtbar (sofern kein weiteres Update dazwischen kommt; doppelte Planung wird dedupliziert).
 
 ### OUT-003: Lampen-Zustandswechsel lösen keine Neighbor-Updates aus

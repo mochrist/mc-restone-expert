@@ -1,0 +1,32 @@
+name: slime-structure
+description: >
+  Sticky Piston schiebt einen Slimeblock mit Stein darüber, Stein seitlich und Stein davor; ein seitlicher
+  Honigblock haftet nicht am Slime und bleibt stehen. Beim Einfahren wird die Slime-Struktur (ohne den vorderen
+  Stein) zurückgezogen.
+build:
+  size: [5, 3, 3]
+  fill:
+    - [0, 0, 0, 1, 0, 2, "stone"]
+  blocks:
+    - [0, 1, 1, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 1, "sticky_piston[extended=false,facing=east]"]
+    - [2, 1, 1, "slime_block"]
+    - [2, 2, 1, "stone"]
+    - [2, 1, 2, "stone"]
+    - [2, 1, 0, "honey_block"]
+    - [3, 1, 1, "stone"]
+ticks: 22
+inputs:
+  - {tick: 2, pos: [0, 1, 1], action: use}
+  - {tick: 12, pos: [0, 1, 1], action: use}
+probes:
+  piston: [1, 1, 1]
+  slime_start: [2, 1, 1]
+  slime_end: [3, 1, 1]
+  front_end: [4, 1, 1]
+  top_start: [2, 2, 1]
+  top_end: [3, 2, 1]
+  side_start: [2, 1, 2]
+  side_end: [3, 1, 2]
+  honey: [2, 1, 0]
+  honey_end: [3, 1, 0]

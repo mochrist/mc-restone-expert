@@ -18,7 +18,7 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#getInputSignal`; [SRC-WIKI-REPEATER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-delay-2.yaml)
 - Hinweise: Bestätigt die Annahme in `src/redstone/render/textdump.py`. Beim Platzieren wird `facing` auf die Gegenrichtung der Blickrichtung des Spielers gesetzt (`DiodeBlock#getStateForPlacement`), d. h. der Ausgang zeigt vom Spieler weg.
 
 ### REP-002: Der Ausgang liegt auf der `facing` entgegengesetzten Seite
@@ -26,7 +26,7 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#getSignal`, `DiodeBlock#updateNeighborsInFront`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-delay-2.yaml)
 
 ### REP-003: Der Eingang liest Signalstärke inklusive Redstone-Staub-Level
 - Aussage: Das Eingangssignal ist das Maximum aus `level.getSignal` des Eingangsblocks (inklusive starker Ladung, falls er ein Leiter ist) und dem `power`-Wert von Redstone-Staub an dieser Position.
@@ -41,7 +41,7 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RepeaterBlock#getDelay`; [SRC-WIKI-REPEATER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-delays.yaml)
 - Hinweise: Rechtsklick zyklisiert `delay` über `setBlockAndUpdate` (Flags 3, volle Nachbar-Updates).
 
 ### REP-005: Der Repeater gibt bei eingeschaltetem Zustand immer Stärke 15 aus
@@ -95,7 +95,7 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#tick`; [SRC-WIKI-REPEATER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-pulse-extend.yaml)
 - Hinweise: Folge: Ein Eingangspuls kürzer als die Verzögerung (auch 0- oder 1-gt-Pulse) erzeugt einen Ausgangspuls von genau `delay*2` gt.
 
 ### REP-012: Der Tick schaltet nur aus, wenn der Eingang dann noch fehlt
@@ -111,7 +111,7 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RepeaterBlock#isLocked`, `RepeaterBlock#sideInputDiodesOnly`, `DiodeBlock#getAlternateSignal`, `SignalGetter#getControlInputSignal`; [SRC-WIKI-REPEATER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-lock.yaml)
 - Hinweise: Die seitliche Diode muss mit ihrem Ausgang auf den Repeater zeigen (`getDirectSignal` einer Diode ist nur in Ausgangsrichtung ungleich 0).
 
 ### REP-014: Ein gesperrter Repeater ignoriert Ticks und Neighbor-Updates
@@ -119,7 +119,7 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#tick`, `DiodeBlock#checkTickOnNeighbor`; [SRC-WIKI-REPEATER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-lock.yaml)
 - Hinweise: Ein bereits geplanter Tick, der während der Sperre fällig wird, verfällt wirkungslos und wird nicht nachgeholt.
 
 ### REP-015: Der Blockstate `locked` wird per Shape-Update von den Seiten aktualisiert

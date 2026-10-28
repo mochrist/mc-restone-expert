@@ -22,12 +22,6 @@ def attached_direction(state: BlockState) -> Direction:
 
 
 class LeverBlock(Block):
-    def is_conductor(self, state):
-        return False
-
-    def is_face_sturdy(self, state, face):
-        return False
-
     def is_signal_source(self, state):
         return True
 
@@ -65,10 +59,28 @@ class LeverBlock(Block):
         return state
 
 
-class RedstoneBlock(Block):
-    def is_conductor(self, state):
+class ButtonBlock(LeverBlock):
+    """ButtonBlock: stone 20 gt, wooden 30 gt. Arrows/entities pressing it are not modeled."""
+
+    def __init__(self, ticks_to_stay_pressed: int) -> None:
+        super().__init__()
+        self.ticks_to_stay_pressed = ticks_to_stay_pressed
+
+    def use_without_item(self, world, pos, state):
+        if state.get_bool("powered"):
+            return True
+        world.set_block(pos, state.with_(powered=True))
+        self._update_neighbours(world, pos, state)
+        world.schedule_tick(pos, self, self.ticks_to_stay_pressed)
         return True
 
+    def tick(self, world, pos, state):
+        if state.get_bool("powered"):  # checkPressed with no arrow inside: release
+            world.set_block(pos, state.with_(powered=False))
+            self._update_neighbours(world, pos, state)
+
+
+class RedstoneBlock(Block):
     def is_signal_source(self, state):
         return True
 
@@ -77,9 +89,6 @@ class RedstoneBlock(Block):
 
 
 class RedstoneLampBlock(Block):
-    def is_conductor(self, state):
-        return True
-
     def on_place(self, world, pos, state, old, moved_by_piston):
         # RedstoneLampBlock has no onPlace override; placement state comes from getStateForPlacement.
         pass
@@ -98,5 +107,11 @@ class RedstoneLampBlock(Block):
 
 
 REGISTRY.register(LeverBlock(), "lever")
+# One behaviour object per block type: scheduled ticks are keyed by block identity, as in the game.
+for _name in ("stone_button", "polished_blackstone_button"):
+    REGISTRY.register(ButtonBlock(20), _name)
+for _wood in ("oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "pale_oak",
+              "bamboo", "crimson", "warped"):
+    REGISTRY.register(ButtonBlock(30), f"{_wood}_button")
 REGISTRY.register(RedstoneBlock(), "redstone_block")
 REGISTRY.register(RedstoneLampBlock(), "redstone_lamp")

@@ -72,8 +72,11 @@ class World:
         self._pending: set[tuple[Pos, str]] = set()  # LevelChunkTicks#ticksPerPosition
         self._running_this_tick: set[tuple[Pos, str]] = set()
         self.block_events: dict[BlockEvent, None] = {}  # ObjectLinkedOpenHashSet
-        self._be_tickers: list[Any] = []
-        self._pending_be_tickers: list[Any] = []
+        # Level#blockEntityTickers / pendingBlockEntityTickers, LevelChunk#tickersInLevel
+        self._be_tickers: list[_TickerWrapper] = []
+        self._pending_be_tickers: list[_TickerWrapper] = []
+        self._tickers_in_level: dict[Pos, _TickerWrapper] = {}
+        self._ticking_block_entities = False
         # CollectingNeighborUpdater state
         self._stack: list[_Updates] = []
         self._added_this_layer: list[_Updates] = []
@@ -108,15 +111,54 @@ class World:
     def get(self, pos: Pos) -> BlockState:
         return self.blocks.get(pos, AIR)
 
+    def get_block_entity(self, pos: Pos) -> Any:
+        """Level#getBlockEntity (removed block entities count as absent)."""
+        be = self.block_entities.get(pos)
+        if be is not None and getattr(be, "removed", False):
+            del self.block_entities[pos]
+            return None
+        return be
+
     def add_block_entity(self, pos: Pos, be: Any) -> None:
+        """Level#setBlockEntity / LevelChunk#addAndRegisterBlockEntity."""
+        state = self.get(pos)
+        if not self.block(state).has_block_entity(state):
+            self.warnings.append(f"block entity at {pos} but {state} does not allow it")
+            return
+        be.removed = False
+        previous = self.block_entities.get(pos)
         self.block_entities[pos] = be
-        if getattr(be, "ticks", False):
-            self._pending_be_tickers.append(be)
+        if previous is not None and previous is not be:
+            previous.removed = True
+        self._update_block_entity_ticker(pos, be)
+
+    def set_block_entity(self, be: Any) -> None:
+        self.add_block_entity(be.pos, be)
+
+    def _update_block_entity_ticker(self, pos: Pos, be: Any) -> None:
+        """LevelChunk#updateBlockEntityTicker: one rebindable ticker wrapper per position."""
+        if not getattr(be, "ticks", False):
+            self._remove_block_entity_ticker(pos)
+            return
+        wrapper = self._tickers_in_level.get(pos)
+        if wrapper is not None:
+            wrapper.ticker = be
+        else:
+            wrapper = self._tickers_in_level[pos] = _TickerWrapper(be)
+            # Level#addBlockEntityTicker
+            (self._pending_be_tickers if self._ticking_block_entities else self._be_tickers).append(wrapper)
+
+    def _remove_block_entity_ticker(self, pos: Pos) -> None:
+        wrapper = self._tickers_in_level.pop(pos, None)
+        if wrapper is not None:
+            wrapper.ticker = None  # NULL_TICKER: reports removed, dropped on the next iteration
 
     def remove_block_entity(self, pos: Pos) -> None:
+        """LevelChunk#removeBlockEntity"""
         be = self.block_entities.pop(pos, None)
         if be is not None:
             be.removed = True
+        self._remove_block_entity_ticker(pos)
 
     def set_block(self, pos: Pos, state: BlockState, flags: int = UPDATE_ALL, limit: int = UPDATE_LIMIT) -> bool:
         """Level#setBlock including LevelChunk#setBlockState."""
@@ -131,9 +173,10 @@ class World:
         block_changed = old.name != state.name
         moved = bool(flags & UPDATE_MOVE_BY_PISTON)
 
-        if block_changed and old_block.has_block_entity(old) and pos in self.block_entities:
+        if block_changed and old_block.has_block_entity(old):
             if not flags & UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS:
-                pre_remove = getattr(self.block_entities[pos], "pre_remove_side_effects", None)
+                be = self.get_block_entity(pos)
+                pre_remove = getattr(be, "pre_remove_side_effects", None)
                 if pre_remove:
                     pre_remove(self, pos, old)
             self.remove_block_entity(pos)
@@ -145,10 +188,14 @@ class World:
             return False
         if not flags & UPDATE_SKIP_ON_PLACE:
             new_block.on_place(self, pos, state, old, moved)
-        if new_block.has_block_entity(state) and self.get(pos).name == state.name and pos not in self.block_entities:
-            be = new_block.new_block_entity(pos, state)
-            if be is not None:
-                self.add_block_entity(pos, be)
+        if new_block.has_block_entity(state) and self.get(pos).name == state.name:
+            be = self.get_block_entity(pos)
+            if be is None:
+                be = new_block.new_block_entity(pos, state)
+                if be is not None:
+                    self.add_block_entity(pos, be)
+            else:
+                self._update_block_entity_ticker(pos, be)
 
         # Level#setBlock, after the chunk update
         if self.get(pos) != state:
@@ -259,9 +306,10 @@ class World:
         st = self.get(pos)
         return self.block(st).is_conductor(st)
 
-    def is_face_sturdy(self, pos: Pos, face: Direction) -> bool:
+    def is_face_sturdy(self, pos: Pos, face: Direction, support: str = "full") -> bool:
+        """BlockState#isFaceSturdy(level, pos, face, SupportType): support is full, rigid or center."""
         st = self.get(pos)
-        return self.block(st).is_face_sturdy(st, face)
+        return self.block(st).is_face_sturdy(st, face, support)
 
     def is_signal_source(self, state: BlockState) -> bool:
         return self.block(state).is_signal_source(state)
@@ -360,17 +408,20 @@ class World:
 
     # ------------------------------------------------------------------ block entities
     def _tick_block_entities(self) -> None:
+        """Level#tickBlockEntities"""
+        self._ticking_block_entities = True
         if self._pending_be_tickers:
             self._be_tickers.extend(self._pending_be_tickers)
             self._pending_be_tickers.clear()
-        alive = []
-        for be in self._be_tickers:
-            if getattr(be, "removed", False):
+        i = 0
+        while i < len(self._be_tickers):
+            wrapper = self._be_tickers[i]
+            if wrapper.is_removed():
+                del self._be_tickers[i]
                 continue
-            be.tick(self)
-            if not getattr(be, "removed", False):
-                alive.append(be)
-        self._be_tickers = alive + [be for be in self._be_tickers if be not in alive and not getattr(be, "removed", False)]
+            wrapper.tick(self)
+            i += 1
+        self._ticking_block_entities = False
 
     # ------------------------------------------------------------------ the game tick
     def tick(self) -> None:
@@ -381,6 +432,20 @@ class World:
         self._run_block_events()
         self.handling_tick = False
         self._tick_block_entities()
+
+
+class _TickerWrapper:
+    """LevelChunk.RebindableTickingBlockEntityWrapper around a BoundTickingBlockEntity."""
+
+    def __init__(self, ticker: Any) -> None:
+        self.ticker = ticker
+
+    def is_removed(self) -> bool:
+        return self.ticker is None or getattr(self.ticker, "removed", False)
+
+    def tick(self, world: World) -> None:
+        if not self.is_removed():
+            self.ticker.tick(world)
 
 
 # ---------------------------------------------------------------------- neighbor update records

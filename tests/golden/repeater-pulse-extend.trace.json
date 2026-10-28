@@ -1,0 +1,163 @@
+{
+ "format": 1,
+ "scenario": "repeater-pulse-extend",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 45,
+ "probes": {
+  "obs4": [
+   1,
+   1,
+   0
+  ],
+  "rep4": [
+   2,
+   1,
+   0
+  ],
+  "lamp4": [
+   3,
+   1,
+   0
+  ],
+  "obs1": [
+   1,
+   1,
+   2
+  ],
+  "rep1": [
+   2,
+   1,
+   2
+  ],
+  "lamp1": [
+   3,
+   1,
+   2
+  ],
+  "button": [
+   0,
+   1,
+   4
+  ],
+  "button_lamp": [
+   1,
+   1,
+   4
+  ]
+ },
+ "samples": {
+  "obs4": [
+   [
+    0,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:observer[facing=west,powered=true]"
+   ],
+   [
+    6,
+    "minecraft:observer[facing=west,powered=false]"
+   ]
+  ],
+  "rep4": [
+   [
+    0,
+    "minecraft:repeater[delay=4,facing=west,locked=false,powered=false]"
+   ],
+   [
+    12,
+    "minecraft:repeater[delay=4,facing=west,locked=false,powered=true]"
+   ],
+   [
+    20,
+    "minecraft:repeater[delay=4,facing=west,locked=false,powered=false]"
+   ]
+  ],
+  "lamp4": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    12,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    24,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "obs1": [
+   [
+    0,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:observer[facing=west,powered=true]"
+   ],
+   [
+    6,
+    "minecraft:observer[facing=west,powered=false]"
+   ]
+  ],
+  "rep1": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    6,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ],
+   [
+    8,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ]
+  ],
+  "lamp1": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    6,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    12,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "button": [
+   [
+    0,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    22,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "button_lamp": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    2,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    26,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ]
+ }
+}

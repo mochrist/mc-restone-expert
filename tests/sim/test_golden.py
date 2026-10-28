@@ -10,11 +10,8 @@ from redstone.verify import Trace, diff, load_scenario
 ROOT = Path(__file__).parents[2]
 GOLDEN = sorted((ROOT / "tests" / "golden").glob("*.trace.json"))
 
-# Scenarios whose components are not modeled yet. strict=True: a fixed one must be removed from this list.
+# Scenarios whose components are not modeled yet (one per line; remove a name once it passes).
 NOT_YET_MODELED: set[str] = {
-    "comparator-container", "comparator-modes", "dust-decay", "observer-clock", "observer-pulse",
-    "piston-timing", "qc-bud", "repeater-delay-2", "repeater-delays", "repeater-lock", "torch-burnout",
-    "torch-inverter",
 }
 
 

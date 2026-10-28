@@ -23,7 +23,8 @@ import java.util.stream.Stream;
  * Server-side oracle: runs every {@code <rsx.in>/*.scenario.json} and writes {@code <rsx.out>/<name>.trace.json}.
  *
  * <p>System properties: {@code rsx.in} (default {@code <run>/rsx/in}), {@code rsx.out} (default
- * {@code <run>/rsx/out}), {@code rsx.exitWhenDone} (stop the server after the last scenario).
+ * {@code <run>/rsx/out}), {@code rsx.exitWhenDone} (stop the server after the last scenario),
+ * {@code rsx.dumpBlocks} (write the static block state table, see {@link BlockDump}, before any scenario runs).
  * Input files are deleted once processed; a failing scenario writes {@code <name>.error.txt} instead of a trace.
  */
 public class OracleMod implements ModInitializer {
@@ -48,6 +49,16 @@ public class OracleMod implements ModInitializer {
 
 	private void onStarted(MinecraftServer server) {
 		Path run = server.getServerDirectory();
+		String dump = System.getProperty("rsx.dumpBlocks", "");
+		if (!dump.isEmpty()) {
+			Path file = Path.of(dump).toAbsolutePath();
+			try {
+				int states = BlockDump.write(file);
+				LOG.info(P + "dumped {} block states to {}", states, file);
+			} catch (Exception e) {
+				LOG.error(P + "block dump to {} FAILED", file, e);
+			}
+		}
 		in = Path.of(System.getProperty("rsx.in", run.resolve("rsx/in").toString())).toAbsolutePath();
 		out = Path.of(System.getProperty("rsx.out", run.resolve("rsx/out").toString())).toAbsolutePath();
 		GameRules rules = server.getGameRules();

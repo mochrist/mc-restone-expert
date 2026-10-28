@@ -16,7 +16,7 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ComparatorBlock#getInputSignal`, `DiodeBlock#getInputSignal`, `DiodeBlock#getSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/comparator-modes.yaml)
 - Hinweise: Gleiche Semantik wie beim Repeater; bestätigt die Annahme in `src/redstone/render/textdump.py`.
 
 ### CMP-002: Die Verzögerung ist immer 2 Game-Ticks
@@ -24,7 +24,7 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ComparatorBlock#getDelay`, `ComparatorBlock#checkTickOnNeighbor`; [SRC-WIKI-COMPARATOR]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/comparator-modes.yaml)
 
 ### CMP-003: Tick-Priorität HIGH bei priorisierter Diode vorne, sonst NORMAL
 - Aussage: Steht am Ausgang eine Diode, die nicht frontal zurück in den Comparator zeigt (`shouldPrioritize`), plant der Comparator mit `TickPriority.HIGH` (-1), sonst mit `NORMAL` (0).
@@ -47,14 +47,14 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ComparatorBlock#calculateOutputSignal`; [SRC-WIKI-COMPARATOR]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/comparator-modes.yaml)
 
 ### CMP-006: Im Subtract-Modus ist die Ausgabe Eingang minus stärkste Seite
 - Aussage: Im Modus `subtract` ist die Ausgangsstärke `max(Eingang − max(links, rechts), 0)`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ComparatorBlock#calculateOutputSignal`, `ComparatorBlock#shouldTurnOn`; [SRC-WIKI-COMPARATOR]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/comparator-modes.yaml)
 - Hinweise: `powered` ist im Subtract-Modus nur bei Eingang > Seite wahr; bei Gleichstand ist der Comparator aus.
 
 ### CMP-007: Seiteneingänge akzeptieren Staub, Redstone-Blöcke und gerichtete Quellen
@@ -70,7 +70,7 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ComparatorBlock#getInputSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/comparator-container.yaml)
 
 ### CMP-009: Durch einen Leiterblock wird der Block dahinter gelesen
 - Aussage: Ist der Eingangsblock ein Redstone-Leiter ohne analogen Ausgang und sein Signal < 15, liest der Comparator den Block zwei Felder in `facing`-Richtung (bzw. einen Item-Rahmen dort) und verwendet dessen Analogwert anstelle des Leitersignals, falls vorhanden.
@@ -85,7 +85,7 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `AbstractContainerMenu#getRedstoneSignalFromContainer`, `Mth#lerpDiscrete`; [SRC-WIKI-COMPARATOR]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/comparator-container.yaml)
 - Hinweise: Berechnung in `float`. Ein einziges Item in irgendeinem Slot ergibt bereits 1.
 
 ### CMP-011: Item-Rahmen liefert 1–8 nach Drehung
@@ -130,7 +130,7 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ComparatorBlock#useWithoutItem`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/comparator-modes.yaml)
 
 ### CMP-017: Comparator-Updates gehen an horizontale Nachbar-Comparatoren, auch durch einen Leiter
 - Aussage: `updateNeighbourForOutputSignal` ruft für jede horizontale Richtung (Reihenfolge N, O, S, W) `neighborChanged` an einem dort stehenden Comparator auf; ist dort stattdessen ein Leiterblock, an einem Comparator ein Feld weiter.

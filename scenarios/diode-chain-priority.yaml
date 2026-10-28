@@ -1,0 +1,33 @@
+name: diode-chain-priority
+description: >
+  Kette Hebel -> Repeater -> Repeater -> Comparator -> Repeater -> Lampe (alle Delay 1).
+  Prüft die Tick-Prioritäten (EXTREMELY_HIGH bei Dioden, die in eine Diode zeigen).
+  Daneben liest ein Repeater von Süden die Seite des Comparators: Ein Comparator gibt nur nach vorne aus,
+  der Repeater bleibt daher aus (im Spiel bestätigt).
+build:
+  size: [7, 2, 3]
+  fill:
+    - [0, 0, 0, 6, 0, 2, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [2, 1, 0, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [3, 1, 0, "comparator[facing=west,mode=compare,powered=false]"]
+    - [4, 1, 0, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [5, 1, 0, "redstone_lamp[lit=false]"]
+    - [3, 1, 1, "repeater[delay=2,facing=north,locked=false,powered=false]"]
+    - [3, 1, 2, "redstone_lamp[lit=false]"]
+  block_entities:
+    - [3, 1, 0, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 40
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 20, pos: [0, 1, 0], action: use}
+probes:
+  r1: [1, 1, 0]
+  r2: [2, 1, 0]
+  cmp: [3, 1, 0]
+  r3: [4, 1, 0]
+  lamp: [5, 1, 0]
+  side_rep: [3, 1, 1]
+  side_lamp: [3, 1, 2]

@@ -22,21 +22,21 @@ häufigem Schalten durchbrennen.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWallTorchBlock#hasNeighborSignal`, `RedstoneWallTorchBlock#canSurvive`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/torch-inverter.yaml)
 
 ### TRCH-003: Die Fackel invertiert: an genau dann, wenn kein Eingang
 - Aussage: Im Endzustand ist `lit=true` genau dann, wenn der Befestigungsblock kein Signal liefert (Ausgang 15 bzw. 0).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneTorchBlock#tick`, `RedstoneTorchBlock#ownSignal`; [SRC-WIKI-TORCH]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/torch-inverter.yaml)
 
 ### TRCH-004: Die Schaltverzögerung beträgt 2 Game-Ticks mit Priorität NORMAL
 - Aussage: Bei einem Neighbor-Update, bei dem `lit` gleich dem Eingangszustand ist (also umgeschaltet werden muss), plant die Fackel einen Tick nach 2 gt mit Standardpriorität `NORMAL`, sofern nicht bereits in diesem Tick ein Fackel-Tick an dieser Position ausgeführt wird.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneTorchBlock#neighborChanged`; [SRC-WIKI-TORCH]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/torch-inverter.yaml)
 - Hinweise: Der Zustand wird erst im Tick erneut geprüft; ist der Eingang dann wieder wie vorher, schaltet die Fackel nicht. Kurze Pulse (< 2 gt) können daher verschluckt werden.
 
 ### TRCH-005: Fackel-Zustandswechsel benutzen volle Nachbar-Updates
@@ -52,7 +52,7 @@ häufigem Schalten durchbrennen.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneTorchBlock#getDirectSignal`; [SRC-WIKI-TORCH]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/torch-burnout.yaml)
 - Hinweise: `RedstoneWallTorchBlock` überschreibt `getDirectSignal` nicht.
 
 ### TRCH-007: Stehende Fackel versorgt alle Nachbarn außer dem Block darunter schwach
@@ -74,8 +74,8 @@ häufigem Schalten durchbrennen.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneTorchBlock#tick`, `RedstoneTorchBlock#isToggledTooFrequently` (`MAX_RECENT_TOGGLES`=8); [SRC-WIKI-TORCH]
 - Konfidenz: hoch
-- Status: widersprüchlich
-- Hinweise: Wiki: „mehr als 8 Mal innerhalb von 60 gt". Code: das 8. aufgezeichnete Ausschalten löst aus. Nur Ausschalten (lit→unlit) wird gezählt. Im Spiel prüfen.
+- Status: im-Spiel-verifiziert (scenarios/torch-burnout.yaml)
+- Hinweise: Wiki: „mehr als 8 Mal innerhalb von 60 gt". Code: das 8. aufgezeichnete Ausschalten löst aus. Nur Ausschalten (lit→unlit) wird gezählt. Im Spiel bestätigt: In `torch-burnout` geht die Fackel bei Tick 4, 8, …, 32 aus und bleibt nach dem 8. Ausschalten aus. Der Code hat recht, die Wiki-Formulierung ist ungenau.
 
 ### TRCH-010: Einträge älter als 60 Game-Ticks werden nur beim Fackel-Tick entfernt
 - Aussage: Vor jeder Auswertung entfernt `tick` Einträge vom Listenanfang, deren Alter (`gameTime - when`) größer als 60 ist (`RECENT_TOGGLE_TIMER`); Einträge mit Alter genau 60 zählen noch.

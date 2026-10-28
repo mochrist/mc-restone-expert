@@ -1,0 +1,42 @@
+name: dust-powering
+description: >
+  Welche Blöcke Staub powert. Reihe z=0: Linie zeigt in einen Stein, die Lampe dahinter geht an (starkes
+  Powern durch den Leiter), die Lampe unter der Leitung ebenfalls. Reihe z=2: die Leitung knickt vor einem
+  Stein nach Süden ab, zeigt also nicht hinein; die Lampe hinter dem Stein bleibt aus. Reihe z=6: ein Punkt
+  auf einem Redstone-Block (Stärke 15) powert die Lampe daneben erst, wenn er per Rechtsklick zum Kreuz wird,
+  und wieder nicht mehr, sobald er zurück zum Punkt geschaltet wird.
+build:
+  size: [5, 2, 7]
+  fill:
+    - [0, 0, 0, 4, 0, 6, "stone"]
+  blocks:
+    - [2, 0, 0, "redstone_lamp[lit=false]"]
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [2, 1, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [3, 1, 0, "stone"]
+    - [4, 1, 0, "redstone_lamp[lit=false]"]
+    - [0, 1, 2, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 2, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [2, 1, 2, "redstone_wire[east=none,north=none,power=0,south=side,west=side]"]
+    - [2, 1, 3, "redstone_wire[east=none,north=side,power=0,south=side,west=none]"]
+    - [3, 1, 2, "stone"]
+    - [4, 1, 2, "redstone_lamp[lit=false]"]
+    - [2, 0, 6, "redstone_block"]
+    - [2, 1, 6, "redstone_wire[east=none,north=none,power=15,south=none,west=none]"]
+    - [3, 1, 6, "redstone_lamp[lit=false]"]
+ticks: 20
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 2, pos: [0, 1, 2], action: use}
+  - {tick: 4, pos: [2, 1, 6], action: use}
+  - {tick: 9, pos: [2, 1, 6], action: use}
+  - {tick: 12, pos: [0, 1, 0], action: use}
+probes:
+  into_wire: [2, 1, 0]
+  lamp_below: [2, 0, 0]
+  lamp_behind: [4, 1, 0]
+  bend_wire: [2, 1, 2]
+  lamp_beside: [4, 1, 2]
+  dot: [2, 1, 6]
+  lamp_dot: [3, 1, 6]

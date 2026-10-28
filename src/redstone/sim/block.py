@@ -28,17 +28,26 @@ class Block:
     def is_conductor(self, state: BlockState) -> bool:
         return blockdata.is_conductor(state)
 
-    def is_face_sturdy(self, state: BlockState, face: Direction) -> bool:
-        return blockdata.is_face_sturdy(state, face)
+    def is_face_sturdy(self, state: BlockState, face: Direction, support: str = "full") -> bool:
+        return blockdata.is_face_sturdy(state, face, support)
 
     def is_signal_source(self, state: BlockState) -> bool:
         return False
+
+    def should_redstone_wire_connect_to(self, world: World, pos: Pos, state: BlockState,
+                                        direction: Direction | None) -> bool:
+        """BlockBehaviour#shouldRedstoneWireConnectTo; ``direction`` points from the wire to this block."""
+        return self.is_signal_source(state) and direction is not None
 
     def has_analog_output_signal(self, state: BlockState) -> bool:
         return False
 
     def has_block_entity(self, state: BlockState) -> bool:
         return False
+
+    def get_piston_push_reaction(self, state: BlockState) -> str:
+        """BlockStateBase#getPistonPushReaction (raw): PUSH_PULL, PUSH, POPPED, IMMOVEABLE or IGNORE_ENTITY."""
+        return blockdata.piston_push_reaction(state).upper()
 
     # --- signals -------------------------------------------------------------------
     def get_signal(self, world: World, pos: Pos, state: BlockState, direction: Direction) -> int:

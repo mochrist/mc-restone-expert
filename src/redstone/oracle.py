@@ -4,6 +4,9 @@ The oracle mod reads ``oracle/run/rsx/in/*.scenario.json`` on server start, exec
 docs/scenario-format.md and writes ``oracle/run/rsx/out/<name>.trace.json``. This module compiles the YAML
 scenarios into that folder, starts the server via ``gradlew runServer`` (which also builds the mod when the
 sources changed) and waits until the server stops by itself.
+
+``dump_blocks`` instead starts the server with ``-Prsx.dumpBlocks`` to regenerate the static block state table
+used by ``redstone.sim.blockdata`` (``src/redstone/sim/data/blocks_26.3.json``).
 """
 
 from __future__ import annotations
@@ -23,6 +26,7 @@ RUN_DIR = ORACLE_DIR / "run"
 IN_DIR = RUN_DIR / "rsx" / "in"
 OUT_DIR = RUN_DIR / "rsx" / "out"
 LOG_FILE = RUN_DIR / "rsx" / "oracle.log"
+BLOCK_DATA_FILE = ROOT / "src" / "redstone" / "sim" / "data" / "blocks_26.3.json"
 
 # Flat world without structures or mobs; never pause, never kill a slow tick, no players needed.
 SERVER_PROPERTIES = {
@@ -64,34 +68,16 @@ def prepare_run_dir(run_dir: Path = RUN_DIR) -> None:
     props_file.write_text("\n".join(out) + "\n", encoding="utf-8")
 
 
-def _gradle_command() -> list[str]:
+def _gradle_command(*extra: str) -> list[str]:
     wrapper = ORACLE_DIR / ("gradlew.bat" if os.name == "nt" else "gradlew")
-    return [str(wrapper), "runServer", "-Prsx.exitWhenDone=true", "--console=plain"]
+    return [str(wrapper), "runServer", "-Prsx.exitWhenDone=true", *extra, "--console=plain"]
 
 
-def run(scenarios: list[Path], timeout: float = 900, verbose: bool = False) -> list[Path]:
-    """Run the given scenario YAML files on the oracle server; returns the trace paths in the same order.
-
-    Raises OracleError if the server fails or a scenario produced no trace. The server log is written to
-    ``oracle/run/rsx/oracle.log``.
-    """
-    compiled = [load(p).compile() for p in scenarios]
-    names = [c["name"] for c in compiled]
-    if len(set(names)) != len(names):
-        raise OracleError(f"duplicate scenario names: {names}")
-    prepare_run_dir()
-    IN_DIR.mkdir(parents=True, exist_ok=True)
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    for stale in IN_DIR.glob("*.scenario.json"):
-        stale.unlink()
-    for data in compiled:
-        for old in (OUT_DIR / f"{data['name']}.trace.json", OUT_DIR / f"{data['name']}.error.txt"):
-            old.unlink(missing_ok=True)
-        (IN_DIR / f"{data['name']}.scenario.json").write_text(json.dumps(data, indent=1), encoding="utf-8")
-
+def _run_server(command: list[str], timeout: float, verbose: bool) -> None:
+    """Run the gradle server command until it exits; raises OracleError on failure or timeout."""
     with LOG_FILE.open("w", encoding="utf-8") as log:
         proc = subprocess.Popen(
-            _gradle_command(),
+            command,
             cwd=ORACLE_DIR,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
@@ -120,6 +106,29 @@ def run(scenarios: list[Path], timeout: float = 900, verbose: bool = False) -> l
     if proc.returncode != 0:
         raise OracleError(f"oracle server exited with {proc.returncode}, see {LOG_FILE}")
 
+
+def run(scenarios: list[Path], timeout: float = 900, verbose: bool = False) -> list[Path]:
+    """Run the given scenario YAML files on the oracle server; returns the trace paths in the same order.
+
+    Raises OracleError if the server fails or a scenario produced no trace. The server log is written to
+    ``oracle/run/rsx/oracle.log``.
+    """
+    compiled = [load(p).compile() for p in scenarios]
+    names = [c["name"] for c in compiled]
+    if len(set(names)) != len(names):
+        raise OracleError(f"duplicate scenario names: {names}")
+    prepare_run_dir()
+    IN_DIR.mkdir(parents=True, exist_ok=True)
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    for stale in IN_DIR.glob("*.scenario.json"):
+        stale.unlink()
+    for data in compiled:
+        for old in (OUT_DIR / f"{data['name']}.trace.json", OUT_DIR / f"{data['name']}.error.txt"):
+            old.unlink(missing_ok=True)
+        (IN_DIR / f"{data['name']}.scenario.json").write_text(json.dumps(data, indent=1), encoding="utf-8")
+
+    _run_server(_gradle_command(), timeout, verbose)
+
     traces = []
     for name in names:
         trace, error = OUT_DIR / f"{name}.trace.json", OUT_DIR / f"{name}.error.txt"
@@ -129,3 +138,18 @@ def run(scenarios: list[Path], timeout: float = 900, verbose: bool = False) -> l
             raise OracleError(f"no trace for scenario {name}, see {LOG_FILE}")
         traces.append(trace)
     return traces
+
+
+def dump_blocks(dst: Path = BLOCK_DATA_FILE, timeout: float = 900, verbose: bool = False) -> Path:
+    """Dump every block state's static properties (see oracle BlockDump.java) to ``dst``."""
+    prepare_run_dir()
+    LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    dst = dst.resolve()
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dst.with_name(dst.name + ".tmp")
+    tmp.unlink(missing_ok=True)
+    _run_server(_gradle_command(f"-Prsx.dumpBlocks={tmp}"), timeout, verbose)
+    if not tmp.exists():
+        raise OracleError(f"oracle wrote no block dump, see {LOG_FILE}")
+    tmp.replace(dst)
+    return dst

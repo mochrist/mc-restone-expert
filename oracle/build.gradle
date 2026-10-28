@@ -18,9 +18,17 @@ loom {
 }
 
 // `gradlew runServer -Prsx.exitWhenDone=true` stops the server once all scenarios ran.
+// `-Prsx.dumpBlocks=<file>` writes the static block state table on server start (see BlockDump.java).
 tasks.named("runServer") {
 	def exitWhenDone = providers.gradleProperty("rsx.exitWhenDone").orElse("false")
-	jvmArgumentProviders.add({ ["-Drsx.exitWhenDone=" + exitWhenDone.get()] } as CommandLineArgumentProvider)
+	def dumpBlocks = providers.gradleProperty("rsx.dumpBlocks").orElse("")
+	jvmArgumentProviders.add({
+		def args = ["-Drsx.exitWhenDone=" + exitWhenDone.get()]
+		if (!dumpBlocks.get().isEmpty()) {
+			args << "-Drsx.dumpBlocks=" + dumpBlocks.get()
+		}
+		args
+	} as CommandLineArgumentProvider)
 }
 
 processResources {

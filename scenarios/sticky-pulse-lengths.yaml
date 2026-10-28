@@ -1,0 +1,54 @@
+name: sticky-pulse-lengths
+description: >
+  Vier Sticky Pistons (z=0,2,4,6) und ein normaler Piston (z=8) schieben je einen Steinblock. Alle Hebel gehen in
+  Tick 2 an und nach 1, 2, 3, 4 bzw. 1 Tick wieder aus (Spieleraktion zwischen den Ticks). Erwartet: Bei 1 und 2 Ticks
+  lässt der Sticky Piston den Block fallen (Event 2, Fortschritt < 0,5 bzw. lastTicked == gameTime), ab 3 Ticks zieht
+  er ihn zurück. Der normale Piston schiebt den Block bei 1 Tick trotzdem zu Ende.
+build:
+  size: [4, 2, 9]
+  fill:
+    - [0, 0, 0, 1, 0, 8, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "sticky_piston[extended=false,facing=east]"]
+    - [2, 1, 0, "stone"]
+    - [0, 1, 2, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 2, "sticky_piston[extended=false,facing=east]"]
+    - [2, 1, 2, "stone"]
+    - [0, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 4, "sticky_piston[extended=false,facing=east]"]
+    - [2, 1, 4, "stone"]
+    - [0, 1, 6, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 6, "sticky_piston[extended=false,facing=east]"]
+    - [2, 1, 6, "stone"]
+    - [0, 1, 8, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 8, "piston[extended=false,facing=east]"]
+    - [2, 1, 8, "stone"]
+ticks: 15
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 2, pos: [0, 1, 2], action: use}
+  - {tick: 2, pos: [0, 1, 4], action: use}
+  - {tick: 2, pos: [0, 1, 6], action: use}
+  - {tick: 2, pos: [0, 1, 8], action: use}
+  - {tick: 3, pos: [0, 1, 0], action: use}
+  - {tick: 3, pos: [0, 1, 8], action: use}
+  - {tick: 4, pos: [0, 1, 2], action: use}
+  - {tick: 5, pos: [0, 1, 4], action: use}
+  - {tick: 6, pos: [0, 1, 6], action: use}
+probes:
+  p1: [1, 1, 0]
+  p1_head: [2, 1, 0]
+  p1_target: [3, 1, 0]
+  p2: [1, 1, 2]
+  p2_head: [2, 1, 2]
+  p2_target: [3, 1, 2]
+  p3: [1, 1, 4]
+  p3_head: [2, 1, 4]
+  p3_target: [3, 1, 4]
+  p4: [1, 1, 6]
+  p4_head: [2, 1, 6]
+  p4_target: [3, 1, 6]
+  normal: [1, 1, 8]
+  normal_head: [2, 1, 8]
+  normal_target: [3, 1, 8]

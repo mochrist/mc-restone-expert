@@ -1,0 +1,39 @@
+name: dust-steps
+description: >
+  Leitung steigt bei x=2->3 eine Stufe hinauf und bei x=4->5 wieder hinab (Lampe am Ende, Stärke 10).
+  Bei Tick 8 wird ein Stein über den unteren Staub vor der Stufe gesetzt: die Aufwärtsverbindung wird
+  getrennt (east=up -> side, die Leitung zeigt nun in den Stufenstein), der obere Teil verliert sein Signal
+  und die Endlampe geht 4 Ticks später aus; die Lampe neben dem Stufenstein bleibt an, weil der Staub weiter
+  in den Stufenstein zeigt bzw. ihn von oben powert. Bei Tick 16 wird der Stein entfernt, alles geht wieder an.
+  Bei Tick 22 wird der Abwärts-Staub (5,1,0) entfernt, bei Tick 28 wieder gesetzt (die Endlampe ist bei Tick 26 aus).
+build:
+  size: [8, 4, 2]
+  fill:
+    - [0, 0, 0, 7, 0, 1, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [2, 1, 0, "redstone_wire[east=up,north=none,power=0,south=none,west=side]"]
+    - [3, 1, 0, "stone"]
+    - [3, 2, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [4, 1, 0, "stone"]
+    - [4, 2, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [5, 1, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=up]"]
+    - [6, 1, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [7, 1, 0, "redstone_lamp[lit=false]"]
+    - [3, 1, 1, "redstone_lamp[lit=false]"]
+ticks: 32
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 8, pos: [2, 2, 0], action: setblock, state: "stone"}
+  - {tick: 16, pos: [2, 2, 0], action: setblock, state: "air"}
+  - {tick: 22, pos: [5, 1, 0], action: setblock, state: "air"}
+  - {tick: 28, pos: [5, 1, 0], action: setblock, state: "redstone_wire[east=side,north=none,power=0,south=none,west=up]"}
+probes:
+  low: [2, 1, 0]
+  top_a: [3, 2, 0]
+  top_b: [4, 2, 0]
+  down: [5, 1, 0]
+  end_wire: [6, 1, 0]
+  lamp_end: [7, 1, 0]
+  lamp_step: [3, 1, 1]

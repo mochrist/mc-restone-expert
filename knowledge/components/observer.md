@@ -13,7 +13,7 @@ des Blocks, auf den sein Gesicht zeigt, und gibt daraufhin hinten einen Puls von
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ObserverBlock#updateShape`; [SRC-WIKI-OBSERVER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-pulse-extend.yaml)
 - Hinweise: Bestätigt die Annahme in `src/redstone/render/textdump.py`.
 
 ### OBS-002: Der Ausgang liegt auf der Rückseite
@@ -21,7 +21,7 @@ des Blocks, auf den sein Gesicht zeigt, und gibt daraufhin hinten einen Puls von
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ObserverBlock#getSignal`, `ObserverBlock#updateNeighborsInFront`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-pulse-extend.yaml)
 
 ### OBS-003: Der Observer lädt den Block hinter sich stark mit 15
 - Aussage: Ein Observer mit `powered=true` liefert Stärke 15, und `getDirectSignal` ist gleich `getSignal`, der Block an der Rückseite wird also stark geladen.
@@ -51,7 +51,7 @@ des Blocks, auf den sein Gesicht zeigt, und gibt daraufhin hinten einen Puls von
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ObserverBlock#startSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-pulse-extend.yaml)
 - Hinweise: Wiki nennt keine explizite Zahl; seit 1.12 (16w44a) nicht mehr sofort.
 
 ### OBS-007: Pulsdauer 2 Game-Ticks
@@ -59,7 +59,7 @@ des Blocks, auf den sein Gesicht zeigt, und gibt daraufhin hinten einen Puls von
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ObserverBlock#tick`; [SRC-WIKI-OBSERVER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-pulse-extend.yaml)
 
 ### OBS-008: Zustandswechsel mit Flag 2 und Update nur vorne
 - Aussage: Der Observer setzt `powered` mit Flag 2 und ruft danach `updateNeighborsInFront` auf: `neighborChanged` am Block hinter ihm, dann Updates an dessen Nachbarn außer dem Observer selbst.

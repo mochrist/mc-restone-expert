@@ -1,0 +1,35 @@
+name: repeater-pulse-extend
+description: >
+  Ein Observer liefert einen 2-gt-Puls in Repeater mit Delay 4 (z=0) und Delay 1 (z=2).
+  Ein Repeater verlängert Pulse, die kürzer als sein Delay sind, auf die Länge seines Delays.
+  Dazu kommt ein Steinknopf (z=4, 20 gt) direkt an einer Lampe.
+build:
+  size: [4, 2, 5]
+  fill:
+    - [0, 0, 0, 3, 0, 4, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "observer[facing=west,powered=false]"]
+    - [2, 1, 0, "repeater[delay=4,facing=west,locked=false,powered=false]"]
+    - [3, 1, 0, "redstone_lamp[lit=false]"]
+    - [0, 1, 2, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 2, "observer[facing=west,powered=false]"]
+    - [2, 1, 2, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [3, 1, 2, "redstone_lamp[lit=false]"]
+    - [0, 1, 4, "stone_button[face=floor,facing=east,powered=false]"]
+    - [1, 1, 4, "redstone_lamp[lit=false]"]
+ticks: 45
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 2, pos: [0, 1, 2], action: use}
+  - {tick: 2, pos: [0, 1, 4], action: use}
+  - {tick: 10, pos: [0, 1, 4], action: use}
+probes:
+  obs4: [1, 1, 0]
+  rep4: [2, 1, 0]
+  lamp4: [3, 1, 0]
+  obs1: [1, 1, 2]
+  rep1: [2, 1, 2]
+  lamp1: [3, 1, 2]
+  button: [0, 1, 4]
+  button_lamp: [1, 1, 4]

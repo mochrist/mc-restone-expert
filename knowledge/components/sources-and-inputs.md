@@ -15,7 +15,7 @@ bekommen. Zeiten in Game-Ticks (gt).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `LeverBlock#pull`, `LeverBlock#getDirectSignal`, `BlockBehaviour#getSignal`, `FaceAttachedHorizontalDirectionalBlock#getConnectedDirection`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/torch-inverter.yaml)
 
 ### SRCB-002: Hebel und Knopf aktualisieren eigene Position und Befestigungsblock
 - Aussage: Hebel und Knöpfe rufen nach dem Umschalten `updateNeighborsAt` für ihre eigene Position und dann für den Befestigungsblock auf (zusätzlich zu den Updates aus `setBlockAndUpdate`).
@@ -29,7 +29,7 @@ bekommen. Zeiten in Game-Ticks (gt).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `Blocks` (`STONE_BUTTON`, `POLISHED_BLACKSTONE_BUTTON`: `ticksToStayPressed`=20), `ButtonBlock#press`, `ButtonBlock#checkPressed`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/repeater-pulse-extend.yaml)
 
 ### SRCB-004: Holzknöpfe bleiben 30 gt gedrückt und reagieren auf Pfeile
 - Aussage: Alle Holzknöpfe (inkl. Bambus, Karmesin, Wirr) bleiben 30 gt gedrückt; solange ein Pfeil im Knopf steckt, wird der Tick erneut geplant und der Knopf bleibt gedrückt.

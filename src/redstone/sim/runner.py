@@ -30,14 +30,20 @@ def apply_input(world: World, action: str, pos: Pos, state: BlockState | None) -
         raise ValueError(f"unknown action {action!r}")
 
 
-def run(scenario: Scenario) -> tuple[Trace, World]:
-    world = World.from_grid(scenario.grid)
+# Min corner of every scenario in the oracle world (oracle ScenarioRun.ORIGIN). Absolute coordinates matter
+# for locational behaviour such as the HashSet order of redstone wire updates (knowledge DUST-018).
+ORACLE_ORIGIN = Pos(0, 200, 0)
+
+
+def run(scenario: Scenario, origin: Pos = ORACLE_ORIGIN) -> tuple[Trace, World]:
+    world = World()
+    world.place_grid(scenario.grid, origin)
     trace = Trace(scenario.name, "sim", scenario.ticks, dict(scenario.probes))
     for t in range(scenario.ticks + 1):
         for inp in scenario.inputs_at(t):
-            apply_input(world, inp.action, inp.pos, inp.state)
+            apply_input(world, inp.action, Pos(*inp.pos) + origin, inp.state)
         for name, pos in scenario.probes.items():
-            trace.record(name, t, probe_value(world, pos))
+            trace.record(name, t, probe_value(world, Pos(*pos) + origin))
         if t < scenario.ticks:
             world.tick()
     return trace, world
