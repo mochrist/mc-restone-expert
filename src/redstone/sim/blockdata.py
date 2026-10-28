@@ -50,3 +50,24 @@ def is_face_sturdy(state: BlockState, face: Direction) -> bool:
     if name in ("piston", "sticky_piston"):
         return state.get("extended") != "true" or face.label != state.get("facing")
     return is_conductor(state) or name in ("observer", "redstone_block", "hopper") or "glass" in name and "pane" not in name
+
+
+def push_reaction(state: BlockState) -> str:
+    """PushReaction of a state: normal, destroy, block, ignore or push_only."""
+    if state.is_air:
+        return "ignore"
+    name = state.id
+    if name in ("obsidian", "crying_obsidian", "respawn_anchor", "reinforced_deepslate", "bedrock", "barrier",
+                "end_portal_frame", "enchanting_table", "ender_chest", "beacon", "spawner", "moving_piston",
+                "piston_head") or "command_block" in name or "chest" in name or name in ("barrel", "furnace",
+                "hopper", "dispenser", "dropper", "jukebox", "lectern", "beehive", "bee_nest"):
+        return "block"
+    if name in ("piston", "sticky_piston"):
+        return "block" if state.get("extended") == "true" else "normal"
+    if any(h in name for h in ("torch", "button", "lever", "redstone_wire", "repeater", "comparator", "carpet",
+                               "flower", "sapling", "pressure_plate", "rail", "door", "sign", "banner", "lantern",
+                               "pot", "head", "skull", "cake", "ladder", "vine", "scaffolding")):
+        return "destroy"
+    if name in ("glazed_terracotta",) or name.endswith("glazed_terracotta"):
+        return "push_only"
+    return "normal"

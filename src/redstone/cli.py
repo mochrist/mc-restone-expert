@@ -62,6 +62,37 @@ def _cmd_oracle(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_sim(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from . import sim
+    from .verify import Trace, diff, load_scenario, timing_diagram
+
+    golden_dir = Path(__file__).resolve().parents[2] / "tests" / "golden"
+    status = 0
+    for path in args.scenarios:
+        scenario = load_scenario(path)
+        trace, world = sim.run(scenario)
+        print(f"\n{scenario.name} (simulated)")
+        print(timing_diagram(trace))
+        for w in world.warnings:
+            print(f"warning: {w}")
+        if args.out:
+            trace.save(Path(args.out) / f"{scenario.name}.trace.json")
+        golden = golden_dir / f"{scenario.name}.trace.json"
+        if args.diff and golden.exists():
+            expected = Trace.load(golden)
+            mismatches = diff(expected, trace)
+            if mismatches:
+                status = 1
+                print(f"{len(mismatches)} mismatches against {golden.name}:")
+                for m in mismatches[: args.limit]:
+                    print(f"  {m}")
+            else:
+                print(f"matches {golden.name}")
+    return status
+
+
 def main(argv: list[str] | None = None) -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -92,6 +123,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--timeout", type=float, default=900, help="seconds until the server is killed (default 900)")
     p.add_argument("-v", "--verbose", action="store_true", help="print the full server log")
     p.set_defaults(func=_cmd_oracle)
+
+    p = sub.add_parser("sim", help="run scenarios in the simulator, optionally diff against golden traces")
+    p.add_argument("scenarios", nargs="+", metavar="scenario.yaml")
+    p.add_argument("--diff", action="store_true", help="compare with tests/golden/<name>.trace.json")
+    p.add_argument("--limit", type=int, default=20, help="max mismatches to print")
+    p.add_argument("--out", help="directory to write simulator traces to")
+    p.set_defaults(func=_cmd_sim)
 
     args = parser.parse_args(argv)
     return args.func(args)
