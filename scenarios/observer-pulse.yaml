@@ -1,0 +1,17 @@
+name: observer-pulse
+description: Ein Observer beobachtet einen Hebel und gibt bei jeder Zustandsänderung einen Puls nach hinten an eine Lampe.
+build:
+  size: [3, 2, 1]
+  fill:
+    - [0, 0, 0, 2, 0, 0, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "observer[facing=west,powered=false]"]
+    - [2, 1, 0, "redstone_lamp[lit=false]"]
+ticks: 25
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 12, pos: [0, 1, 0], action: use}
+probes:
+  observer: [1, 1, 0]
+  lamp: [2, 1, 0]

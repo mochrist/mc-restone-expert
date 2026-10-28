@@ -1,0 +1,22 @@
+name: comparator-container
+description: >
+  Comparator liest ein Fass mit 10 vollen Stacks (27 Slots). Erwartete Stärke: 1 + floor(10/27 * 14) = 6.
+  Der Comparator aktualisiert sich erst bei einem Update, hier durch den Moduswechsel per Rechtsklick.
+build:
+  size: [3, 2, 1]
+  fill:
+    - [0, 0, 0, 2, 0, 0, "stone"]
+  blocks:
+    - [0, 1, 0, "barrel[facing=up,open=false]"]
+    - [1, 1, 0, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 0, "redstone_lamp[lit=false]"]
+  block_entities:
+    - [0, 1, 0, '{id:"minecraft:barrel",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64},{Slot:3b,id:"minecraft:stone",count:64},{Slot:4b,id:"minecraft:stone",count:64},{Slot:5b,id:"minecraft:stone",count:64},{Slot:6b,id:"minecraft:stone",count:64},{Slot:7b,id:"minecraft:stone",count:64},{Slot:8b,id:"minecraft:stone",count:64},{Slot:9b,id:"minecraft:stone",count:64}]}']
+    - [1, 1, 0, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 20
+inputs:
+  - {tick: 2, pos: [1, 1, 0], action: use}
+  - {tick: 10, pos: [1, 1, 0], action: use}
+probes:
+  comparator: [1, 1, 0]
+  lamp: [2, 1, 0]

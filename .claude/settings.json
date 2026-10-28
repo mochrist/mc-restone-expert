@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Test-Path *)",
+      "PowerShell(Get-Content *)",
+      "PowerShell(Select-String *)",
+      "mcp__blockbench__screenshot_views",
+      "mcp__blockbench__analyze_animation",
+      "mcp__blockbench__check_model",
+      "mcp__blockbench__audit_complexity",
+      "mcp__blockbench__check_sides",
+      "mcp__blockbench__get_guide"
+    ]
+  }
+}

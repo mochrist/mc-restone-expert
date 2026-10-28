@@ -1,0 +1,29 @@
+name: comparator-modes
+description: >
+  Comparator mit Rückeingang Stärke 12 (Hebel + 4 Leitungen) und Seiteneingang Stärke 11 (Hebel + 5 Leitungen).
+  Der Vergleichsmodus gibt 12 aus, der Subtraktionsmodus 1. Moduswechsel per Rechtsklick.
+build:
+  size: [7, 2, 7]
+  fill:
+    - [0, 0, 0, 6, 0, 6, "stone"]
+    - [1, 1, 0, 4, 1, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [5, 1, 1, 5, 1, 5, "redstone_wire[east=none,north=side,power=0,south=side,west=none]"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [5, 1, 6, "lever[face=floor,facing=north,powered=false]"]
+    - [5, 1, 0, "comparator[facing=west,mode=compare,powered=false]"]
+    - [6, 1, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+  block_entities:
+    - [5, 1, 0, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 45
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 10, pos: [5, 1, 6], action: use}
+  - {tick: 20, pos: [5, 1, 0], action: use}
+  - {tick: 30, pos: [5, 1, 6], action: use}
+  - {tick: 38, pos: [0, 1, 0], action: use}
+probes:
+  rear: [4, 1, 0]
+  side: [5, 1, 1]
+  comparator: [5, 1, 0]
+  out: [6, 1, 0]

@@ -1,0 +1,21 @@
+name: torch-inverter
+description: >
+  Wandhebel an Block B, Wandfackel auf der anderen Seite von B, Lampe dahinter.
+  Hebel an -> B stark gepowert -> Fackel aus -> Lampe aus (mit Ausschaltverzögerung der Lampe).
+build:
+  size: [4, 2, 1]
+  fill:
+    - [0, 0, 0, 3, 0, 0, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=wall,facing=west,powered=false]"]
+    - [1, 1, 0, "stone"]
+    - [2, 1, 0, "redstone_wall_torch[facing=east,lit=true]"]
+    - [3, 1, 0, "redstone_lamp[lit=true]"]
+ticks: 40
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 20, pos: [0, 1, 0], action: use}
+probes:
+  lever: [0, 1, 0]
+  torch: [2, 1, 0]
+  lamp: [3, 1, 0]

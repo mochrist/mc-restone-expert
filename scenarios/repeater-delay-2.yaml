@@ -1,0 +1,22 @@
+name: repeater-delay-2
+description: >
+  Hebel -> Repeater (Delay 2) -> Lampe. Prüft Repeater-Verzögerung, Lampen-Ausschaltverzögerung
+  und die Bedeutung von facing beim Repeater (Annahme: facing zeigt zum Eingang).
+build:
+  size: [4, 2, 1]
+  blocks:
+    - [0, 0, 0, "stone"]
+    - [1, 0, 0, "stone"]
+    - [2, 0, 0, "stone"]
+    - [3, 0, 0, "stone"]
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "repeater[delay=2,facing=west,locked=false,powered=false]"]
+    - [2, 1, 0, "redstone_lamp[lit=false]"]
+ticks: 30
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 15, pos: [0, 1, 0], action: use}
+probes:
+  lever: [0, 1, 0]
+  repeater: [1, 1, 0]
+  lamp: [2, 1, 0]

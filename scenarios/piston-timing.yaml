@@ -1,0 +1,28 @@
+name: piston-timing
+description: >
+  Ein normaler Kolben (z=0) und ein klebriger Kolben (z=2) schieben je einen Steinblock, der Hebel steht direkt daneben.
+  Aufgezeichnet werden pro Tick Kolben, Kopfposition und Zielposition (inklusive moving_piston).
+build:
+  size: [4, 2, 3]
+  fill:
+    - [0, 0, 0, 3, 0, 2, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "piston[extended=false,facing=east]"]
+    - [2, 1, 0, "stone"]
+    - [0, 1, 2, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 2, "sticky_piston[extended=false,facing=east]"]
+    - [2, 1, 2, "stone"]
+ticks: 30
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 2, pos: [0, 1, 2], action: use}
+  - {tick: 15, pos: [0, 1, 0], action: use}
+  - {tick: 15, pos: [0, 1, 2], action: use}
+probes:
+  piston: [1, 1, 0]
+  head: [2, 1, 0]
+  target: [3, 1, 0]
+  sticky: [1, 1, 2]
+  sticky_head: [2, 1, 2]
+  sticky_target: [3, 1, 2]

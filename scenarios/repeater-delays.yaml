@@ -1,0 +1,38 @@
+name: repeater-delays
+description: Vier Spuren mit Repeater-Delay 1 bis 4 (2 bis 8 Game-Ticks), gleichzeitig ein- und ausgeschaltet.
+build:
+  size: [3, 2, 4]
+  fill:
+    - [0, 0, 0, 2, 0, 3, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [0, 1, 1, "lever[face=floor,facing=east,powered=false]"]
+    - [0, 1, 2, "lever[face=floor,facing=east,powered=false]"]
+    - [0, 1, 3, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [1, 1, 1, "repeater[delay=2,facing=west,locked=false,powered=false]"]
+    - [1, 1, 2, "repeater[delay=3,facing=west,locked=false,powered=false]"]
+    - [1, 1, 3, "repeater[delay=4,facing=west,locked=false,powered=false]"]
+    - [2, 1, 0, "redstone_lamp[lit=false]"]
+    - [2, 1, 1, "redstone_lamp[lit=false]"]
+    - [2, 1, 2, "redstone_lamp[lit=false]"]
+    - [2, 1, 3, "redstone_lamp[lit=false]"]
+ticks: 40
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 2, pos: [0, 1, 1], action: use}
+  - {tick: 2, pos: [0, 1, 2], action: use}
+  - {tick: 2, pos: [0, 1, 3], action: use}
+  - {tick: 20, pos: [0, 1, 0], action: use}
+  - {tick: 20, pos: [0, 1, 1], action: use}
+  - {tick: 20, pos: [0, 1, 2], action: use}
+  - {tick: 20, pos: [0, 1, 3], action: use}
+probes:
+  rep1: [1, 1, 0]
+  rep2: [1, 1, 1]
+  rep3: [1, 1, 2]
+  rep4: [1, 1, 3]
+  lamp1: [2, 1, 0]
+  lamp2: [2, 1, 1]
+  lamp3: [2, 1, 2]
+  lamp4: [2, 1, 3]

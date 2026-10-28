@@ -1,0 +1,12 @@
+name: observer-clock
+description: Zwei Observer beobachten sich gegenseitig. Gestartet wird die Clock, indem der zweite Observer bei Tick 2 platziert wird.
+build:
+  size: [2, 1, 1]
+  blocks:
+    - [0, 0, 0, "observer[facing=east,powered=false]"]
+ticks: 30
+inputs:
+  - {tick: 2, pos: [1, 0, 0], action: setblock, state: "observer[facing=west,powered=false]"}
+probes:
+  a: [0, 0, 0]
+  b: [1, 0, 0]

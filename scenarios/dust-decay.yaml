@@ -1,0 +1,19 @@
+name: dust-decay
+description: Hebel -> 15 Redstone-Leitungen -> Lampe. Signalabfall um 1 pro Leitung, die Lampe am Ende bekommt Stärke 1.
+build:
+  size: [17, 2, 1]
+  fill:
+    - [0, 0, 0, 16, 0, 0, "stone"]
+    - [1, 1, 0, 15, 1, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [16, 1, 0, "redstone_lamp[lit=false]"]
+ticks: 20
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 10, pos: [0, 1, 0], action: use}
+probes:
+  wire1: [1, 1, 0]
+  wire8: [8, 1, 0]
+  wire15: [15, 1, 0]
+  lamp: [16, 1, 0]

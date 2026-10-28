@@ -1,0 +1,19 @@
+name: torch-burnout
+description: >
+  Rückkopplungsschleife: Die Wandfackel T an Block B powert Block C über sich. Die Leitung auf B liest C
+  und powert B, was T ausschaltet. Die Schleife schwingt, bis T durchbrennt.
+  Gestartet wird sie, indem C bei Tick 2 platziert wird.
+build:
+  size: [3, 3, 1]
+  fill:
+    - [0, 0, 0, 2, 0, 0, "stone"]
+  blocks:
+    - [1, 1, 0, "stone"]
+    - [2, 1, 0, "redstone_wall_torch[facing=east,lit=true]"]
+    - [1, 2, 0, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+ticks: 260
+inputs:
+  - {tick: 2, pos: [2, 2, 0], action: setblock, state: "stone"}
+probes:
+  torch: [2, 1, 0]
+  wire: [1, 2, 0]

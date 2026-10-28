@@ -1,0 +1,25 @@
+name: repeater-lock
+description: >
+  Hauptspur Hebel A -> Repeater R -> Lampe. Ein zweiter Repeater zeigt von Süden in R und sperrt ihn.
+  Gesperrt behält R seinen Ausgang, auch wenn A ausgeschaltet wird.
+build:
+  size: [3, 2, 3]
+  fill:
+    - [0, 0, 0, 2, 0, 2, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [2, 1, 0, "redstone_lamp[lit=false]"]
+    - [1, 1, 1, "repeater[delay=1,facing=south,locked=false,powered=false]"]
+    - [1, 1, 2, "lever[face=floor,facing=north,powered=false]"]
+ticks: 40
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 10, pos: [1, 1, 2], action: use}
+  - {tick: 15, pos: [0, 1, 0], action: use}
+  - {tick: 25, pos: [1, 1, 2], action: use}
+probes:
+  leverA: [0, 1, 0]
+  repeater: [1, 1, 0]
+  locker: [1, 1, 1]
+  lamp: [2, 1, 0]
