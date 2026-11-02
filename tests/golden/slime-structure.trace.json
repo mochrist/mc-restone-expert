@@ -1,0 +1,225 @@
+{
+ "format": 1,
+ "scenario": "slime-structure",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 22,
+ "probes": {
+  "piston": [
+   1,
+   1,
+   1
+  ],
+  "slime_start": [
+   2,
+   1,
+   1
+  ],
+  "slime_end": [
+   3,
+   1,
+   1
+  ],
+  "front_end": [
+   4,
+   1,
+   1
+  ],
+  "top_start": [
+   2,
+   2,
+   1
+  ],
+  "top_end": [
+   3,
+   2,
+   1
+  ],
+  "side_start": [
+   2,
+   1,
+   2
+  ],
+  "side_end": [
+   3,
+   1,
+   2
+  ],
+  "honey": [
+   2,
+   1,
+   0
+  ],
+  "honey_end": [
+   3,
+   1,
+   0
+  ]
+ },
+ "samples": {
+  "piston": [
+   [
+    0,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:sticky_piston[extended=true,facing=east]"
+   ],
+   [
+    13,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    15,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ]
+  ],
+  "slime_start": [
+   [
+    0,
+    "minecraft:slime_block"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    5,
+    "minecraft:piston_head[facing=east,short=false,type=sticky]"
+   ],
+   [
+    13,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    15,
+    "minecraft:slime_block"
+   ]
+  ],
+  "slime_end": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:slime_block"
+   ],
+   [
+    13,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    15,
+    "minecraft:stone"
+   ]
+  ],
+  "front_end": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ],
+   [
+    13,
+    "minecraft:air"
+   ]
+  ],
+  "top_start": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:air"
+   ],
+   [
+    13,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    15,
+    "minecraft:stone"
+   ]
+  ],
+  "top_end": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ],
+   [
+    13,
+    "minecraft:air"
+   ]
+  ],
+  "side_start": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:air"
+   ],
+   [
+    13,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    15,
+    "minecraft:stone"
+   ]
+  ],
+  "side_end": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ],
+   [
+    13,
+    "minecraft:air"
+   ]
+  ],
+  "honey": [
+   [
+    0,
+    "minecraft:honey_block"
+   ]
+  ],
+  "honey_end": [
+   [
+    0,
+    "minecraft:air"
+   ]
+  ]
+ }
+}

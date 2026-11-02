@@ -1,0 +1,122 @@
+{
+ "format": 1,
+ "scenario": "piston-redstone-block",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 25,
+ "probes": {
+  "piston": [
+   1,
+   1,
+   0
+  ],
+  "head": [
+   2,
+   1,
+   0
+  ],
+  "dest": [
+   3,
+   1,
+   0
+  ],
+  "lamp_a": [
+   2,
+   1,
+   1
+  ],
+  "lamp_b": [
+   3,
+   1,
+   1
+  ]
+ },
+ "samples": {
+  "piston": [
+   [
+    0,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:sticky_piston[extended=true,facing=east]"
+   ],
+   [
+    13,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    15,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ]
+  ],
+  "head": [
+   [
+    0,
+    "minecraft:redstone_block"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    5,
+    "minecraft:piston_head[facing=east,short=false,type=sticky]"
+   ],
+   [
+    13,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    15,
+    "minecraft:redstone_block"
+   ]
+  ],
+  "dest": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:redstone_block"
+   ],
+   [
+    13,
+    "minecraft:air"
+   ]
+  ],
+  "lamp_a": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    7,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    15,
+    "minecraft:redstone_lamp[lit=true]"
+   ]
+  ],
+  "lamp_b": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    5,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    17,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ]
+ }
+}

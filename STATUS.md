@@ -1,12 +1,12 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-10-28, Ende Session 1. Geschätzter Gesamtfortschritt: **ca. 50 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-03, Ende Session 2 (kurz). Geschätzter Gesamtfortschritt: **ca. 50 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~95 % | 258 Aussagen aus dem 26.3-Code belegt, 27 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~75 % | Oracle läuft; Simulator stimmt mit allen 14 Golden Traces tick-genau überein |
+| M2 Oracle + Simulator | 35 % | ~75 % | Oracle läuft; Simulator stimmt mit allen 22 Golden Traces tick-genau überein |
 | M3 Analyse + Erklärung | 20 % | ~30 % | erster Entwurf `rsx explain` (Experimente, Klassifikation, Wahrheitstabelle, Signalweg, Sonderfälle) |
 | M4 Redesign | 25 % | 0 % | noch nicht begonnen |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
@@ -23,7 +23,7 @@ Stand: 2026-10-28, Ende Session 1. Geschätzter Gesamtfortschritt: **ca. 50 %** 
 ## Befehle
 
 ```
-uv run pytest -q                                   # 100 Tests, alle grün
+uv run pytest -q                                   # 108 Tests, alle grün
 uv run rsx dump <datei> [--components]             # Schematic als Text
 uv run rsx sim scenarios/<x>.yaml --diff           # Simulator vs. Golden Trace
 uv run rsx oracle scenarios/<x>.yaml --golden      # im echten Spiel aufzeichnen (~10 s pro Batch)
@@ -37,7 +37,12 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
 
 ## Offene Punkte (nächste Schritte, nach Priorität)
 
-1. **8 neue Szenarien ohne Golden Trace** (von den gestoppten Agents angelegt, ungeprüft): `dust-network`, `dust-powering`, `dust-steps`, `piston-push-limit`, `piston-redstone-block`, `slime-structure`, `sticky-pulse-lengths`, `zero-tick-piston`. Aufzeichnen mit `uv run rsx oracle scenarios/<x>.yaml --golden`, Golden Trace ansehen (testet das Szenario, was es soll?) und dann `rsx sim --diff`. Abweichungen im Simulator beheben.
+1. **Wissensbasis-Aussagen zu den 8 neuen Szenarien markieren.** Die Golden Traces für `dust-network`, `dust-powering`,
+   `dust-steps`, `piston-push-limit`, `piston-redstone-block`, `slime-structure`, `sticky-pulse-lengths` und
+   `zero-tick-piston` sind aufgezeichnet (Session 2). Die Rohdaten entsprechen jeweils der Szenario-Beschreibung, und der Simulator
+   stimmt ohne Änderungen überein. Offen ist noch, die passenden Aussagen-IDs (DUST-…, PISTON-…) in `knowledge/` zu suchen
+   und mit `knowledge mark scenarios/<x>.yaml ID...` zu markieren. Hinweis: Das Timing-Diagramm von `rsx sim --diff`
+   zeigt Kolben nur binär, deshalb für die Prüfung die Rohdaten in `tests/golden/*.trace.json` ansehen.
 2. **Simulator-Lücken (M2):**
    - Dropper/Dispenser (Auslösung, QC) und Hopper (Sperre, Transfer, Cooldown) fehlen; nur das Fass ist als Container für den Comparator modelliert.
    - Es fehlen außerdem Kupferbirne, Notenblock, Zielblock, Druckplatten, Türen/Falltüren/Schienen, Tageslichtsensor, Lesepult und Sculk.

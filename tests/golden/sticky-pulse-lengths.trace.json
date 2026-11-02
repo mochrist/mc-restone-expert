@@ -1,0 +1,340 @@
+{
+ "format": 1,
+ "scenario": "sticky-pulse-lengths",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 15,
+ "probes": {
+  "p1": [
+   1,
+   1,
+   0
+  ],
+  "p1_head": [
+   2,
+   1,
+   0
+  ],
+  "p1_target": [
+   3,
+   1,
+   0
+  ],
+  "p2": [
+   1,
+   1,
+   2
+  ],
+  "p2_head": [
+   2,
+   1,
+   2
+  ],
+  "p2_target": [
+   3,
+   1,
+   2
+  ],
+  "p3": [
+   1,
+   1,
+   4
+  ],
+  "p3_head": [
+   2,
+   1,
+   4
+  ],
+  "p3_target": [
+   3,
+   1,
+   4
+  ],
+  "p4": [
+   1,
+   1,
+   6
+  ],
+  "p4_head": [
+   2,
+   1,
+   6
+  ],
+  "p4_target": [
+   3,
+   1,
+   6
+  ],
+  "normal": [
+   1,
+   1,
+   8
+  ],
+  "normal_head": [
+   2,
+   1,
+   8
+  ],
+  "normal_target": [
+   3,
+   1,
+   8
+  ]
+ },
+ "samples": {
+  "p1": [
+   [
+    0,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:sticky_piston[extended=true,facing=east]"
+   ],
+   [
+    4,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    6,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ]
+  ],
+  "p1_head": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    4,
+    "minecraft:air"
+   ]
+  ],
+  "p1_target": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    4,
+    "minecraft:stone"
+   ]
+  ],
+  "p2": [
+   [
+    0,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:sticky_piston[extended=true,facing=east]"
+   ],
+   [
+    5,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    7,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ]
+  ],
+  "p2_head": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    5,
+    "minecraft:air"
+   ]
+  ],
+  "p2_target": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ]
+  ],
+  "p3": [
+   [
+    0,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:sticky_piston[extended=true,facing=east]"
+   ],
+   [
+    6,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    8,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ]
+  ],
+  "p3_head": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    5,
+    "minecraft:piston_head[facing=east,short=false,type=sticky]"
+   ],
+   [
+    6,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    8,
+    "minecraft:stone"
+   ]
+  ],
+  "p3_target": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ],
+   [
+    6,
+    "minecraft:air"
+   ]
+  ],
+  "p4": [
+   [
+    0,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:sticky_piston[extended=true,facing=east]"
+   ],
+   [
+    7,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    9,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ]
+  ],
+  "p4_head": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    5,
+    "minecraft:piston_head[facing=east,short=false,type=sticky]"
+   ],
+   [
+    7,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    9,
+    "minecraft:stone"
+   ]
+  ],
+  "p4_target": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ],
+   [
+    7,
+    "minecraft:air"
+   ]
+  ],
+  "normal": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:piston[extended=true,facing=east]"
+   ],
+   [
+    4,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    6,
+    "minecraft:piston[extended=false,facing=east]"
+   ]
+  ],
+  "normal_head": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    4,
+    "minecraft:air"
+   ]
+  ],
+  "normal_target": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ]
+  ]
+ }
+}

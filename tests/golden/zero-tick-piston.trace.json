@@ -1,0 +1,213 @@
+{
+ "format": 1,
+ "scenario": "zero-tick-piston",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 12,
+ "probes": {
+  "s": [
+   1,
+   1,
+   0
+  ],
+  "lever": [
+   1,
+   2,
+   0
+  ],
+  "b": [
+   2,
+   2,
+   0
+  ],
+  "b_head": [
+   3,
+   2,
+   0
+  ],
+  "b_target": [
+   4,
+   2,
+   0
+  ],
+  "s2": [
+   1,
+   1,
+   3
+  ],
+  "lever2": [
+   1,
+   2,
+   3
+  ],
+  "b2": [
+   2,
+   2,
+   3
+  ],
+  "b2_head": [
+   3,
+   2,
+   3
+  ],
+  "b2_target": [
+   4,
+   2,
+   3
+  ]
+ },
+ "samples": {
+  "s": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=up]"
+   ],
+   [
+    3,
+    "minecraft:piston[extended=true,facing=up]"
+   ],
+   [
+    6,
+    "minecraft:moving_piston[facing=up,type=normal]"
+   ],
+   [
+    8,
+    "minecraft:piston[extended=false,facing=up]"
+   ]
+  ],
+  "lever": [
+   [
+    0,
+    "minecraft:lever[face=wall,facing=north,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=wall,facing=north,powered=true]"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=up,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:piston_head[facing=up,short=false,type=normal]"
+   ],
+   [
+    6,
+    "minecraft:air"
+   ]
+  ],
+  "b": [
+   [
+    0,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=sticky]"
+   ],
+   [
+    5,
+    "minecraft:sticky_piston[extended=false,facing=east]"
+   ]
+  ],
+  "b_head": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:air"
+   ]
+  ],
+  "b_target": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:stone"
+   ]
+  ],
+  "s2": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=up]"
+   ],
+   [
+    3,
+    "minecraft:piston[extended=true,facing=up]"
+   ],
+   [
+    6,
+    "minecraft:moving_piston[facing=up,type=normal]"
+   ],
+   [
+    8,
+    "minecraft:piston[extended=false,facing=up]"
+   ]
+  ],
+  "lever2": [
+   [
+    0,
+    "minecraft:lever[face=wall,facing=north,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=wall,facing=north,powered=true]"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=up,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:piston_head[facing=up,short=false,type=normal]"
+   ],
+   [
+    6,
+    "minecraft:air"
+   ]
+  ],
+  "b2": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:piston[extended=false,facing=east]"
+   ]
+  ],
+  "b2_head": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:air"
+   ]
+  ],
+  "b2_target": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ]
+  ]
+ }
+}

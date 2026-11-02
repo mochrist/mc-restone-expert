@@ -1,0 +1,188 @@
+{
+ "format": 1,
+ "scenario": "dust-steps",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 32,
+ "probes": {
+  "low": [
+   2,
+   1,
+   0
+  ],
+  "top_a": [
+   3,
+   2,
+   0
+  ],
+  "top_b": [
+   4,
+   2,
+   0
+  ],
+  "down": [
+   5,
+   1,
+   0
+  ],
+  "end_wire": [
+   6,
+   1,
+   0
+  ],
+  "lamp_end": [
+   7,
+   1,
+   0
+  ],
+  "lamp_step": [
+   3,
+   1,
+   1
+  ]
+ },
+ "samples": {
+  "low": [
+   [
+    0,
+    "minecraft:redstone_wire[east=up,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=up,north=none,power=14,south=none,west=side]"
+   ],
+   [
+    8,
+    "minecraft:redstone_wire[east=side,north=none,power=14,south=none,west=side]"
+   ],
+   [
+    16,
+    "minecraft:redstone_wire[east=up,north=none,power=14,south=none,west=side]"
+   ]
+  ],
+  "top_a": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=13,south=none,west=side]"
+   ],
+   [
+    8,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    16,
+    "minecraft:redstone_wire[east=side,north=none,power=13,south=none,west=side]"
+   ]
+  ],
+  "top_b": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=12,south=none,west=side]"
+   ],
+   [
+    8,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    16,
+    "minecraft:redstone_wire[east=side,north=none,power=12,south=none,west=side]"
+   ]
+  ],
+  "down": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=up]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=11,south=none,west=up]"
+   ],
+   [
+    8,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=up]"
+   ],
+   [
+    16,
+    "minecraft:redstone_wire[east=side,north=none,power=11,south=none,west=up]"
+   ],
+   [
+    22,
+    "minecraft:air"
+   ],
+   [
+    28,
+    "minecraft:redstone_wire[east=side,north=none,power=11,south=none,west=up]"
+   ]
+  ],
+  "end_wire": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=10,south=none,west=side]"
+   ],
+   [
+    8,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    16,
+    "minecraft:redstone_wire[east=side,north=none,power=10,south=none,west=side]"
+   ],
+   [
+    22,
+    "minecraft:redstone_wire[east=side,north=side,power=0,south=side,west=side]"
+   ],
+   [
+    28,
+    "minecraft:redstone_wire[east=side,north=none,power=10,south=none,west=side]"
+   ]
+  ],
+  "lamp_end": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    2,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    12,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    16,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    26,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    28,
+    "minecraft:redstone_lamp[lit=true]"
+   ]
+  ],
+  "lamp_step": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    2,
+    "minecraft:redstone_lamp[lit=true]"
+   ]
+  ]
+ }
+}

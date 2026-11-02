@@ -1,0 +1,132 @@
+{
+ "format": 1,
+ "scenario": "dust-powering",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 20,
+ "probes": {
+  "into_wire": [
+   2,
+   1,
+   0
+  ],
+  "lamp_below": [
+   2,
+   0,
+   0
+  ],
+  "lamp_behind": [
+   4,
+   1,
+   0
+  ],
+  "bend_wire": [
+   2,
+   1,
+   2
+  ],
+  "lamp_beside": [
+   4,
+   1,
+   2
+  ],
+  "dot": [
+   2,
+   1,
+   6
+  ],
+  "lamp_dot": [
+   3,
+   1,
+   6
+  ]
+ },
+ "samples": {
+  "into_wire": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=14,south=none,west=side]"
+   ],
+   [
+    12,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ]
+  ],
+  "lamp_below": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    2,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    16,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "lamp_behind": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    2,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    16,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "bend_wire": [
+   [
+    0,
+    "minecraft:redstone_wire[east=none,north=none,power=0,south=side,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=none,north=none,power=14,south=side,west=side]"
+   ]
+  ],
+  "lamp_beside": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "dot": [
+   [
+    0,
+    "minecraft:redstone_wire[east=none,north=none,power=15,south=none,west=none]"
+   ],
+   [
+    4,
+    "minecraft:redstone_wire[east=side,north=side,power=15,south=side,west=side]"
+   ],
+   [
+    9,
+    "minecraft:redstone_wire[east=none,north=none,power=15,south=none,west=none]"
+   ]
+  ],
+  "lamp_dot": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    4,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    13,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ]
+ }
+}

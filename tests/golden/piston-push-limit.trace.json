@@ -1,0 +1,230 @@
+{
+ "format": 1,
+ "scenario": "piston-push-limit",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 20,
+ "probes": {
+  "p12": [
+   1,
+   1,
+   0
+  ],
+  "p12_head": [
+   2,
+   1,
+   0
+  ],
+  "p12_mid": [
+   8,
+   1,
+   0
+  ],
+  "p12_last": [
+   13,
+   1,
+   0
+  ],
+  "p12_end": [
+   14,
+   1,
+   0
+  ],
+  "p13": [
+   1,
+   1,
+   2
+  ],
+  "p13_head": [
+   2,
+   1,
+   2
+  ],
+  "p13_end": [
+   15,
+   1,
+   2
+  ],
+  "pc": [
+   1,
+   1,
+   4
+  ],
+  "pc_second": [
+   4,
+   1,
+   4
+  ],
+  "pc_after": [
+   5,
+   1,
+   4
+  ],
+  "po": [
+   1,
+   1,
+   6
+  ],
+  "po_head": [
+   2,
+   1,
+   6
+  ]
+ },
+ "samples": {
+  "p12": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:piston[extended=true,facing=east]"
+   ],
+   [
+    13,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    15,
+    "minecraft:piston[extended=false,facing=east]"
+   ]
+  ],
+  "p12_head": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:piston_head[facing=east,short=false,type=normal]"
+   ],
+   [
+    13,
+    "minecraft:air"
+   ]
+  ],
+  "p12_mid": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ]
+  ],
+  "p12_last": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ]
+  ],
+  "p12_end": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ]
+  ],
+  "p13": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=east]"
+   ]
+  ],
+  "p13_head": [
+   [
+    0,
+    "minecraft:stone"
+   ]
+  ],
+  "p13_end": [
+   [
+    0,
+    "minecraft:air"
+   ]
+  ],
+  "pc": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:piston[extended=true,facing=east]"
+   ],
+   [
+    13,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    15,
+    "minecraft:piston[extended=false,facing=east]"
+   ]
+  ],
+  "pc_second": [
+   [
+    0,
+    "minecraft:white_carpet"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:stone"
+   ]
+  ],
+  "pc_after": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:white_carpet"
+   ]
+  ],
+  "po": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=east]"
+   ]
+  ],
+  "po_head": [
+   [
+    0,
+    "minecraft:stone"
+   ]
+  ]
+ }
+}
