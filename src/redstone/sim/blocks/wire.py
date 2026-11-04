@@ -107,6 +107,19 @@ class JavaHashSet:
         return len(self._table) if self._table else 0
 
 
+def update_order(pos: Pos) -> list[Pos]:
+    """Order in which dust that changed power calls updateNeighborsAt (knowledge DUST-017, DUST-018).
+
+    DefaultRedstoneWireEvaluator#updatePowerStrength collects the wire position and its six neighbours
+    (Direction.values(): D, U, N, S, W, E) in a ``new HashSet<BlockPos>()`` and iterates it.
+    """
+    to_update = JavaHashSet()
+    to_update.add(pos)
+    for d in ALL_DIRECTIONS:
+        to_update.add(pos.offset(d))
+    return list(to_update)
+
+
 # ---------------------------------------------------------------------- helpers
 def is_connected(side: str | None) -> bool:
     """RedstoneSide#isConnected"""
@@ -260,11 +273,7 @@ class RedstoneWireBlock(Block):
         if state.get_int("power") != target:
             if world.get(pos) == state:
                 world.set_block(pos, state.with_(power=target), UPDATE_CLIENTS)
-            to_update = JavaHashSet()
-            to_update.add(pos)
-            for d in ALL_DIRECTIONS:
-                to_update.add(pos.offset(d))
-            for p in to_update:
+            for p in update_order(pos):
                 world.update_neighbors_at(p, self)
 
     def calculate_target_strength(self, world: World, pos: Pos) -> int:

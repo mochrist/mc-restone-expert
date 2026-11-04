@@ -6,6 +6,7 @@ from the layout. Kinds are stable identifiers (see MECHANICS for the German desc
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -23,10 +24,13 @@ MECHANICS = {
     "comparator_through_block": "Comparator liest einen analogen Ausgang durch einen Leiterblock hindurch",
     "torch_burnout": "Fackel-Burnout: Eine Redstone-Fackel brennt nach 8 Abschaltungen in 60 gt durch",
     "observer_pulse": "Observer erkennt eine Zustandsänderung (Shape-Update) und gibt einen 2-gt-Puls",
-    "quasi_connectivity": "Quasi-Connectivity: Ein Block wird über die Position über ihm gepowert",
-    "bud": "BUD: Ein quasi-gepowerter Block reagiert erst bei einem späteren Block-Update",
-    "piston_spit": "Klebriger Kolben lässt seinen Block bei einem kurzen Puls los",
-    "zero_tick": "0-Tick-Puls: Ein Kolben fährt im selben Tick aus und wieder ein",
+    "quasi_connectivity": "Quasi-Connectivity: Ein Kolben fährt aus, weil die Position über ihm gepowert ist, "
+                          "nicht er selbst",
+    "bud": "BUD: Ein Kolben ist (quasi-)bestromt bzw. unbestromt, reagiert aber erst bei einem späteren "
+           "Block-Update",
+    "piston_spit": "Block-Dropping: Ein klebriger Kolben lässt seinen Block bei einem kurzen Puls an der "
+                   "ausgefahrenen Position liegen",
+    "zero_tick": "0-Tick: Ein Kolben fährt in derselben Block-Event-Phase aus und wieder ein",
     "wire_locational": "Positionsabhängige Update-Reihenfolge von Redstone-Staub beeinflusst das Ergebnis",
 }
 
@@ -49,5 +53,18 @@ def note(world: World, kind: str, pos: Pos, detail: str = "") -> None:
     world.__dict__.setdefault("notes", []).append(Note(world.game_time, kind, pos, detail))
 
 
+# Checks of resting states (e.g. a piston in a BUD state), run whenever the notes are collected. They only
+# read the world and call note(); block modules register them at import time.
+_STATE_CHECKS: list[Callable[[World], None]] = []
+
+
+def register_state_check(check: Callable[[World], None]) -> None:
+    if check not in _STATE_CHECKS:
+        _STATE_CHECKS.append(check)
+
+
 def notes_of(world: World) -> list[Note]:
+    """All notes so far, including those from the state checks applied to the current state of the world."""
+    for check in _STATE_CHECKS:
+        check(world)
     return list(world.__dict__.get("notes", []))

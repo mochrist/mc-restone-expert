@@ -13,6 +13,7 @@ from ...model import AIR, BlockState, Direction, Pos
 from .. import blockdata
 from ..block import REGISTRY, Block
 from ..constants import UPDATE_ALL, UPDATE_LIMIT
+from ..notes import note, register_state_check
 from ..world import UPDATE_SHAPE_ORDER, World
 
 D = Direction
@@ -275,20 +276,23 @@ class PistonBaseBlock(Block):
         return "IMMOVEABLE"
 
     def neighbor_changed(self, world, pos, state, source, moved_by_piston):
-        self.check_if_extend(world, pos, state)
+        self.check_if_extend(world, pos, state, source)
 
     def on_place(self, world, pos, state, old, moved_by_piston):
         if old.name != state.name and world.get_block_entity(pos) is None:
             self.check_if_extend(world, pos, state)
 
-    def check_if_extend(self, world: World, pos: Pos, state: BlockState) -> None:
+    def check_if_extend(self, world: World, pos: Pos, state: BlockState, source: Block | None = None) -> None:
         direction = facing(state)
         extend = self.get_neighbor_signal(world, pos, direction)
         extended = state.get_bool("extended")
         if extend and not extended:
             if PistonStructureResolver(world, pos, direction, True).resolve():
                 world.block_event(pos, self, TRIGGER_EXTEND, data_value(direction))
+                self._note_activation(world, pos, direction, source)
         elif not extend and extended:
+            if source is not None and not _can_remove_power(source):
+                note(world, "bud", pos, "blieb unbestromt ausgefahren, bis ein Block-Update kam")
             pushed_pos = pos.offset(direction, 2)
             pushed_state = world.get(pushed_pos)
             event = TRIGGER_CONTRACT
@@ -300,16 +304,30 @@ class PistonBaseBlock(Block):
             world.block_event(pos, self, event, data_value(direction))
 
     def get_neighbor_signal(self, world: World, pos: Pos, push_direction: Direction) -> bool:
-        for d in ALL_DIRECTIONS:
-            if d is not push_direction and world.has_signal(pos.offset(d), d):
-                return True
+        return self.has_direct_signal(world, pos, push_direction) or self.has_qc_signal(world, pos)
+
+    @staticmethod
+    def has_direct_signal(world: World, pos: Pos, push_direction: Direction) -> bool:
+        """First part of PistonBaseBlock#getNeighborSignal: the five sides except the front."""
+        return any(d is not push_direction and world.has_signal(pos.offset(d), d) for d in ALL_DIRECTIONS)
+
+    @staticmethod
+    def has_qc_signal(world: World, pos: Pos) -> bool:
+        """Second part of getNeighborSignal (quasi-connectivity): the position above counts like the piston."""
         if world.has_signal(pos, D.DOWN):
             return True
         above = pos.offset(D.UP)
-        for d in ALL_DIRECTIONS:
-            if d is not D.DOWN and world.has_signal(above.offset(d), d):
-                return True
-        return False
+        return any(d is not D.DOWN and world.has_signal(above.offset(d), d) for d in ALL_DIRECTIONS)
+
+    # --- mechanics notes (analysis only, no influence on the simulation) ------------------
+    def _note_activation(self, world: World, pos: Pos, direction: Direction, source: Block | None) -> None:
+        if self.has_direct_signal(world, pos, direction):
+            return
+        note(world, "quasi_connectivity", pos)
+        if source is not None and not _can_change_power(source):
+            # The update came from a block that cannot have produced the power, so the piston was already
+            # quasi-powered before and only reacts now (knowledge BUD-004, QC-007).
+            note(world, "bud", pos, "fuhr erst nach einem Block-Update ohne Leistungsänderung aus")
 
     def trigger_event(self, world, pos, state, b0, b1):
         direction = facing(state)
@@ -328,6 +346,10 @@ class PistonBaseBlock(Block):
         elif b0 in (TRIGGER_CONTRACT, TRIGGER_DROP):
             head_be = get_piston_be(world, pos.offset(direction))
             if head_be is not None:
+                if (world.handling_tick and head_be.extending and head_be.is_source_piston
+                        and head_be.progress == 0.0 and head_be.progress_o == 0.0):
+                    # the head was created by an extend event earlier in this block-event phase (ZT-003)
+                    note(world, "zero_tick", pos)
                 head_be.final_tick(world)
             moving_state = BlockState.of("moving_piston", facing=direction.label,
                                          type="sticky" if self.is_sticky else "normal")
@@ -345,6 +367,8 @@ class PistonBaseBlock(Block):
                     if be is not None and be.direction is direction and be.extending:
                         be.final_tick(world)
                         piston_piece = True
+                        # the pushed block stays at the extended position (PIS-010, PIS-012)
+                        note(world, "piston_spit", pos, be.moved_state.id)
                 if not piston_piece:
                     if (b0 != TRIGGER_CONTRACT or moving.is_air
                             or not is_pushable(world, moving, two_pos, direction.opposite, False, direction)
@@ -420,6 +444,53 @@ class PistonBaseBlock(Block):
         if extending:
             world.update_neighbors_at(arm_pos, PISTON_HEAD)
         return True
+
+
+# Blocks whose update can come with a change of the power a piston sees (signal sources and blocks that move
+# one). The source of an update is the block that was at the updating position before (Level#setBlock passes
+# oldState.getBlock()), and that position is next to the piston. An update from any other block cannot have
+# produced the quasi-connected power, so a reaction to it means the piston was in a BUD state before.
+_POWER_SOURCES = {
+    "redstone_wire", "lever", "redstone_torch", "redstone_wall_torch", "repeater", "comparator", "observer",
+    "redstone_block", "daylight_detector", "target", "tripwire_hook", "trapped_chest", "lectern",
+    "sculk_sensor", "calibrated_sculk_sensor", "detector_rail", "lightning_rod", "moving_piston",
+    "piston", "sticky_piston", "piston_head",
+}
+
+
+def _can_change_power(source: Block) -> bool:
+    name = source.name.removeprefix("minecraft:")
+    return name in _POWER_SOURCES or name.endswith(("_button", "_pressure_plate"))
+
+
+def _can_remove_power(source: Block) -> bool:
+    """Like _can_change_power, but a removed conductor next to the piston may also have carried its power."""
+    if _can_change_power(source):
+        return True
+    try:
+        return blockdata.is_conductor(blockdata.default_state(source.name))
+    except KeyError:
+        return True  # unknown block: do not claim a BUD
+
+
+def check_bud_states(world: World) -> None:
+    """Note pistons resting in a BUD state: quasi-powered but retracted, or unpowered but extended."""
+    events = {ev.pos for ev in world.block_events}
+    for pos, state in list(world.blocks.items()):
+        if not is_piston_base(state) or pos in events:
+            continue
+        block = world.block(state)
+        direction = facing(state)
+        powered = block.get_neighbor_signal(world, pos, direction)
+        if state.get_bool("extended"):
+            if not powered and world.get(pos.offset(direction)).id == "piston_head":
+                note(world, "bud", pos, "unbestromt, aber ausgefahren")
+        elif powered and not block.has_direct_signal(world, pos, direction) \
+                and PistonStructureResolver(world, pos, direction, True).resolve():
+            note(world, "bud", pos, "per Quasi-Connectivity bestromt, aber eingefahren")
+
+
+register_state_check(check_bud_states)
 
 
 # ---------------------------------------------------------------------- PistonHeadBlock
