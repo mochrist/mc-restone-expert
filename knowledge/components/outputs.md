@@ -45,7 +45,7 @@ Leiter), reagieren also auf schwache und starke Ladung. Zeiten in Game-Ticks (gt
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `CopperBulbBlock#checkAndFlip`, `CopperBulbBlock#neighborChanged`; [SRC-WIKI-COPPER-BULB]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/copper-bulb.yaml)
 - Hinweise: Wiki: Snapshot 23w43a hatte 1 gt Verzögerung, in 23w46a entfernt. In 26.3 keine Verzögerung.
 
 ### OUT-006: Kupferbirne löst volle Updates und Comparator-Updates aus
@@ -53,7 +53,7 @@ Leiter), reagieren also auf schwache und starke Ladung. Zeiten in Game-Ticks (gt
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `CopperBulbBlock#checkAndFlip`, `Level#setBlock`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/copper-bulb.yaml)
 
 ### OUT-007: Kupferbirne liefert Comparator-Wert 15 oder 0
 - Aussage: Ein Comparator liest an einer Kupferbirne 15, wenn `lit=true`, sonst 0, unabhängig von der Oxidationsstufe.
@@ -68,7 +68,7 @@ Leiter), reagieren also auf schwache und starke Ladung. Zeiten in Game-Ticks (gt
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `CopperBulbBlock#onPlace`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/copper-bulb.yaml)
 - Hinweise: Relevant für per Kolben bewegte Birnen.
 
 ### OUT-009: Türen reagieren sofort und auf Signal an beiden Hälften
@@ -76,7 +76,7 @@ Leiter), reagieren also auf schwache und starke Ladung. Zeiten in Game-Ticks (gt
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DoorBlock#neighborChanged`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/doors.yaml)
 - Hinweise: Updates, deren auslösender Block selbst dieser Türtyp ist, werden ignoriert. Die andere Hälfte wird über Shape-Updates nachgezogen.
 
 ### OUT-010: Falltüren reagieren sofort
@@ -84,12 +84,43 @@ Leiter), reagieren also auf schwache und starke Ladung. Zeiten in Game-Ticks (gt
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `TrapDoorBlock#neighborChanged`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/doors.yaml)
 
 ### OUT-011: Angetriebene Schienen leiten bis zu 8 Schienen weiter
 - Aussage: Eine angetriebene Schiene (bzw. Aktivierungsschiene) ist an, wenn sie selbst ein Signal hat oder über eine Kette gleichartiger Schienen in einer Richtung mit Suchtiefe < 8 eine direkt versorgte Schiene erreicht.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PoweredRailBlock#findPoweredRailSignal`, `PoweredRailBlock#updateState`
-- Konfidenz: mittel
-- Status: belegt
-- Hinweise: Bei Zustandswechsel: `setBlockAndUpdate`, dann Updates am Block darunter und bei Schrägen am Block darüber. Exakte Reichweite (8 oder 9 Schienen inkl. Quelle) im Spiel prüfen.
+- Konfidenz: hoch
+- Status: im-Spiel-verifiziert (scenarios/powered-rails.yaml)
+- Hinweise: Bei Zustandswechsel: `setBlockAndUpdate`, dann Updates am Block darunter und bei Schrägen am Block darüber. Reichweite im Spiel: die direkt versorgte Schiene plus 8 weitere (9 Schienen), die 10. bleibt aus. Die Kette läuft auch über Steigungen (`ascending_*`).
+
+### OUT-012: Notenblock übernimmt den Eingang sofort in `powered`
+- Aussage: Ein Notenblock setzt `powered` bei steigender und fallender Flanke sofort im Neighbor-Update mit `setBlockAndUpdate` (Flags 3, ohne geplanten Tick); Rechtsklick erhöht `note` um 1 (modulo 25), ohne `powered` zu ändern.
+- Version: 26.3
+- Quelle: [SRC-MC-CODE] `NoteBlock#neighborChanged`, `NoteBlock#useWithoutItem`
+- Konfidenz: hoch
+- Status: im-Spiel-verifiziert (scenarios/note-block.yaml)
+- Hinweise: `instrument` wird nur bei Shape-Updates von oben/unten neu bestimmt (`NoteBlock#updateShape`). Der Ton selbst ist ein Block-Event ohne Einfluss auf den Zustand.
+
+### OUT-013: Zauntore reagieren sofort; Rechtsklick dreht sie zum Spieler
+- Aussage: Ein Zauntor setzt bei Änderung des Eingangs `powered` und `open` sofort im Neighbor-Update mit Flag 2. Beim Öffnen per Rechtsklick wird `facing` auf die Blickrichtung des Spielers gesetzt, wenn das Tor vorher zum Spieler hin zeigte.
+- Version: 26.3
+- Quelle: [SRC-MC-CODE] `FenceGateBlock#neighborChanged`, `FenceGateBlock#useWithoutItem`
+- Konfidenz: hoch
+- Status: im-Spiel-verifiziert (scenarios/doors.yaml)
+- Hinweise: Rechtsklick setzt mit Flags 10 (keine Neighbor-Updates). Der Fake-Player des Oracles blickt nach Süden (yRot 0).
+
+### OUT-014: Eisentüren und Eisenfalltüren lassen sich nicht per Hand öffnen
+- Aussage: Rechtsklick ohne Item auf eine Eisentür oder Eisenfalltür ändert nichts (`BlockSetType#canOpenByHand` = false); alle anderen Türen und Falltüren (Holz, Kupfer) schalten `open` um, ohne `powered` zu ändern.
+- Version: 26.3
+- Quelle: [SRC-MC-CODE] `DoorBlock#useWithoutItem`, `TrapDoorBlock#useWithoutItem`, `BlockSetType`
+- Konfidenz: hoch
+- Status: im-Spiel-verifiziert (scenarios/doors.yaml)
+- Hinweise: Türen setzen beim Rechtsklick mit Flags 10, Falltüren mit Flag 2 (jeweils ohne Neighbor-Updates). Ein offenes, angetriebenes Tor/Tür bleibt nach dem Schließen per Hand `powered=true` und öffnet erst bei der nächsten steigenden Flanke wieder.
+
+### OUT-015: Antriebs- und Aktivierungsschienen leiten nur an gleichartige Schienen weiter
+- Aussage: Die Weiterleitung von `powered` läuft nur über Schienen desselben Blocktyps (`state.is(this)`): Eine Antriebsschiene unterbricht eine Kette von Aktivierungsschienen und umgekehrt.
+- Version: 26.3
+- Quelle: [SRC-MC-CODE] `PoweredRailBlock#isSameRailWithPower`
+- Konfidenz: hoch
+- Status: im-Spiel-verifiziert (scenarios/powered-rails.yaml)

@@ -97,7 +97,7 @@ bekommen. Zeiten in Game-Ticks (gt).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `LecternBlockEntity#getRedstoneSignal`, `LecternBlock#getAnalogOutputSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/lectern.yaml)
 
 ### SRCB-013: Redstone-Falle liefert die Anzahl der Betrachter
 - Aussage: Eine Redstone-Falle (trapped chest) liefert `min(Anzahl Spieler mit geöffneter Truhe, 15)` schwach an alle Nachbarn und stark an den Block darunter.
@@ -121,3 +121,20 @@ bekommen. Zeiten in Game-Ticks (gt).
 - Quelle: [SRC-MC-CODE] `SculkSensorBlock#getDirectSignal`, `CalibratedSculkSensorBlock#getSignal`
 - Konfidenz: hoch
 - Status: belegt
+
+### SRCB-016: Zielblock mit `power` > 0 wird beim Platzieren ohne geplanten Tick auf 0 gesetzt
+- Aussage: Wird ein Zielblock mit `power` > 0 neu gesetzt (vorher anderer Block) und ist kein Tick für ihn geplant, setzt `onPlace` `power` sofort auf 0 (Flags 18, also ohne Neighbor- und Shape-Updates; da sich der Zustand geändert hat, entfallen auch die Updates aus `setBlock`). Wird nur die Property eines vorhandenen Zielblocks geändert, bleibt die Stärke dauerhaft erhalten (kein Tick geplant).
+- Version: 26.3
+- Quelle: [SRC-MC-CODE] `TargetBlock#onPlace`, `TargetBlock#tick`, `Level#setBlock`
+- Konfidenz: hoch
+- Status: im-Spiel-verifiziert (scenarios/target-block.yaml)
+- Hinweise: Ein fester Zielblock-`power` ist daher nur über den Aufbau (Flags 818, ohne `onPlace`) oder eine Property-Änderung des vorhandenen Blocks herstellbar.
+
+### SRCB-017: Lesepult mit `has_book=true`, aber ohne Buch im Block-Entity, liefert 14
+- Aussage: Ist `has_book=true`, das Block-Entity aber leer (Seitenzahl 0), liefert der Comparator `floor(1 * 14) + 0 = 14`.
+- Version: 26.3
+- Quelle: [SRC-MC-CODE] `LecternBlock#getAnalogOutputSignal`, `LecternBlockEntity#getRedstoneSignal`
+- Konfidenz: hoch
+- Status: im-Spiel-verifiziert (scenarios/lectern.yaml)
+- Hinweise: Kommt nur bei inkonsistenten Schematics vor; normal gespielt gibt es diesen Zustand nicht.
+
