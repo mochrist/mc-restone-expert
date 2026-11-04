@@ -27,7 +27,7 @@ Rails **kein** QC; Türen prüfen nur ihre eigene zweite Hälfte (siehe QC-005).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DispenserBlock#neighborChanged`, `DropperBlock`; [SRC-M-WIKI-QC]; [SRC-M-WIKI-DISPENSER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dispenser-trigger.yaml)
 
 ### QC-003: Der Crafter hat kein QC
 - Aussage: `CrafterBlock#neighborChanged` prüft nur `hasNeighborSignal(pos)`.
@@ -66,7 +66,7 @@ Rails **kein** QC; Türen prüfen nur ihre eigene zweite Hälfte (siehe QC-005).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#neighborChanged`, `DispenserBlock#neighborChanged`, `NeighborUpdater#updateNeighborsAtExceptFromFacing`; [SRC-M-WIKI-QC]; [SRC-M-WIKI-BUD]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dispenser-trigger.yaml)
 - Hinweise: Eine Signalquelle aktualisiert über `updateNeighborsAt` nur ihre sechs direkten Nachbarn. Ob der QC-Block trotzdem ein Update bekommt, hängt davon ab, ob die Quelle auch Nachbarn ihrer Nachbarn aktualisiert (z. B. Redstone-Staub, Repeater/Comparator über den Block vor ihnen, Hebel/Knopf über den Block, an dem sie hängen). Das Wiki nennt „Redstone-Änderungen innerhalb von zwei Blöcken" als typische Updatequelle.
 
 ### QC-008: Ein QC-bestromter Piston fährt auch nicht von selbst ein
@@ -82,4 +82,4 @@ Rails **kein** QC; Türen prüfen nur ihre eigene zweite Hälfte (siehe QC-005).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `HopperBlock#checkPoweredState`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/hopper-lock.yaml)

@@ -16,7 +16,7 @@ Details zur Comparator-Berechnung stehen in der Comparator-Datei. Zeitangaben in
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DispenserBlock#neighborChanged`; [SRC-M-WIKI-DISPENSER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dispenser-trigger.yaml)
 - Hinweise: `DropperBlock` überschreibt `neighborChanged` nicht und verhält sich identisch. Siehe `mechanics/quasi-connectivity.md`.
 
 ### DDH-002: Auslösung nur bei steigender Flanke über die Eigenschaft triggered
@@ -24,7 +24,7 @@ Details zur Comparator-Berechnung stehen in der Comparator-Datei. Zeitangaben in
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DispenserBlock#neighborChanged`; [SRC-M-WIKI-DISPENSER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dispenser-trigger.yaml)
 - Hinweise: Beide Zustandswechsel nutzen Flag 2, lösen also keine Nachbar-Updates aus.
 
 ### DDH-003: Die Ausgabe passiert im geplanten Tick unabhängig von der aktuellen Leistung
@@ -32,7 +32,7 @@ Details zur Comparator-Berechnung stehen in der Comparator-Datei. Zeitangaben in
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DispenserBlock#tick`, `DispenserBlock#dispenseFrom`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dispenser-trigger.yaml)
 - Hinweise: Das Wiki macht zu Pulsen kürzer als 4 gt keine Aussage.
 
 ### DDH-004: Weitere Pulse innerhalb der 4 gt gehen verloren
@@ -40,7 +40,7 @@ Details zur Comparator-Berechnung stehen in der Comparator-Datei. Zeitangaben in
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `LevelChunkTicks#schedule`, `DispenserBlock#neighborChanged`; [SRC-M-WIKI-DISPENSER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dispenser-trigger.yaml)
 - Hinweise: Wiki: „additional inputs are ignored".
 
 ### DDH-005: Ein bestromt platzierter Dispenser löst erst bei einem Update aus
@@ -56,29 +56,29 @@ Details zur Comparator-Berechnung stehen in der Comparator-Datei. Zeitangaben in
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DropperBlock#dispenseFrom`, `DispenserBlockEntity#getRandomSlot`
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: Die Slotwahl nutzt den Level-Zufall; ein Simulator kann sie nicht deterministisch nachbilden, für reine Füllstands-Logik ist das bei gleichen Items egal.
+- Status: im-Spiel-verifiziert (scenarios/dropper-hopper.yaml)
+- Hinweise: Die Slotwahl nutzt den Level-Zufall; ein Simulator kann sie nicht deterministisch nachbilden, für reine Füllstands-Logik ist das bei gleichen Items egal. Der Simulator nimmt den ersten belegten Slot (ASSUMPTION). Item-spezifisches Dispenser-Verhalten (Eimer, Knochenmehl, Pfeile, Shulker-Kisten, Rüstung …) modelliert der Simulator nicht; er behandelt jeden Dispenser wie das Standardverhalten (ein Item auswerfen, ASSUMPTION).
 
 ### DDH-007: Hopper wird ohne QC und ohne Verzögerung gesperrt
 - Aussage: `HopperBlock#checkPoweredState` setzt `enabled = !hasNeighborSignal(pos)` sofort (Flag 2) bei `neighborChanged` und `onPlace`; die Position über dem Hopper wird nicht geprüft.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `HopperBlock#checkPoweredState`, `HopperBlock#neighborChanged`, `HopperBlock#onPlace`; [SRC-M-WIKI-HOPPER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/hopper-lock.yaml)
 
 ### DDH-008: Ein gesperrter Hopper überträgt nichts
 - Aussage: `HopperBlockEntity#tryMoveItems` schiebt und saugt nur, wenn der Cooldown abgelaufen ist und `enabled=true` gilt.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `HopperBlockEntity#tryMoveItems`; [SRC-M-WIKI-HOPPER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/hopper-lock.yaml)
 
 ### DDH-009: Der Cooldown läuft auch im gesperrten Zustand ab
 - Aussage: `HopperBlockEntity#pushItemsTick` verringert `cooldownTime` in jedem Block-Entity-Tick und setzt ihn bei Ablauf auf 0, unabhängig von `enabled`; ein entsperrter Hopper mit abgelaufenem Cooldown kann im nächsten eigenen Block-Entity-Tick sofort übertragen.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `HopperBlockEntity#pushItemsTick`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/hopper-lock.yaml)
 - Hinweise: Das Wiki sagt nur, dass das Entfernen der Leistung den Cooldown nicht ändert.
 
 ### DDH-010: Erfolgreicher Transfer setzt 8 gt Cooldown
@@ -86,7 +86,7 @@ Details zur Comparator-Berechnung stehen in der Comparator-Datei. Zeitangaben in
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `HopperBlockEntity#tryMoveItems`, `HopperBlockEntity#pushItemsTick`; [SRC-M-WIKI-HOPPER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/hopper-chain.yaml)
 - Hinweise: Pro Tick erst Ausgeben (ein Item), dann Ansaugen (ein Item), beides kann im selben Tick passieren.
 
 ### DDH-011: Ein leerer Hopper, der von einem Hopper ein Item erhält, arbeitet 7 gt später wieder
@@ -94,8 +94,8 @@ Details zur Comparator-Berechnung stehen in der Comparator-Datei. Zeitangaben in
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `HopperBlockEntity#tryMoveInItem`, `HopperBlockEntity#pushItemsTick`; [SRC-M-WIKI-HOPPER]
 - Konfidenz: mittel
-- Status: belegt
-- Hinweise: Das Wiki sagt vereinfacht „Cooldown 7 gt beim Schieben in einen leeren Hopper". Laut Code ist der gesetzte Wert 8 oder 7 je nach Ticker-Reihenfolge (`tickedGameTime` des Empfängers ≥ dem der Quelle → 7); ist der Empfänger noch nicht getickt, zählt er im selben Tick noch auf 7 herunter. Die 7-gt-Folgerung ist aus dem Code abgeleitet, nicht im Spiel geprüft. Schieben in einen nicht leeren Hopper ändert dessen Cooldown nicht.
+- Status: im-Spiel-verifiziert (scenarios/hopper-chain.yaml)
+- Hinweise: Das Wiki sagt vereinfacht „Cooldown 7 gt beim Schieben in einen leeren Hopper". Laut Code ist der gesetzte Wert 8 oder 7 je nach Ticker-Reihenfolge (`tickedGameTime` des Empfängers ≥ dem der Quelle → 7); ist der Empfänger noch nicht getickt, zählt er im selben Tick noch auf 7 herunter. Im Spiel bestätigt (`hopper-chain`: beide Platzierungsreihenfolgen geben 7 gt nach dem Empfang weiter). Ein von einem Dropper befüllter leerer Hopper bekommt Cooldown 8 und zählt im selben Tick auf 7 herunter, gibt also ebenfalls 7 gt später weiter (`dropper-hopper`). Schieben in einen nicht leeren Hopper ändert dessen Cooldown nicht.
 
 ### DDH-012: Hopper arbeiten in der Block-Entity-Phase in Ticker-Reihenfolge
 - Aussage: Hopper-Transfers laufen in `pushItemsTick`, also in der Block-Entity-Phase von `ServerLevel#tick`, in der Reihenfolge der Liste `Level#blockEntityTickers` (Einfügereihenfolge der Block Entities).
@@ -110,7 +110,7 @@ Details zur Comparator-Berechnung stehen in der Comparator-Datei. Zeitangaben in
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `HopperBlockEntity#tryMoveItems`, `BlockEntity#setChanged`, `HopperBlock#getAnalogOutputSignal`, `DispenserBlock#getAnalogOutputSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/hopper-chain.yaml)
 - Hinweise: Formel und Comparator-Timing siehe Comparator-Datei.
 
 ### DDH-014: Dispenser, Dropper und Hopper sind nicht schiebbar
