@@ -1,6 +1,6 @@
-"""Simple sources and outputs: lever, redstone block, redstone lamp.
+"""Simple sources and outputs: lever, buttons, pressure plates, redstone block, redstone lamp.
 
-References: LeverBlock, FaceAttachedHorizontalDirectionalBlock, PoweredBlock, RedstoneLampBlock (26.3).
+References: LeverBlock, ButtonBlock, BasePressurePlateBlock, FaceAttachedHorizontalDirectionalBlock, PoweredBlock, RedstoneLampBlock (26.3).
 """
 
 from __future__ import annotations
@@ -80,6 +80,65 @@ class ButtonBlock(LeverBlock):
             self._update_neighbours(world, pos, state)
 
 
+class PressurePlateBlock(Block):
+    """BasePressurePlateBlock. Entities are not simulated: action "use" emulates one entity stepping on the
+    plate and leaving again right away (entityInside -> checkPressed); the scheduled tick then releases it.
+    ASSUMPTION: a weighted plate sees exactly one entity (light: ceil(1/15*15) = 1, heavy: ceil(1/150*15) = 1)."""
+
+    def __init__(self, pressed_time: int, weighted: bool) -> None:
+        super().__init__()
+        self.pressed_time = pressed_time
+        self.weighted = weighted
+
+    def _signal(self, state: BlockState) -> int:
+        return int(state.get("power")) if self.weighted else (15 if state.get_bool("powered") else 0)
+
+    def _with_signal(self, state: BlockState, signal: int) -> BlockState:
+        return state.with_(power=str(signal)) if self.weighted else state.with_(powered=signal > 0)
+
+    def is_signal_source(self, state):
+        return True
+
+    def own_signal(self, world, pos, state):
+        return self._signal(state)
+
+    def get_direct_signal(self, world, pos, state, direction):
+        return self._signal(state) if direction is Direction.UP else 0
+
+    def use_without_item(self, world, pos, state):
+        if self._signal(state) == 0:
+            self._check_pressed(world, pos, state, 1 if self.weighted else 15)
+        return True
+
+    def tick(self, world, pos, state):
+        if self._signal(state) > 0:
+            self._check_pressed(world, pos, state, 0)  # nobody on the plate any more
+
+    def _check_pressed(self, world: World, pos: Pos, state: BlockState, signal: int) -> None:
+        if self._signal(state) != signal:
+            world.set_block(pos, self._with_signal(state, signal), UPDATE_CLIENTS)
+            self._update_neighbours(world, pos)
+        if signal > 0:
+            world.schedule_tick(pos, self, self.pressed_time)
+
+    def _update_neighbours(self, world: World, pos: Pos) -> None:
+        world.update_neighbors_at(pos, self)
+        world.update_neighbors_at(pos.offset(Direction.DOWN), self)
+
+    def affect_neighbors_after_removal(self, world, pos, state, moved_by_piston):
+        if not moved_by_piston and self._signal(state) > 0:
+            self._update_neighbours(world, pos)
+
+    def can_survive(self, world, pos, state):
+        below = pos.offset(Direction.DOWN)
+        return world.is_face_sturdy(below, Direction.UP, "rigid") or world.is_face_sturdy(below, Direction.UP, "center")
+
+    def update_shape(self, world, pos, state, direction, neighbor_pos, neighbor_state):
+        if direction is Direction.DOWN and not self.can_survive(world, pos, state):
+            return BlockState.of("air")
+        return state
+
+
 class RedstoneBlock(Block):
     def is_signal_source(self, state):
         return True
@@ -113,5 +172,11 @@ for _name in ("stone_button", "polished_blackstone_button"):
 for _wood in ("oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "pale_oak",
               "bamboo", "crimson", "warped"):
     REGISTRY.register(ButtonBlock(30), f"{_wood}_button")
+for _name in ("stone", "polished_blackstone") + tuple(_w for _w in (
+        "oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "pale_oak", "bamboo",
+        "crimson", "warped")):
+    REGISTRY.register(PressurePlateBlock(20, False), f"{_name}_pressure_plate")
+REGISTRY.register(PressurePlateBlock(10, True), "light_weighted_pressure_plate")
+REGISTRY.register(PressurePlateBlock(10, True), "heavy_weighted_pressure_plate")
 REGISTRY.register(RedstoneBlock(), "redstone_block")
 REGISTRY.register(RedstoneLampBlock(), "redstone_lamp")

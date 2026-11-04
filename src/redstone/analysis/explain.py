@@ -113,6 +113,15 @@ def explain(a: Analysis, title: str | None = None) -> str:
                          + " | ".join("1" if o else "0" for o in outs) + " |")
         lines.append("")
 
+    for group_levers, outs, table in a.partial_tables:
+        lines += [f"## Teil-Wahrheitstabelle für {', '.join(o.name for o in outs)}", ""]
+        lines.append("| " + " | ".join(p.name for p in group_levers) + " | " + " | ".join(o.name for o in outs) + " |")
+        lines.append("|" + "---|" * (len(group_levers) + len(outs)))
+        for combo, vals in table:
+            lines.append("| " + " | ".join("1" if c else "0" for c in combo) + " | "
+                         + " | ".join("1" if v else "0" for v in vals) + " |")
+        lines.append("")
+
     lines += ["## Verhalten je Eingang", ""]
     for r in a.responses:
         lines += _response_section(a, r)

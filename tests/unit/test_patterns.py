@@ -78,3 +78,29 @@ def test_pulse_experiment_reports_block_dropping():
     assert "piston_spit" in {n.kind for n in a.notes}
     text = explain(a)
     assert "## Pulsantwort" in text and "Block-Dropping" in text
+
+
+def test_gate_names_for_more_than_two_inputs():
+    import itertools
+
+    from redstone.analysis.analyze import _gate_name
+
+    combos = list(itertools.product([False, True], repeat=3))
+    assert _gate_name([(c, all(c)) for c in combos]) == "AND (3 Eingänge)"
+    assert _gate_name([(c, not all(c)) for c in combos]) == "NAND (3 Eingänge)"
+    assert _gate_name([(c, any(c)) for c in combos]) == "OR (3 Eingänge)"
+
+
+def test_pressure_plate_emulated_press_and_release():
+    from redstone.analysis.experiment import Circuit
+    from redstone.model import Grid
+
+    grid = Grid((3, 2, 1))
+    for x in range(3):
+        grid[Pos(x, 0, 0)] = BlockState.parse("minecraft:stone")
+    grid[Pos(0, 1, 0)] = BlockState.parse("minecraft:stone_pressure_plate[powered=false]")
+    grid[Pos(1, 1, 0)] = BlockState.parse("minecraft:redstone_lamp[lit=false]")
+    rec = Circuit(grid).run([(1, Pos(0, 1, 0), "use")], max_ticks=60, quiet=8)
+    # on at once, released by the scheduled tick 20 gt later, lamp off 4 gt after that
+    assert rec.on_intervals(Pos(0, 1, 0)) == [(1, 21)]
+    assert rec.on_intervals(Pos(1, 1, 0)) == [(1, 25)]

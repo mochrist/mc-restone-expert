@@ -21,6 +21,8 @@ from .ports import Port, find_ports
 
 MAX_TICKS = 400
 QUIET = 12
+MAX_TRUTH_TABLE_LEVERS = 6  # 64 fresh runs
+MAX_OUTPUTS = 64  # beyond that the schematic is rarely one circuit; analysing all would be slow
 
 
 @dataclass
@@ -72,13 +74,16 @@ class Analysis:
     pulse_responses: list[PulseResponse] = field(default_factory=list)
     latches: list[Latch] = field(default_factory=list)
     patterns: list[str] = field(default_factory=list)  # recognised building blocks, German
+    # with too many levers for one table: (levers, outputs, table) per group of outputs with the same inputs
+    partial_tables: list[tuple[list[Port], list[Port], list]] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------- experiments
 def _run_steps(circuit: Circuit, pos: Pos, kind: str, name: str) -> tuple[Recording, list[Step], list[Note], bool]:
     """Apply input actions one after another, each once the circuit is idle."""
-    labels = ["an", "aus", "an", "aus"] if kind == "lever" else ["gedrückt"] * 3
+    labels = (["an", "aus", "an", "aus"] if kind == "lever" else
+              ["betreten"] * 3 if kind == "plate" else ["gedrückt"] * 3)
     steps: list[Step] = []
     actions: list = []
     next_tick = 1  # tick 0 shows the stored state before anything is touched
@@ -197,6 +202,52 @@ def _chain(rec: Recording, step_tick: int, end_tick: int) -> list[tuple[int, Pos
     return out
 
 
+def _truth_table(circuit: Circuit, levers: list[Port], outputs: list[Port]):
+    """Steady output states for every lever combination, each in a fresh world; None if it never settles."""
+    table = []
+    for combo in itertools.product([False, True], repeat=len(levers)):
+        actions = [(1, p.pos, "use") for p, want in zip(levers, combo) if p.state.get_bool("powered") != want]
+        rec = circuit.run(actions, max_ticks=MAX_TICKS, quiet=QUIET)
+        if rec.settled_at is None:
+            return None
+        table.append((combo, tuple(rec.on_at(o.pos, rec.ticks) for o in outputs)))
+    return table
+
+
+def _partial_tables(analysis: Analysis, circuit: Circuit, levers: list[Port], outputs: list[Port]) -> None:
+    """Group outputs by the levers they react to (single toggles) and tabulate each group on its own."""
+    deps: dict[str, set[str]] = {o.name: set() for o in outputs}
+    for r in analysis.responses:
+        if r.input.kind == "lever":
+            for x in r.reactions:
+                if x.kind != "keine Reaktion":
+                    deps[x.output.name].add(r.input.name)
+    groups: dict[frozenset[str], list[Port]] = {}
+    for o in outputs:
+        groups.setdefault(frozenset(deps[o.name]), []).append(o)
+    by_name = {p.name: p for p in levers}
+    skipped = []
+    for names, outs in sorted(groups.items(), key=lambda kv: sorted(kv[0])):
+        if len(names) < 2:
+            continue
+        if len(names) > MAX_TRUTH_TABLE_LEVERS:
+            skipped += [o.name for o in outs]
+            continue
+        group_levers = [by_name[n] for n in sorted(names, key=lambda n: [p.name for p in levers].index(n))]
+        table = _truth_table(circuit, group_levers, outs)
+        if table is None:
+            analysis.warnings.append("Teil-Wahrheitstabelle abgebrochen: Schaltung kommt nicht zur Ruhe")
+            continue
+        analysis.partial_tables.append((group_levers, outs, table))
+        for i, out in enumerate(outs):
+            analysis.gates[out.name] = _gate_name([(c, o[i]) for c, o in table])
+    analysis.warnings.append(
+        f"{len(levers)} Hebel sind zu viele für eine volle Wahrheitstabelle (höchstens {MAX_TRUTH_TABLE_LEVERS}); "
+        "Teiltabellen über die Hebel, auf die ein Ausgang einzeln reagiert. Abhängigkeiten, die nur bei "
+        "mehreren gleichzeitig betätigten Hebeln sichtbar werden, fehlen darin"
+        + (f"; ohne Tabelle: {', '.join(skipped)}" if skipped else ""))
+
+
 def _gate_name(table: list[tuple[tuple[bool, ...], bool]]) -> str:
     n = len(table[0][0])
     outs = tuple(o for _, o in sorted(table))
@@ -215,6 +266,12 @@ def _gate_name(table: list[tuple[tuple[bool, ...], bool]]) -> str:
         return names1.get(outs, "?")
     if n == 2:
         return names2.get(outs, "?")
+    if n > 2:
+        on = [o for _, o in sorted(table)]
+        for name, pattern in (("AND", [False] * (2 ** n - 1) + [True]), ("NOR", [True] + [False] * (2 ** n - 1)),
+                              ("OR", [False] + [True] * (2 ** n - 1)), ("NAND", [True] * (2 ** n - 1) + [False])):
+            if on == pattern:
+                return f"{name} ({n} Eingänge)"
     ones = [i for (i, _), o in zip(sorted(table), outs) if o]
     return "an bei " + ", ".join("".join("1" if b else "0" for b in combo) for combo in ones)
 
@@ -225,9 +282,15 @@ def analyze(grid: Grid, inputs: list[Port] | None = None, outputs: list[Port] | 
     inputs = found_in if inputs is None else inputs
     outputs = found_out if outputs is None else outputs
     circuit = Circuit(grid)
+    too_many = len(outputs) > MAX_OUTPUTS
+    if too_many:
+        skipped = len(outputs) - MAX_OUTPUTS
+        outputs = outputs[:MAX_OUTPUTS]
 
     baseline = circuit.run([], max_ticks=MAX_TICKS, quiet=QUIET)
     analysis = Analysis(grid, inputs, outputs, baseline, None, warnings=list(baseline.warnings))
+    if too_many:
+        analysis.warnings.append(f"Nur die ersten {MAX_OUTPUTS} Ausgänge werden ausgewertet ({skipped} weitere ignoriert)")
     out_positions = [o.pos for o in outputs]
     if baseline.settled_at is None:
         c = _clock_from(baseline, out_positions)
@@ -243,7 +306,7 @@ def analyze(grid: Grid, inputs: list[Port] | None = None, outputs: list[Port] | 
                 analysis.notes.extend(notes_of(kicked_world))
 
     for port in inputs:
-        if port.kind not in ("lever", "button"):
+        if port.kind not in ("lever", "button", "plate"):
             analysis.warnings.append(f"{port}: Eingangstyp {port.kind} wird nicht automatisch betätigt")
             continue
         rec, steps, notes, oscillates = _run_steps(circuit, port.pos, port.kind, port.name)
@@ -258,16 +321,12 @@ def analyze(grid: Grid, inputs: list[Port] | None = None, outputs: list[Port] | 
             InputResponse(port, steps, rec, reactions, _chain(rec, steps[0].tick, end), oscillates))
 
     levers = [p for p in inputs if p.kind == "lever"]
-    if 2 <= len(levers) <= 4 and outputs:
-        table = []
-        for combo in itertools.product([False, True], repeat=len(levers)):
-            actions = [(1, p.pos, "use") for p, want in zip(levers, combo) if p.state.get_bool("powered") != want]
-            rec = circuit.run(actions, max_ticks=MAX_TICKS, quiet=QUIET)
-            if rec.settled_at is None:
-                table = None
-                analysis.warnings.append("Wahrheitstabelle abgebrochen: Schaltung kommt nicht zur Ruhe")
-                break
-            table.append((combo, tuple(rec.on_at(o.pos, rec.ticks) for o in outputs)))
+    if len(levers) > MAX_TRUTH_TABLE_LEVERS and outputs:
+        _partial_tables(analysis, circuit, levers, outputs)
+    if 2 <= len(levers) <= MAX_TRUTH_TABLE_LEVERS and outputs:
+        table = _truth_table(circuit, levers, outputs)
+        if table is None:
+            analysis.warnings.append("Wahrheitstabelle abgebrochen: Schaltung kommt nicht zur Ruhe")
         if table:
             analysis.truth_table = table
             for i, out in enumerate(outputs):

@@ -1,13 +1,13 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-04, Ende Session 3. Geschätzter Gesamtfortschritt: **ca. 62 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-04, Ende Session 3. Geschätzter Gesamtfortschritt: **ca. 65 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~95 % | 264 Aussagen aus dem 26.3-Code belegt, 81 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
 | M2 Oracle + Simulator | 35 % | ~90 % | Oracle läuft; Simulator stimmt mit allen 33 Golden Traces tick-genau überein |
-| M3 Analyse + Erklärung | 20 % | ~55 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Sonderfall-Notizen |
+| M3 Analyse + Erklärung | 20 % | ~70 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Sonderfall-Notizen |
 | M4 Redesign | 25 % | 0 % | noch nicht begonnen |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
@@ -36,7 +36,7 @@ Stand: 2026-11-04, Ende Session 3. Geschätzter Gesamtfortschritt: **ca. 62 %** 
 ## Befehle
 
 ```
-uv run pytest -q                                   # 217 Tests, alle grün
+uv run pytest -q                                   # 219 Tests, alle grün
 uv run rsx dump <datei> [--components]             # Schematic als Text
 uv run rsx sim scenarios/<x>.yaml --diff           # Simulator vs. Golden Trace
 uv run rsx oracle scenarios/<x>.yaml --golden      # im echten Spiel aufzeichnen (~10 s pro Batch)
@@ -51,9 +51,8 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
 ## Offene Punkte (nächste Schritte, nach Priorität)
 
 1. **M3 fertigstellen:**
-   - Druckplatten-Eingänge betätigen (z. B. per `setblock powered` und Ablauf-Tick emulieren); bisher nur Warnung.
-   - Wahrheitstabelle für mehr als 4 Hebel (z. B. `seg7` mit 6 Eingängen): Stichprobe oder pro Ausgang nur relevante Eingänge.
-   - Analyse großer Schematics begrenzen (viele Ausgänge → Warnung statt 30 s Laufzeit).
+   - Erledigt (Session 3, Ende): Druckplatten als Eingang (Emulation „betreten und sofort verlassen“, `PressurePlateBlock` in `basic.py`, nicht gegen das Spiel validiert, weil der Oracle keine Entities hat); volle Wahrheitstabelle bis 6 Hebel, darüber Teiltabellen je Ausgangsgruppe (`seg7`: NAND über 4 Hebel); höchstens 64 Ausgänge; Gatternamen AND/OR/NAND/NOR für n Eingänge.
+   - Teiltabellen sehen nur Abhängigkeiten, die beim einzelnen Umschalten sichtbar sind.
    - Clock-Erkennung an echten Clocks prüfen (Anstoß-Modus); optional SVG-Timing-Diagramm.
    - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet).
 2. **M4 Redesign beginnen:** Vorher **`docs/m4-search-and-performance.md`** lesen. Kurz: keine Rust-Neuschreibung, sondern zweistufige Bewertung, Topologie per SAT/SMT, gezielte Suche und Symmetrien. Zuerst die Simulator-Geschwindigkeit messen.

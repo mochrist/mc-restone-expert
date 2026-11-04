@@ -146,7 +146,7 @@ def _classify_pulse(r: PulseResponse) -> None:
 
 # ---------------------------------------------------------------------- latches
 def _operate(kind: str) -> int:
-    return 2 if kind == "lever" else 1  # lever: on and off again; button: one press
+    return 2 if kind == "lever" else 1  # lever: on and off again; button/plate: one press
 
 
 def run_sequence(circuit: Circuit, ports: list[Port]) -> tuple[Recording | None, bool]:
@@ -168,7 +168,7 @@ def run_sequence(circuit: Circuit, ports: list[Port]) -> tuple[Recording | None,
 
 def find_latches(circuit: Circuit, inputs: list[Port], outputs: list[Port]) -> list[Latch]:
     """RS latch: after operating A the output is x, after B it is y != x, and the last operation wins."""
-    ops = [p for p in inputs if p.kind in ("lever", "button")]
+    ops = [p for p in inputs if p.kind in ("lever", "button", "plate")]
     if len(ops) != 2 or not outputs:
         return []
     if any(p.kind == "lever" and p.state.get_bool("powered") for p in ops):
