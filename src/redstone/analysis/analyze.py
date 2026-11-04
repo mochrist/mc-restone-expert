@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 from ..model import Grid, Pos
 from ..sim.notes import Note, notes_of
 from .experiment import Circuit, Recording, is_on
+from .patterns import Latch, PulseResponse, find_latches, is_decoder, pulse_response
 from .ports import Port, find_ports
 
 MAX_TICKS = 400
@@ -68,6 +69,9 @@ class Analysis:
     truth_table: list[tuple[tuple[bool, ...], tuple[bool, ...]]] | None = None
     gates: dict[str, str] = field(default_factory=dict)
     notes: list[Note] = field(default_factory=list)
+    pulse_responses: list[PulseResponse] = field(default_factory=list)
+    latches: list[Latch] = field(default_factory=list)
+    patterns: list[str] = field(default_factory=list)  # recognised building blocks, German
     warnings: list[str] = field(default_factory=list)
 
 
@@ -268,4 +272,19 @@ def analyze(grid: Grid, inputs: list[Port] | None = None, outputs: list[Port] | 
             analysis.truth_table = table
             for i, out in enumerate(outputs):
                 analysis.gates[out.name] = _gate_name([(c, o[i]) for c, o in table])
+            if is_decoder(table):
+                analysis.patterns.append(f"Decoder: {len(levers)} Eingänge, jeder Ausgang gehört zu genau einer Kombination")
+
+    if analysis.clock is None:
+        for port in levers:
+            if port.state.get_bool("powered"):
+                continue
+            analysis.pulse_responses.extend(pulse_response(circuit, port, outputs))
+        analysis.latches = find_latches(circuit, inputs, outputs)
+        for latch in analysis.latches:
+            analysis.patterns.append(
+                f"RS-Latch an {latch.output.name}: {latch.set_input.name} setzt, {latch.reset_input.name} setzt zurück")
+        for pr in analysis.pulse_responses:
+            if pr.kind.startswith(("Pulsfilter", "Pulsverkürzer", "Pulsverlängerer", "fester", "Puls wird um")):
+                analysis.patterns.append(f"{pr.kind} ({pr.input.name} → {pr.output.name})")
     return analysis
