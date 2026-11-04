@@ -1,15 +1,28 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-03, Ende Session 2 (kurz). Geschätzter Gesamtfortschritt: **ca. 50 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-04, Ende Session 3. Geschätzter Gesamtfortschritt: **ca. 62 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
-| M0 Wissensbasis | 10 % | ~95 % | 258 Aussagen aus dem 26.3-Code belegt, 27 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
+| M0 Wissensbasis | 10 % | ~95 % | 264 Aussagen aus dem 26.3-Code belegt, 81 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~75 % | Oracle läuft; Simulator stimmt mit allen 22 Golden Traces tick-genau überein |
-| M3 Analyse + Erklärung | 20 % | ~30 % | erster Entwurf `rsx explain` (Experimente, Klassifikation, Wahrheitstabelle, Signalweg, Sonderfälle) |
+| M2 Oracle + Simulator | 35 % | ~90 % | Oracle läuft; Simulator stimmt mit allen 33 Golden Traces tick-genau überein |
+| M3 Analyse + Erklärung | 20 % | ~55 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Sonderfall-Notizen |
 | M4 Redesign | 25 % | 0 % | noch nicht begonnen |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
+
+### Session 3 (2026-11-04)
+
+- 28 Aussagen zu den 8 Dust/Piston-Szenarien markiert. Korrektur: Teppich ist in 26.3 `PUSH_PULL` und wird geschoben (Beschreibung von `piston-push-limit` angepasst).
+- Simulator (drei parallele Agents, je eigene Dateien):
+  - `sim/blocks/dispenser_hopper.py`: Dispenser/Dropper (QC, 4 gt, triggered), Hopper (Sperre, 8-gt-Cooldown, 7 gt bei leerem Hopper). `container.py` rechnet mit echten Stapelgrößen (`sim/data/item_stack_sizes_26.3.json`).
+  - `sim/blocks/outputs.py`: Kupferbirne, Notenblock, Zielblock, Türen/Falltüren/Zauntore, Antriebs-/Aktivierungsschiene, Lesepult.
+  - 11 neue Szenarien mit Golden Traces, alle beim ersten Lauf identisch zum Spiel. Erkenntnis: Antriebsschiene versorgt sich selbst plus 8 weitere (OUT-011).
+  - Unit-Tests `tests/sim/test_wire.py` (inkl. HashSet-Reihenfolge DUST-018) und `test_piston.py`; keine Simulator-Fehler gefunden.
+  - Kolben melden jetzt Notizen `quasi_connectivity`, `bud`, `piston_spit`, `zero_tick` (`notes.register_state_check` für BUD im Ruhezustand).
+- M3: `analysis/patterns.py` – Pulsantwort (Hebel 1…20 gt an; Pulsfilter, Pulsverkürzer, Monoflop, Mindestpulslänge, Lampen-Ausschaltverzögerung wird herausgerechnet), RS-Latch über Eingabe-Sequenzen, Decoder aus der Wahrheitstabelle. `rsx explain` zeigt „Erkannte Bausteine“ und „Pulsantwort“. `tests/fixtures/analysis/rs-latch.yaml`.
+- Test mit echten Schematics: `mux3-8` wird als 3→8-Decoder erkannt. `observer-clock-100.schem` ist nur ein Parser-Stresstest (500 000 Observer im Schachbrett), keine Schaltung.
+- `plan.md` mit den Erkenntnissen aktualisiert. Projekt-`.claude/settings.json` erlaubt ein paar lesende Befehle.
 
 ## Wichtige Fakten und Entscheidungen
 
@@ -23,7 +36,7 @@ Stand: 2026-11-03, Ende Session 2 (kurz). Geschätzter Gesamtfortschritt: **ca. 
 ## Befehle
 
 ```
-uv run pytest -q                                   # 108 Tests, alle grün
+uv run pytest -q                                   # 217 Tests, alle grün
 uv run rsx dump <datei> [--components]             # Schematic als Text
 uv run rsx sim scenarios/<x>.yaml --diff           # Simulator vs. Golden Trace
 uv run rsx oracle scenarios/<x>.yaml --golden      # im echten Spiel aufzeichnen (~10 s pro Batch)
@@ -37,29 +50,24 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
 
 ## Offene Punkte (nächste Schritte, nach Priorität)
 
-1. **Wissensbasis-Aussagen zu den 8 neuen Szenarien markieren.** Die Golden Traces für `dust-network`, `dust-powering`,
-   `dust-steps`, `piston-push-limit`, `piston-redstone-block`, `slime-structure`, `sticky-pulse-lengths` und
-   `zero-tick-piston` sind aufgezeichnet (Session 2). Die Rohdaten entsprechen jeweils der Szenario-Beschreibung, und der Simulator
-   stimmt ohne Änderungen überein. Offen ist noch, die passenden Aussagen-IDs (DUST-…, PISTON-…) in `knowledge/` zu suchen
-   und mit `knowledge mark scenarios/<x>.yaml ID...` zu markieren. Hinweis: Das Timing-Diagramm von `rsx sim --diff`
-   zeigt Kolben nur binär, deshalb für die Prüfung die Rohdaten in `tests/golden/*.trace.json` ansehen.
-2. **Simulator-Lücken (M2):**
-   - Dropper/Dispenser (Auslösung, QC) und Hopper (Sperre, Transfer, Cooldown) fehlen; nur das Fass ist als Container für den Comparator modelliert.
-   - Es fehlen außerdem Kupferbirne, Notenblock, Zielblock, Druckplatten, Türen/Falltüren/Schienen, Tageslichtsensor, Lesepult und Sculk.
-   - Unit-Tests für die HashSet-Reihenfolge der Leitung (DUST-018) und für Kolben fehlen (`tests/sim/test_wire.py`, `test_piston.py`).
-   - Container rechnen mit maximaler Stapelgröße 64 für alle Items (ASSUMPTION in `sim/blocks/container.py`).
-   - Danach weitere Aussagen der Wissensbasis per Szenario verifizieren (`knowledge mark`).
-3. **M3 fertigstellen:**
-   - Analyse mit echten Schematics testen (`tests/fixtures/licensed`, `tests/fixtures/external` nach dem Fetch).
-   - Clock-Erkennung prüfen; Zwei-Observer-Clocks starten nicht von selbst, dafür gibt es den Anstoß-Modus.
-   - Mehr Muster erkennen: RS-Latch, Pulsverkürzer, Decoder.
-   - Sonderfall-Notizen für Kolben einbauen (`quasi_connectivity`, `bud`, `piston_spit`, `zero_tick` in `sim/notes.py` vorgesehen, aber noch nicht im Kolben-Code aufgerufen).
-   - Optional ein SVG-Timing-Diagramm.
-4. **M4 Redesign:** Vorher **`docs/m4-search-and-performance.md`** lesen. Kurz: keine Rust-Neuschreibung, sondern zweistufige Bewertung, Topologie per SAT/SMT, gezielte Suche und Symmetrien. Zuerst die Simulator-Geschwindigkeit messen; Rust erst später und nur für den Simulator-Kern (PyO3), falls er der Engpass ist.
-   - Spezifikation (Wahrheitstabelle oder Timing) aus `analysis` ableiten.
+1. **M3 fertigstellen:**
+   - Druckplatten-Eingänge betätigen (z. B. per `setblock powered` und Ablauf-Tick emulieren); bisher nur Warnung.
+   - Wahrheitstabelle für mehr als 4 Hebel (z. B. `seg7` mit 6 Eingängen): Stichprobe oder pro Ausgang nur relevante Eingänge.
+   - Analyse großer Schematics begrenzen (viele Ausgänge → Warnung statt 30 s Laufzeit).
+   - Clock-Erkennung an echten Clocks prüfen (Anstoß-Modus); optional SVG-Timing-Diagramm.
+   - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet).
+2. **M4 Redesign beginnen:** Vorher **`docs/m4-search-and-performance.md`** lesen. Kurz: keine Rust-Neuschreibung, sondern zweistufige Bewertung, Topologie per SAT/SMT, gezielte Suche und Symmetrien. Zuerst die Simulator-Geschwindigkeit messen.
+   - Spezifikation (Wahrheitstabelle, Timing, Pulsantwort) aus `analysis` ableiten.
    - Constraints (Bounding Box, erlaubte Blöcke, QC ja/nein).
    - Kandidaten aus Templates und Suche erzeugen, simulieren, ranken und als `.litematic` exportieren.
-5. `plan.md` ist noch auf dem Stand vom Projektstart. Bei Gelegenheit die Erkenntnisse aus diesem Dokument einarbeiten (Versionen, QC-Liste, Origin).
+   - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
+3. **Restliche Simulator-Lücken (M2):**
+   - Tageslichtsensor (Block-Entity alle 20 gt, Himmelslicht/Tageszeit), Druckplatten, Detektorschiene, Sculk, Crafter, Truhen als Container.
+   - Notenblock-Instrument nur über Blocknamen (ASSUMPTION; Feld `instrument` im Block-Dump fehlt).
+   - Dispenser: item-spezifisches Verhalten, zufällige Slotwahl → erster Slot (ASSUMPTIONs in `dispenser_hopper.py`).
+   - Weitere ungeprüfte Aussagen per Szenario verifizieren (`knowledge/UNVERIFIED.md`).
+
+Hinweise für parallele Agents: Der Oracle hat festen Port und festes Verzeichnis, Sperre per `mkdir .cache/oracle.lock`. `knowledge/UNVERIFIED.md` erst am Ende einmal neu erzeugen.
 
 ## Struktur (Kurzfassung)
 
@@ -70,8 +78,8 @@ src/redstone/
   render/       textdump.py
   verify/       scenario.py, trace.py (Diff, Timing-Diagramm)
   sim/          world.py (Level#setBlock, NeighborUpdater, LevelTicks, Block-Events), block.py, blockdata.py,
-                notes.py, runner.py, blocks/{basic,diode,torch_observer,container,wire,piston}.py, data/
-  analysis/     ports.py, experiment.py, analyze.py, explain.py
+                notes.py, runner.py, blocks/{basic,diode,torch_observer,container,wire,piston,dispenser_hopper,outputs}.py, data/
+  analysis/     ports.py, experiment.py, analyze.py, patterns.py, explain.py
   knowledge.py  Linter, Index, mark
   oracle.py     Start des Fabric-Servers
 oracle/         Fabric-Mod (Java)

@@ -2,7 +2,7 @@
 
 Generiert mit `uv run python -m redstone.knowledge index`. Nicht von Hand bearbeiten.
 
-Stand: 2 offene von 258 Aussagen; 54 davon sind im Spiel verifiziert, die übrigen sind durch Quellen (meist den Spielcode) belegt.
+Stand: 2 offene von 264 Aussagen; 81 davon sind im Spiel verifiziert, die übrigen sind durch Quellen (meist den Spielcode) belegt.
 
 | ID | Status | Konfidenz | Aussage | Datei |
 |---|---|---|---|---|
