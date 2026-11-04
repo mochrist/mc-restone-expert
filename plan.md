@@ -1,6 +1,13 @@
 # Plan: Redstone-Analyse- und Design-Assistent
 
-Stand: 2026-10-28 · Grundlage: `idea.md`
+Stand: 2026-10-28, aktualisiert 2026-11-04 · Grundlage: `idea.md` · aktueller Fortschritt: `STATUS.md`
+
+> **Erkenntnisse seit Projektstart (Kurzfassung)**
+> - Der 26.3-Server ist unobfuskiert (Mojang-Namen). Der dekompilierte Spielcode ist die Hauptquelle der Wissensbasis.
+> - Die Update-Reihenfolge von Redstone-Staub hängt in 26.3 weiterhin von den Koordinaten ab (Java-HashSet, DUST-018). Oracle und Simulator platzieren Szenarien deshalb an derselben absoluten Position (0, 200, 0).
+> - Quasi-Connectivity haben in 26.3 nur Kolben, Dispenser und Dropper. Die Liste in `idea.md` ist zu lang.
+> - Blockeigenschaften (Leiter, stabile Flächen, Push-Reaktion) kommen aus einem Dump des echten Spiels (`src/redstone/sim/data/blocks_26.3.json`) statt aus einer handgepflegten Tabelle.
+> - Für M4 gibt es eine eigene Design-Notiz: `docs/m4-search-and-performance.md` (keine Rust-Neuschreibung).
 
 ## 1. Entscheidungen
 
@@ -8,7 +15,7 @@ Stand: 2026-10-28 · Grundlage: `idea.md`
 |---|---|
 | Edition / Version | Java Edition **26.3** (aktuellste Release laut Mojang-Versionsmanifest, 2026-09-15). Fabric unterstützt 26.3. |
 | Redstone-Variante | Vanilla-Standardverhalten. Das experimentelle Redstone (Feature-Flag „Redstone Experiments") ist out of scope, wird aber in der Wissensbasis als Abweichung markiert. |
-| Referenz-Oracle | **Headless Fabric-Server** (eigener Test-Harness-Mod). Kein MCHPRS (zusätzliche Reimplementierung, Rust nicht installiert). |
+| Referenz-Oracle | **Headless Fabric-Server** (eigener Test-Harness-Mod; Loom 1.19, Loader 0.20.1, Fabric API 0.165.0+26.3). Kein MCHPRS (zusätzliche Reimplementierung, Rust nicht installiert). |
 | Sprache | **Python 3.12** mit `uv`, `pytest`. Oracle-Mod in **Java 25** (Gradle + Fabric Loom), da er im Server läuft. |
 | Versionskontrolle | Lokales Git-Repo, ein Commit pro Meilenstein, kein Push. |
 
@@ -47,8 +54,8 @@ Stand: 2026-10-28 · Grundlage: `idea.md`
 ### Oracle (Fabric-Mod)
 
 - Serverseitiger Mod für 26.3, startet einen headless Dedicated Server mit flacher Void-Welt.
-- Liest Szenario-Dateien aus einem Eingangsordner, platziert die Schematic, friert die Welt ein (`/tick freeze`), schaltet Eingaben exakt zum geplanten Tick und schreibt Sonden-Zustände pro Tick als JSON.
-- Mit `/tick step` sind die Ticks deterministisch, unabhängig von der Serverlast.
+- Liest Szenario-Dateien aus einem Eingangsordner, platziert die Schematic bei (0, 200, 0) mit Flags 818 (wie `/setblock … strict`), friert die Welt ein, schaltet Eingaben exakt zum geplanten Tick (Spieleraktion zwischen zwei Ticks) und schreibt Sonden-Zustände pro Tick als JSON.
+- Pro Tick wird mit `stepGameIfPaused(1)` genau ein Game-Tick ausgeführt. Damit sind die Ticks deterministisch, unabhängig von der Serverlast.
 - Der Server-Jar wird von Loom geladen und nicht ins Repo eingecheckt.
 - Eingespielte Traces landen als **Golden Traces** in `tests/golden/`. Damit laufen die Simulator-Tests später auch ohne Server.
 
@@ -61,7 +68,7 @@ minecraft-redstone-expert/
 ├── src/redstone/
 │   ├── model/                    # BlockState, Grid, Pos, Blockregister
 │   ├── io/                       # litematic.py, schem.py, structure_nbt.py, writer
-│   ├── sim/                      # scheduler.py, world.py, components/*.py
+│   ├── sim/                      # world.py, block.py, blockdata.py, notes.py, runner.py, blocks/*.py, data/
 │   ├── verify/                   # scenario.py, trace.py, diff.py
 │   ├── analysis/                 # (M3)
 │   ├── design/                   # (M4)
@@ -144,5 +151,5 @@ Nach jedem Meilenstein: Tests laufen lassen, kurzer Bericht, Git-Commit.
 
 - **Litematica für 26.3:** Der neueste gefundene Build zielt auf 26.2 (Litematica 0.28.3). Das Dateiformat ist versionsunabhängig (`DataVersion` wird gespeichert). Exporte aus 26.2 sollten also lesbar sein. Blockzustände können sich zwischen Versionen leicht unterscheiden, deshalb gibt der Parser eine Warnung aus, wenn die `DataVersion` von der von 26.3 abweicht.
 - **Update-Reihenfolge und Sonderfälle** sind der schwierigste Teil des Simulators. Der Plan setzt deshalb früh auf Golden Traces statt auf reine Dokumentation.
-- **Lokalitätsabhängiges Verhalten** (z. B. Hashset-Reihenfolge bei Redstone-Dust in älteren Versionen) wird in M0 recherchiert. Falls das in 26.3 noch auftritt, bekommt es ein eigenes Szenario.
+- **Lokalitätsabhängiges Verhalten:** Die HashSet-Reihenfolge bei Redstone-Staub gibt es in 26.3 weiterhin (DUST-018). Gelöst, indem Simulator und Oracle an derselben absoluten Position laufen. Für Redesign-Kandidaten (M4) heißt das: Ergebnisse gelten zunächst nur für diese Position; ortsunabhängiges Verhalten muss gesondert geprüft werden.
 - **Simulator-Umfang:** Zunächst nur die Blöcke aus der Validierungs-Testsuite. Unbekannte Blöcke in einer Schematic führen zu einer expliziten Warnung, nicht zu stillem Fehlverhalten.
