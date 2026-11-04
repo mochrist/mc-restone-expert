@@ -1,0 +1,172 @@
+{
+ "format": 1,
+ "scenario": "copper-bulb",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 60,
+ "probes": {
+  "lever": [
+   0,
+   1,
+   0
+  ],
+  "bulb": [
+   1,
+   1,
+   0
+  ],
+  "comparator": [
+   2,
+   1,
+   0
+  ],
+  "lamp": [
+   3,
+   1,
+   0
+  ],
+  "button": [
+   0,
+   1,
+   2
+  ],
+  "bulb_oxidized": [
+   1,
+   1,
+   2
+  ],
+  "bulb_placed": [
+   4,
+   1,
+   2
+  ]
+ },
+ "samples": {
+  "lever": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    6,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    10,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    14,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "bulb": [
+   [
+    0,
+    "minecraft:copper_bulb[lit=false,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:copper_bulb[lit=true,powered=true]"
+   ],
+   [
+    6,
+    "minecraft:copper_bulb[lit=true,powered=false]"
+   ],
+   [
+    10,
+    "minecraft:copper_bulb[lit=false,powered=true]"
+   ],
+   [
+    14,
+    "minecraft:copper_bulb[lit=false,powered=false]"
+   ]
+  ],
+  "comparator": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    4,
+    "minecraft:comparator[facing=west,mode=compare,powered=true]|output=15"
+   ],
+   [
+    12,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "lamp": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    4,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    16,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "button": [
+   [
+    0,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    22,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    26,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    46,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "bulb_oxidized": [
+   [
+    0,
+    "minecraft:waxed_oxidized_copper_bulb[lit=false,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:waxed_oxidized_copper_bulb[lit=true,powered=true]"
+   ],
+   [
+    22,
+    "minecraft:waxed_oxidized_copper_bulb[lit=true,powered=false]"
+   ],
+   [
+    26,
+    "minecraft:waxed_oxidized_copper_bulb[lit=false,powered=true]"
+   ],
+   [
+    46,
+    "minecraft:waxed_oxidized_copper_bulb[lit=false,powered=false]"
+   ]
+  ],
+  "bulb_placed": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    50,
+    "minecraft:exposed_copper_bulb[lit=true,powered=true]"
+   ]
+  ]
+ }
+}

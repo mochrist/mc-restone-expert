@@ -1,0 +1,50 @@
+name: doors
+description: >
+  Türen, Falltüren und Zauntore an Hebeln. z=0: Eichentür, Hebel nur neben der oberen Hälfte; beide Hälften
+  öffnen sofort (die untere wird per Shape-Update angeglichen). Rechtsklick bei anliegendem Signal schließt
+  sie (powered bleibt true); Hebel aus setzt powered=false, open=false; Rechtsklick auf die obere Hälfte
+  öffnet wieder. z=2: Eisentür am Hebel; Rechtsklick wirkt nicht. z=4: Eichen- und Eisenfalltür am selben
+  Hebel; danach Rechtsklick auf beide (nur die Eichenfalltür reagiert). z=6: Zauntor (facing=north) wird per
+  Rechtsklick geöffnet und dreht sich dabei zur Blickrichtung des Fake-Players (Süden); dann Hebel an/aus.
+build:
+  size: [3, 3, 7]
+  fill:
+    - [0, 0, 0, 2, 0, 6, "stone"]
+  blocks:
+    - [0, 1, 0, "oak_door[facing=east,half=lower,hinge=left,open=false,powered=false]"]
+    - [0, 2, 0, "oak_door[facing=east,half=upper,hinge=left,open=false,powered=false]"]
+    - [2, 2, 0, "stone"]
+    - [1, 2, 0, "lever[face=wall,facing=west,powered=false]"]
+    - [0, 1, 2, "iron_door[facing=east,half=lower,hinge=left,open=false,powered=false]"]
+    - [0, 2, 2, "iron_door[facing=east,half=upper,hinge=left,open=false,powered=false]"]
+    - [1, 1, 2, "lever[face=floor,facing=east,powered=false]"]
+    - [0, 1, 4, "oak_trapdoor[facing=north,half=bottom,open=false,powered=false,waterlogged=false]"]
+    - [1, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [2, 1, 4, "iron_trapdoor[facing=north,half=bottom,open=false,powered=false,waterlogged=false]"]
+    - [0, 1, 6, "oak_fence_gate[facing=north,in_wall=false,open=false,powered=false]"]
+    - [1, 1, 6, "lever[face=floor,facing=east,powered=false]"]
+ticks: 15
+inputs:
+  - {tick: 2, pos: [1, 2, 0], action: use}
+  - {tick: 4, pos: [0, 1, 0], action: use}
+  - {tick: 6, pos: [1, 2, 0], action: use}
+  - {tick: 8, pos: [0, 2, 0], action: use}
+  - {tick: 2, pos: [1, 1, 2], action: use}
+  - {tick: 4, pos: [0, 1, 2], action: use}
+  - {tick: 10, pos: [1, 1, 2], action: use}
+  - {tick: 2, pos: [1, 1, 4], action: use}
+  - {tick: 8, pos: [1, 1, 4], action: use}
+  - {tick: 12, pos: [0, 1, 4], action: use}
+  - {tick: 12, pos: [2, 1, 4], action: use}
+  - {tick: 3, pos: [0, 1, 6], action: use}
+  - {tick: 5, pos: [1, 1, 6], action: use}
+  - {tick: 9, pos: [1, 1, 6], action: use}
+  - {tick: 11, pos: [0, 1, 6], action: use}
+probes:
+  oak_lower: [0, 1, 0]
+  oak_upper: [0, 2, 0]
+  iron_lower: [0, 1, 2]
+  iron_upper: [0, 2, 2]
+  trapdoor: [0, 1, 4]
+  iron_trapdoor: [2, 1, 4]
+  gate: [0, 1, 6]

@@ -1,0 +1,95 @@
+{
+ "format": 1,
+ "scenario": "note-block",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 30,
+ "probes": {
+  "lever": [
+   0,
+   1,
+   0
+  ],
+  "note": [
+   1,
+   1,
+   0
+  ],
+  "button": [
+   0,
+   1,
+   2
+  ],
+  "note_button": [
+   1,
+   1,
+   2
+  ]
+ },
+ "samples": {
+  "lever": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    8,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "note": [
+   [
+    0,
+    "minecraft:note_block[instrument=basedrum,note=0,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:note_block[instrument=basedrum,note=0,powered=true]"
+   ],
+   [
+    4,
+    "minecraft:note_block[instrument=basedrum,note=1,powered=true]"
+   ],
+   [
+    5,
+    "minecraft:note_block[instrument=basedrum,note=2,powered=true]"
+   ],
+   [
+    8,
+    "minecraft:note_block[instrument=basedrum,note=2,powered=false]"
+   ]
+  ],
+  "button": [
+   [
+    0,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    3,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    23,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "note_button": [
+   [
+    0,
+    "minecraft:note_block[instrument=basedrum,note=5,powered=false]"
+   ],
+   [
+    3,
+    "minecraft:note_block[instrument=basedrum,note=5,powered=true]"
+   ],
+   [
+    23,
+    "minecraft:note_block[instrument=basedrum,note=5,powered=false]"
+   ]
+  ]
+ }
+}

@@ -1,0 +1,29 @@
+name: target-block
+description: >
+  Zielblock als Signalquelle mit fester Stärke (ohne Projektil). Bei Tick 2 wird `power=12` per setblock auf den
+  vorhandenen Zielblock gesetzt (gleicher Block, kein Zurücksetzen): Die Lampe daneben geht an, die Leitung
+  zeigt 12, 11, 10. Bei Tick 8 power=0: Leitung sofort 0, Lampe 4 gt später aus. Bei Tick 16 Stein, bei
+  Tick 18 wird ein neuer Zielblock mit power=9 gesetzt: onPlace setzt ihn ohne geplanten Tick sofort auf 0
+  zurück (Flags 18, keine Updates).
+build:
+  size: [2, 2, 4]
+  fill:
+    - [0, 0, 0, 1, 0, 3, "stone"]
+  blocks:
+    - [0, 1, 0, "target[power=0]"]
+    - [1, 1, 0, "redstone_lamp[lit=false]"]
+    - [0, 1, 1, "redstone_wire[east=none,north=side,power=0,south=side,west=none]"]
+    - [0, 1, 2, "redstone_wire[east=none,north=side,power=0,south=side,west=none]"]
+    - [0, 1, 3, "redstone_wire[east=none,north=side,power=0,south=side,west=none]"]
+ticks: 25
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: setblock, state: "target[power=12]"}
+  - {tick: 8, pos: [0, 1, 0], action: setblock, state: "target[power=0]"}
+  - {tick: 16, pos: [0, 1, 0], action: setblock, state: "stone"}
+  - {tick: 18, pos: [0, 1, 0], action: setblock, state: "target[power=9]"}
+probes:
+  target: [0, 1, 0]
+  lamp: [1, 1, 0]
+  wire1: [0, 1, 1]
+  wire2: [0, 1, 2]
+  wire3: [0, 1, 3]

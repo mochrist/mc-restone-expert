@@ -1,0 +1,43 @@
+name: lectern
+description: >
+  Comparator liest Lesepulte (Rechtsklick auf den Comparator löst die Neuberechnung aus). z=0: Buch mit
+  5 Seiten, Seite 2 (Index ab 0): floor(2/4 * 14) + 1 = 8. z=2: Seite 4 von 5: 15. z=4: Buch mit einer Seite: 15.
+  z=6: has_book=true, aber kein Buch im Block-Entity: Seitenzahl 0, Fortschritt 1, ohne Buch-Bonus: 14.
+  z=8: has_book=false: 0.
+build:
+  size: [3, 2, 9]
+  fill:
+    - [0, 0, 0, 2, 0, 8, "stone"]
+  blocks:
+    - [0, 1, 0, "lectern[facing=north,has_book=true,powered=false]"]
+    - [1, 1, 0, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 2, "lectern[facing=north,has_book=true,powered=false]"]
+    - [1, 1, 2, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 4, "lectern[facing=north,has_book=true,powered=false]"]
+    - [1, 1, 4, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 6, "lectern[facing=north,has_book=true,powered=false]"]
+    - [1, 1, 6, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 8, "lectern[facing=north,has_book=false,powered=false]"]
+    - [1, 1, 8, "comparator[facing=west,mode=compare,powered=false]"]
+  block_entities:
+    - [0, 1, 0, '{id:"minecraft:lectern",Page:2,Book:{id:"minecraft:writable_book",count:1,components:{"minecraft:writable_book_content":{pages:[{raw:"a"},{raw:"b"},{raw:"c"},{raw:"d"},{raw:"e"}]}}}}']
+    - [0, 1, 2, '{id:"minecraft:lectern",Page:4,Book:{id:"minecraft:writable_book",count:1,components:{"minecraft:writable_book_content":{pages:[{raw:"a"},{raw:"b"},{raw:"c"},{raw:"d"},{raw:"e"}]}}}}']
+    - [0, 1, 4, '{id:"minecraft:lectern",Page:0,Book:{id:"minecraft:writable_book",count:1,components:{"minecraft:writable_book_content":{pages:[{raw:"a"}]}}}}']
+    - [1, 1, 0, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 2, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 4, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 6, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 8, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 8
+inputs:
+  - {tick: 2, pos: [1, 1, 0], action: use}
+  - {tick: 2, pos: [1, 1, 2], action: use}
+  - {tick: 2, pos: [1, 1, 4], action: use}
+  - {tick: 2, pos: [1, 1, 6], action: use}
+  - {tick: 2, pos: [1, 1, 8], action: use}
+probes:
+  c_page2of5: [1, 1, 0]
+  c_page4of5: [1, 1, 2]
+  c_page0of1: [1, 1, 4]
+  c_nobook_be: [1, 1, 6]
+  c_no_book: [1, 1, 8]

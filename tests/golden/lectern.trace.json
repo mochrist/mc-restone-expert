@@ -1,0 +1,86 @@
+{
+ "format": 1,
+ "scenario": "lectern",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 8,
+ "probes": {
+  "c_page2of5": [
+   1,
+   1,
+   0
+  ],
+  "c_page4of5": [
+   1,
+   1,
+   2
+  ],
+  "c_page0of1": [
+   1,
+   1,
+   4
+  ],
+  "c_nobook_be": [
+   1,
+   1,
+   6
+  ],
+  "c_no_book": [
+   1,
+   1,
+   8
+  ]
+ },
+ "samples": {
+  "c_page2of5": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=8"
+   ]
+  ],
+  "c_page4of5": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "c_page0of1": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "c_nobook_be": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=14"
+   ]
+  ],
+  "c_no_book": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+   ]
+  ]
+ }
+}

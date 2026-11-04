@@ -1,0 +1,26 @@
+name: note-block
+description: >
+  Notenblock (Stein darunter, Instrument basedrum) an einem Hebel: `powered` folgt dem Eingang sofort,
+  in beide Richtungen ohne Verzögerung. Rechtsklick erhöht `note` um 1 (zweimal: 0 -> 2), ohne `powered`
+  zu ändern. Zweiter Notenblock (z=2) an einem Steinknopf: powered für 20 gt.
+build:
+  size: [2, 2, 3]
+  fill:
+    - [0, 0, 0, 1, 0, 2, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "note_block[instrument=basedrum,note=0,powered=false]"]
+    - [0, 1, 2, "stone_button[face=floor,facing=east,powered=false]"]
+    - [1, 1, 2, "note_block[instrument=basedrum,note=5,powered=false]"]
+ticks: 30
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 4, pos: [1, 1, 0], action: use}
+  - {tick: 5, pos: [1, 1, 0], action: use}
+  - {tick: 8, pos: [0, 1, 0], action: use}
+  - {tick: 3, pos: [0, 1, 2], action: use}
+probes:
+  lever: [0, 1, 0]
+  note: [1, 1, 0]
+  button: [0, 1, 2]
+  note_button: [1, 1, 2]

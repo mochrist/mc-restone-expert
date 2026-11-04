@@ -1,0 +1,38 @@
+name: copper-bulb
+description: >
+  Kupferbirne an einem Hebel (z=0): Jede steigende Flanke (Hebel an) schaltet `lit` sofort um, die fallende
+  Flanke setzt nur `powered=false`. Ein Comparator liest die Birne (15 bei lit, sonst 0) und treibt eine
+  Lampe. z=2: gewachste oxidierte Birne an einem Steinknopf (20 gt), zweimal gedrückt: an, dann wieder aus.
+  Bei Tick 50 wird eine angelaufene Birne neben einen Redstone-Block gesetzt: onPlace prüft sofort und
+  sie geht an (lit=true, powered=true).
+build:
+  size: [5, 2, 3]
+  fill:
+    - [0, 0, 0, 4, 0, 2, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "copper_bulb[lit=false,powered=false]"]
+    - [2, 1, 0, "comparator[facing=west,mode=compare,powered=false]"]
+    - [3, 1, 0, "redstone_lamp[lit=false]"]
+    - [0, 1, 2, "stone_button[face=floor,facing=east,powered=false]"]
+    - [1, 1, 2, "waxed_oxidized_copper_bulb[lit=false,powered=false]"]
+    - [3, 1, 2, "redstone_block"]
+  block_entities:
+    - [2, 1, 0, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 60
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 6, pos: [0, 1, 0], action: use}
+  - {tick: 10, pos: [0, 1, 0], action: use}
+  - {tick: 14, pos: [0, 1, 0], action: use}
+  - {tick: 2, pos: [0, 1, 2], action: use}
+  - {tick: 26, pos: [0, 1, 2], action: use}
+  - {tick: 50, pos: [4, 1, 2], action: setblock, state: "exposed_copper_bulb[lit=false,powered=false]"}
+probes:
+  lever: [0, 1, 0]
+  bulb: [1, 1, 0]
+  comparator: [2, 1, 0]
+  lamp: [3, 1, 0]
+  button: [0, 1, 2]
+  bulb_oxidized: [1, 1, 2]
+  bulb_placed: [4, 1, 2]

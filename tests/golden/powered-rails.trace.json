@@ -1,0 +1,351 @@
+{
+ "format": 1,
+ "scenario": "powered-rails",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 16,
+ "probes": {
+  "r1": [
+   1,
+   1,
+   0
+  ],
+  "r2": [
+   2,
+   1,
+   0
+  ],
+  "r3": [
+   3,
+   1,
+   0
+  ],
+  "r4": [
+   4,
+   1,
+   0
+  ],
+  "r5": [
+   5,
+   1,
+   0
+  ],
+  "r6": [
+   6,
+   1,
+   0
+  ],
+  "r7": [
+   7,
+   1,
+   0
+  ],
+  "r8": [
+   8,
+   1,
+   0
+  ],
+  "r9": [
+   9,
+   1,
+   0
+  ],
+  "r10": [
+   10,
+   1,
+   0
+  ],
+  "r11": [
+   11,
+   1,
+   0
+  ],
+  "r12": [
+   12,
+   1,
+   0
+  ],
+  "s1": [
+   1,
+   1,
+   2
+  ],
+  "s2_slope": [
+   2,
+   1,
+   2
+  ],
+  "s3": [
+   3,
+   2,
+   2
+  ],
+  "s4": [
+   4,
+   2,
+   2
+  ],
+  "a1": [
+   1,
+   1,
+   4
+  ],
+  "a2": [
+   2,
+   1,
+   4
+  ],
+  "a3_powered_rail": [
+   3,
+   1,
+   4
+  ],
+  "a4": [
+   4,
+   1,
+   4
+  ]
+ },
+ "samples": {
+  "r1": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    2,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    12,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "r2": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    2,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    12,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "r3": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    2,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    12,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "r4": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    6,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    12,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "r5": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    6,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    12,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "r6": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    6,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    12,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "r7": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    6,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    12,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "r8": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    6,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    12,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "r9": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    6,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    12,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "r10": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "r11": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "r12": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "s1": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    2,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    10,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "s2_slope": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=ascending_east,waterlogged=false]"
+   ],
+   [
+    2,
+    "minecraft:powered_rail[powered=true,shape=ascending_east,waterlogged=false]"
+   ],
+   [
+    10,
+    "minecraft:powered_rail[powered=false,shape=ascending_east,waterlogged=false]"
+   ]
+  ],
+  "s3": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    2,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    10,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "s4": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    2,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    10,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "a1": [
+   [
+    0,
+    "minecraft:activator_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    2,
+    "minecraft:activator_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    10,
+    "minecraft:activator_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "a2": [
+   [
+    0,
+    "minecraft:activator_rail[powered=false,shape=east_west,waterlogged=false]"
+   ],
+   [
+    2,
+    "minecraft:activator_rail[powered=true,shape=east_west,waterlogged=false]"
+   ],
+   [
+    10,
+    "minecraft:activator_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "a3_powered_rail": [
+   [
+    0,
+    "minecraft:powered_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ],
+  "a4": [
+   [
+    0,
+    "minecraft:activator_rail[powered=false,shape=east_west,waterlogged=false]"
+   ]
+  ]
+ }
+}
