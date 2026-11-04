@@ -1,0 +1,37 @@
+name: dropper-hopper
+description: >
+  Dropper (2 Eisenschwerter) gibt nach Osten in einen Hopper, der Hopper in ein Fass. Hebel auf einem Stein
+  hinter dem Dropper (der Hopper wird dadurch nicht gesperrt). Hebel an bei 2 -> Übergabe in den Hopper bei 6
+  (ohne Item-Entity). Der zuvor leere Hopper bekommt Cooldown 8 und gibt 7 gt später (13) ins Fass weiter.
+  Hebel aus bei 10, an bei 12 -> zweite Übergabe bei 16, Weitergabe bei 23. Comparatoren: Dropper 4/2/0,
+  Hopper 3 (1 Schwert von 5 Slots), Fass 1, 2.
+build:
+  size: [4, 3, 2]
+  fill:
+    - [0, 0, 0, 3, 0, 1, "stone"]
+  blocks:
+    - [0, 1, 0, "stone"]
+    - [0, 2, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "dropper[facing=east,triggered=false]"]
+    - [2, 1, 0, "hopper[enabled=true,facing=east]"]
+    - [2, 2, 0, "stone"]
+    - [3, 1, 0, "barrel[facing=up,open=false]"]
+    - [1, 1, 1, "comparator[facing=north,mode=compare,powered=true]"]
+    - [2, 1, 1, "comparator[facing=north,mode=compare,powered=false]"]
+    - [3, 1, 1, "comparator[facing=north,mode=compare,powered=false]"]
+  block_entities:
+    - [1, 1, 0, '{id:"minecraft:dropper",Items:[{Slot:0b,id:"minecraft:iron_sword",count:1},{Slot:1b,id:"minecraft:iron_sword",count:1}]}']
+    - [1, 1, 1, '{id:"minecraft:comparator",OutputSignal:4}']
+    - [2, 1, 1, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [3, 1, 1, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 30
+inputs:
+  - {tick: 2, pos: [0, 2, 0], action: use}
+  - {tick: 10, pos: [0, 2, 0], action: use}
+  - {tick: 12, pos: [0, 2, 0], action: use}
+probes:
+  dropper: [1, 1, 0]
+  hopper: [2, 1, 0]
+  cmp_dropper: [1, 1, 1]
+  cmp_hopper: [2, 1, 1]
+  cmp_barrel: [3, 1, 1]

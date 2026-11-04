@@ -1,0 +1,46 @@
+name: hopper-stack-sizes
+description: >
+  Comparator-Ausgabe gesperrter Hopper (5 Slots) mit Items unterschiedlicher maximaler Stapelgröße:
+  8 Enderperlen (16er) -> 1 + floor(0.1 * 14) = 2; 1 Eisenschwert (1er) -> 3; 12 Eimer (16er) -> 3;
+  32 Stein (64er) -> 2; 1 Schwert + 64 Stein -> 1 + floor(0.4 * 14) = 6.
+  Die Comparatoren lesen erst nach dem Moduswechsel per Rechtsklick (Tick 2) neu.
+build:
+  size: [5, 3, 2]
+  fill:
+    - [0, 0, 0, 4, 0, 1, "stone"]
+    - [0, 2, 0, 4, 2, 0, "stone"]
+  blocks:
+    - [0, 1, 0, "hopper[enabled=false,facing=down]"]
+    - [1, 1, 0, "hopper[enabled=false,facing=down]"]
+    - [2, 1, 0, "hopper[enabled=false,facing=down]"]
+    - [3, 1, 0, "hopper[enabled=false,facing=down]"]
+    - [4, 1, 0, "hopper[enabled=false,facing=down]"]
+    - [0, 1, 1, "comparator[facing=north,mode=compare,powered=false]"]
+    - [1, 1, 1, "comparator[facing=north,mode=compare,powered=false]"]
+    - [2, 1, 1, "comparator[facing=north,mode=compare,powered=false]"]
+    - [3, 1, 1, "comparator[facing=north,mode=compare,powered=false]"]
+    - [4, 1, 1, "comparator[facing=north,mode=compare,powered=false]"]
+  block_entities:
+    - [0, 1, 0, '{id:"minecraft:hopper",Items:[{Slot:0b,id:"minecraft:ender_pearl",count:8}]}']
+    - [1, 1, 0, '{id:"minecraft:hopper",Items:[{Slot:0b,id:"minecraft:iron_sword",count:1}]}']
+    - [2, 1, 0, '{id:"minecraft:hopper",Items:[{Slot:0b,id:"minecraft:bucket",count:12}]}']
+    - [3, 1, 0, '{id:"minecraft:hopper",Items:[{Slot:0b,id:"minecraft:stone",count:32}]}']
+    - [4, 1, 0, '{id:"minecraft:hopper",Items:[{Slot:0b,id:"minecraft:iron_sword",count:1},{Slot:1b,id:"minecraft:stone",count:64}]}']
+    - [0, 1, 1, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 1, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [2, 1, 1, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [3, 1, 1, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [4, 1, 1, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 6
+inputs:
+  - {tick: 2, pos: [0, 1, 1], action: use}
+  - {tick: 2, pos: [1, 1, 1], action: use}
+  - {tick: 2, pos: [2, 1, 1], action: use}
+  - {tick: 2, pos: [3, 1, 1], action: use}
+  - {tick: 2, pos: [4, 1, 1], action: use}
+probes:
+  pearls: [0, 1, 1]
+  sword: [1, 1, 1]
+  buckets: [2, 1, 1]
+  stone: [3, 1, 1]
+  mixed: [4, 1, 1]

@@ -1,0 +1,86 @@
+{
+ "format": 1,
+ "scenario": "hopper-stack-sizes",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 6,
+ "probes": {
+  "pearls": [
+   0,
+   1,
+   1
+  ],
+  "sword": [
+   1,
+   1,
+   1
+  ],
+  "buckets": [
+   2,
+   1,
+   1
+  ],
+  "stone": [
+   3,
+   1,
+   1
+  ],
+  "mixed": [
+   4,
+   1,
+   1
+  ]
+ },
+ "samples": {
+  "pearls": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=north,mode=subtract,powered=true]|output=2"
+   ]
+  ],
+  "sword": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=north,mode=subtract,powered=true]|output=3"
+   ]
+  ],
+  "buckets": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=north,mode=subtract,powered=true]|output=3"
+   ]
+  ],
+  "stone": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=north,mode=subtract,powered=true]|output=2"
+   ]
+  ],
+  "mixed": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=north,mode=subtract,powered=true]|output=6"
+   ]
+  ]
+ }
+}

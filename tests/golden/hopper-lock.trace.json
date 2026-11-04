@@ -1,0 +1,141 @@
+{
+ "format": 1,
+ "scenario": "hopper-lock",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 34,
+ "probes": {
+  "hopper": [
+   1,
+   1,
+   0
+  ],
+  "cmp_hopper": [
+   1,
+   1,
+   1
+  ],
+  "cmp_barrel": [
+   2,
+   1,
+   1
+  ],
+  "hopper_qc": [
+   1,
+   1,
+   4
+  ],
+  "cmp_hopper_qc": [
+   1,
+   1,
+   5
+  ],
+  "cmp_barrel_qc": [
+   2,
+   1,
+   5
+  ]
+ },
+ "samples": {
+  "hopper": [
+   [
+    0,
+    "minecraft:hopper[enabled=true,facing=east]"
+   ],
+   [
+    12,
+    "minecraft:hopper[enabled=false,facing=east]"
+   ],
+   [
+    22,
+    "minecraft:hopper[enabled=true,facing=east]"
+   ]
+  ],
+  "cmp_hopper": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=15"
+   ],
+   [
+    3,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=12"
+   ],
+   [
+    11,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=9"
+   ],
+   [
+    25,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=6"
+   ],
+   [
+    33,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=3"
+   ]
+  ],
+  "cmp_barrel": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    3,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=1"
+   ],
+   [
+    11,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=2"
+   ],
+   [
+    33,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=3"
+   ]
+  ],
+  "hopper_qc": [
+   [
+    0,
+    "minecraft:hopper[enabled=true,facing=east]"
+   ]
+  ],
+  "cmp_hopper_qc": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=15"
+   ],
+   [
+    3,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=12"
+   ],
+   [
+    11,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=9"
+   ],
+   [
+    19,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=6"
+   ],
+   [
+    27,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=3"
+   ]
+  ],
+  "cmp_barrel_qc": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    3,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=1"
+   ],
+   [
+    11,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=2"
+   ],
+   [
+    27,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=3"
+   ]
+  ]
+ }
+}

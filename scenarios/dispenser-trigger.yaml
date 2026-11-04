@@ -1,0 +1,70 @@
+name: dispenser-trigger
+description: >
+  Dispenser und Dropper (je 2 Eisenschwerter, Stapelgröße 1, nach unten ins Leere gerichtet), Ausgabe über
+  Comparatoren beobachtet (2 Schwerter = 4, 1 = 2, 0 = 0). Spur z=0: Hebel an bei 2 -> triggered sofort,
+  Ausgabe 4 gt später (Comparator 2 gt danach), aus bei 12, wieder an bei 14 -> zweite Ausgabe.
+  Spur z=3: 1-gt-Puls (an 2, aus 3) -> trotzdem genau eine Ausgabe bei 6. Spur z=6: an 2, aus 3, an 4 ->
+  nur eine Ausgabe, der zweite geplante Tick wird verworfen. Spur z=9 (Dispenser) und z=12 (Dropper):
+  Quasi-Connectivity; ein Redstone-Block diagonal darüber (Tick 2) löst nichts aus, erst das Update
+  durch einen gesetzten Stein (Tick 6). Nach Entfernen der Quelle (14) bleibt triggered=true, bis das
+  nächste Update kommt (18).
+build:
+  size: [2, 3, 14]
+  fill:
+    - [1, 0, 0, 1, 0, 13, "stone"]
+  blocks:
+    - [0, 1, 0, "dispenser[facing=down,triggered=false]"]
+    - [0, 2, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "comparator[facing=west,mode=compare,powered=true]"]
+    - [0, 1, 3, "dispenser[facing=down,triggered=false]"]
+    - [0, 2, 3, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 3, "comparator[facing=west,mode=compare,powered=true]"]
+    - [0, 1, 6, "dispenser[facing=down,triggered=false]"]
+    - [0, 2, 6, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 6, "comparator[facing=west,mode=compare,powered=true]"]
+    - [0, 1, 9, "dispenser[facing=down,triggered=false]"]
+    - [1, 1, 9, "comparator[facing=west,mode=compare,powered=true]"]
+    - [0, 1, 12, "dropper[facing=down,triggered=false]"]
+    - [1, 1, 12, "comparator[facing=west,mode=compare,powered=true]"]
+  block_entities:
+    - [0, 1, 0, '{id:"minecraft:dispenser",Items:[{Slot:0b,id:"minecraft:iron_sword",count:1},{Slot:1b,id:"minecraft:iron_sword",count:1}]}']
+    - [1, 1, 0, '{id:"minecraft:comparator",OutputSignal:4}']
+    - [0, 1, 3, '{id:"minecraft:dispenser",Items:[{Slot:0b,id:"minecraft:iron_sword",count:1},{Slot:1b,id:"minecraft:iron_sword",count:1}]}']
+    - [1, 1, 3, '{id:"minecraft:comparator",OutputSignal:4}']
+    - [0, 1, 6, '{id:"minecraft:dispenser",Items:[{Slot:0b,id:"minecraft:iron_sword",count:1},{Slot:1b,id:"minecraft:iron_sword",count:1}]}']
+    - [1, 1, 6, '{id:"minecraft:comparator",OutputSignal:4}']
+    - [0, 1, 9, '{id:"minecraft:dispenser",Items:[{Slot:0b,id:"minecraft:iron_sword",count:1},{Slot:1b,id:"minecraft:iron_sword",count:1}]}']
+    - [1, 1, 9, '{id:"minecraft:comparator",OutputSignal:4}']
+    - [0, 1, 12, '{id:"minecraft:dropper",Items:[{Slot:0b,id:"minecraft:iron_sword",count:1},{Slot:1b,id:"minecraft:iron_sword",count:1}]}']
+    - [1, 1, 12, '{id:"minecraft:comparator",OutputSignal:4}']
+ticks: 30
+inputs:
+  - {tick: 2, pos: [0, 2, 0], action: use}
+  - {tick: 12, pos: [0, 2, 0], action: use}
+  - {tick: 14, pos: [0, 2, 0], action: use}
+  - {tick: 26, pos: [0, 2, 0], action: use}
+  - {tick: 2, pos: [0, 2, 3], action: use}
+  - {tick: 3, pos: [0, 2, 3], action: use}
+  - {tick: 2, pos: [0, 2, 6], action: use}
+  - {tick: 3, pos: [0, 2, 6], action: use}
+  - {tick: 4, pos: [0, 2, 6], action: use}
+  - {tick: 12, pos: [0, 2, 6], action: use}
+  - {tick: 2, pos: [0, 2, 10], action: setblock, state: "redstone_block"}
+  - {tick: 6, pos: [0, 1, 10], action: setblock, state: "stone"}
+  - {tick: 14, pos: [0, 2, 10], action: setblock, state: "air"}
+  - {tick: 18, pos: [0, 1, 10], action: setblock, state: "air"}
+  - {tick: 2, pos: [0, 2, 13], action: setblock, state: "redstone_block"}
+  - {tick: 6, pos: [0, 1, 13], action: setblock, state: "stone"}
+  - {tick: 14, pos: [0, 2, 13], action: setblock, state: "air"}
+  - {tick: 18, pos: [0, 1, 13], action: setblock, state: "air"}
+probes:
+  disp_a: [0, 1, 0]
+  cmp_a: [1, 1, 0]
+  disp_b: [0, 1, 3]
+  cmp_b: [1, 1, 3]
+  disp_c: [0, 1, 6]
+  cmp_c: [1, 1, 6]
+  disp_qc: [0, 1, 9]
+  cmp_qc: [1, 1, 9]
+  drop_qc: [0, 1, 12]
+  cmp_drop_qc: [1, 1, 12]

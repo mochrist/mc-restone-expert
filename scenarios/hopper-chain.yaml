@@ -1,0 +1,45 @@
+name: hopper-chain
+description: >
+  Zwei Hopper-Ketten A -> B -> Fass, A startet mit 3 Eisenschwertern (Comparator 9/6/3/0, B: 3 bei einem
+  Schwert, Fass 1/2/2). Oben (z=0) wurde A vor B platziert, tickt also zuerst; unten (z=3) ist die
+  Platzierungsreihenfolge umgekehrt (B tickt zuerst). A überträgt sofort im ersten Tick und dann alle 8 gt;
+  der leere Hopper B gibt in beiden Reihenfolgen 7 gt nach dem Empfang weiter (Cooldown 8 bzw. 7).
+  Steine über den Hoppern verhindern das Einsammeln von Item-Entities.
+build:
+  size: [3, 3, 5]
+  fill:
+    - [0, 0, 0, 2, 0, 4, "stone"]
+  blocks:
+    - [0, 1, 0, "hopper[enabled=true,facing=east]"]
+    - [1, 1, 0, "hopper[enabled=true,facing=east]"]
+    - [2, 1, 0, "barrel[facing=up,open=false]"]
+    - [0, 2, 0, "stone"]
+    - [1, 2, 0, "stone"]
+    - [0, 1, 1, "comparator[facing=north,mode=compare,powered=true]"]
+    - [1, 1, 1, "comparator[facing=north,mode=compare,powered=false]"]
+    - [2, 1, 1, "comparator[facing=north,mode=compare,powered=false]"]
+    - [0, 1, 3, "barrel[facing=up,open=false]"]
+    - [1, 1, 3, "hopper[enabled=true,facing=west]"]
+    - [2, 1, 3, "hopper[enabled=true,facing=west]"]
+    - [1, 2, 3, "stone"]
+    - [2, 2, 3, "stone"]
+    - [0, 1, 4, "comparator[facing=north,mode=compare,powered=false]"]
+    - [1, 1, 4, "comparator[facing=north,mode=compare,powered=false]"]
+    - [2, 1, 4, "comparator[facing=north,mode=compare,powered=true]"]
+  block_entities:
+    - [0, 1, 0, '{id:"minecraft:hopper",Items:[{Slot:0b,id:"minecraft:iron_sword",count:1},{Slot:1b,id:"minecraft:iron_sword",count:1},{Slot:2b,id:"minecraft:iron_sword",count:1}]}']
+    - [0, 1, 1, '{id:"minecraft:comparator",OutputSignal:9}']
+    - [1, 1, 1, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [2, 1, 1, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [2, 1, 3, '{id:"minecraft:hopper",Items:[{Slot:0b,id:"minecraft:iron_sword",count:1},{Slot:1b,id:"minecraft:iron_sword",count:1},{Slot:2b,id:"minecraft:iron_sword",count:1}]}']
+    - [0, 1, 4, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 4, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [2, 1, 4, '{id:"minecraft:comparator",OutputSignal:9}']
+ticks: 30
+probes:
+  cmp_a1: [0, 1, 1]
+  cmp_b1: [1, 1, 1]
+  cmp_c1: [2, 1, 1]
+  cmp_a2: [2, 1, 4]
+  cmp_b2: [1, 1, 4]
+  cmp_c2: [0, 1, 4]

@@ -1,0 +1,133 @@
+{
+ "format": 1,
+ "scenario": "hopper-chain",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 30,
+ "probes": {
+  "cmp_a1": [
+   0,
+   1,
+   1
+  ],
+  "cmp_b1": [
+   1,
+   1,
+   1
+  ],
+  "cmp_c1": [
+   2,
+   1,
+   1
+  ],
+  "cmp_a2": [
+   2,
+   1,
+   4
+  ],
+  "cmp_b2": [
+   1,
+   1,
+   4
+  ],
+  "cmp_c2": [
+   0,
+   1,
+   4
+  ]
+ },
+ "samples": {
+  "cmp_a1": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=9"
+   ],
+   [
+    3,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=6"
+   ],
+   [
+    11,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=3"
+   ],
+   [
+    19,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "cmp_b1": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    3,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=3"
+   ],
+   [
+    26,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "cmp_c1": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    10,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=1"
+   ],
+   [
+    18,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=2"
+   ]
+  ],
+  "cmp_a2": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=9"
+   ],
+   [
+    3,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=6"
+   ],
+   [
+    11,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=3"
+   ],
+   [
+    19,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "cmp_b2": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    3,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=3"
+   ],
+   [
+    26,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "cmp_c2": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    10,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=1"
+   ],
+   [
+    18,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=2"
+   ]
+  ]
+ }
+}
