@@ -98,6 +98,11 @@ def explain(a: Analysis, title: str | None = None) -> str:
     lines += summary or ["- Keine Reaktion an den Ausgängen gefunden."]
     lines.append("")
 
+    if a.patterns:
+        lines += ["## Erkannte Bausteine", ""]
+        lines += [f"- {p}" for p in a.patterns]
+        lines.append("")
+
     if a.truth_table and multi:
         levers = [p for p in a.inputs if p.kind == "lever"]
         lines += ["## Wahrheitstabelle (Ruhezustände, jede Kombination frisch simuliert)", ""]
@@ -111,6 +116,23 @@ def explain(a: Analysis, title: str | None = None) -> str:
     lines += ["## Verhalten je Eingang", ""]
     for r in a.responses:
         lines += _response_section(a, r)
+
+    pulses = [r for r in a.pulse_responses if r.kind not in ("keine Reaktion auf Pulse", "Ausgang ist im Ruhezustand an")]
+    if pulses:
+        lengths = sorted({L for r in pulses for L in r.table})
+        lines += ["## Pulsantwort", "",
+                  "Jeder Hebel wird in einer frischen Welt für L gt eingeschaltet. Die Tabelle zeigt die Länge des "
+                  "Ausgangspulses (– = kein Puls, ∞ = bleibt an, mehrere Pulse durch / getrennt).", ""]
+        lines.append("| Eingang → Ausgang | " + " | ".join(f"{L}" for L in lengths) + " | Einordnung |")
+        lines.append("|---|" + "---|" * len(lengths) + "---|")
+        for r in pulses:
+            cells = []
+            for L in lengths:
+                iv = r.table.get(L, [])
+                cells.append("/".join("∞" if n is None else str(n) for _, n in iv) or "–")
+            kind = r.kind + (f" ({r.detail})" if r.detail else "")
+            lines.append(f"| {r.input.name} → {r.output.name} | " + " | ".join(cells) + f" | {kind} |")
+        lines.append("")
 
     kinds = sorted({n.kind for n in a.notes})
     lines += ["## Genutzte Sonderfälle", ""]

@@ -279,7 +279,7 @@ def analyze(grid: Grid, inputs: list[Port] | None = None, outputs: list[Port] | 
         for port in levers:
             if port.state.get_bool("powered"):
                 continue
-            analysis.pulse_responses.extend(pulse_response(circuit, port, outputs))
+            analysis.pulse_responses.extend(pulse_response(circuit, port, outputs, notes=analysis.notes))
         analysis.latches = find_latches(circuit, inputs, outputs)
         for latch in analysis.latches:
             analysis.patterns.append(

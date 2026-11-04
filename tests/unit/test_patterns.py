@@ -69,3 +69,12 @@ def test_repeater_minimum_pulse_from_scenario():
     kinds = {(r.input.name, r.output.name): r.kind for r in a.pulse_responses}
     assert kinds[("in2", "out1")] == "kurze Pulse werden auf mindestens 4 gt verlängert"
     assert not any("kurze Pulse" in p for p in a.patterns)  # a plain repeater is no building block
+
+
+def test_pulse_experiment_reports_block_dropping():
+    from redstone.analysis.explain import explain
+
+    a = analyze(load_scenario(ROOT / "scenarios/sticky-pulse-lengths.yaml").grid)
+    assert "piston_spit" in {n.kind for n in a.notes}
+    text = explain(a)
+    assert "## Pulsantwort" in text and "Block-Dropping" in text

@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ..model import Pos
+from ..sim.notes import Note, notes_of
 from .experiment import Circuit, Recording
 from .ports import Port
 
@@ -54,12 +55,17 @@ def _intervals(rec: Recording, pos: Pos, start: int) -> list[tuple[int, int | No
 
 
 def pulse_response(circuit: Circuit, lever: Port, outputs: list[Port],
-                   lengths: tuple[int, ...] = PULSE_LENGTHS) -> list[PulseResponse]:
-    """Switch the lever on for L ticks (fresh world per L) and record what each output does."""
+                   lengths: tuple[int, ...] = PULSE_LENGTHS, notes: list[Note] | None = None) -> list[PulseResponse]:
+    """Switch the lever on for L ticks (fresh world per L) and record what each output does.
+
+    Mechanics notes of the runs (e.g. block dropping at short pulses) are appended to `notes`."""
     responses = [PulseResponse(lever, out) for out in outputs]
     for length in lengths:
         actions = [(1, lever.pos, "use"), (1 + length, lever.pos, "use")]
-        rec = circuit.run(actions, max_ticks=1 + length + MAX_TICKS, quiet=QUIET)
+        world = circuit.new_world()
+        rec = circuit.run(actions, max_ticks=1 + length + MAX_TICKS, quiet=QUIET, world=world)
+        if notes is not None:
+            notes.extend(notes_of(world))
         if rec.settled_at is None:
             return []  # the circuit does not come to rest: no meaningful pulse response
         for r in responses:
