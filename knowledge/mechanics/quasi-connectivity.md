@@ -19,7 +19,7 @@ Rails **kein** QC; Türen prüfen nur ihre eigene zweite Hälfte (siehe QC-005).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#getNeighborSignal`; [SRC-M-WIKI-QC]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/zero-tick-piston.yaml)
 - Hinweise: Details siehe PIS-002.
 
 ### QC-002: Dispenser und Dropper haben QC
@@ -58,7 +58,7 @@ Rails **kein** QC; Türen prüfen nur ihre eigene zweite Hälfte (siehe QC-005).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `SignalGetter#hasNeighborSignal`, `SignalGetter#getSignal`, `PistonBaseBlock#getNeighborSignal`; [SRC-M-WIKI-DISPENSER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/zero-tick-piston.yaml)
 - Hinweise: Ist die Position darüber selbst ein Leiter, wird dieser nicht als „bestromter Block" gewertet, sondern nur seine Nachbarn werden abgefragt (beim Dispenser über `hasNeighborSignal(above)`).
 
 ### QC-007: QC-Aktivierung braucht ein Block-Update am QC-Block

@@ -27,7 +27,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getConnectingSide`, `RedstoneWireBlock#getMissingConnections`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dust-steps.yaml)
 - Hinweise: Die Prüfung „Block darüber ist kein Leiter" ruft `isRedstoneConductor` mit der Staubposition statt der Position darüber auf; das ist nur für positionsabhängige Leiter-Prädikate relevant (in Vanilla praktisch nicht).
 
 ### DUST-003: up und side unterscheiden sich nur in der Darstellung
@@ -50,7 +50,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getConnectingSide`, `RedstoneWireEvaluator#getIncomingWireSignal`; [SRC-WIKI-REDSTONE-DUST]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dust-steps.yaml)
 - Hinweise: Nicht-Leiter wie Glas, Stufen oder Redstone-Blöcke trennen nicht.
 
 ### DUST-006: Ein Leiter neben dem oberen Staub trennt die Diagonale nach unten
@@ -65,7 +65,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getConnectionState`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dust-steps.yaml)
 - Hinweise: Ausnahme Punkt-Form (DUST-008).
 
 ### DUST-008: Isolierter Staub kann Punkt oder Kreuz sein
@@ -73,7 +73,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3 (seit 1.16, 20w21a)
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getConnectionState`, `RedstoneWireBlock#useWithoutItem`; [SRC-WIKI-REDSTONE-DUST]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dust-powering.yaml)
 - Hinweise: Neu platzierter isolierter Staub ist ein Kreuz (`getStateForPlacement` startet mit dem Kreuz-Zustand; seit 1.16, 20w18a).
 
 ### DUST-009: Umschalten Punkt/Kreuz aktualisiert nur Leiter, deren Verbindung sich ändert
@@ -89,7 +89,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getSignal`, `RedstoneWireBlock#getDirectSignal`; [SRC-WIKI-REDSTONE-DUST]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dust-powering.yaml)
 - Hinweise: Ein Punkt powert daher nur den Block darunter, ein Kreuz alle vier Seiten, eine Linie nur ihre beiden Enden.
 
 ### DUST-011: Für das Powern zählt die neu berechnete, nicht die gespeicherte Form
@@ -97,7 +97,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getSignal`, `RedstoneWireBlock#getConnectionState`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dust-powering.yaml)
 - Hinweise: Ein veralteter gespeicherter Zustand (z. B. nach unterdrückten Shape-Updates) ändert das Powering also nicht.
 
 ### DUST-012: Dioden lesen die Staubstärke an ihrem Eingang direkt
@@ -112,7 +112,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireEvaluator#getIncomingWireSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dust-steps.yaml)
 - Hinweise: Die gespeicherten Seiten-Properties werden dabei nicht abgefragt, nur die Geometrie.
 
 ### DUST-014: Signal läuft über nicht-leitende Träger nur nach oben
@@ -168,7 +168,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#neighborChanged`, `DefaultRedstoneWireEvaluator#updatePowerStrength`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dust-network.yaml)
 
 ### DUST-021: Beim Abschalten durchläuft Staub Zwischenwerte
 - Aussage: Weil jeder Staub nur sich selbst aus den aktuellen Nachbarwerten neu berechnet, kann ein Staub beim Abschalten eines Strangs vorübergehend einen Wert größer 0 von noch nicht aktualisierten Nachbarn übernehmen, bevor er im Lauf derselben Kaskade auf 0 fällt.

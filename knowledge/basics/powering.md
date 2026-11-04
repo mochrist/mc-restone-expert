@@ -81,7 +81,7 @@ deshalb Komponenten, aber keinen Staub.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getDirectSignal`, `RedstoneWireBlock#getSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dust-powering.yaml)
 - Hinweise: Dass der so gepowerte Block trotzdem keinen anderen Staub speist, erledigt PWR-010.
 
 ### PWR-010: Beim Lesen der Blockeingänge blendet Staub sämtlichen Staub aus

@@ -1,7 +1,7 @@
 name: piston-push-limit
 description: >
   Push-Limit und Sonderblöcke. z=0: 12 Steine (geht). z=2: 13 Steine (fährt nicht aus). z=4: zwei Steine und ein
-  Teppich (Teppich wird zerstört, Steine geschoben). z=6: Stein vor Obsidian (fährt nicht aus).
+  Teppich (Teppich hat in 26.3 die Push-Reaktion PUSH_PULL und wird mitgeschoben, nicht zerstört). z=6: Stein vor Obsidian (fährt nicht aus).
   Die Pistons werden per Redstone-Block bestromt (setblock) und später wieder abgeschaltet.
 build:
   size: [16, 2, 7]

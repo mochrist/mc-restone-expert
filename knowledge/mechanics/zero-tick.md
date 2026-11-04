@@ -31,14 +31,14 @@ während der Block-Event-Phase entstehen, werden in derselben Phase abgearbeitet
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ServerLevel#runBlockEvents`, `PistonBaseBlock#checkIfExtend`; [SRC-M-WIKI-ZEROTICK]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/zero-tick-piston.yaml)
 
 ### ZT-004: Sticky Piston beim 0-Tick-Puls: Block wird sofort an die ausgefahrene Position gesetzt
 - Aussage: Bei Ausfahren und Einfahren im selben Tick setzt das Contract/Drop-Event den noch bewegten geschobenen Block per `finalTick` sofort an seine Zielposition und zieht ihn nicht zurück; der Piston beginnt einzufahren.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#triggerEvent`, `PistonMovingBlockEntity#finalTick`; [SRC-M-WIKI-ZEROTICK]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/zero-tick-piston.yaml)
 - Hinweise: Da `isHandlingTick` in der Block-Event-Phase wahr ist, wird immer Event 2 (Drop) gewählt (PIS-004). Der Block „teleportiert" ohne Animation einen Block weiter, mit Block-Updates (`setBlockAndUpdate`) und eigenem `neighborChanged`.
 
 ### ZT-005: Normaler Piston beim 0-Tick-Puls: Block wird nicht teleportiert
@@ -46,7 +46,7 @@ während der Block-Event-Phase entstehen, werden in derselben Phase abgearbeitet
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#triggerEvent`; [SRC-M-WIKI-ZEROTICK]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/zero-tick-piston.yaml)
 
 ### ZT-006: Repeater und Comparator übertragen 0-Tick-Pulse nicht
 - Aussage: Komponenten, die auf Eingangsänderungen nur mit einem geplanten Tick reagieren und im Tick die aktuelle Eingangsleistung neu prüfen, geben einen 0-Tick-Puls nicht weiter.

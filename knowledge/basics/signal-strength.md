@@ -48,7 +48,7 @@ meistens das Maximum. Nur Redstone-Staub verliert pro Block eine Stufe, alle and
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireEvaluator#getIncomingWireSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dust-network.yaml)
 - Hinweise: Welche Nachbarn „relevant" sind (horizontal, diagonal hoch/runter), steht in DUST-Einträgen.
 
 ### SIG-006: Zielstärke von Staub ist das Maximum aus Blocksignal und Staubsignal
@@ -56,7 +56,7 @@ meistens das Maximum. Nur Redstone-Staub verliert pro Block eine Stufe, alle and
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DefaultRedstoneWireEvaluator#calculateTargetStrength`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/dust-network.yaml)
 
 ### SIG-007: Ein Staubstrang von einer 15er-Quelle versorgt höchstens 15 Staubblöcke
 - Aussage: Direkt neben einer Quelle der Stärke 15 hat Staub 15; jeder weitere Staubblock hat eine Stufe weniger, der 15. Staub hat Stärke 1, der 16. hat 0.

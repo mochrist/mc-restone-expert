@@ -34,14 +34,14 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#checkIfExtend`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/piston-push-limit.yaml)
 
 ### PIS-004: Einfahren erzeugt Event 1 (ziehen) oder 2 (fallen lassen)
 - Aussage: Ist der Piston unbestromt und ausgefahren, wird ein Block-Event mit `b0=1` (TRIGGER_CONTRACT) eingereiht; `b0=2` (TRIGGER_DROP) wird gewählt, wenn zwei Blöcke vor dem Piston ein `moving_piston` in gleicher Richtung mit noch ausfahrendem `PistonMovingBlockEntity` steht und (dessen `getProgress(0)` < 0,5 ist oder es in diesem Game-Tick schon getickt wurde oder `ServerLevel#isHandlingTick` wahr ist).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#checkIfExtend`, `PistonMovingBlockEntity#getProgress`, `PistonMovingBlockEntity#getLastTicked`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/sticky-pulse-lengths.yaml)
 - Hinweise: `isHandlingTick` ist von Beginn von `ServerLevel#tick` bis einschließlich der Block-Event-Phase wahr, also z. B. bei Abschaltung durch geplante Ticks (Repeater, Torch) oder durch andere Block-Events.
 
 ### PIS-005: Beim Ausführen des Events wird die Leistung erneut geprüft
@@ -57,7 +57,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#triggerEvent`, `PistonBaseBlock#moveBlocks`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/piston-push-limit.yaml)
 - Hinweise: `moveBlocks` setzt die Blöcke ohne Nachbar-Updates (Flags 324/82) und löst danach explizit `updateNeighborsAt` in dieser Reihenfolge aus: zerstörte Blöcke, alte Positionen der geschobenen Blöcke (in umgekehrter Listenreihenfolge), dann die Kopfposition.
 
 ### PIS-007: Ein bewegter Block erreicht sein Ziel 2 gt nach dem Event
@@ -65,7 +65,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonMovingBlockEntity#tick`, `Level#addBlockEntityTicker`, `Level#tickBlockEntities`, `ServerLevel#tick`; [SRC-M-WIKI-PISTON]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/piston-push-limit.yaml)
 - Hinweise: Gilt für Aus- und Einfahren gleich. Das Wiki nennt „2 game ticks" für Aus- und Einfahren. Neue Ticker werden direkt in die Ticker-Liste eingefügt, wenn gerade keine Block Entities getickt werden (Block-Event-Phase liegt davor), daher läuft der erste Schritt im selben Tick.
 
 ### PIS-008: Der ankommende Block bekommt ein eigenes neighborChanged
@@ -89,7 +89,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#triggerEvent`, `PistonMovingBlockEntity#finalTick`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/sticky-pulse-lengths.yaml)
 - Hinweise: Das ist das „Ausspucken" (Block-Dropping) des Sticky Pistons. `finalTick` setzt den Block mit `setBlockAndUpdate` und ruft `neighborChanged` auf der Position auf.
 
 ### PIS-011: Sticky Piston zieht nur bei Event 1 und ziehbarem Block
@@ -97,7 +97,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#triggerEvent`, `PistonBaseBlock#isPushable`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/piston-redstone-block.yaml)
 - Hinweise: Glasierte Terrakotta (`PUSH`) wird daher geschoben, aber nicht gezogen.
 
 ### PIS-012: Sticky Piston lässt den Block bei kurzen Pulsen fallen
@@ -105,7 +105,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#checkIfExtend`, `PistonBaseBlock#triggerEvent`; [SRC-M-WIKI-STICKY-PISTON]
 - Konfidenz: mittel
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/sticky-pulse-lengths.yaml)
 - Hinweise: Aus dem Code abgeleitet (Kombination PIS-004, PIS-007, PIS-010). Das Wiki beschreibt nur qualitativ „verliert Leistung, bevor das Ausfahren fertig ist", ohne Tickzahl. Bei Abschaltung in der Entity-/Block-Entity-Phase oder durch Spieleraktion hängt das Ergebnis vom Fortschritt ab (siehe PIS-004).
 
 ### PIS-013: Push-Limit 12 Blöcke
@@ -113,14 +113,14 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonStructureResolver#addBlockLine`, `PistonStructureResolver#resolve`; [SRC-M-WIKI-PISTON]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/piston-push-limit.yaml)
 
 ### PIS-014: Unbewegliche Blöcke
 - Aussage: `isPushable` ist falsch für Positionen außerhalb der Bauhöhe oder der World Border, für Blöcke mit Härte -1, Push-Reaktion `IMMOVEABLE` (z. B. Obsidian, Piston-Kopf, `moving_piston`), ausgefahrene Pistons und für jeden Block mit Block Entity (mit Ausnahme von Blöcken mit Push-Reaktion `PUSH` oder `POPPED`, die vorher entschieden werden).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#isPushable`, `Blocks#pistonProperties`; [SRC-M-WIKI-PISTON]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/piston-push-limit.yaml)
 - Hinweise: Damit sind Dispenser, Dropper, Hopper, Truhen usw. unbeweglich. Nicht ausgefahrene Pistons sind trotz `IMMOVEABLE` in den Properties schiebbar, weil sie vor der Push-Reaktion gesondert behandelt werden.
 
 ### PIS-015: Blöcke mit Push-Reaktion POPPED werden beim Schieben zerstört
@@ -135,7 +135,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonStructureResolver#isSticky`, `PistonStructureResolver#canStickToEachOther`, `PistonStructureResolver#addBranchingBlocks`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/slime-structure.yaml)
 - Hinweise: Mitgezogene Blöcke zählen zum 12er-Limit. Blöcke mit Push-Reaktion `PUSH` (z. B. glasierte Terrakotta) haften nur in Schieberichtung (`isPushable` mit `connectionDirection`).
 
 ### PIS-017: Einfahrender Piston aktualisiert seine Nachbarn sofort
@@ -150,7 +150,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3 (seit 1.13.1, 18w30b)
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#triggerEvent`; [SRC-M-WIKI-PISTON]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/sticky-pulse-lengths.yaml)
 - Hinweise: In 1.13-pre7 bis 18w30b ließen auch normale Pistons Blöcke fallen.
 
 ### PIS-019: Start-Verzögerung 0 oder 1 gt je nach Phase der Aktivierung
@@ -158,4 +158,4 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ServerLevel#tick`, `ServerLevel#runBlockEvents`; [SRC-M-WIKI-PISTON]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/piston-push-limit.yaml)
