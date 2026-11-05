@@ -1,0 +1,54 @@
+name: seq-delay-repeater
+description: 'Vorlage delay-repeater (delay=2) aus src/redstone/design/seq_templates.py: Hebel, eine Reihe Verstärker auf
+  Stufe 1 (je 2 gt), Lampe. Stufe 1 lässt auch 2-gt-Pulse unverändert durch; höhere Stufen würden kurze Pulse verlängern.
+  Testabläufe nacheinander: Hebel 2 gt an ab Tick 0; Hebel 3 gt an ab Tick 56; Hebel 5 gt an ab Tick 113; Hebel 10 gt an ab
+  Tick 172; Hebel 20 gt an ab Tick 236; Hebel 40 gt an ab Tick 310.'
+build:
+  size: [3, 2, 1]
+  blocks:
+  - [0, 0, 0, stone]
+  - [0, 1, 0, 'lever[face=floor,facing=east,powered=false]']
+  - [1, 0, 0, stone]
+  - [1, 1, 0, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [2, 1, 0, 'redstone_lamp[lit=false]']
+ticks: 404
+inputs:
+- tick: 2
+  pos: [0, 1, 0]
+  action: use
+- tick: 4
+  pos: [0, 1, 0]
+  action: use
+- tick: 58
+  pos: [0, 1, 0]
+  action: use
+- tick: 61
+  pos: [0, 1, 0]
+  action: use
+- tick: 115
+  pos: [0, 1, 0]
+  action: use
+- tick: 120
+  pos: [0, 1, 0]
+  action: use
+- tick: 174
+  pos: [0, 1, 0]
+  action: use
+- tick: 184
+  pos: [0, 1, 0]
+  action: use
+- tick: 238
+  pos: [0, 1, 0]
+  action: use
+- tick: 258
+  pos: [0, 1, 0]
+  action: use
+- tick: 312
+  pos: [0, 1, 0]
+  action: use
+- tick: 352
+  pos: [0, 1, 0]
+  action: use
+probes:
+  in: [0, 1, 0]
+  out: [2, 1, 0]

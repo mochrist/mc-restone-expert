@@ -1,0 +1,16 @@
+name: seq-clock-observer
+description: 'Vorlage clock-observer (period=6, on_ticks=2) aus src/redstone/design/seq_templates.py: Zwei Observer schauen
+  sich an und lösen sich gegenseitig aus. Ausgang ist der Observer selbst; eine Lampe bliebe wegen ihrer Ausschaltverzögerung
+  dauerhaft an. Gestartet wird sie, indem der Block bei [1, 0, 0] bei Tick 2 gesetzt wird.'
+build:
+  size: [2, 1, 1]
+  blocks:
+  - [0, 0, 0, 'observer[facing=east,powered=false]']
+ticks: 202
+inputs:
+- tick: 2
+  pos: [1, 0, 0]
+  action: setblock
+  state: observer[facing=west,powered=false]
+probes:
+  out: [0, 0, 0]

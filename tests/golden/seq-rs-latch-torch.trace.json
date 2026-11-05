@@ -1,0 +1,92 @@
+{
+ "format": 1,
+ "scenario": "seq-rs-latch-torch",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 194,
+ "probes": {
+  "set": [
+   6,
+   1,
+   2
+  ],
+  "reset": [
+   0,
+   1,
+   0
+  ],
+  "out": [
+   4,
+   0,
+   0
+  ]
+ },
+ "samples": {
+  "set": [
+   [
+    0,
+    "minecraft:stone_button[face=floor,facing=west,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:stone_button[face=floor,facing=west,powered=true]"
+   ],
+   [
+    22,
+    "minecraft:stone_button[face=floor,facing=west,powered=false]"
+   ],
+   [
+    32,
+    "minecraft:stone_button[face=floor,facing=west,powered=true]"
+   ],
+   [
+    52,
+    "minecraft:stone_button[face=floor,facing=west,powered=false]"
+   ]
+  ],
+  "reset": [
+   [
+    0,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    62,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    82,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    92,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    112,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    144,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    164,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "out": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    6,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    70,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ]
+ }
+}

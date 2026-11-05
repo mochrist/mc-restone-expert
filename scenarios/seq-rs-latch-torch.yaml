@@ -1,0 +1,49 @@
+name: seq-rs-latch-torch
+description: 'Vorlage rs-latch-torch (delay=4, kind=button) aus src/redstone/design/seq_templates.py: RS-NOR-Latch aus zwei
+  Wandfackeln an zwei Blöcken, über Staub kreuzweise verbunden. Die Lampe unter dem Staub hinter der zweiten Fackel zeigt
+  den Zustand. Knöpfe: set über Staub, reset über einen Verstärker, beide 4 gt. Testabläufe nacheinander: setzen, setzen,
+  rücksetzen, rücksetzen ab Tick 0; rücksetzen im Ruhezustand ab Tick 142.'
+build:
+  size: [7, 2, 3]
+  blocks:
+  - [0, 0, 0, stone]
+  - [0, 1, 0, 'stone_button[face=floor,facing=east,powered=false]']
+  - [1, 0, 0, stone]
+  - [1, 1, 0, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [2, 0, 1, stone]
+  - [2, 0, 2, stone]
+  - [2, 1, 0, stone]
+  - [2, 1, 1, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
+  - [2, 1, 2, 'redstone_wire[east=side,north=side,power=15,south=none,west=none]']
+  - [3, 1, 0, 'redstone_wall_torch[facing=east,lit=false]']
+  - [3, 1, 2, 'redstone_wall_torch[facing=west,lit=true]']
+  - [4, 0, 0, 'redstone_lamp[lit=false]']
+  - [4, 0, 1, stone]
+  - [4, 1, 0, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [4, 1, 1, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [4, 1, 2, stone]
+  - [5, 0, 2, stone]
+  - [5, 1, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [6, 0, 2, stone]
+  - [6, 1, 2, 'stone_button[face=floor,facing=west,powered=false]']
+ticks: 194
+inputs:
+- tick: 2
+  pos: [6, 1, 2]
+  action: use
+- tick: 32
+  pos: [6, 1, 2]
+  action: use
+- tick: 62
+  pos: [0, 1, 0]
+  action: use
+- tick: 92
+  pos: [0, 1, 0]
+  action: use
+- tick: 144
+  pos: [0, 1, 0]
+  action: use
+probes:
+  set: [6, 1, 2]
+  reset: [0, 1, 0]
+  out: [4, 0, 0]

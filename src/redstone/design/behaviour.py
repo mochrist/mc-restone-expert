@@ -45,6 +45,9 @@ class BehaviourSpec:
     length_tolerance: int = 0  # a pulse may be this many gt longer or shorter
     source: str = ""
     notes: list[str] = field(default_factory=list)
+    # delay the expected intervals already contain; with it the evaluation reports the real delay from the
+    # input. None (recorded specs) = report the difference to the recording.
+    nominal_delay: int | None = None
 
     def describe(self) -> str:
         return self.kind or f"{len(self.trials)} Testabläufe"
@@ -147,7 +150,8 @@ def evaluate_behaviour(candidate: Candidate, spec: BehaviourSpec, constraints: C
         if ev.errors and stop_early:
             break
     ev.correct = not ev.errors
-    ev.max_delay = worst  # extra delay compared with the spec (negative = faster)
+    # real delay from the input if the spec knows its own delay, else the difference to the spec
+    ev.max_delay = worst + spec.nominal_delay if spec.nominal_delay is not None else worst
     if not constraints.allow_qc and "quasi_connectivity" in ev.mechanics:
         ev.violations.append("nutzt Quasi-Connectivity")
     return ev
@@ -162,8 +166,19 @@ def _lever_pulse(i: int, length: int, at: int = START) -> list[tuple[int, int]]:
     return [(at, i), (at + length, i)]
 
 
-def monostable(length: int, delay: int = 0, tolerance: int = 4, kind: str = "lever") -> BehaviourSpec:
+LOOSE_DELAY = 10  # without a given delay, edges may come 0..10 gt after the input
+
+
+def _window(delay: int | None, tolerance: int) -> tuple[int, int]:
+    """(expected delay, tolerance): a given delay ± tolerance, or 0..LOOSE_DELAY when no delay is given."""
+    if delay is None:
+        return LOOSE_DELAY // 2, LOOSE_DELAY // 2
+    return delay, tolerance
+
+
+def monostable(length: int, delay: int | None = None, tolerance: int = 4, kind: str = "lever") -> BehaviourSpec:
     """Rising edge -> one pulse of exactly `length` gt, whatever the input pulse length."""
+    delay, tolerance = _window(delay, tolerance)
     trials = []
     if kind == "button":
         trials.append(Trial("Knopfdruck", [(START, 0)], [[(START + delay, START + delay + length)]]))
@@ -172,26 +187,28 @@ def monostable(length: int, delay: int = 0, tolerance: int = 4, kind: str = "lev
             trials.append(Trial(f"Hebel {p} gt an", _lever_pulse(0, p),
                                 [[(START + delay, START + delay + length)]]))
     return BehaviourSpec(["in"], [kind], ["out"], trials,
-                         f"Monoflop: {length}-gt-Puls bei steigender Flanke", tolerance)
+                         f"Monoflop: {length}-gt-Puls bei steigender Flanke", tolerance, nominal_delay=delay)
 
 
-def pulse_extender(length: int, delay: int = 0, tolerance: int = 4) -> BehaviourSpec:
+def pulse_extender(length: int, delay: int | None = None, tolerance: int = 4) -> BehaviourSpec:
     """Output on from the rising edge until max(input length, `length`) gt later (lever input)."""
+    delay, tolerance = _window(delay, tolerance)
     trials = [Trial(f"Hebel {p} gt an", _lever_pulse(0, p),
                     [[(START + delay, START + delay + max(p, length))]]) for p in LEVER_PULSES]
     return BehaviourSpec(["in"], ["lever"], ["out"], trials,
-                         f"Pulsverlängerer: Ausgang mindestens {length} gt an", tolerance)
+                         f"Pulsverlängerer: Ausgang mindestens {length} gt an", tolerance, nominal_delay=delay)
 
 
 def delay_line(delay: int, tolerance: int = 0) -> BehaviourSpec:
     trials = [Trial(f"Hebel {p} gt an", _lever_pulse(0, p), [[(START + delay, START + delay + p)]])
               for p in (2, 3, 5, 10, 20, 40)]
     return BehaviourSpec(["in"], ["lever"], ["out"], trials, f"Verzögerung um {delay} gt", tolerance,
-                         length_tolerance=0)
+                         length_tolerance=0, nominal_delay=delay)
 
 
-def t_flip_flop(delay: int = 2, tolerance: int = 4, kind: str = "lever", gap: int = 30) -> BehaviourSpec:
+def t_flip_flop(delay: int | None = None, tolerance: int = 4, kind: str = "lever", gap: int = 30) -> BehaviourSpec:
     """Output toggles on every rising edge. Lever: on/off pairs; button: presses."""
+    delay, tolerance = _window(delay, tolerance)
     if kind == "button":
         presses = [START + k * gap for k in range(4)]
         actions = [(t, 0) for t in presses]
@@ -200,14 +217,17 @@ def t_flip_flop(delay: int = 2, tolerance: int = 4, kind: str = "lever", gap: in
         rises = [START + k * gap for k in range(4)]
         actions = [a for t in rises for a in ((t, 0), (t + 10, 0))]
     expected = [(rises[0] + delay, rises[1] + delay), (rises[2] + delay, rises[3] + delay)]
+    # memory: switching on and off may have different delays, so the on-time may differ by the tolerance
     return BehaviourSpec(["in"], [kind], ["out"], [Trial("vier Flanken", actions, [expected])],
-                         "T-Flip-Flop: schaltet bei jeder steigenden Flanke um", tolerance)
+                         "T-Flip-Flop: schaltet bei jeder steigenden Flanke um", tolerance, tolerance,
+                         nominal_delay=delay)
 
 
-def rs_latch(delay: int = 2, tolerance: int = 4, kind: str = "button", gap: int = 30) -> BehaviourSpec:
+def rs_latch(delay: int | None = None, tolerance: int = 4, kind: str = "button", gap: int = 30) -> BehaviourSpec:
     """Inputs set, reset (short pulses). Output on after set until reset; repeated set/reset is idempotent."""
+    delay, tolerance = _window(delay, tolerance)
     def press(i, t):
-        return [(t, i)] if kind == "button" else [(t, i), (t + 2, i)]
+        return [(t, i)] if kind == "button" else [(t, i), (t + 6, i)]
 
     s1, s2, r1, r2 = START, START + gap, START + 2 * gap, START + 3 * gap
     trials = [
@@ -216,7 +236,8 @@ def rs_latch(delay: int = 2, tolerance: int = 4, kind: str = "button", gap: int 
         Trial("rücksetzen im Ruhezustand", press(1, s1), [[]]),
     ]
     return BehaviourSpec(["set", "reset"], [kind, kind], ["out"], trials,
-                         "RS-Latch: set schaltet ein, reset schaltet aus", tolerance)
+                         "RS-Latch: set schaltet ein, reset schaltet aus", tolerance, tolerance,
+                         nominal_delay=delay)
 
 
 def clock(period: int, on_ticks: int, length: int = 200) -> BehaviourSpec:

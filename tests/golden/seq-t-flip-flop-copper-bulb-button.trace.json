@@ -1,0 +1,81 @@
+{
+ "format": 1,
+ "scenario": "seq-t-flip-flop-copper-bulb-button",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 144,
+ "probes": {
+  "in": [
+   0,
+   1,
+   0
+  ],
+  "out": [
+   3,
+   1,
+   0
+  ]
+ },
+ "samples": {
+  "in": [
+   [
+    0,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    22,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    32,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    52,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    62,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    82,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    92,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    112,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "out": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    4,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    38,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    64,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    98,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ]
+ }
+}

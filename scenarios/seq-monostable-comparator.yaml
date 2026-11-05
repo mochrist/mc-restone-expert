@@ -1,0 +1,76 @@
+name: seq-monostable-comparator
+description: 'Vorlage monostable-comparator (length=4, delay=6, kind=lever) aus src/redstone/design/seq_templates.py: Komparator
+  im Subtraktionsmodus: Ein Verstärker (Stufe = Pulslänge/2) verlängert kurze Hebelpulse und speist den Rückeingang; über
+  eine Schleife mit einem gleich langen Verstärker kommt dasselbe Signal verspätet an den Seiteneingang und schaltet den Ausgang
+  wieder ab. Steigende Flanke, 4 bis 8 gt. Testabläufe nacheinander: Hebel 1 gt an ab Tick 0; Hebel 2 gt an ab Tick 62; Hebel
+  3 gt an ab Tick 124; Hebel 5 gt an ab Tick 186; Hebel 10 gt an ab Tick 248; Hebel 20 gt an ab Tick 310; Hebel 40 gt an ab
+  Tick 382.'
+build:
+  size: [5, 2, 3]
+  blocks:
+  - [0, 0, 0, stone]
+  - [0, 1, 0, 'lever[face=floor,facing=east,powered=false]']
+  - [1, 0, 0, stone]
+  - [1, 1, 0, 'repeater[delay=2,facing=west,locked=false,powered=false]']
+  - [2, 0, 0, stone]
+  - [2, 0, 1, stone]
+  - [2, 0, 2, stone]
+  - [2, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
+  - [2, 1, 1, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [2, 1, 2, 'redstone_wire[east=side,north=side,power=0,south=none,west=none]']
+  - [3, 0, 0, stone]
+  - [3, 0, 1, stone]
+  - [3, 0, 2, stone]
+  - [3, 1, 0, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [3, 1, 1, 'repeater[delay=2,facing=south,locked=false,powered=false]']
+  - [3, 1, 2, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  - [4, 1, 0, 'redstone_lamp[lit=false]']
+  block_entities:
+  - [3, 1, 0, '{id: "minecraft:comparator", OutputSignal: 0}']
+ticks: 474
+inputs:
+- tick: 2
+  pos: [0, 1, 0]
+  action: use
+- tick: 3
+  pos: [0, 1, 0]
+  action: use
+- tick: 64
+  pos: [0, 1, 0]
+  action: use
+- tick: 66
+  pos: [0, 1, 0]
+  action: use
+- tick: 126
+  pos: [0, 1, 0]
+  action: use
+- tick: 129
+  pos: [0, 1, 0]
+  action: use
+- tick: 188
+  pos: [0, 1, 0]
+  action: use
+- tick: 193
+  pos: [0, 1, 0]
+  action: use
+- tick: 250
+  pos: [0, 1, 0]
+  action: use
+- tick: 260
+  pos: [0, 1, 0]
+  action: use
+- tick: 312
+  pos: [0, 1, 0]
+  action: use
+- tick: 332
+  pos: [0, 1, 0]
+  action: use
+- tick: 384
+  pos: [0, 1, 0]
+  action: use
+- tick: 424
+  pos: [0, 1, 0]
+  action: use
+probes:
+  in: [0, 1, 0]
+  out: [4, 1, 0]

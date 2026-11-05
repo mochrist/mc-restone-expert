@@ -1,0 +1,31 @@
+name: seq-clock-repeater-ring
+description: 'Vorlage clock-repeater-ring (period=8, on_ticks=2) aus src/redstone/design/seq_templates.py: Ring aus vier Verstärkern
+  mit Staub in den Ecken, ein Verstärker ist gespeichert an; der Puls läuft im Ring um. Periode = Summe der Verzögerungen,
+  An-Zeit = längste Verzögerung. Lampe unter einer Ecke. Gestartet wird sie, indem der Block bei [1, 1, 0] bei Tick 2 gesetzt
+  wird.'
+build:
+  size: [3, 2, 3]
+  blocks:
+  - [0, 0, 0, 'redstone_lamp[lit=false]']
+  - [0, 0, 1, stone]
+  - [0, 0, 2, stone]
+  - [0, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [0, 1, 1, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [0, 1, 2, 'redstone_wire[east=side,north=side,power=0,south=none,west=none]']
+  - [1, 0, 0, stone]
+  - [1, 0, 2, stone]
+  - [1, 1, 2, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [2, 0, 0, stone]
+  - [2, 0, 1, stone]
+  - [2, 0, 2, stone]
+  - [2, 1, 0, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [2, 1, 1, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [2, 1, 2, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+ticks: 202
+inputs:
+- tick: 2
+  pos: [1, 1, 0]
+  action: setblock
+  state: repeater[delay=1,facing=west,locked=false,powered=true]
+probes:
+  out: [0, 0, 0]

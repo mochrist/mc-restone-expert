@@ -125,6 +125,8 @@ def _is_on(value: str, prop: str | None) -> bool:
     if prop:
         v = state.get(prop)
         return v == "true" or (v is not None and v.isdigit() and int(v) > 0)
+    if state.id.endswith("copper_bulb"):  # powered = input, lit = output (T flip-flop)
+        return state.get("lit") == "true"
     for key in ("powered", "lit", "extended", "triggered", "enabled"):
         if state.get(key) is not None:
             return state.get(key) == "true"

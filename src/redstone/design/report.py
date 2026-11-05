@@ -47,7 +47,8 @@ def report(spec: Spec, constraints: Constraints, results: list[Evaluation], titl
         c = best.candidate
         lines.append(f"- Bester Kandidat: **{c.name}** ({c.origin}), {_size(c)} = {c.volume} Blöcke Volumen, "
                      f"{c.block_count} Blöcke, " + (
-                         f"Flanken höchstens {best.max_delay} gt später als spezifiziert." if hasattr(spec, "trials")
+                         f"Flanken höchstens {best.max_delay:+d} gt gegenüber dem Original."
+                         if hasattr(spec, "trials") and spec.nominal_delay is None
                          else f"Verzögerung höchstens {best.max_delay} gt."))
         if c.description:
             lines.append(f"- Bauweise: {c.description}")
@@ -80,7 +81,8 @@ def report(spec: Spec, constraints: Constraints, results: list[Evaluation], titl
             c = r.candidate
             rank = "–" if r is original else str(i)
             delay = ("–" if r.max_delay is None else
-                     f"{r.max_delay:+d} gt" if hasattr(spec, "trials") else f"{r.max_delay} gt")
+                     f"{r.max_delay:+d} gt" if hasattr(spec, "trials") and spec.nominal_delay is None
+                     else f"{r.max_delay} gt")
             lines.append(f"| {rank} | {c.name} | {c.origin} | {_size(c)} | {c.block_count} | {delay} | {_status(r)} |")
         lines.append("")
     if compact_log:

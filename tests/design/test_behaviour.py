@@ -56,7 +56,7 @@ def test_spec_from_recordings_reproduces_itself():
 
 def test_yaml_form():
     spec = bh.from_dict({"behaviour": "monostable", "length": 10, "delay_tolerance": 2})
-    assert spec.delay_tolerance == 2 and spec.trials[0].expected == [[(2, 12)]]
+    assert spec.delay_tolerance == 2 and spec.trials[0].expected == [[(7, 17)]]  # no delay given: 0..10 gt
 
 
 def test_recorded_spec_captures_latch_memory():

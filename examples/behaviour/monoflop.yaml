@@ -1,3 +1,3 @@
-# Monoflop: bei jeder steigenden Flanke am Hebel ein 10-gt-Puls
+# Monoflop: bei jeder steigenden Flanke am Hebel ein 8-gt-Puls
 behaviour: monostable
-length: 10
+length: 8
