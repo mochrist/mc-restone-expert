@@ -1,0 +1,4 @@
+inputs: [a, b, c]
+function:
+  sum: a ^ b ^ c
+  carry: (a and b) or (c and (a ^ b))

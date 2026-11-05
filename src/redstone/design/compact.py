@@ -110,13 +110,20 @@ def normalize(c: Candidate, max_ticks: int = 200) -> Candidate:
 
 
 def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
-            max_evaluations: int = MAX_EVALUATIONS) -> tuple[Candidate, list[str]]:
-    """Return the smallest correct variant found and a German log of the accepted steps."""
+            max_evaluations: int = MAX_EVALUATIONS, time_limit: float | None = None) -> tuple[Candidate, list[str]]:
+    """Return the smallest correct variant found and a German log of the accepted steps.
+
+    Stops after max_evaluations simulated variants or time_limit seconds, whichever comes first."""
+    import time
+
     constraints = constraints or Constraints()
     budget = [max_evaluations]
+    deadline = None if time_limit is None else time.perf_counter() + time_limit
     log: list[str] = []
 
     def works(cand: Candidate) -> bool:
+        if deadline is not None and time.perf_counter() > deadline:
+            budget[0] = 0
         if budget[0] <= 0:
             return False
         budget[0] -= 1
@@ -157,5 +164,5 @@ def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
         if cropped is not current:
             current = cropped
     if budget[0] <= 0:
-        log.append(f"Abbruch nach {max_evaluations} Bewertungen")
+        log.append("Abbruch: Zeit- oder Bewertungslimit erreicht")
     return replace(current, name=f"{c.name}-kompakt", origin=f"kompaktiert aus {c.origin or c.name}"), log

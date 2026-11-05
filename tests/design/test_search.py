@@ -43,7 +43,7 @@ def test_redesign_picks_matching_template_and_ranks_original():
     for p, s in big.grid.items():
         g[p] = s
     original = Candidate("Original", g, big.inputs, big.outputs, origin="original")
-    results = redesign(spec, Constraints(), extra=[original], templates=[INV, BUF])
+    results = redesign(spec, Constraints(), extra=[original], templates=[INV, BUF], synthesize=False)
     assert [r.candidate.name for r in results] == ["not-torch", "Original"]
     assert results[0].ok and results[1].ok
     assert results[0].candidate.origin == "template:not-torch"
@@ -51,5 +51,6 @@ def test_redesign_picks_matching_template_and_ranks_original():
 
 def test_constraints_exclude_template():
     spec = from_functions(["a"], {"y": "a"})
-    results = redesign(spec, Constraints(forbidden_blocks={"redstone_wire"}), templates=[INV, BUF])
+    results = redesign(spec, Constraints(forbidden_blocks={"redstone_wire"}), templates=[INV, BUF],
+                       synthesize=False)
     assert len(results) == 1 and not results[0].ok

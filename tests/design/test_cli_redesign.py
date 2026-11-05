@@ -13,7 +13,7 @@ EXAMPLES = Path(__file__).parents[2] / "examples" / "specs"
 
 def test_redesign_xor_exports_working_circuit(tmp_path, capsys):
     out = tmp_path / "xor.litematic"
-    assert main(["redesign", str(EXAMPLES / "xor.yaml"), "-o", str(out)]) == 0
+    assert main(["redesign", str(EXAMPLES / "xor.yaml"), "-o", str(out), "--compact", "0"]) == 0
     text = capsys.readouterr().out
     assert "Bester Kandidat: **xor2-" in text
     assert out.exists()
@@ -22,5 +22,5 @@ def test_redesign_xor_exports_working_circuit(tmp_path, capsys):
 
 
 def test_redesign_respects_box(capsys):
-    assert main(["redesign", str(EXAMPLES / "halfadder.yaml"), "--max-size", "6,3,6"]) == 1
+    assert main(["redesign", str(EXAMPLES / "halfadder.yaml"), "--max-size", "6,3,6", "--compact", "0"]) == 1
     assert "passt nicht in 6×3×6" in capsys.readouterr().out

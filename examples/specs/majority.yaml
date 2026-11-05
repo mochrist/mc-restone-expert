@@ -1,0 +1,4 @@
+# Mehrheitsentscheid: an, wenn mindestens zwei von drei Hebeln an sind
+inputs: [a, b, c]
+function:
+  y: (a and b) or (a and c) or (b and c)

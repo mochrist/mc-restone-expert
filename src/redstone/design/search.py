@@ -77,23 +77,36 @@ def original_candidate(analysis: Analysis, title: str = "Original") -> Candidate
 
 def redesign(spec: Spec, constraints: Constraints | None = None,
              extra: list[Candidate] | None = None, templates: list | None = None,
-             compact_budget: int = 0, log: list[str] | None = None) -> list[Evaluation]:
-    """Evaluate all candidates (templates + extra) and return them best first.
+             compact_budget: int = 0, log: list[str] | None = None, synthesize: bool = True,
+             time_limit: float | None = None) -> list[Evaluation]:
+    """Evaluate all candidates and return them best first.
 
-    With compact_budget > 0 every correct extra candidate (e.g. the original) is also compacted with at
-    most that many evaluations; the steps are appended to `log`."""
+    Sources: templates (matched up to permutation), the generic torch PLA (`synth.pla`) and `extra`
+    (e.g. the original). With compact_budget > 0 the PLA and every extra candidate are also compacted, with
+    at most that many evaluations each and `time_limit` seconds in total; the steps go to `log`."""
+    import time
+
     from .compact import compact
+    from .synth import pla
 
     constraints = constraints or Constraints()
-    candidates = template_candidates(spec, templates) + list(extra or [])
+    synthesized = pla(spec) if synthesize else None
+    to_compact = ([synthesized] if synthesized is not None else []) + list(extra or [])
+    candidates = template_candidates(spec, templates) + to_compact
     results = []
     for cand in candidates:
         quick = evaluate(cand, spec, constraints, full=False, stop_early=True)
         results.append(evaluate(cand, spec, constraints) if quick.correct else quick)
     if compact_budget:
-        for cand in extra or []:
+        deadline = None if time_limit is None else time.perf_counter() + time_limit
+        for cand in to_compact:
+            left = None if deadline is None else deadline - time.perf_counter()
+            if left is not None and left <= 0:
+                if log is not None:
+                    log.append(f"{cand.name}: nicht kompaktiert (Zeitlimit)")
+                continue
             # constraints other than function and delay are checked on the result, not during shrinking
-            small, steps = compact(cand, spec, Constraints(max_delay=constraints.max_delay), compact_budget)
+            small, steps = compact(cand, spec, Constraints(max_delay=constraints.max_delay), compact_budget, left)
             if log is not None:
                 log.extend(f"{cand.name}: {s}" for s in steps)
             if small.grid is not cand.grid:

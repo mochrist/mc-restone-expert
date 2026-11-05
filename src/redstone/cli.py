@@ -175,7 +175,7 @@ def _cmd_redesign(args: argparse.Namespace) -> int:
     )
     steps: list[str] = []
     results = redesign(spec, constraints, extra=[original] if original is not None else None,
-                       compact_budget=args.compact if original is not None else 0, log=steps)
+                       compact_budget=args.compact, log=steps, time_limit=args.time)
     results = [r for r in results if r.candidate is not original]
     orig_ev = evaluate(original, spec, constraints) if original is not None else None
     written = None
@@ -252,7 +252,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--report", help="write the Markdown report to this file")
     p.add_argument("--top", type=int, default=10, help="candidates listed in the report")
     p.add_argument("--compact", type=int, default=100,
-                   help="max evaluations for shrinking the original (0 = off, default 100)")
+                   help="max evaluations for shrinking each synthesized/original design (0 = off, default 100)")
+    p.add_argument("--time", type=float, default=60, help="time limit in seconds for shrinking (default 60)")
     p.set_defaults(func=_cmd_redesign)
 
     args = parser.parse_args(argv)
