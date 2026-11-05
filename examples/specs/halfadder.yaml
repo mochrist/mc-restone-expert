@@ -1,0 +1,4 @@
+inputs: [a, b]
+function:
+  carry: a and b
+  sum: a != b
