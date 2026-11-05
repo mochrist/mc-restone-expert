@@ -1,0 +1,21 @@
+name: tpl-not-torch-below
+description: Vorlage not-torch-below aus src/redstone/design/templates.py (Hebel auf einem Block, daran eine Wandfackel, die
+  Lampe direkt unter der Fackel. Verzögerung 2 gt (Fackel).) Alle Hebel-Kombinationen im Gray-Code, je 20 gt Abstand.
+build:
+  size: [2, 3, 1]
+  blocks:
+  - [0, 1, 0, stone]
+  - [0, 2, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 0, 0, 'redstone_lamp[lit=true]']
+  - [1, 1, 0, 'redstone_wall_torch[facing=east,lit=true]']
+ticks: 42
+inputs:
+- tick: 2
+  pos: [0, 2, 0]
+  action: use
+- tick: 22
+  pos: [0, 2, 0]
+  action: use
+probes:
+  a: [0, 2, 0]
+  y: [1, 0, 0]

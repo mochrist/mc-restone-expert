@@ -1,0 +1,32 @@
+name: tpl-a-and-not-b-torch
+description: Vorlage a-and-not-b-torch aus src/redstone/design/templates.py (Fackel unter dem Ausgangsblock invertiert a,
+  Hebel b sitzt auf dem Ausgangsblock; dessen Wandfackel speist die Lampe. Verzögerung 4 gt (a), 2 gt (b).) Alle Hebel-Kombinationen
+  im Gray-Code, je 20 gt Abstand.
+build:
+  size: [4, 3, 1]
+  blocks:
+  - [0, 0, 0, stone]
+  - [0, 1, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 0, 0, 'redstone_wall_torch[facing=east,lit=true]']
+  - [1, 1, 0, stone]
+  - [1, 2, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [2, 1, 0, 'redstone_wall_torch[facing=east,lit=false]']
+  - [3, 1, 0, 'redstone_lamp[lit=false]']
+ticks: 82
+inputs:
+- tick: 2
+  pos: [0, 1, 0]
+  action: use
+- tick: 22
+  pos: [1, 2, 0]
+  action: use
+- tick: 42
+  pos: [0, 1, 0]
+  action: use
+- tick: 62
+  pos: [1, 2, 0]
+  action: use
+probes:
+  a: [0, 1, 0]
+  b: [1, 2, 0]
+  y: [3, 1, 0]

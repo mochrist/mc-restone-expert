@@ -1,0 +1,68 @@
+{
+ "format": 1,
+ "scenario": "tpl-nor2-torch-flat",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 82,
+ "probes": {
+  "a": [
+   0,
+   1,
+   0
+  ],
+  "b": [
+   2,
+   2,
+   0
+  ],
+  "y": [
+   3,
+   0,
+   0
+  ]
+ },
+ "samples": {
+  "a": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    42,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "b": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ],
+   [
+    22,
+    "minecraft:lever[face=floor,facing=north,powered=true]"
+   ],
+   [
+    62,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ]
+  ],
+  "y": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    8,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    64,
+    "minecraft:redstone_lamp[lit=true]"
+   ]
+  ]
+ }
+}

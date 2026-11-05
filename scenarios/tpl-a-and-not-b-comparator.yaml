@@ -1,0 +1,36 @@
+name: tpl-a-and-not-b-comparator
+description: 'Vorlage a-and-not-b-comparator aus src/redstone/design/templates.py (Komparator im Subtraktionsmodus: a direkt
+  am Rückeingang, b über einen Staub am Seiteneingang. Verzögerung 2 gt (Komparator).) Alle Hebel-Kombinationen im Gray-Code,
+  je 20 gt Abstand.'
+build:
+  size: [3, 2, 3]
+  blocks:
+  - [0, 0, 2, stone]
+  - [0, 1, 2, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 0, 0, stone]
+  - [1, 0, 1, stone]
+  - [1, 0, 2, stone]
+  - [1, 1, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 1, 1, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [1, 1, 2, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [2, 1, 2, 'redstone_lamp[lit=false]']
+  block_entities:
+  - [1, 1, 2, '{id: "minecraft:comparator", OutputSignal: 0}']
+ticks: 82
+inputs:
+- tick: 2
+  pos: [0, 1, 2]
+  action: use
+- tick: 22
+  pos: [1, 1, 0]
+  action: use
+- tick: 42
+  pos: [0, 1, 2]
+  action: use
+- tick: 62
+  pos: [1, 1, 0]
+  action: use
+probes:
+  a: [0, 1, 2]
+  b: [1, 1, 0]
+  y: [2, 1, 2]

@@ -1,0 +1,31 @@
+name: tpl-nand2-torch
+description: Vorlage nand2-torch aus src/redstone/design/templates.py (Zwei Fackel-Inverter links und rechts an der Lampe.
+  Verzögerung 2 gt (Fackel).) Alle Hebel-Kombinationen im Gray-Code, je 20 gt Abstand.
+build:
+  size: [5, 2, 1]
+  blocks:
+  - [0, 0, 0, stone]
+  - [0, 1, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 0, 0, 'redstone_wall_torch[facing=east,lit=true]']
+  - [2, 0, 0, 'redstone_lamp[lit=true]']
+  - [3, 0, 0, 'redstone_wall_torch[facing=west,lit=true]']
+  - [4, 0, 0, stone]
+  - [4, 1, 0, 'lever[face=floor,facing=north,powered=false]']
+ticks: 82
+inputs:
+- tick: 2
+  pos: [0, 1, 0]
+  action: use
+- tick: 22
+  pos: [4, 1, 0]
+  action: use
+- tick: 42
+  pos: [0, 1, 0]
+  action: use
+- tick: 62
+  pos: [4, 1, 0]
+  action: use
+probes:
+  a: [0, 1, 0]
+  b: [4, 1, 0]
+  y: [2, 0, 0]

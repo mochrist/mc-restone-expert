@@ -1,0 +1,35 @@
+name: tpl-and2-torch-flat
+description: 'Vorlage and2-torch-flat aus src/redstone/design/templates.py (Fackel-AND in einer Reihe: zwei Eingangsfackeln
+  zeigen auf einen Staub zwischen ihnen, darunter der Ausgangsblock mit Fackel, daneben die Lampe. Verzögerung 4 gt (zwei
+  Fackeln).) Alle Hebel-Kombinationen im Gray-Code, je 20 gt Abstand.'
+build:
+  size: [5, 3, 2]
+  blocks:
+  - [0, 1, 0, stone]
+  - [0, 2, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 0, 1, 'redstone_lamp[lit=false]']
+  - [1, 1, 0, 'redstone_wall_torch[facing=east,lit=true]']
+  - [2, 0, 0, stone]
+  - [2, 0, 1, 'redstone_wall_torch[facing=south,lit=false]']
+  - [2, 1, 0, 'redstone_wire[east=side,north=none,power=15,south=none,west=side]']
+  - [3, 1, 0, 'redstone_wall_torch[facing=west,lit=true]']
+  - [4, 1, 0, stone]
+  - [4, 2, 0, 'lever[face=floor,facing=north,powered=false]']
+ticks: 82
+inputs:
+- tick: 2
+  pos: [0, 2, 0]
+  action: use
+- tick: 22
+  pos: [4, 2, 0]
+  action: use
+- tick: 42
+  pos: [0, 2, 0]
+  action: use
+- tick: 62
+  pos: [4, 2, 0]
+  action: use
+probes:
+  a: [0, 2, 0]
+  b: [4, 2, 0]
+  y: [1, 0, 1]

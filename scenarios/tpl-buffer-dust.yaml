@@ -1,0 +1,22 @@
+name: tpl-buffer-dust
+description: Vorlage buffer-dust aus src/redstone/design/templates.py (Hebel, ein Redstone-Staub, Lampe in einer Reihe. Verzögerung
+  0 gt.) Alle Hebel-Kombinationen im Gray-Code, je 20 gt Abstand.
+build:
+  size: [3, 2, 1]
+  blocks:
+  - [0, 0, 0, stone]
+  - [0, 1, 0, 'lever[face=floor,facing=east,powered=false]']
+  - [1, 0, 0, stone]
+  - [1, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [2, 1, 0, 'redstone_lamp[lit=false]']
+ticks: 42
+inputs:
+- tick: 2
+  pos: [0, 1, 0]
+  action: use
+- tick: 22
+  pos: [0, 1, 0]
+  action: use
+probes:
+  a: [0, 1, 0]
+  y: [2, 1, 0]

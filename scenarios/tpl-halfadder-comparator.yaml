@@ -1,0 +1,72 @@
+name: tpl-halfadder-comparator
+description: 'Vorlage halfadder-comparator aus src/redstone/design/templates.py (xor2-comparator für die Summe; der Übertrag
+  ist ein dritter Komparator: Ende der a-Leitung minus (nicht b) von einer Fackel am Block unter Hebel b. Verzögerung 2 gt
+  (Summe), bis 4 gt (Übertrag).) Alle Hebel-Kombinationen im Gray-Code, je 20 gt Abstand.'
+build:
+  size: [7, 2, 5]
+  blocks:
+  - [0, 1, 2, 'redstone_lamp[lit=false]']
+  - [1, 0, 2, stone]
+  - [1, 0, 3, stone]
+  - [1, 0, 4, stone]
+  - [1, 1, 2, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [1, 1, 3, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
+  - [1, 1, 4, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
+  - [2, 0, 0, stone]
+  - [2, 0, 1, stone]
+  - [2, 0, 2, stone]
+  - [2, 0, 4, 'redstone_wall_torch[facing=west,lit=true]']
+  - [2, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [2, 1, 1, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [2, 1, 2, 'redstone_wire[east=side,north=side,power=0,south=none,west=side]']
+  - [2, 1, 4, stone]
+  - [3, 0, 0, stone]
+  - [3, 0, 2, stone]
+  - [3, 0, 3, stone]
+  - [3, 0, 4, stone]
+  - [3, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [3, 1, 2, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [3, 1, 3, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 1, 4, 'lever[face=floor,facing=north,powered=false]']
+  - [4, 0, 0, stone]
+  - [4, 0, 4, stone]
+  - [4, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [4, 1, 2, 'redstone_lamp[lit=false]']
+  - [4, 1, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [5, 0, 0, stone]
+  - [5, 0, 1, stone]
+  - [5, 0, 2, stone]
+  - [5, 0, 4, stone]
+  - [5, 1, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [5, 1, 1, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [5, 1, 2, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [5, 1, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [6, 0, 2, stone]
+  - [6, 0, 3, stone]
+  - [6, 0, 4, stone]
+  - [6, 1, 2, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [6, 1, 3, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [6, 1, 4, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  block_entities:
+  - [1, 1, 2, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [3, 1, 2, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [5, 1, 2, '{id: "minecraft:comparator", OutputSignal: 0}']
+ticks: 82
+inputs:
+- tick: 2
+  pos: [5, 1, 0]
+  action: use
+- tick: 22
+  pos: [3, 1, 4]
+  action: use
+- tick: 42
+  pos: [5, 1, 0]
+  action: use
+- tick: 62
+  pos: [3, 1, 4]
+  action: use
+probes:
+  a: [5, 1, 0]
+  b: [3, 1, 4]
+  sum: [4, 1, 2]
+  carry: [0, 1, 2]

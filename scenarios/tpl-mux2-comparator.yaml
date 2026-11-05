@@ -1,0 +1,60 @@
+name: tpl-mux2-comparator
+description: 'Vorlage mux2-comparator aus src/redstone/design/templates.py (Zwei Komparatoren im Subtraktionsmodus zeigen
+  auf die Lampe: a minus s und b minus (nicht s); nicht s kommt von einer Fackel am Block unter Hebel s über einen Verstärker.
+  Verzögerung 2 gt (a, b), bis 6 gt (s).) Alle Hebel-Kombinationen im Gray-Code, je 20 gt Abstand.'
+build:
+  size: [5, 2, 3]
+  blocks:
+  - [0, 0, 2, stone]
+  - [0, 1, 2, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 0, 0, stone]
+  - [1, 0, 1, stone]
+  - [1, 0, 2, stone]
+  - [1, 1, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 1, 1, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [1, 1, 2, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [2, 0, 0, 'redstone_wall_torch[facing=east,lit=true]']
+  - [2, 1, 0, stone]
+  - [2, 1, 2, 'redstone_lamp[lit=false]']
+  - [3, 0, 0, stone]
+  - [3, 0, 1, stone]
+  - [3, 0, 2, stone]
+  - [3, 1, 0, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
+  - [3, 1, 1, 'repeater[delay=1,facing=north,locked=false,powered=true]']
+  - [3, 1, 2, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [4, 0, 2, stone]
+  - [4, 1, 2, 'lever[face=floor,facing=north,powered=false]']
+  block_entities:
+  - [1, 1, 2, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [3, 1, 2, '{id: "minecraft:comparator", OutputSignal: 0}']
+ticks: 162
+inputs:
+- tick: 2
+  pos: [1, 1, 0]
+  action: use
+- tick: 22
+  pos: [0, 1, 2]
+  action: use
+- tick: 42
+  pos: [1, 1, 0]
+  action: use
+- tick: 62
+  pos: [4, 1, 2]
+  action: use
+- tick: 82
+  pos: [1, 1, 0]
+  action: use
+- tick: 102
+  pos: [0, 1, 2]
+  action: use
+- tick: 122
+  pos: [1, 1, 0]
+  action: use
+- tick: 142
+  pos: [4, 1, 2]
+  action: use
+probes:
+  s: [1, 1, 0]
+  a: [0, 1, 2]
+  b: [4, 1, 2]
+  y: [2, 1, 2]

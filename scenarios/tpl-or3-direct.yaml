@@ -1,0 +1,44 @@
+name: tpl-or3-direct
+description: Vorlage or3-direct aus src/redstone/design/templates.py (Drei Hebel direkt an drei Seiten der Lampe. Verzögerung
+  0 gt.) Alle Hebel-Kombinationen im Gray-Code, je 20 gt Abstand.
+build:
+  size: [3, 2, 2]
+  blocks:
+  - [0, 0, 1, stone]
+  - [0, 1, 1, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 0, 0, stone]
+  - [1, 1, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 1, 1, 'redstone_lamp[lit=false]']
+  - [2, 0, 1, stone]
+  - [2, 1, 1, 'lever[face=floor,facing=north,powered=false]']
+ticks: 162
+inputs:
+- tick: 2
+  pos: [0, 1, 1]
+  action: use
+- tick: 22
+  pos: [1, 1, 0]
+  action: use
+- tick: 42
+  pos: [0, 1, 1]
+  action: use
+- tick: 62
+  pos: [2, 1, 1]
+  action: use
+- tick: 82
+  pos: [0, 1, 1]
+  action: use
+- tick: 102
+  pos: [1, 1, 0]
+  action: use
+- tick: 122
+  pos: [0, 1, 1]
+  action: use
+- tick: 142
+  pos: [2, 1, 1]
+  action: use
+probes:
+  a: [0, 1, 1]
+  b: [1, 1, 0]
+  c: [2, 1, 1]
+  y: [1, 1, 1]

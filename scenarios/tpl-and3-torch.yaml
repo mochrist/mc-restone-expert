@@ -1,0 +1,51 @@
+name: tpl-and3-torch
+description: Vorlage and3-torch aus src/redstone/design/templates.py (Fackel-AND mit drei Eingangsfackeln um einen Staub auf
+  dem Ausgangsblock; dessen Fackel speist die Lampe. Verzögerung 4 gt (zwei Fackeln).) Alle Hebel-Kombinationen im Gray-Code,
+  je 20 gt Abstand.
+build:
+  size: [3, 3, 4]
+  blocks:
+  - [0, 0, 2, 'redstone_lamp[lit=false]']
+  - [0, 1, 0, stone]
+  - [0, 1, 1, 'redstone_wall_torch[facing=south,lit=true]']
+  - [0, 2, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 0, 1, stone]
+  - [1, 0, 2, 'redstone_wall_torch[facing=south,lit=false]']
+  - [1, 1, 1, 'redstone_wire[east=side,north=none,power=15,south=side,west=side]']
+  - [1, 1, 2, 'redstone_wall_torch[facing=north,lit=true]']
+  - [1, 1, 3, stone]
+  - [1, 2, 3, 'lever[face=floor,facing=north,powered=false]']
+  - [2, 1, 0, stone]
+  - [2, 1, 1, 'redstone_wall_torch[facing=south,lit=true]']
+  - [2, 2, 0, 'lever[face=floor,facing=north,powered=false]']
+ticks: 162
+inputs:
+- tick: 2
+  pos: [0, 2, 0]
+  action: use
+- tick: 22
+  pos: [2, 2, 0]
+  action: use
+- tick: 42
+  pos: [0, 2, 0]
+  action: use
+- tick: 62
+  pos: [1, 2, 3]
+  action: use
+- tick: 82
+  pos: [0, 2, 0]
+  action: use
+- tick: 102
+  pos: [2, 2, 0]
+  action: use
+- tick: 122
+  pos: [0, 2, 0]
+  action: use
+- tick: 142
+  pos: [1, 2, 3]
+  action: use
+probes:
+  a: [0, 2, 0]
+  b: [2, 2, 0]
+  c: [1, 2, 3]
+  y: [0, 0, 2]

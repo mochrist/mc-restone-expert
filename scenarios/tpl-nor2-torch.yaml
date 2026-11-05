@@ -1,0 +1,33 @@
+name: tpl-nor2-torch
+description: Vorlage nor2-torch aus src/redstone/design/templates.py (Zwei Hebel versorgen einen Staub auf einem Block, an
+  dem eine Wandfackel hängt; die Lampe steht vor der Fackel. Verzögerung 2 gt (Fackel).) Alle Hebel-Kombinationen im Gray-Code,
+  je 20 gt Abstand.
+build:
+  size: [3, 2, 3]
+  blocks:
+  - [0, 0, 0, stone]
+  - [0, 1, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 0, 0, stone]
+  - [1, 0, 1, 'redstone_wall_torch[facing=south,lit=true]']
+  - [1, 0, 2, 'redstone_lamp[lit=true]']
+  - [1, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [2, 0, 0, stone]
+  - [2, 1, 0, 'lever[face=floor,facing=north,powered=false]']
+ticks: 82
+inputs:
+- tick: 2
+  pos: [0, 1, 0]
+  action: use
+- tick: 22
+  pos: [2, 1, 0]
+  action: use
+- tick: 42
+  pos: [0, 1, 0]
+  action: use
+- tick: 62
+  pos: [2, 1, 0]
+  action: use
+probes:
+  a: [0, 1, 0]
+  b: [2, 1, 0]
+  y: [1, 0, 2]
