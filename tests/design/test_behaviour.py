@@ -57,3 +57,19 @@ def test_spec_from_recordings_reproduces_itself():
 def test_yaml_form():
     spec = bh.from_dict({"behaviour": "monostable", "length": 10, "delay_tolerance": 2})
     assert spec.delay_tolerance == 2 and spec.trials[0].expected == [[(2, 12)]]
+
+
+def test_recorded_spec_captures_latch_memory():
+    """Pair trials (set, then reset) make a 'set only' circuit fail the recorded latch spec."""
+    from pathlib import Path
+
+    from redstone.verify import load_scenario
+
+    grid = load_scenario(Path(__file__).parents[1] / "fixtures" / "analysis" / "rs-latch.yaml").grid
+    levers = [p for p, s in sorted(grid.items()) if s.id == "lever"]
+    lamp = next(p for p, s in grid.items() if s.id == "redstone_lamp")
+    spec = bh.from_recordings(["s", "r"], ["lever", "lever"], ["out"], Circuit(grid), [lamp], levers)
+    assert any(t.name == "s, dann r" for t in spec.trials)
+    assert bh.evaluate_behaviour(Candidate("orig", grid, levers, [lamp]), spec).ok
+    swapped = Candidate("swapped", grid, levers[::-1], [lamp])  # set and reset exchanged
+    assert not bh.evaluate_behaviour(swapped, spec).ok

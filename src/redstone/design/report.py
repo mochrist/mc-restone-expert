@@ -56,6 +56,9 @@ def report(spec: Spec, constraints: Constraints, results: list[Evaluation], titl
             if c.volume < o.volume:
                 lines.append(f"- Gegenüber dem Original ({_size(o)} = {o.volume}, {o.block_count} Blöcke): "
                              f"{100 * (o.volume - c.volume) // o.volume} % weniger Volumen.")
+            elif c.block_count < o.block_count:
+                lines.append(f"- Gleiches Volumen wie das Original ({_size(o)}), aber {o.block_count - c.block_count} "
+                             f"Blöcke weniger ({o.block_count} → {c.block_count}).")
             else:
                 lines.append(f"- Das Original ({_size(o)} = {o.volume}) ist nicht größer; keine Verkleinerung gefunden.")
             if original.max_delay is not None and best.max_delay is not None and best.max_delay != original.max_delay:

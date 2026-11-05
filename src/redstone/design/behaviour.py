@@ -12,6 +12,7 @@ circuit (`from_recordings`).
 
 from __future__ import annotations
 
+import itertools
 from dataclasses import dataclass, field
 
 from ..analysis.experiment import Circuit, Recording
@@ -248,17 +249,39 @@ def from_recordings(names_in: list[str], kinds: list[str], names_out: list[str],
                     out_positions, in_positions, title: str = "", tolerance: int = 4) -> BehaviourSpec:
     """Record the standard stimuli on an existing circuit and use its outputs as the expected behaviour."""
     trials: list[Trial] = []
+
+    def pulse(i: int, at: int, length: int) -> list[tuple[int, int]]:
+        return [(at, i)] if kinds[i] == "button" else _lever_pulse(i, length, at)
+
+    stimuli: list[tuple[str, list[tuple[int, int]]]] = []
     for i, kind in enumerate(kinds):
-        stimuli = ([(f"{names_in[i]} gedrückt", [(START, i)])] if kind == "button" else
-                   [(f"{names_in[i]} {p} gt an", _lever_pulse(i, p)) for p in LEVER_PULSES])
-        for label, actions in stimuli:
-            acts = [(t, in_positions[k], "use") for t, k in actions]
-            last = max(t for t, _ in actions)
-            rec = circuit.run(acts, max_ticks=last + MAX_TICKS, quiet=QUIET)
-            if rec.settled_at is None:
-                raise ValueError(f"{label}: Schaltung kommt nicht zur Ruhe; Verhalten nicht aufzeichenbar")
-            trials.append(Trial(label, actions, [intervals(rec, p, rec.ticks, _off_delay(circuit.grid, p))
-                                                 for p in out_positions]))
-    return BehaviourSpec(names_in, kinds, names_out, trials,
-                         "gemessenes Verhalten (Pulse je Eingang)", tolerance,
+        if kind == "button":
+            stimuli.append((f"{names_in[i]} gedrückt", pulse(i, START, 0)))
+            stimuli.append((f"{names_in[i]} zweimal gedrückt", pulse(i, START, 0) + pulse(i, START + 40, 0)))
+        else:
+            stimuli += [(f"{names_in[i]} {p} gt an", pulse(i, START, p)) for p in LEVER_PULSES]
+            stimuli.append((f"{names_in[i]} zweimal 5 gt an", pulse(i, START, 5) + pulse(i, START + 40, 5)))
+    # memory between inputs: pulse i, later pulse j (e.g. set then reset)
+    for i, j in itertools.permutations(range(len(kinds)), 2):
+        stimuli.append((f"{names_in[i]}, dann {names_in[j]}", pulse(i, START, 5) + pulse(j, START + 40, 5)))
+    # inputs held together (combinational overlap)
+    if len(kinds) > 1 and all(k == "lever" for k in kinds):
+        stimuli.append(("alle Hebel zusammen 20 gt an", [a for i in range(len(kinds)) for a in pulse(i, START, 20)]))
+    skipped = []
+    for label, actions in stimuli:
+        acts = [(t, in_positions[k], "use") for t, k in actions]
+        last = max(t for t, _ in actions)
+        rec = circuit.run(acts, max_ticks=last + MAX_TICKS, quiet=QUIET)
+        if rec.settled_at is None:
+            skipped.append(label)
+            continue
+        trials.append(Trial(label, actions, [intervals(rec, p, rec.ticks, _off_delay(circuit.grid, p))
+                                             for p in out_positions]))
+    if not trials:
+        raise ValueError("Die Schaltung kommt bei keinem Testablauf zur Ruhe; Verhalten nicht aufzeichenbar")
+    spec = BehaviourSpec(names_in, kinds, names_out, trials,
+                         "gemessenes Verhalten (Pulse je Eingang, Eingangspaare)", tolerance,
                          source=f"Analyse von {title}" if title else "Analyse")
+    if skipped:
+        spec.notes.append("Nicht aufgezeichnet, weil die Schaltung danach nicht zur Ruhe kommt: " + ", ".join(skipped))
+    return spec
