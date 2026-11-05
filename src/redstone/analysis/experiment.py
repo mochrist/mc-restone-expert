@@ -115,6 +115,7 @@ class Circuit:
         rec = Recording(0, warnings=list(world.warnings))
         last_action = max((t for t, _, _ in actions), default=0)
         current = self._snapshot(world)
+        world.dirty.clear()
         rec.series = {p: [(0, v)] for p, v in current.items()}
         idle_since: int | None = None
         t = 0
@@ -122,13 +123,16 @@ class Circuit:
             for at, pos, action in actions:
                 if at == t:
                     apply_input(world, action, pos + self.origin, None)
-            snap = self._snapshot(world)
-            for p in snap.keys() | current.keys():
-                old, new = current.get(p, "minecraft:air"), snap.get(p, "minecraft:air")
-                if old != new:
-                    rec.changes.append(Change(t, p, old, new))
-                    rec.series.setdefault(p, [(0, old)]).append((t, new))
-            current = snap
+            # Only blocks that changed (plus comparators, whose output lives in the block entity) are probed.
+            for p, v in self._snapshot_changed(world).items():
+                old = current.get(p, "minecraft:air")
+                if old != v:
+                    rec.changes.append(Change(t, p, old, v))
+                    rec.series.setdefault(p, [(0, old)]).append((t, v))
+                    if v == "minecraft:air":
+                        current.pop(p, None)
+                    else:
+                        current[p] = v
             idle = world_is_idle(world)
             if t >= last_action and idle:
                 idle_since = t if idle_since is None else idle_since
@@ -144,14 +148,25 @@ class Circuit:
         rec.ticks = t
         return rec
 
-    def _snapshot(self, world: World) -> dict[Pos, str]:
-        """Probe values of all non-air blocks inside the schematic box plus a 1-block margin."""
+    def _in_box(self, p: Pos) -> bool:
         lo = self.origin - (1, 1, 1)
         hi = self.origin + tuple(self.grid.size)
+        return lo.x <= p.x <= hi.x and lo.y <= p.y <= hi.y and lo.z <= p.z <= hi.z
+
+    def _snapshot(self, world: World) -> dict[Pos, str]:
+        """Probe values of all non-air blocks inside the schematic box plus a 1-block margin."""
+        return {p - self.origin: probe_value(world, p) for p in world.blocks if self._in_box(p)}
+
+    def _snapshot_changed(self, world: World) -> dict[Pos, str]:
+        """Probe values of blocks changed since the last call (air included) and of all comparators."""
+        positions = set(world.dirty)
+        world.dirty.clear()
+        positions.update(p for p, be in world.block_entities.items() if world.get(p).id == "comparator")
         out = {}
-        for p in world.blocks:
-            if lo.x <= p.x <= hi.x and lo.y <= p.y <= hi.y and lo.z <= p.z <= hi.z:
-                out[p - self.origin] = probe_value(world, p)
+        for p in positions:
+            if self._in_box(p):
+                st = world.get(p)
+                out[p - self.origin] = "minecraft:air" if st.is_air else probe_value(world, p)
         return out
 
     def state(self, rec: Recording, pos: Pos, tick: int) -> BlockState:

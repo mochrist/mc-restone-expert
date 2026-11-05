@@ -82,6 +82,8 @@ class World:
         self._added_this_layer: list[_Updates] = []
         self._update_count = 0
         self.warnings: list[str] = []
+        # Not part of the game: positions whose block state changed since the recorder last cleared it.
+        self.dirty: set[Pos] = set()
 
     # ------------------------------------------------------------------ construction
     @classmethod
@@ -169,6 +171,7 @@ class World:
             self.blocks.pop(pos, None)
         else:
             self.blocks[pos] = state
+        self.dirty.add(pos)
         old_block, new_block = self.block(old), self.block(state)
         block_changed = old.name != state.name
         moved = bool(flags & UPDATE_MOVE_BY_PISTON)

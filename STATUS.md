@@ -1,14 +1,14 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 73 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 76 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~95 % | 264 Aussagen aus dem 26.3-Code belegt, 83 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~90 % | Oracle läuft; Simulator stimmt mit allen 59 Golden Traces tick-genau überein |
+| M2 Oracle + Simulator | 35 % | ~90 % | Oracle läuft; Simulator stimmt mit allen 63 Golden Traces tick-genau überein |
 | M3 Analyse + Erklärung | 20 % | ~80 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~25 % | Pipeline `rsx redesign` läuft: Spezifikation, Bewertung, 24 im Spiel geprüfte Vorlagen, Kompaktieren |
+| M4 Redesign | 25 % | ~35 % | `rsx redesign`: Vorlagen (24) + generische Fackel-PLA-Synthese (jede Tabelle bis 4 Eingänge) + Kompaktieren, alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
 ### Session 4 (2026-11-05)
@@ -30,6 +30,8 @@ Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 73 %** (gewi
   - `rsx redesign <spec.yaml|schematic> [--max-size X,Y,Z] [--allow/--forbid] [--no-qc] [--max-delay] [-o out.litematic]`.
   - Simulator-Fehler behoben: `is_face_sturdy`-Overrides ohne `support`-Parameter (Absturz, wenn eine Wandfackel ihren Block verliert).
   - Messung: Eine volle Bewertung von mux3-8 dauert 2,4 s, fast alles in der Staub-Neuberechnung. Geschätzter Gewinn eines Rust-Kerns: 30–100× im Kern, 20–50× pro Bewertung, wenn die Lauf-Schleife samt Aufzeichnung mit nach Rust geht.
+- `synth.py`: generische Synthese als Fackel-PLA (Quine-McCluskey, eine Spalte pro Produktterm). Grenzen: höchstens 4 Eingänge und 7 Terme. Auf Anhieb korrekt für alle Beispiele und 40 Zufallstabellen. Volladdierer, Halbaddierer, XOR und Mehrheit sind im Spiel aufgezeichnet (`scenarios/pla-*.yaml`) und identisch. Die Entwürfe sind groß (Volladdierer 15×4×15); `rsx redesign` kompaktiert sie im Zeitlimit `--time`.
+- Aufzeichnung in `Circuit.run` fragt nur geänderte Blöcke ab (`World.dirty`), dadurch 15–25 % schneller.
 - Rust-Kern: Der Nutzer ist offen dafür. Entscheidung: erst die M4-Pipeline in Python, dann anhand der Kandidaten/s entscheiden (siehe Designnotiz).
 
 ### Session 3 (2026-11-04)
@@ -57,7 +59,7 @@ Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 73 %** (gewi
 ## Befehle
 
 ```
-uv run pytest -q                                   # 386 Tests, alle grün
+uv run pytest -q                                   # 406 Tests, alle grün
 uv run rsx redesign examples/specs/xor.yaml -o out.litematic   # Redesign (M4)
 uv run python scripts/bench_sim.py                 # Simulator-Geschwindigkeit
 uv run rsx dump <datei> [--components]             # Schematic als Text
@@ -79,9 +81,9 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    - Erledigt (Session 4): Clock-Erkennung an echten Clocks. Offen: optional SVG-Timing-Diagramm; Analyse großer Schaltungen beschleunigen (`_run_steps` spielt jede Eingabe-Sequenz von vorn ab).
    - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet).
 2. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
-   - Funktionen ohne passende Vorlage: Vorlagen kombinieren (Ausgang einer Vorlage auf den Eingang der nächsten, Eingänge gemeinsam nutzen) und Mehrfach-Ausgänge aus Einzelgattern zusammensetzen.
+   - Erledigt: Funktionen ohne Vorlage (Fackel-PLA). Offen: PLA kompakter machen (Terme über Ausgänge teilen, mehr als 7 Terme mit Repeatern in den Leitungen) und Vorlagen zu Netzwerken zusammensetzen (Place-and-Route).
    - Danach Topologie per SAT/SMT und gezielte Suche (Mutation und Kompaktieren) für kleinere Bauweisen. Vorher Kandidaten/s messen und die Rust-Frage mit dem Nutzer neu besprechen.
-   - Volladdierer-Vorlage fehlt; XOR-Vorlagen sind groß (28–33 Blöcke), kompaktere Bauweisen suchen.
+   - Keine kompakte Volladdierer-Vorlage (nur PLA); XOR-Vorlagen sind groß (28–33 Blöcke), kompaktere Bauweisen suchen.
    - Spezifikation kennt nur Kombinatorik; Timing/Pulsantwort (z. B. Pulsverlängerer) und Speicher (Latch) fehlen.
    - Kompaktierung großer Originale ist langsam (mux3-8: ~0,5 s pro Versuch).
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
@@ -104,7 +106,7 @@ src/redstone/
   sim/          world.py (Level#setBlock, NeighborUpdater, LevelTicks, Block-Events), block.py, blockdata.py,
                 notes.py, runner.py, blocks/{basic,diode,torch_observer,container,wire,piston,dispenser_hopper,outputs}.py, data/
   analysis/     ports.py, experiment.py, analyze.py, patterns.py, explain.py
-  design/       candidate.py, spec.py, evaluate.py, templates.py, search.py, compact.py, report.py
+  design/       candidate.py, spec.py, evaluate.py, templates.py, synth.py, search.py, compact.py, report.py
   knowledge.py  Linter, Index, mark
   oracle.py     Start des Fabric-Servers
 oracle/         Fabric-Mod (Java)
