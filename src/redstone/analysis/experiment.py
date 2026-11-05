@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ..model import BlockState, Grid, Pos
+from ..sim.constants import UPDATE_ALL
 from ..sim.runner import ORACLE_ORIGIN, apply_input, probe_value
 from ..sim.world import World
 from ..verify.trace import _is_on
@@ -68,10 +69,21 @@ def is_on(value: str) -> bool:
     return _is_on(value, None)
 
 
+def _ticker_busy(wrapper) -> bool:
+    ticker = getattr(wrapper, "ticker", wrapper)
+    if ticker is None or getattr(ticker, "removed", False):
+        return False
+    is_idle = getattr(ticker, "is_idle", None)
+    return not (is_idle and is_idle())
+
+
 def world_is_idle(world: World) -> bool:
+    """No scheduled ticks, no block events and no block entity with pending work.
+
+    Hoppers tick every game tick; one without cooldown has found nothing to move and only changes when
+    something else in the world changes (there are no item entities in the simulator)."""
     return not world._ticks and not world.block_events and not any(
-        not getattr(be, "removed", False) for be in world._be_tickers + world._pending_be_tickers
-    )
+        _ticker_busy(w) for w in world._be_tickers + world._pending_be_tickers)
 
 
 class Circuit:
@@ -86,11 +98,14 @@ class Circuit:
         world = World()
         world.place_grid(self.grid, self.origin)
         if kick:
-            # Give every block one neighbour update, as if each had just been touched. Starts circuits
-            # (e.g. clocks) that a schematic stores in a frozen state.
+            # Give every block one neighbour update and its neighbours one shape update from it, as if each
+            # block had just been placed. Starts circuits (e.g. clocks) that a schematic stores in a frozen
+            # state; observers only react to shape updates.
             for p in self.positions:
                 state = world.get(p + self.origin)
                 world.neighbor_changed_with_state(state, p + self.origin, world.block(state), False)
+            for p in self.positions:
+                world.update_neighbour_shapes(p + self.origin, world.get(p + self.origin), UPDATE_ALL)
         return world
 
     def run(self, actions: list[Action], max_ticks: int, kick: bool = False, quiet: int = 10,

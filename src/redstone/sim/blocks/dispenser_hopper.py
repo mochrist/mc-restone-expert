@@ -106,6 +106,10 @@ class HopperBlockEntity(ContainerBlockEntity):
         skip = 1 if isinstance(source, HopperBlockEntity) and self.ticked_game_time >= source.ticked_game_time else 0
         self.cooldown_time = MOVE_ITEM_SPEED - skip
 
+    def is_idle(self) -> bool:
+        """Not part of the game: true when the hopper has no cooldown running (used to detect a world at rest)."""
+        return self.cooldown_time <= 0
+
     def inventory_full(self) -> bool:
         return len(self.items) == self.size and all(c == item_max_stack_size(i) for i, c in self.items.values())
 

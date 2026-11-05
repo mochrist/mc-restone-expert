@@ -1,0 +1,23 @@
+name: torch-repeater-clock
+description: >
+  Fackel-Clock: Wandfackel T an Block B, Staub im Bogen zurück, ein Repeater (Verzögerung 1) powert B.
+  Gestartet wird sie, indem das letzte Staubstück vor dem Repeater bei Tick 2 platziert wird. Erwartet: Periode 8 gt, Burnout nach
+  8 Abschaltungen, Wiederanschalten 160 gt später.
+build:
+  size: [3, 2, 2]
+  fill:
+    - [0, 0, 0, 2, 0, 1, "stone"]
+  blocks:
+    - [2, 0, 1, "redstone_lamp[lit=true]"]
+    - [0, 1, 0, "stone"]
+    - [0, 1, 1, "redstone_wall_torch[facing=south,lit=true]"]
+    - [1, 1, 1, "redstone_wire[east=side,north=none,power=15,south=none,west=side]"]
+    - [2, 1, 1, "redstone_wire[east=none,north=none,power=14,south=none,west=side]"]
+    - [1, 1, 0, "repeater[delay=1,facing=east,locked=false,powered=false]"]
+ticks: 260
+inputs:
+  - {tick: 2, pos: [2, 1, 0], action: setblock, state: "redstone_wire[east=none,north=none,power=0,south=side,west=side]"}
+probes:
+  torch: [0, 1, 1]
+  repeater: [1, 1, 0]
+  lamp: [2, 0, 1]

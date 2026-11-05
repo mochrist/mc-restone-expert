@@ -88,6 +88,12 @@ def explain(a: Analysis, title: str | None = None) -> str:
         start = "läuft erst nach einem Anstoß (Block-Update)" if a.clock.needs_start else "läuft von selbst"
         summary.append(f"- **Clock**: Periode {a.clock.period} gt, davon {a.clock.on_ticks} gt an, {start} "
                        f"(gemessen an {a.clock.observed_at}).")
+        if a.clock.stops_at is not None:
+            summary[-1] += f" Der regelmäßige Takt endet bei Tick {a.clock.stops_at}" + (
+                " (Fackel-Burnout)." if any(n.kind == "torch_burnout" for n in a.notes) else ".")
+    elif a.oscillates:
+        summary.append("- **Schwingt ohne Eingabe**, aber nicht mit fester Periode"
+                       + (" (Fackel-Burnout)." if any(n.kind == "torch_burnout" for n in a.notes) else "."))
     for r in a.responses:
         for x in r.reactions:
             if x.kind != "keine Reaktion":

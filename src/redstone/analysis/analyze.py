@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from ..model import Grid, Pos
 from ..sim.notes import Note, notes_of
 from .experiment import Circuit, Recording, is_on
-from .patterns import Latch, PulseResponse, find_latches, is_decoder, pulse_response
+from .patterns import OFF_DELAY, Latch, PulseResponse, find_latches, is_decoder, pulse_response
 from .ports import Port, find_ports
 
 MAX_TICKS = 400
@@ -58,6 +58,7 @@ class ClockInfo:
     on_ticks: int
     needs_start: bool
     observed_at: Pos
+    stops_at: int | None = None  # tick from which the regular oscillation ends (e.g. torch burnout)
 
 
 @dataclass
@@ -67,6 +68,7 @@ class Analysis:
     outputs: list[Port]
     baseline: Recording
     clock: ClockInfo | None
+    oscillates: bool = False  # the circuit never came to rest without input (clock or irregular)
     responses: list[InputResponse] = field(default_factory=list)
     truth_table: list[tuple[tuple[bool, ...], tuple[bool, ...]]] | None = None
     gates: dict[str, str] = field(default_factory=dict)
@@ -100,15 +102,28 @@ def _run_steps(circuit: Circuit, pos: Pos, kind: str, name: str) -> tuple[Record
     return rec, steps, notes_of(world), False
 
 
-def _clock_from(rec: Recording, positions: list[Pos]) -> tuple[int, int, Pos] | None:
+def _clock_from(rec: Recording, positions: list[Pos], grid: Grid) -> tuple[int, int, Pos, int | None] | None:
+    """Period and on-time of the first block that switches on regularly at least three times.
+
+    The first interval may be a start-up transient. If the period changes later (e.g. a torch burns
+    out), the clock is reported up to that point."""
     for pos in positions + sorted(rec.series):
         iv = [i for i in rec.on_intervals(pos) if i[1] is not None]
-        if len(iv) >= 3:
-            starts = [a for a, _ in iv]
-            periods = {b - a for a, b in zip(starts[1:], starts[2:])}
-            if len(periods) == 1:
-                period = periods.pop()
-                return period, iv[-1][1] - iv[-1][0], pos
+        if len(iv) < 4:
+            continue
+        starts = [a for a, _ in iv]
+        periods = [b - a for a, b in zip(starts[1:], starts[2:])]
+        run = 1
+        while run < len(periods) and periods[run] == periods[0]:
+            run += 1
+        if run < 2:
+            continue
+        on = [b - a for a, b in iv[1:run + 2]]
+        state = grid.get(pos)
+        own = OFF_DELAY.get(state.id, 0) if state is not None else 0
+        on_ticks = max(set(on), key=on.count) - own
+        stops = None if run == len(periods) else iv[run + 1][1]
+        return periods[0], on_ticks, pos, stops
     return None
 
 
@@ -292,18 +307,23 @@ def analyze(grid: Grid, inputs: list[Port] | None = None, outputs: list[Port] | 
     if too_many:
         analysis.warnings.append(f"Nur die ersten {MAX_OUTPUTS} Ausgänge werden ausgewertet ({skipped} weitere ignoriert)")
     out_positions = [o.pos for o in outputs]
-    if baseline.settled_at is None:
-        c = _clock_from(baseline, out_positions)
-        if c:
-            analysis.clock = ClockInfo(c[0], c[1], False, c[2])
-    else:
+    idle_rec, needs_start = baseline, False
+    if baseline.settled_at is not None:
         kicked_world = circuit.new_world(kick=True)
-        kicked = circuit.run([], max_ticks=MAX_TICKS, quiet=QUIET, world=kicked_world)
-        if kicked.settled_at is None:
-            c = _clock_from(kicked, out_positions)
-            if c:
-                analysis.clock = ClockInfo(c[0], c[1], True, c[2])
-                analysis.notes.extend(notes_of(kicked_world))
+        idle_rec = circuit.run([], max_ticks=MAX_TICKS, quiet=QUIET, world=kicked_world)
+        needs_start = True
+    else:
+        kicked_world = circuit.new_world()
+        circuit.run([], max_ticks=MAX_TICKS, quiet=QUIET, world=kicked_world)
+    if idle_rec.settled_at is None:
+        analysis.oscillates = True
+        analysis.notes.extend(notes_of(kicked_world))
+        c = _clock_from(idle_rec, out_positions, grid)
+        if c:
+            analysis.clock = ClockInfo(c[0], c[1], needs_start, c[2], c[3])
+    elif needs_start and idle_rec.changes:
+        analysis.warnings.append("Gespeicherter Zustand war nicht stabil: nach einem Anstoß ändern sich Blöcke "
+                                 "einmalig, ohne dass etwas betätigt wurde")
 
     for port in inputs:
         if port.kind not in ("lever", "button", "plate"):
@@ -334,7 +354,7 @@ def analyze(grid: Grid, inputs: list[Port] | None = None, outputs: list[Port] | 
             if is_decoder(table):
                 analysis.patterns.append(f"Decoder: {len(levers)} Eingänge, jeder Ausgang gehört zu genau einer Kombination")
 
-    if analysis.clock is None:
+    if not analysis.oscillates:
         for port in levers:
             if port.state.get_bool("powered"):
                 continue

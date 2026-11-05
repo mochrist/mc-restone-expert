@@ -67,7 +67,7 @@ häufigem Schalten durchbrennen.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWallTorchBlock#getSignal`; [SRC-WIKI-TORCH]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/torch-repeater-clock.yaml)
 
 ### TRCH-009: Burnout ab dem 8. Ausschalten innerhalb des Zeitfensters
 - Aussage: Bei jedem Ausschalten wegen Eingang wird ein Eintrag (Position, Spielzeit) in eine pro Level geführte Liste geschrieben; sind danach für diese Position ≥ 8 Einträge vorhanden, brennt die Fackel durch.
@@ -90,7 +90,7 @@ häufigem Schalten durchbrennen.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneTorchBlock#tick`; [SRC-WIKI-TORCH]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/torch-repeater-clock.yaml)
 
 ### TRCH-012: Eine aus-geschaltete Fackel geht nur an, wenn nicht zu häufig geschaltet
 - Aussage: Eine Fackel mit `lit=false` und ohne Eingang schaltet im Tick nur ein, wenn für ihre Position weniger als 8 Einträge in der Toggle-Liste stehen; sonst bleibt sie aus, ohne neuen Tick zu planen.
