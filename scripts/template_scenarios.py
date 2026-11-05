@@ -1,9 +1,10 @@
-"""Write one oracle scenario per design template: scenarios/tpl-<name>.yaml.
+"""Write one oracle scenario per design template (scenarios/tpl-<name>.yaml) and per example spec as torch
+PLA (scenarios/pla-<spec>.yaml).
 
 Each scenario walks through all lever combinations in Gray-code order (one lever per step, 20 gt apart)
 and back to all-off, so the real game can confirm the template. Probes: every input and output.
 
-uv run python scripts/template_scenarios.py && uv run rsx oracle scenarios/tpl-*.yaml --golden
+uv run python scripts/template_scenarios.py && uv run rsx oracle scenarios/tpl-*.yaml scenarios/pla-*.yaml --golden
 """
 
 from __future__ import annotations
@@ -28,19 +29,32 @@ def gray_sequence(n: int) -> list[int]:
 
 
 def scenario_for(t) -> dict:
-    c = t.build()
+    return candidate_scenario(t.build(), f"tpl-{t.name}", list(t.inputs), list(t.outputs),
+                              f"Vorlage {t.name} aus src/redstone/design/templates.py ({t.description})")
+
+
+def pla_scenario(spec_path: Path) -> dict:
+    from redstone.design.spec import load
+    from redstone.design.synth import pla
+
+    spec = load(spec_path)
+    c = pla(spec)
+    return candidate_scenario(c, f"pla-{spec_path.stem}", spec.inputs, spec.outputs,
+                              f"Fackel-PLA aus examples/specs/{spec_path.name} ({c.description})")
+
+
+def candidate_scenario(c, name: str, in_names: list[str], out_names: list[str], text: str) -> dict:
     blocks = [[*p, str(s).removeprefix("minecraft:")] for p, s in sorted(c.grid.items())]
     tick = 2
     inputs = []
     for i in gray_sequence(len(c.inputs)):
         inputs.append({"tick": tick, "pos": list(c.inputs[i]), "action": "use"})
         tick += STEP
-    probes = {name: list(p) for name, p in zip(t.inputs, c.inputs)}
-    probes |= {name: list(p) for name, p in zip(t.outputs, c.outputs)}
+    probes = {n: list(p) for n, p in zip(in_names, c.inputs)}
+    probes |= {n: list(p) for n, p in zip(out_names, c.outputs)}
     d = {
-        "name": f"tpl-{t.name}",
-        "description": f"Vorlage {t.name} aus src/redstone/design/templates.py ({t.description}) "
-                       f"Alle Hebel-Kombinationen im Gray-Code, je {STEP} gt Abstand.",
+        "name": name,
+        "description": f"{text} Alle Hebel-Kombinationen im Gray-Code, je {STEP} gt Abstand.",
         "build": {"size": list(c.grid.size), "blocks": blocks},
         "ticks": tick,
         "inputs": inputs,
@@ -51,13 +65,19 @@ def scenario_for(t) -> dict:
     return d
 
 
+def _write(d: dict) -> None:
+    path = ROOT / "scenarios" / f"{d['name']}.yaml"
+    path.write_text(yaml.safe_dump(d, allow_unicode=True, sort_keys=False, width=120, default_flow_style=None),
+                    encoding="utf-8", newline="\n")
+
+
 def main() -> None:
     for t in TEMPLATES:
-        path = ROOT / "scenarios" / f"tpl-{t.name}.yaml"
-        path.write_text(yaml.safe_dump(scenario_for(t), allow_unicode=True, sort_keys=False, width=120,
-                                       default_flow_style=None),
-                        encoding="utf-8", newline="\n")
-    print(f"wrote {len(TEMPLATES)} scenarios")
+        _write(scenario_for(t))
+    specs = sorted((ROOT / "examples" / "specs").glob("*.yaml"))
+    for p in specs:
+        _write(pla_scenario(p))
+    print(f"wrote {len(TEMPLATES)} template and {len(specs)} PLA scenarios")
 
 
 if __name__ == "__main__":

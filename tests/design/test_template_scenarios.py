@@ -24,3 +24,15 @@ def test_scenario_and_golden_up_to_date(template):
     stored = yaml.safe_load(path.read_text(encoding="utf-8"))
     assert stored == yaml.safe_load(yaml.safe_dump(gen.scenario_for(template), allow_unicode=True))
     assert (ROOT / "tests" / "golden" / f"tpl-{template.name}.trace.json").exists()
+
+
+SPECS = sorted((ROOT / "examples" / "specs").glob("*.yaml"))
+
+
+@pytest.mark.parametrize("spec_path", SPECS, ids=lambda p: p.stem)
+def test_pla_scenario_and_golden_up_to_date(spec_path):
+    path = ROOT / "scenarios" / f"pla-{spec_path.stem}.yaml"
+    assert path.exists()
+    stored = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert stored == yaml.safe_load(yaml.safe_dump(gen.pla_scenario(spec_path), allow_unicode=True))
+    assert (ROOT / "tests" / "golden" / f"pla-{spec_path.stem}.trace.json").exists()

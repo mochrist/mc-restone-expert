@@ -1,0 +1,103 @@
+{
+ "format": 1,
+ "scenario": "pla-majority",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 162,
+ "probes": {
+  "a": [
+   0,
+   3,
+   0
+  ],
+  "b": [
+   0,
+   3,
+   2
+  ],
+  "c": [
+   0,
+   3,
+   4
+  ],
+  "y": [
+   2,
+   0,
+   8
+  ]
+ },
+ "samples": {
+  "a": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    42,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    82,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    122,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "b": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    22,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    102,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "c": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    62,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    142,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "y": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    26,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    50,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    66,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    130,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ]
+ }
+}
