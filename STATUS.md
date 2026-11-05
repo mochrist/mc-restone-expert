@@ -1,14 +1,14 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 76 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-05, Ende Session 4. Geschätzter Gesamtfortschritt: **ca. 80 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~95 % | 264 Aussagen aus dem 26.3-Code belegt, 83 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~90 % | Oracle läuft; Simulator stimmt mit allen 63 Golden Traces tick-genau überein |
+| M2 Oracle + Simulator | 35 % | ~90 % | Oracle läuft; Simulator stimmt mit allen 84 Golden Traces tick-genau überein |
 | M3 Analyse + Erklärung | 20 % | ~80 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~35 % | `rsx redesign`: Vorlagen (24) + generische Fackel-PLA-Synthese (jede Tabelle bis 4 Eingänge) + Kompaktieren, alles im Spiel geprüft |
+| M4 Redesign | 25 % | ~50 % | `rsx redesign` für Logik (24 Vorlagen + Fackel-PLA) und Zeitverhalten/Speicher (17 Vorlagen, 60 Varianten), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
 ### Session 4 (2026-11-05)
@@ -30,7 +30,12 @@ Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 76 %** (gewi
   - `rsx redesign <spec.yaml|schematic> [--max-size X,Y,Z] [--allow/--forbid] [--no-qc] [--max-delay] [-o out.litematic]`.
   - Simulator-Fehler behoben: `is_face_sturdy`-Overrides ohne `support`-Parameter (Absturz, wenn eine Wandfackel ihren Block verliert).
   - Messung: Eine volle Bewertung von mux3-8 dauert 2,4 s, fast alles in der Staub-Neuberechnung. Geschätzter Gewinn eines Rust-Kerns: 30–100× im Kern, 20–50× pro Bewertung, wenn die Lauf-Schleife samt Aufzeichnung mit nach Rust geht.
-- `synth.py`: generische Synthese als Fackel-PLA (Quine-McCluskey, eine Spalte pro Produktterm). Grenzen: höchstens 4 Eingänge und 7 Terme. Auf Anhieb korrekt für alle Beispiele und 40 Zufallstabellen. Volladdierer, Halbaddierer, XOR und Mehrheit sind im Spiel aufgezeichnet (`scenarios/pla-*.yaml`) und identisch. Die Entwürfe sind groß (Volladdierer 15×4×15); `rsx redesign` kompaktiert sie im Zeitlimit `--time`.
+- `synth.py`: generische Synthese als Fackel-PLA (Quine-McCluskey, eine Spalte pro Produktterm). Erste Fassung: höchstens 4 Eingänge und 7 Terme (siehe nächster Punkt). Auf Anhieb korrekt für alle Beispiele und 40 Zufallstabellen. Volladdierer, Halbaddierer, XOR und Mehrheit sind im Spiel aufgezeichnet (`scenarios/pla-*.yaml`) und identisch. Die Entwürfe sind groß (Volladdierer 15×4×15); `rsx redesign` kompaktiert sie im Zeitlimit `--time`.
+- PLA kompakter (Agent): Terme werden über Ausgänge geteilt, mehr als 7 Terme sind möglich (Repeater in den Leitungen), das Layout ist dichter. Weiterhin höchstens 4 Eingänge (`MAX_INPUTS`). Volladdierer 410 → 270 Blöcke, XOR 90 → 50. 8 PLA-Szenarien sind im Spiel identisch. Der Agent wurde vor seinem Abschlussbericht gestoppt; sein Stand wurde danach geprüft (Tests, Oracle-Traces) und committet.
+- Verhaltens-Spezifikationen `design/behaviour.py`: Testabläufe mit erwarteten An-Intervallen und Toleranzen. Konstruktoren für monostable, pulse-extender, delay, t-flip-flop, rs-latch und clock (YAML `behaviour: …`, Beispiele in `examples/behaviour/`). Aus Bestandsschaltungen werden Pulse je Eingang, Eingangspaare und gehaltene Hebel aufgezeichnet. Ohne angegebene Verzögerung sind Flanken 0–10 gt nach dem Eingang erlaubt. Die Lampen-Ausschaltverzögerung wird herausgerechnet.
+- `rsx redesign` mit einer Schematic wählt selbst: Wahrheitstabelle, wenn das Original sie in allen Übergängen erfüllt; Clock-Spezifikation bei Clocks; sonst das aufgezeichnete Verhalten.
+- `design/seq_templates.py` (Agent): 17 Vorlagen mit 60 Varianten. Delay, Monoflop (Comparator, Kupferbirne; Hebel/Knopf), Pulsverlängerer, T-Flip-Flop (Kupferbirne), RS-Latch (Fackeln), 5 Clock-Bauweisen. Die erste Variante jeder Vorlage ist im Spiel aufgezeichnet (`scenarios/seq-*.yaml`, `scripts/seq_template_scenarios.py`).
+- Fehler behoben: Kupferbirnen-Ausgänge wurden über `powered` (Eingang) statt `lit` gelesen; betraf auch `rsx explain`.
 - Aufzeichnung in `Circuit.run` fragt nur geänderte Blöcke ab (`World.dirty`), dadurch 15–25 % schneller.
 - Rust-Kern: Der Nutzer ist offen dafür. Entscheidung: erst die M4-Pipeline in Python, dann anhand der Kandidaten/s entscheiden (siehe Designnotiz).
 
@@ -59,8 +64,12 @@ Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 76 %** (gewi
 ## Befehle
 
 ```
-uv run pytest -q                                   # 406 Tests, alle grün
-uv run rsx redesign examples/specs/xor.yaml -o out.litematic   # Redesign (M4)
+uv run pytest -q                                   # 663 Tests, alle grün (~25 s)
+uv run rsx redesign examples/specs/xor.yaml -o out.litematic   # Redesign Logik (M4)
+uv run rsx redesign examples/behaviour/t-flip-flop.yaml        # Redesign Zeitverhalten/Speicher
+uv run rsx redesign <schematic> [--max-size X,Y,Z] [--no-qc] [--compact N] [--time S]
+uv run python scripts/template_scenarios.py        # tpl-/pla-Szenarien neu erzeugen (danach rsx oracle … --golden)
+uv run python scripts/seq_template_scenarios.py    # seq-Szenarien neu erzeugen
 uv run python scripts/bench_sim.py                 # Simulator-Geschwindigkeit
 uv run rsx dump <datei> [--components]             # Schematic als Text
 uv run rsx sim scenarios/<x>.yaml --diff           # Simulator vs. Golden Trace
@@ -81,10 +90,10 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    - Erledigt (Session 4): Clock-Erkennung an echten Clocks. Offen: optional SVG-Timing-Diagramm; Analyse großer Schaltungen beschleunigen (`_run_steps` spielt jede Eingabe-Sequenz von vorn ab).
    - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet).
 2. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
-   - Erledigt: Funktionen ohne Vorlage (Fackel-PLA). Offen: PLA kompakter machen (Terme über Ausgänge teilen, mehr als 7 Terme mit Repeatern in den Leitungen) und Vorlagen zu Netzwerken zusammensetzen (Place-and-Route).
-   - Danach Topologie per SAT/SMT und gezielte Suche (Mutation und Kompaktieren) für kleinere Bauweisen. Vorher Kandidaten/s messen und die Rust-Frage mit dem Nutzer neu besprechen.
-   - Keine kompakte Volladdierer-Vorlage (nur PLA); XOR-Vorlagen sind groß (28–33 Blöcke), kompaktere Bauweisen suchen.
-   - Spezifikation kennt nur Kombinatorik; Timing/Pulsantwort (z. B. Pulsverlängerer) und Speicher (Latch) fehlen.
+   - Lücken der Vorlagen: kein Monoflop unter 4 gt; Comparator-Monoflop mit Hebel nur bis 8 gt, längere nur per Kupferbirne (größer, 8 gt Verzögerung); kein Pulsverlängerer mit max(p, L) per Comparator-Fade-out; keine kompakte Volladdierer-Vorlage; XOR-Vorlagen groß (28–33 Blöcke).
+   - Verhalten aus Bestandsschaltungen nur bis 3 Eingänge; Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen (Lampe bleibt an).
+   - Bausteine kombinieren (Place-and-Route), z. B. Logik plus Speicher; danach Topologie per SAT/SMT und gezielte Suche (Mutation, Kompaktieren).
+   - Danach Kandidaten/s messen und **die Rust-Frage mit dem Nutzer neu besprechen** (vereinbart). Datenpunkte: volle Bewertung mux3-8 2,4 s, Volladdierer-PLA mehrere Sekunden; Schätzung Rust 20–50× pro Bewertung.
    - Kompaktierung großer Originale ist langsam (mux3-8: ~0,5 s pro Versuch).
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
 3. **Restliche Simulator-Lücken (M2):**
@@ -106,7 +115,8 @@ src/redstone/
   sim/          world.py (Level#setBlock, NeighborUpdater, LevelTicks, Block-Events), block.py, blockdata.py,
                 notes.py, runner.py, blocks/{basic,diode,torch_observer,container,wire,piston,dispenser_hopper,outputs}.py, data/
   analysis/     ports.py, experiment.py, analyze.py, patterns.py, explain.py
-  design/       candidate.py, spec.py, evaluate.py, templates.py, synth.py, search.py, compact.py, report.py
+  design/       candidate.py, spec.py, behaviour.py, evaluate.py, templates.py, seq_templates.py, synth.py,
+                search.py, compact.py, report.py
   knowledge.py  Linter, Index, mark
   oracle.py     Start des Fabric-Servers
 oracle/         Fabric-Mod (Java)
