@@ -1,14 +1,14 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 68 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 73 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~95 % | 264 Aussagen aus dem 26.3-Code belegt, 83 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~90 % | Oracle läuft; Simulator stimmt mit allen 35 Golden Traces tick-genau überein |
+| M2 Oracle + Simulator | 35 % | ~90 % | Oracle läuft; Simulator stimmt mit allen 59 Golden Traces tick-genau überein |
 | M3 Analyse + Erklärung | 20 % | ~80 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~3 % | Simulator-Geschwindigkeit gemessen (`scripts/bench_sim.py`) |
+| M4 Redesign | 25 % | ~25 % | Pipeline `rsx redesign` läuft: Spezifikation, Bewertung, 24 im Spiel geprüfte Vorlagen, Kompaktieren |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
 ### Session 4 (2026-11-05)
@@ -21,6 +21,15 @@ Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 68 %** (gewi
   - Fehler behoben: Trichter ohne Cooldown galten als „beschäftigt“, die Welt kam nie zur Ruhe (2TickFiveLanternPrize).
 - Neue Golden Traces `torch-repeater-clock` (Burnout bei Tick 60, wieder an 160 gt später) und `repeater-ring-clock`: beim ersten Lauf identisch. TRCH-008/011 verifiziert.
 - Performance gemessen, Werte in `docs/m4-search-and-performance.md`: ~4 000 aktive Ticks/s, ~210 000 Neighbor-Updates/s; `rsx explain` 3 s (mux3-8) bzw. 9 s (seg7). Hot-Path-Optimierung brachte ~15–20 %.
+- M4 begonnen (`src/redstone/design/`):
+  - `spec.py`: Spezifikation (Wahrheitstabelle, max. Verzögerung) aus YAML (`examples/specs/*.yaml`, Ausdrücke wie `a != b`) oder aus `analyze()`.
+  - `evaluate.py`: Kandidat im Simulator prüfen, und zwar jede Kombination ab dem gespeicherten Zustand und jeden Einzel-Übergang (ein Lauf pro Kombination). Constraints: Box (x/z drehbar), erlaubte/verbotene Blöcke, QC, Verzögerung.
+  - `templates.py` (Agent): 24 Gatter-Vorlagen (Buffer … XOR, MUX2, Halbaddierer). Alle per `scripts/template_scenarios.py` → `scenarios/tpl-*.yaml` im echten Spiel aufgezeichnet und identisch.
+  - `search.py`: Vorlagen über Permutation von Ein-/Ausgängen zuordnen, ranken (korrekt, Volumen, Blöcke, Verzögerung).
+  - `compact.py`: Entwurf verkleinern (Ebenen schneiden, Blöcke entfernen, zuschneiden). Jeder Schritt wird simuliert, `normalize` lässt den gespeicherten Zustand im Simulator einschwingen.
+  - `rsx redesign <spec.yaml|schematic> [--max-size X,Y,Z] [--allow/--forbid] [--no-qc] [--max-delay] [-o out.litematic]`.
+  - Simulator-Fehler behoben: `is_face_sturdy`-Overrides ohne `support`-Parameter (Absturz, wenn eine Wandfackel ihren Block verliert).
+  - Messung: Eine volle Bewertung von mux3-8 dauert 2,4 s, fast alles in der Staub-Neuberechnung. Geschätzter Gewinn eines Rust-Kerns: 30–100× im Kern, 20–50× pro Bewertung, wenn die Lauf-Schleife samt Aufzeichnung mit nach Rust geht.
 - Rust-Kern: Der Nutzer ist offen dafür. Entscheidung: erst die M4-Pipeline in Python, dann anhand der Kandidaten/s entscheiden (siehe Designnotiz).
 
 ### Session 3 (2026-11-04)
@@ -48,7 +57,8 @@ Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 68 %** (gewi
 ## Befehle
 
 ```
-uv run pytest -q                                   # 228 Tests, alle grün
+uv run pytest -q                                   # 386 Tests, alle grün
+uv run rsx redesign examples/specs/xor.yaml -o out.litematic   # Redesign (M4)
 uv run python scripts/bench_sim.py                 # Simulator-Geschwindigkeit
 uv run rsx dump <datei> [--components]             # Schematic als Text
 uv run rsx sim scenarios/<x>.yaml --diff           # Simulator vs. Golden Trace
@@ -68,10 +78,12 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    - Teiltabellen sehen nur Abhängigkeiten, die beim einzelnen Umschalten sichtbar sind.
    - Erledigt (Session 4): Clock-Erkennung an echten Clocks. Offen: optional SVG-Timing-Diagramm; Analyse großer Schaltungen beschleunigen (`_run_steps` spielt jede Eingabe-Sequenz von vorn ab).
    - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet).
-2. **M4 Redesign beginnen:** Vorher **`docs/m4-search-and-performance.md`** lesen. Kurz: zweistufige Bewertung, Topologie per SAT/SMT, gezielte Suche und Symmetrien. Geschwindigkeit ist gemessen; Rust-Kern (PyO3) erst, wenn die Pipeline läuft und die exakte Bewertung der Engpass ist.
-   - Spezifikation (Wahrheitstabelle, Timing, Pulsantwort) aus `analysis` ableiten.
-   - Constraints (Bounding Box, erlaubte Blöcke, QC ja/nein).
-   - Kandidaten aus Templates und Suche erzeugen, simulieren, ranken und als `.litematic` exportieren.
+2. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
+   - Funktionen ohne passende Vorlage: Vorlagen kombinieren (Ausgang einer Vorlage auf den Eingang der nächsten, Eingänge gemeinsam nutzen) und Mehrfach-Ausgänge aus Einzelgattern zusammensetzen.
+   - Danach Topologie per SAT/SMT und gezielte Suche (Mutation und Kompaktieren) für kleinere Bauweisen. Vorher Kandidaten/s messen und die Rust-Frage mit dem Nutzer neu besprechen.
+   - Volladdierer-Vorlage fehlt; XOR-Vorlagen sind groß (28–33 Blöcke), kompaktere Bauweisen suchen.
+   - Spezifikation kennt nur Kombinatorik; Timing/Pulsantwort (z. B. Pulsverlängerer) und Speicher (Latch) fehlen.
+   - Kompaktierung großer Originale ist langsam (mux3-8: ~0,5 s pro Versuch).
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
 3. **Restliche Simulator-Lücken (M2):**
    - Tageslichtsensor (Block-Entity alle 20 gt, Himmelslicht/Tageszeit), Druckplatten, Detektorschiene, Sculk, Crafter, Truhen als Container.
@@ -92,6 +104,7 @@ src/redstone/
   sim/          world.py (Level#setBlock, NeighborUpdater, LevelTicks, Block-Events), block.py, blockdata.py,
                 notes.py, runner.py, blocks/{basic,diode,torch_observer,container,wire,piston,dispenser_hopper,outputs}.py, data/
   analysis/     ports.py, experiment.py, analyze.py, patterns.py, explain.py
+  design/       candidate.py, spec.py, evaluate.py, templates.py, search.py, compact.py, report.py
   knowledge.py  Linter, Index, mark
   oracle.py     Start des Fabric-Servers
 oracle/         Fabric-Mod (Java)
