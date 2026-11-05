@@ -18,7 +18,7 @@ from ..sim.constants import UPDATE_ALL
 from ..sim.runner import ORACLE_ORIGIN
 from ..sim.world import World
 from .candidate import Candidate
-from .evaluate import Constraints, evaluate
+from .evaluate import Constraints, evaluate_any
 from .spec import Spec
 
 MAX_EVALUATIONS = 400
@@ -127,10 +127,10 @@ def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
         if budget[0] <= 0:
             return False
         budget[0] -= 1
-        quick = evaluate(cand, spec, constraints, full=False, stop_early=True)
+        quick = evaluate_any(cand, spec, constraints, quick=True)
         if not quick.correct:
             return False
-        full = evaluate(cand, spec, constraints)
+        full = evaluate_any(cand, spec, constraints) if hasattr(spec, "table") else quick
         return full.correct and not [v for v in full.violations if v.startswith("Verzögerung")]
 
     if not works(c):

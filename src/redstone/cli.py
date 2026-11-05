@@ -134,22 +134,66 @@ def _parse_size(text: str) -> tuple[int, int, int]:
     return tuple(parts)
 
 
+def _spec_of_existing(analysis, title: str):
+    """Truth-table spec if the circuit is combinational (it meets its own table, transitions included),
+    else the recorded pulse behaviour; clocks become clock specs."""
+    from .design import behaviour as bh
+    from .design import spec as specmod
+    from .design.candidate import Candidate
+    from .design.evaluate import evaluate
+    from .design.search import original_candidate
+
+    if analysis.clock is not None:
+        c = analysis.clock
+        out = next((o for o in analysis.outputs if o.pos == c.observed_at), None)
+        positions = [out.pos] if out else [c.observed_at]
+        cand = Candidate("Original", analysis.grid, [], positions, "die analysierte Bestandsschaltung",
+                         origin="original")
+        spec = bh.clock(c.period, c.on_ticks)
+        spec.source = f"Analyse von {title}"
+        return spec, cand
+    original = original_candidate(analysis, "Original")
+    try:
+        spec = specmod.from_analysis(analysis, title)
+        if evaluate(original, spec).ok:
+            return spec, original
+    except ValueError:
+        pass
+    ports = [p for p in analysis.inputs if p.kind in ("lever", "button")]
+    if not ports or not analysis.outputs:
+        raise ValueError("Die Schaltung hat keine Hebel/Knöpfe als Eingänge oder keine Ausgänge")
+    if len(ports) > 3:
+        raise ValueError("Verhaltens-Spezifikationen werden bisher nur für bis zu 3 Eingänge aufgezeichnet")
+    from .analysis.experiment import Circuit
+
+    spec = bh.from_recordings([p.name for p in ports], [p.kind for p in ports], [o.name for o in analysis.outputs],
+                              Circuit(analysis.grid), [o.pos for o in analysis.outputs], [p.pos for p in ports], title)
+    cand = Candidate("Original", analysis.grid, [p.pos for p in ports], [o.pos for o in analysis.outputs],
+                     "die analysierte Bestandsschaltung", origin="original")
+    return spec, cand
+
+
 def _cmd_redesign(args: argparse.Namespace) -> int:
     from pathlib import Path
 
     import yaml
 
     from .design import spec as specmod
-    from .design.evaluate import Constraints, evaluate
+    from .design.evaluate import Constraints, evaluate_any
     from .design.report import report
-    from .design.search import original_candidate, redesign
+    from .design.search import redesign
 
     path = Path(args.file)
     original = None
     title = path.stem
     raw = yaml.safe_load(path.read_text(encoding="utf-8")) if path.suffix in (".yaml", ".yml") else None
     if raw is not None and "build" not in raw:
-        spec = specmod.from_dict(raw, source=path.name)
+        if "behaviour" in raw:
+            from .design.behaviour import from_dict as behaviour_from_dict
+
+            spec = behaviour_from_dict(raw, source=path.name)
+        else:
+            spec = specmod.from_dict(raw, source=path.name)
     else:
         from .analysis.analyze import analyze
 
@@ -161,11 +205,10 @@ def _cmd_redesign(args: argparse.Namespace) -> int:
             grid = io.load(path)
         analysis = analyze(grid)
         try:
-            spec = specmod.from_analysis(analysis, title)
+            spec, original = _spec_of_existing(analysis, title)
         except ValueError as e:
             print(f"Fehler: {e}")
             return 2
-        original = original_candidate(analysis, "Original")
     constraints = Constraints(
         max_size=args.max_size,
         allowed_blocks=set(args.allow.split(",")) if args.allow else None,
@@ -177,7 +220,7 @@ def _cmd_redesign(args: argparse.Namespace) -> int:
     results = redesign(spec, constraints, extra=[original] if original is not None else None,
                        compact_budget=args.compact, log=steps, time_limit=args.time)
     results = [r for r in results if r.candidate is not original]
-    orig_ev = evaluate(original, spec, constraints) if original is not None else None
+    orig_ev = evaluate_any(original, spec, constraints) if original is not None else None
     written = None
     ok = [r for r in results if r.ok]
     if args.out and ok:

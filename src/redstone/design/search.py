@@ -12,7 +12,7 @@ from dataclasses import replace
 
 from ..analysis.analyze import Analysis
 from .candidate import Candidate
-from .evaluate import Constraints, Evaluation, evaluate
+from .evaluate import Constraints, Evaluation, evaluate_any
 from .spec import Spec, from_functions
 
 MAX_PERMUTED_INPUTS = 4
@@ -69,6 +69,34 @@ def template_candidates(spec: Spec, templates: list | None = None) -> list[Candi
     return out
 
 
+def seq_candidates(spec, templates: list | None = None) -> list[Candidate]:
+    """All variants of the timing/memory templates whose ports fit the spec (inputs permuted).
+
+    Which variant really fits is decided by simulation only, so a template is tried even when its
+    behaviour name differs (e.g. a monostable may meet a recorded spec)."""
+    if templates is None:
+        try:
+            from .seq_templates import SEQ_TEMPLATES as templates
+        except ImportError:  # library not available
+            templates = []
+    out = []
+    for t in templates:
+        if len(t.inputs) != len(spec.inputs) or len(t.outputs) != len(spec.outputs):
+            continue
+        for perm in itertools.permutations(range(len(spec.inputs))):
+            if any(t.input_kinds[perm[i]] != k for i, k in enumerate(spec.input_kinds)):
+                continue
+            for params, base in t.variants():
+                label = ", ".join(f"{k}={v}" for k, v in params.items() if k != "kind")
+                out.append(replace(
+                    base, name=f"{t.name}" + (f" ({label})" if label else ""),
+                    inputs=[base.inputs[perm[i]] for i in range(len(spec.inputs))],
+                    tags=set(base.tags) | set(t.tags), description=base.description or t.description,
+                    origin=f"vorlage:{t.name}"))
+            break  # one wiring per template
+    return out
+
+
 def original_candidate(analysis: Analysis, title: str = "Original") -> Candidate:
     levers = [p for p in analysis.inputs if p.kind == "lever"]
     return Candidate(title, analysis.grid, [p.pos for p in levers], [o.pos for o in analysis.outputs],
@@ -89,14 +117,21 @@ def redesign(spec: Spec, constraints: Constraints | None = None,
     from .compact import compact
     from .synth import pla
 
+    from .behaviour import BehaviourSpec
+
     constraints = constraints or Constraints()
-    synthesized = pla(spec) if synthesize else None
+    if isinstance(spec, BehaviourSpec):
+        synthesized = None
+        generated = seq_candidates(spec, templates)
+    else:
+        synthesized = pla(spec) if synthesize else None
+        generated = template_candidates(spec, templates)
     to_compact = ([synthesized] if synthesized is not None else []) + list(extra or [])
-    candidates = template_candidates(spec, templates) + to_compact
+    candidates = generated + to_compact
     results = []
     for cand in candidates:
-        quick = evaluate(cand, spec, constraints, full=False, stop_early=True)
-        results.append(evaluate(cand, spec, constraints) if quick.correct else quick)
+        quick = evaluate_any(cand, spec, constraints, quick=True)
+        results.append(evaluate_any(cand, spec, constraints) if quick.correct else quick)
     if compact_budget:
         deadline = None if time_limit is None else time.perf_counter() + time_limit
         for cand in to_compact:
@@ -110,6 +145,6 @@ def redesign(spec: Spec, constraints: Constraints | None = None,
             if log is not None:
                 log.extend(f"{cand.name}: {s}" for s in steps)
             if small.grid is not cand.grid:
-                results.append(evaluate(small, spec, constraints))
+                results.append(evaluate_any(small, spec, constraints))
     results.sort(key=Evaluation.rank_key)
     return results

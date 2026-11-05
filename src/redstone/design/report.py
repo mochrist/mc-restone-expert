@@ -26,9 +26,12 @@ def report(spec: Spec, constraints: Constraints, results: list[Evaluation], titl
              "Einzel-Übergänge geprüft (der Simulator ist gegen das echte Spiel validiert).", "",
              "## Spezifikation", "",
              f"- Herkunft: {spec.source or 'Eingabe'}",
-             f"- Eingänge: {', '.join(spec.inputs)}; Ausgänge: {', '.join(spec.outputs)}",
-             f"- Funktion: {spec.describe()}"]
-    if spec.max_delay is not None:
+             f"- Eingänge: {', '.join(spec.inputs) or 'keine'}; Ausgänge: {', '.join(spec.outputs)}",
+             f"- {'Verhalten' if hasattr(spec, 'trials') else 'Funktion'}: {spec.describe()}"]
+    if hasattr(spec, "trials"):
+        lines.append(f"- Geprüft in {len(spec.trials)} Testabläufen; Flanken dürfen ±{spec.delay_tolerance} gt, "
+                     f"Pulslängen ±{spec.length_tolerance} gt abweichen")
+    if getattr(spec, "max_delay", None) is not None:
         lines.append(f"- Verzögerung höchstens {spec.max_delay} gt (aus der Spezifikation)")
     lines += [f"- {n}" for n in spec.notes]
     lines += [f"- Constraints: {constraints.describe()}", ""]
@@ -43,7 +46,9 @@ def report(spec: Spec, constraints: Constraints, results: list[Evaluation], titl
         best = ok[0]
         c = best.candidate
         lines.append(f"- Bester Kandidat: **{c.name}** ({c.origin}), {_size(c)} = {c.volume} Blöcke Volumen, "
-                     f"{c.block_count} Blöcke, Verzögerung höchstens {best.max_delay} gt.")
+                     f"{c.block_count} Blöcke, " + (
+                         f"Flanken höchstens {best.max_delay} gt später als spezifiziert." if hasattr(spec, "trials")
+                         else f"Verzögerung höchstens {best.max_delay} gt."))
         if c.description:
             lines.append(f"- Bauweise: {c.description}")
         if original is not None:
@@ -71,7 +76,8 @@ def report(spec: Spec, constraints: Constraints, results: list[Evaluation], titl
         for i, r in enumerate(rows, 1):
             c = r.candidate
             rank = "–" if r is original else str(i)
-            delay = "–" if r.max_delay is None else f"{r.max_delay} gt"
+            delay = ("–" if r.max_delay is None else
+                     f"{r.max_delay:+d} gt" if hasattr(spec, "trials") else f"{r.max_delay} gt")
             lines.append(f"| {rank} | {c.name} | {c.origin} | {_size(c)} | {c.block_count} | {delay} | {_status(r)} |")
         lines.append("")
     if compact_log:

@@ -210,3 +210,14 @@ def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: E
         if rec.settled_at is None:
             ev.errors.append(f"Übergang ab {_fmt(spec.inputs, combo)}: kommt nicht zur Ruhe")
             return
+
+
+def evaluate_any(candidate: Candidate, spec, constraints: Constraints | None = None, quick: bool = False) -> Evaluation:
+    """Evaluate against a truth-table Spec or a BehaviourSpec. quick = cheap rejection run."""
+    from .behaviour import BehaviourSpec, evaluate_behaviour
+
+    if isinstance(spec, BehaviourSpec):
+        return evaluate_behaviour(candidate, spec, constraints, stop_early=True)
+    if quick:
+        return evaluate(candidate, spec, constraints, full=False, stop_early=True)
+    return evaluate(candidate, spec, constraints)
