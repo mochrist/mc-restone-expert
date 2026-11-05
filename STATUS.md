@@ -1,15 +1,27 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-04, Ende Session 3. Geschätzter Gesamtfortschritt: **ca. 65 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-05, Session 4. Geschätzter Gesamtfortschritt: **ca. 68 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
-| M0 Wissensbasis | 10 % | ~95 % | 264 Aussagen aus dem 26.3-Code belegt, 81 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
+| M0 Wissensbasis | 10 % | ~95 % | 264 Aussagen aus dem 26.3-Code belegt, 83 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~90 % | Oracle läuft; Simulator stimmt mit allen 33 Golden Traces tick-genau überein |
-| M3 Analyse + Erklärung | 20 % | ~70 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Sonderfall-Notizen |
-| M4 Redesign | 25 % | 0 % | noch nicht begonnen |
+| M2 Oracle + Simulator | 35 % | ~90 % | Oracle läuft; Simulator stimmt mit allen 35 Golden Traces tick-genau überein |
+| M3 Analyse + Erklärung | 20 % | ~80 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Sonderfall-Notizen |
+| M4 Redesign | 25 % | ~3 % | Simulator-Geschwindigkeit gemessen (`scripts/bench_sim.py`) |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
+
+### Session 4 (2026-11-05)
+
+- Clock-Erkennung an echten Bauformen geprüft (`tests/fixtures/analysis/clocks/`, `tests/analysis/test_clocks.py`):
+  Observer-Paar, Repeater-Ring, Fackel-Repeater-Clock (läuft bzw. brennt durch).
+  - Der Anstoß schickt jetzt auch Shape-Updates (sonst starten Observer-Clocks nicht).
+  - Periode aus dem ersten regelmäßigen Abschnitt; ein späteres Ende (Burnout) wird mit Tick gemeldet.
+  - Die Ausschaltverzögerung der Lampe wird von der An-Zeit abgezogen. Schwingen ohne feste Periode wird gemeldet.
+  - Fehler behoben: Trichter ohne Cooldown galten als „beschäftigt“, die Welt kam nie zur Ruhe (2TickFiveLanternPrize).
+- Neue Golden Traces `torch-repeater-clock` (Burnout bei Tick 60, wieder an 160 gt später) und `repeater-ring-clock`: beim ersten Lauf identisch. TRCH-008/011 verifiziert.
+- Performance gemessen, Werte in `docs/m4-search-and-performance.md`: ~4 000 aktive Ticks/s, ~210 000 Neighbor-Updates/s; `rsx explain` 3 s (mux3-8) bzw. 9 s (seg7). Hot-Path-Optimierung brachte ~15–20 %.
+- Rust-Kern: Der Nutzer ist offen dafür. Entscheidung: erst die M4-Pipeline in Python, dann anhand der Kandidaten/s entscheiden (siehe Designnotiz).
 
 ### Session 3 (2026-11-04)
 
@@ -36,7 +48,8 @@ Stand: 2026-11-04, Ende Session 3. Geschätzter Gesamtfortschritt: **ca. 65 %** 
 ## Befehle
 
 ```
-uv run pytest -q                                   # 219 Tests, alle grün
+uv run pytest -q                                   # 228 Tests, alle grün
+uv run python scripts/bench_sim.py                 # Simulator-Geschwindigkeit
 uv run rsx dump <datei> [--components]             # Schematic als Text
 uv run rsx sim scenarios/<x>.yaml --diff           # Simulator vs. Golden Trace
 uv run rsx oracle scenarios/<x>.yaml --golden      # im echten Spiel aufzeichnen (~10 s pro Batch)
@@ -53,9 +66,9 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
 1. **M3 fertigstellen:**
    - Erledigt (Session 3, Ende): Druckplatten als Eingang (Emulation „betreten und sofort verlassen“, `PressurePlateBlock` in `basic.py`, nicht gegen das Spiel validiert, weil der Oracle keine Entities hat); volle Wahrheitstabelle bis 6 Hebel, darüber Teiltabellen je Ausgangsgruppe (`seg7`: NAND über 4 Hebel); höchstens 64 Ausgänge; Gatternamen AND/OR/NAND/NOR für n Eingänge.
    - Teiltabellen sehen nur Abhängigkeiten, die beim einzelnen Umschalten sichtbar sind.
-   - Clock-Erkennung an echten Clocks prüfen (Anstoß-Modus); optional SVG-Timing-Diagramm.
+   - Erledigt (Session 4): Clock-Erkennung an echten Clocks. Offen: optional SVG-Timing-Diagramm; Analyse großer Schaltungen beschleunigen (`_run_steps` spielt jede Eingabe-Sequenz von vorn ab).
    - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet).
-2. **M4 Redesign beginnen:** Vorher **`docs/m4-search-and-performance.md`** lesen. Kurz: keine Rust-Neuschreibung, sondern zweistufige Bewertung, Topologie per SAT/SMT, gezielte Suche und Symmetrien. Zuerst die Simulator-Geschwindigkeit messen.
+2. **M4 Redesign beginnen:** Vorher **`docs/m4-search-and-performance.md`** lesen. Kurz: zweistufige Bewertung, Topologie per SAT/SMT, gezielte Suche und Symmetrien. Geschwindigkeit ist gemessen; Rust-Kern (PyO3) erst, wenn die Pipeline läuft und die exakte Bewertung der Engpass ist.
    - Spezifikation (Wahrheitstabelle, Timing, Pulsantwort) aus `analysis` ableiten.
    - Constraints (Bounding Box, erlaubte Blöcke, QC ja/nein).
    - Kandidaten aus Templates und Suche erzeugen, simulieren, ranken und als `.litematic` exportieren.
