@@ -42,4 +42,25 @@ rund 30²⁷ Möglichkeiten. Die Algorithmen entscheiden, nicht die Sprache.
 
 ## Messwerte
 
-_noch keine_
+2026-11-05, Python 3.12, Windows, ein Kern, `uv run python scripts/bench_sim.py` (nach den Hot-Path-Optimierungen
+in `Pos.offset` und `World.get_signal`, die ~15–20 % brachten):
+
+| Fall | Blöcke | Ticks/s (aktiv) | Neighbor-Updates/s | `rsx explain` |
+|---|---|---|---|---|
+| Repeater-Ring (Clock) | 17 | ~4 300 | ~210 000 | 0,10 s |
+| Fackel-Repeater-Clock | 12 | ~3 600 | ~210 000 | 0,11 s |
+| mux3-8 | 281 | (ruht) | – | 3,2 s |
+| seg7 | 902 | (ruht) | – | 9,4 s |
+
+Eine ruhende Welt kostet fast nichts (Millionen Ticks/s), bezahlt wird pro Block-Update.
+Profil (mux3-8): >80 % der Zeit im Simulator-Kern (Neighbor-Updates, Signalabfragen, Staub-Neuberechnung).
+
+Abschätzung für M4: Ein kleiner Kandidat (2–3 Eingänge, Wahrheitstabelle + Timing, ~10 Läufe à ~30 gt)
+kostet in Python grob 10–30 ms, also etwa **30–100 Kandidaten/s**. Mit Vorfilter (abstraktes Modell)
+reicht das für gezielte Suche über Templates; für breite evolutionäre Suche (10⁵–10⁶ exakte Bewertungen)
+nicht. Dort wäre ein Rust-Kern (geschätzt 30–100×) der Hebel.
+
+Stand der Entscheidung (2026-11-05): Der Nutzer ist offen für einen Rust-Kern. Er wird gebaut, sobald die
+M4-Pipeline (Spezifikation → Kandidaten → Bewertung) in Python läuft und die Messung zeigt, dass die exakte
+Bewertung der Engpass ist. Bis dahin bleibt die Schnittstelle des Kerns schmal (`World.place_grid`, `tick`,
+`apply_input`, Snapshot), damit ein PyO3-Modul sie später 1:1 ersetzen kann.

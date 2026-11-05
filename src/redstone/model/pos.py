@@ -9,20 +9,26 @@ from enum import Enum
 from typing import NamedTuple
 
 
+_new = tuple.__new__
+
+
 class Pos(NamedTuple):
     x: int
     y: int
     z: int
 
     def __add__(self, other: tuple[int, int, int]) -> Pos:  # type: ignore[override]
-        return Pos(self.x + other[0], self.y + other[1], self.z + other[2])
+        return _new(Pos, (self[0] + other[0], self[1] + other[1], self[2] + other[2]))
 
     def __sub__(self, other: tuple[int, int, int]) -> Pos:
         return Pos(self.x - other[0], self.y - other[1], self.z - other[2])
 
     def offset(self, direction: Direction, n: int = 1) -> Pos:
+        # Hot path of the simulator: bypass the NamedTuple constructor.
         dx, dy, dz = direction.vec
-        return Pos(self.x + dx * n, self.y + dy * n, self.z + dz * n)
+        if n == 1:
+            return _new(Pos, (self[0] + dx, self[1] + dy, self[2] + dz))
+        return _new(Pos, (self[0] + dx * n, self[1] + dy * n, self[2] + dz * n))
 
     def __str__(self) -> str:
         return f"({self.x},{self.y},{self.z})"

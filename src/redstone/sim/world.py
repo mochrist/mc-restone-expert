@@ -315,22 +315,31 @@ class World:
         return self.block(state).is_signal_source(state)
 
     def get_direct_signal(self, pos: Pos, direction: Direction) -> int:
-        st = self.get(pos)
-        return self.block(st).get_direct_signal(self, pos, st, direction)
+        st = self.blocks.get(pos, AIR)
+        return self.registry.get(st.name).get_direct_signal(self, pos, st, direction)
 
     def get_direct_signal_to(self, pos: Pos) -> int:
         result = 0
+        blocks, registry = self.blocks, self.registry
         for d in SIGNAL_ORDER:
-            result = max(result, self.get_direct_signal(pos.offset(d), d))
-            if result >= 15:
-                return result
+            p = pos.offset(d)
+            st = blocks.get(p)
+            if st is None:  # air gives no signal
+                continue
+            s = registry.get(st.name).get_direct_signal(self, p, st, d)
+            if s > result:
+                result = s
+                if result >= 15:
+                    return result
         return result
 
     def get_signal(self, pos: Pos, direction: Direction) -> int:
-        st = self.get(pos)
-        block = self.block(st)
+        st = self.blocks.get(pos, AIR)
+        block = self.registry.get(st.name)
         signal = block.get_signal(self, pos, st, direction)
-        return max(signal, self.get_direct_signal_to(pos)) if block.is_conductor(st) else signal
+        if signal >= 15 or not block.is_conductor(st):
+            return signal
+        return max(signal, self.get_direct_signal_to(pos))
 
     def has_signal(self, pos: Pos, direction: Direction) -> bool:
         return self.get_signal(pos, direction) > 0
