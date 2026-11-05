@@ -127,6 +127,75 @@ def _cmd_explain(args: argparse.Namespace) -> int:
     return 0
 
 
+def _parse_size(text: str) -> tuple[int, int, int]:
+    parts = [int(x) for x in text.replace("x", ",").split(",")]
+    if len(parts) != 3:
+        raise argparse.ArgumentTypeError("size must be X,Y,Z")
+    return tuple(parts)
+
+
+def _cmd_redesign(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    import yaml
+
+    from .design import spec as specmod
+    from .design.evaluate import Constraints, evaluate
+    from .design.report import report
+    from .design.search import original_candidate, redesign
+
+    path = Path(args.file)
+    original = None
+    title = path.stem
+    raw = yaml.safe_load(path.read_text(encoding="utf-8")) if path.suffix in (".yaml", ".yml") else None
+    if raw is not None and "build" not in raw:
+        spec = specmod.from_dict(raw, source=path.name)
+    else:
+        from .analysis.analyze import analyze
+
+        if raw is not None:
+            from .verify import load_scenario
+
+            grid = load_scenario(path).grid
+        else:
+            grid = io.load(path)
+        analysis = analyze(grid)
+        try:
+            spec = specmod.from_analysis(analysis, title)
+        except ValueError as e:
+            print(f"Fehler: {e}")
+            return 2
+        original = original_candidate(analysis, "Original")
+    constraints = Constraints(
+        max_size=args.max_size,
+        allowed_blocks=set(args.allow.split(",")) if args.allow else None,
+        forbidden_blocks=set(args.forbid.split(",")) if args.forbid else set(),
+        allow_qc=not args.no_qc,
+        max_delay=args.max_delay,
+    )
+    steps: list[str] = []
+    results = redesign(spec, constraints, extra=[original] if original is not None else None,
+                       compact_budget=args.compact if original is not None else 0, log=steps)
+    results = [r for r in results if r.candidate is not original]
+    orig_ev = evaluate(original, spec, constraints) if original is not None else None
+    written = None
+    ok = [r for r in results if r.ok]
+    if args.out and ok:
+        out = Path(args.out)
+        if out.suffix == "":
+            out.mkdir(parents=True, exist_ok=True)
+            out = out / f"{title}-redesign.litematic"
+        io.save(ok[0].candidate.grid, out)
+        written = str(out)
+    text = report(spec, constraints, results, title, orig_ev, written, top=args.top, compact_log=steps)
+    if args.report:
+        Path(args.report).write_text(text, encoding="utf-8")
+        print(f"wrote {args.report}")
+    else:
+        print(text)
+    return 0 if ok else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -171,6 +240,20 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("file", help=".litematic/.schem/.nbt or scenario .yaml")
     p.add_argument("-o", "--out", help="write the Markdown report to this file")
     p.set_defaults(func=_cmd_explain)
+
+    p = sub.add_parser("redesign", help="find compact circuits for a spec or an existing circuit (German report)")
+    p.add_argument("file", help="spec .yaml (inputs/function|table), scenario .yaml or schematic")
+    p.add_argument("--max-size", type=_parse_size, help="bounding box X,Y,Z (X and Z may be swapped)")
+    p.add_argument("--allow", help="comma separated block ids that may be used (besides lever and lamp)")
+    p.add_argument("--forbid", help="comma separated block ids that must not be used")
+    p.add_argument("--no-qc", action="store_true", help="reject designs that use quasi-connectivity")
+    p.add_argument("--max-delay", type=int, help="max delay in game ticks (default: from the spec)")
+    p.add_argument("-o", "--out", help="write the best candidate as .litematic/.schem/.nbt (file or directory)")
+    p.add_argument("--report", help="write the Markdown report to this file")
+    p.add_argument("--top", type=int, default=10, help="candidates listed in the report")
+    p.add_argument("--compact", type=int, default=100,
+                   help="max evaluations for shrinking the original (0 = off, default 100)")
+    p.set_defaults(func=_cmd_redesign)
 
     args = parser.parse_args(argv)
     return args.func(args)

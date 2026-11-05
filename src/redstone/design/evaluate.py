@@ -1,0 +1,212 @@
+"""Evaluate a candidate against a spec and constraints, by simulation only.
+
+A candidate is correct when, for every input combination,
+1. starting from the stored state (all levers off) and switching the levers on at tick 1, the outputs settle
+   at the values of the truth table, and
+2. starting from that settled state, toggling any single lever settles at the row of the new combination.
+(2) catches designs that only work from a fresh world (stuck latches, races).
+Delays are measured from the lever change to the last output change.
+"""
+
+from __future__ import annotations
+
+import itertools
+from dataclasses import dataclass, field
+
+from ..analysis.experiment import Circuit, Recording
+from ..sim.notes import notes_of
+from .candidate import Candidate
+from .spec import Spec
+
+MAX_TICKS = 200
+QUIET = 12
+GAP = 40  # ticks between successive lever changes in a transition run (more than any settle time we accept)
+
+# Blocks that form the interface of a candidate; not subject to the allowed/forbidden block lists.
+INTERFACE = {"lever", "redstone_lamp"}
+
+
+@dataclass
+class Constraints:
+    max_size: tuple[int, int, int] | None = None  # (x, y, z); x and z may be swapped (rotation)
+    allowed_blocks: set[str] | None = None  # block ids without "minecraft:", None = everything
+    forbidden_blocks: set[str] = field(default_factory=set)
+    allow_qc: bool = True
+    max_delay: int | None = None  # overrides spec.max_delay
+
+    def describe(self) -> str:
+        parts = []
+        if self.max_size:
+            parts.append("max. {}×{}×{}".format(*self.max_size))
+        if self.allowed_blocks is not None:
+            parts.append("nur " + ", ".join(sorted(self.allowed_blocks)))
+        if self.forbidden_blocks:
+            parts.append("ohne " + ", ".join(sorted(self.forbidden_blocks)))
+        if not self.allow_qc:
+            parts.append("ohne Quasi-Connectivity")
+        if self.max_delay is not None:
+            parts.append(f"Verzögerung ≤ {self.max_delay} gt")
+        return ", ".join(parts) or "keine"
+
+
+@dataclass
+class Evaluation:
+    candidate: Candidate
+    correct: bool = False
+    violations: list[str] = field(default_factory=list)  # constraint violations, German
+    errors: list[str] = field(default_factory=list)  # wrong outputs, German
+    max_delay: int | None = None
+    mechanics: set[str] = field(default_factory=set)  # note kinds seen during the runs (qc, bud, ...)
+    runs: int = 0
+
+    @property
+    def ok(self) -> bool:
+        return self.correct and not self.violations
+
+    def rank_key(self) -> tuple:
+        c = self.candidate
+        return (not self.ok, len(self.errors), c.volume, c.block_count,
+                self.max_delay if self.max_delay is not None else 999)
+
+
+def _block_ids(candidate: Candidate) -> set[str]:
+    return {s.id for _, s in candidate.grid.items()}
+
+
+def check_constraints(candidate: Candidate, constraints: Constraints) -> list[str]:
+    out = []
+    if constraints.max_size:
+        mx, my, mz = constraints.max_size
+        x, y, z = candidate.size
+        if not (y <= my and ((x <= mx and z <= mz) or (z <= mx and x <= mz))):
+            out.append(f"Größe {x}×{y}×{z} passt nicht in {mx}×{my}×{mz}")
+    ids = _block_ids(candidate) - INTERFACE
+    if constraints.allowed_blocks is not None:
+        extra = ids - constraints.allowed_blocks
+        if extra:
+            out.append("nicht erlaubte Blöcke: " + ", ".join(sorted(extra)))
+    bad = ids & constraints.forbidden_blocks
+    if bad:
+        out.append("verbotene Blöcke: " + ", ".join(sorted(bad)))
+    if not constraints.allow_qc and "qc" in candidate.tags:
+        out.append("nutzt Quasi-Connectivity")
+    return out
+
+
+def _outputs_at(rec: Recording, candidate: Candidate, tick: int) -> tuple[bool, ...]:
+    return tuple(rec.on_at(p, tick) if p in rec.series else False for p in candidate.outputs)
+
+
+def _last_change(rec: Recording, candidate: Candidate, start: int, end: int) -> int | None:
+    last = None
+    for p in candidate.outputs:
+        for t, _ in rec.series.get(p, [])[1:]:
+            if start <= t <= end:
+                last = t if last is None else max(last, t)
+    return None if last is None else last - start
+
+
+def _stored(candidate: Candidate) -> tuple[bool, ...]:
+    """Lever states as stored in the grid (templates store all levers off; originals may not)."""
+    return tuple(candidate.grid.get(p).get_bool("powered") for p in candidate.inputs)
+
+
+def _fmt(names: list[str], combo: tuple[bool, ...]) -> str:
+    return ", ".join(f"{n}={'1' if b else '0'}" for n, b in zip(names, combo))
+
+
+def evaluate(candidate: Candidate, spec: Spec, constraints: Constraints | None = None,
+             full: bool = True, stop_early: bool = False) -> Evaluation:
+    """Simulate the candidate. With full=False only the fresh-world truth table is checked (cheap prefilter);
+    with stop_early the checks end at the first wrong output (enough to reject a candidate)."""
+    constraints = constraints or Constraints()
+    ev = Evaluation(candidate, violations=check_constraints(candidate, constraints))
+    if len(candidate.inputs) != len(spec.inputs) or len(candidate.outputs) != len(spec.outputs):
+        ev.errors.append("Anzahl der Ein- oder Ausgänge passt nicht zur Spezifikation")
+        return ev
+    circuit = Circuit(candidate.grid)
+    delays: list[int] = []
+
+    # Idle: the stored state must be at rest (no clock) and show the row for all levers off.
+    world = circuit.new_world()
+    rec = circuit.run([], max_ticks=MAX_TICKS, quiet=QUIET, world=world)
+    ev.runs += 1
+    stored = _stored(candidate)
+    zero = stored
+    if rec.settled_at is None:
+        ev.errors.append("kommt ohne Eingabe nicht zur Ruhe")
+        return ev
+    if _outputs_at(rec, candidate, rec.ticks) != spec.table[zero]:
+        ev.errors.append(f"falscher Ruhezustand bei {_fmt(spec.inputs, zero)}")
+
+    for combo in itertools.product([False, True], repeat=len(spec.inputs)):
+        if stop_early and ev.errors:
+            break
+        actions = [(1, p, "use") for p, on, st in zip(candidate.inputs, combo, stored) if on != st]
+        if not actions:
+            continue
+        world = circuit.new_world()
+        rec = circuit.run(actions, max_ticks=MAX_TICKS, quiet=QUIET, world=world)
+        ev.runs += 1
+        ev.mechanics |= {n.kind for n in notes_of(world)}
+        if rec.settled_at is None:
+            ev.errors.append(f"kommt bei {_fmt(spec.inputs, combo)} nicht zur Ruhe")
+            continue
+        got = _outputs_at(rec, candidate, rec.ticks)
+        if got != spec.table[combo]:
+            ev.errors.append(f"bei {_fmt(spec.inputs, combo)}: Ausgang {_fmt(spec.outputs, got)}, "
+                             f"erwartet {_fmt(spec.outputs, spec.table[combo])}")
+        d = _last_change(rec, candidate, 1, rec.ticks)
+        if d is not None:
+            delays.append(d)
+
+    if full and not ev.errors:
+        _check_transitions(candidate, spec, circuit, ev, delays)
+
+    ev.correct = not ev.errors
+    ev.max_delay = max(delays) if delays else 0
+    limit = constraints.max_delay if constraints.max_delay is not None else spec.max_delay
+    if limit is not None and ev.max_delay > limit:
+        ev.violations.append(f"Verzögerung {ev.max_delay} gt > erlaubt {limit} gt")
+    if not constraints.allow_qc and "quasi_connectivity" in ev.mechanics:
+        ev.violations.append("nutzt Quasi-Connectivity")
+    return ev
+
+
+def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: Evaluation,
+                       delays: list[int]) -> None:
+    """From every combination, toggle each lever and back, one after another in a single run, and check
+    the settled outputs after every change."""
+    n = len(spec.inputs)
+    stored = _stored(candidate)
+    for combo in itertools.product([False, True], repeat=n):
+        actions = [(1, p, "use") for p, on, st in zip(candidate.inputs, combo, stored) if on != st]
+        phases = []  # (start tick, expected combination, label)
+        t = 1
+        for i in range(n):
+            flipped = tuple(not b if j == i else b for j, b in enumerate(combo))
+            for want in (flipped, combo):
+                t += GAP
+                actions.append((t, candidate.inputs[i], "use"))
+                phases.append((t, want, spec.inputs[i]))
+        world = circuit.new_world()
+        rec = circuit.run(actions, max_ticks=t + MAX_TICKS, quiet=QUIET, world=world)
+        ev.runs += 1
+        ev.mechanics |= {k.kind for k in notes_of(world)}
+        ends = [p[0] - 1 for p in phases[1:]] + [rec.ticks]
+        for (start, want, name), end in zip(phases, ends):
+            got = _outputs_at(rec, candidate, end)
+            if got != spec.table[want]:
+                ev.errors.append(f"Übergang ab {_fmt(spec.inputs, combo)}, {name} umgelegt: "
+                                 f"Ausgang {_fmt(spec.outputs, got)}, erwartet {_fmt(spec.outputs, spec.table[want])}")
+                return
+            last = _last_change(rec, candidate, start, end)
+            if last is not None:
+                delays.append(last)
+                if end != rec.ticks and last > GAP - QUIET:
+                    ev.errors.append(f"Übergang ab {_fmt(spec.inputs, combo)}, {name} umgelegt: "
+                                     f"Ausgang kommt erst nach {last} gt zur Ruhe")
+                    return
+        if rec.settled_at is None:
+            ev.errors.append(f"Übergang ab {_fmt(spec.inputs, combo)}: kommt nicht zur Ruhe")
+            return

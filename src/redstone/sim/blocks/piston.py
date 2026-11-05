@@ -498,7 +498,7 @@ class PistonHeadBlock(Block):
     def is_conductor(self, state):
         return False
 
-    def is_face_sturdy(self, state, face):
+    def is_face_sturdy(self, state, face, support="full"):
         return face is facing(state)  # the 16x16 platform
 
     def get_piston_push_reaction(self, state):
@@ -533,7 +533,7 @@ class MovingPistonBlock(Block):
     def is_conductor(self, state):
         return False
 
-    def is_face_sturdy(self, state, face):
+    def is_face_sturdy(self, state, face, support="full"):
         return False
 
     def get_piston_push_reaction(self, state):

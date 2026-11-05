@@ -110,7 +110,7 @@ class AirBlock(Block):
     def is_conductor(self, state: BlockState) -> bool:
         return False
 
-    def is_face_sturdy(self, state: BlockState, face: Direction) -> bool:
+    def is_face_sturdy(self, state: BlockState, face: Direction, support: str = "full") -> bool:
         return False
 
 

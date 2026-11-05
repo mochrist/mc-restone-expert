@@ -170,7 +170,7 @@ class RedstoneWireBlock(Block):
     def is_conductor(self, state):
         return False
 
-    def is_face_sturdy(self, state, face):
+    def is_face_sturdy(self, state, face, support="full"):
         return False
 
     def is_signal_source(self, state):

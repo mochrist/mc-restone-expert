@@ -1,0 +1,4 @@
+# Beispiel-Spezifikation für `rsx redesign`
+inputs: [a, b]
+function:
+  y: a != b
