@@ -1,0 +1,4 @@
+# Clock mit 8 gt Periode, 2 gt an
+behaviour: clock
+period: 8
+on_ticks: 2

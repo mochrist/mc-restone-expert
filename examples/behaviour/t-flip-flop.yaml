@@ -1,0 +1,3 @@
+# T-Flip-Flop per Knopf: jeder Druck schaltet den Ausgang um
+behaviour: t-flip-flop
+kind: button
