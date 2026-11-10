@@ -91,6 +91,21 @@ def _best(spec: Spec, depth: int) -> list[Candidate]:
     return [replace(c, inputs=list(c.inputs)) for c in _BEST[key]]
 
 
+_DRIVABLE: dict[tuple, list[Candidate]] = {}
+
+
+def _drivable_pla(spec: Spec) -> list[Candidate]:
+    """The PLA with drivable inputs (`synth.pla(drivable=True)`) as a last resort for the driven part h:
+    the normal PLA's inputs cannot take a line when both polarities of the input are used."""
+    from .synth import pla
+
+    key = (len(spec.inputs), _values(spec))
+    if key not in _DRIVABLE:
+        p = pla(spec, name="pla-ansteuerbar", drivable=True)
+        _DRIVABLE[key] = [p] if p is not None else []
+    return [replace(c, inputs=list(c.inputs)) for c in _DRIVABLE[key]]
+
+
 def _design_part(spec: Spec, depth: int) -> list[Candidate]:
     from .evaluate import Evaluation, evaluate_any
     from .search import template_candidates
@@ -118,7 +133,7 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None) -> list
         return []
     out = []
     for sp in splits(spec):
-        gs, hs = _best(sp.g, depth), _best(sp.h, depth)
+        gs, hs = _best(sp.g, depth), _best(sp.h, depth) + _drivable_pla(sp.h)
         found = None
         tries = 0
         for gc, hc in itertools.product(gs, hs):

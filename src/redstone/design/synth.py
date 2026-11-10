@@ -144,6 +144,7 @@ _STONE = "stone"
 _DUST_X = "redstone_wire[east=side,north=none,power=0,south=none,west=side]"
 _DUST_Z = "redstone_wire[east=none,north=side,power=0,south=side,west=none]"
 _LEVER = "lever[face=floor,facing=east,powered=false]"
+_WALL_LEVER = "lever[face=wall,facing=west,powered=false]"  # on the west face of the input block (drivable)
 _LAMP = "redstone_lamp[lit=false]"
 
 
@@ -323,8 +324,11 @@ def _crossings(rows, rail_row, imp: Implicant) -> dict[tuple[int, bool], int] | 
     return best
 
 
-def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = False):
-    """Place everything; returns (cells, lever positions, lamp positions, delay notes) or None."""
+def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = False, drivable: bool = False):
+    """Place everything; returns (cells, lever positions, lamp positions, delay notes) or None.
+
+    drivable: every input is a wall lever on the west face of an input block P at the west end of its rails
+    (see `pla`), so that another part can replace the lever by a repeater facing P."""
     assigned = _assign_lines(cols, order, set())
     if assigned is None:
         return None
@@ -335,7 +339,7 @@ def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = Fal
         x = _crossings(rows, rail_row, c.imp)
         if x is None:
             if not trail:
-                return _build(n, m, cols, order, trail=True)
+                return _build(n, m, cols, order, trail=True, drivable=drivable)
             return None
         cross.append(x)
     z_end = len(rows)
@@ -352,6 +356,33 @@ def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = Fal
         cells[(x, y, z)] = s
 
     # levers and rails
+    def drivable_cells(i: int):
+        """Input i as wall lever L at x=-3 on block P at x=-2; P carries the true rail (dust from x=-1 on),
+        a wall torch on P's side feeds the inverted rail directly (no block above the torch next to the
+        input, so a repeater or dust that replaces L sees no feedback). L comes first."""
+        t_row = rail_row.get((i, True))
+        f_row = rail_row.get((i, False))
+        r = t_row if t_row is not None else rows.index(("lever", i))
+        out = [(-3, 3, r, _WALL_LEVER), (-2, 3, r, _STONE)]
+        for pol, row in ((True, t_row), (False, f_row)):
+            if row is None:
+                continue
+            need_x = {2 * k for k, c in enumerate(cols) if c.imp[i] is pol}
+            x0 = -1
+            if not pol:
+                side = row - 1 if t_row is not None else row  # slot row between the rails / the rail itself
+                out.append((-2, 3, side, _torch("south" if side > r else "north")))
+                x0 = -2 if t_row is not None else -1
+            xs = list(range(x0, max(need_x) + 1))
+            idx = {x: a for a, x in enumerate(xs)}
+            reps = _plan_line(len(xs), {0: 15}, {idx[x] for x in need_x},
+                              {a for a, x in enumerate(xs) if x not in need_x and a > 0})
+            if reps is None:
+                return None
+            for a, x in enumerate(xs):
+                out += [(x, 2, row, _STONE), (x, 3, row, _repeater("west") if a in reps else _DUST_X)]
+        return out
+
     def rail_cells(i: int, xc: int):
         """Blocks of input i's lever and rails with the lever at x = xc, or None if out of reach."""
         out = []
@@ -388,6 +419,14 @@ def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = Fal
     levers = []
     width = 2 * len(cols) - 1
     for i in range(n):
+        if drivable:
+            got = drivable_cells(i)
+            if got is None:
+                return None
+            for x, y, z, st in got:
+                put(x, y, z, st)
+            levers.append(got[0][:3])
+            continue
         users = [2 * k for k, c in enumerate(cols) if c.imp[i] is not None]
         lo, hi = (min(users), max(users)) if users else (0, width - 1)
         opts = [x for x in range(lo - 1, hi + 2) if x % 2 and -1 <= x <= width] or [1]
@@ -433,7 +472,7 @@ def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = Fal
                 put(x, 1, z, _repeater("north") if idx[z] in reps else _DUST_Z)
         if qmax:
             if (x, z_end - 1) in rail_dust:  # the climbing dust would connect to the last rail
-                return _build(n, m, cols, order, trail=True) if not trail else None
+                return _build(n, m, cols, order, trail=True, drivable=drivable) if not trail else None
             put(x, 2, z_end, _DUST_Z)
             for z in range(z_end + 1, orow(qmax) + 1):
                 put(x, 2, z, _STONE)
@@ -533,11 +572,13 @@ def _to_candidate(name: str, built, spec: Spec, terms, shared: bool) -> Candidat
                      origin="synthese:pla")
 
 
-def pla(spec: Spec, name: str = "pla", *, share: bool | None = None) -> Candidate | None:
+def pla(spec: Spec, name: str = "pla", *, share: bool | None = None, drivable: bool = False) -> Candidate | None:
     """Build the smallest torch PLA for the spec over a few layout variants, or None beyond the limits.
 
     share=None tries layouts with and without shared terms and keeps the smallest (volume, then blocks);
-    True/False forces one of them."""
+    True/False forces one of them. drivable=True puts every lever at the west end of its rails, as a wall
+    lever on an input block that also carries the inverter: the inputs can then be driven by other parts
+    (`compose`), at the cost of longer rails."""
     n, m = len(spec.inputs), len(spec.outputs)
     if n > MAX_INPUTS:
         return None
@@ -553,7 +594,7 @@ def pla(spec: Spec, name: str = "pla", *, share: bool | None = None) -> Candidat
             for order in itertools.islice(itertools.permutations(range(m)), MAX_ORDERS):
                 cols = _columns(terms, shared, list(order))
                 try:
-                    built = _build(n, m, cols, list(order))
+                    built = _build(n, m, cols, list(order), drivable=drivable)
                 except _Conflict:
                     built = None
                 if built is None:
