@@ -54,6 +54,15 @@ def _near(p: Pos, blocks) -> bool:
                for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1))
 
 
+_AROUND = [(dx, dy, dz) for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1)]
+
+
+def _halo(blocks) -> set[tuple[int, int, int]]:
+    """All positions within one block of `blocks` (also diagonally), as plain tuples (a Pos compares and
+    hashes like its tuple): `_near(p, blocks)` is `p in _halo(blocks)`."""
+    return {(x + dx, y + dy, z + dz) for x, y, z in blocks for dx, dy, dz in _AROUND}
+
+
 DOWN = Pos(0, -1, 0)
 _CW = {"north": "east", "east": "south", "south": "west", "west": "north"}
 UNROTATABLE = {"rail", "powered_rail", "detector_rail", "activator_rail"}  # shapes not handled
@@ -137,7 +146,8 @@ def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layou
     # parts must not touch (one block of air in every direction), apart from the joints
     b_body = {x for x in b if x not in (p, p + DOWN)}
     a_body = {x for x in a if x != q}
-    if any(_near(x, a_body) for x in b_body):
+    small, large = (a_body, b_body) if len(a_body) <= len(b_body) else (b_body, a_body)
+    if not _halo(small).isdisjoint(large):  # some block of b within one block of a
         return None
     cells: dict[Pos, str] = {}
     for n, (c, blk) in enumerate(line):
@@ -221,13 +231,17 @@ def _route(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], l
     The start cell is not checked (it is the joint at the output)."""
     from collections import deque
 
+    (x0, y0, z0), (x1, y1, z1) = lo, hi
+
     def inside(c: Pos) -> bool:
-        return all(lo[i] <= c[i] <= hi[i] for i in range(3))
+        return x0 <= c[0] <= x1 and y0 <= c[1] <= y1 and z0 <= c[2] <= z1
+
+    near = _halo(keep_clear)
 
     def ok(c: Pos) -> bool:
         if not inside(c) or c in solid or c + DOWN in solid:
             return False
-        return c in goals or not (_near(c, keep_clear) or _near(c + DOWN, keep_clear))
+        return c in goals or not (c in near or c + DOWN in near)
 
     prev: dict[Pos, Pos | None] = {start: None}
     queue = deque([start])
