@@ -250,6 +250,9 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(encoding="utf-8")
     warnings.formatwarning = lambda msg, category, *_: f"warning: {msg}\n"
     parser = argparse.ArgumentParser(prog="rsx", description="Redstone analysis and design toolkit")
+    parser.add_argument("--sim-core", choices=("python", "rust", "auto"), default=None,
+                        help="simulator core: the Python reference or the Rust port "
+                             "(default: environment variable RSX_SIM_CORE, else auto = Rust if installed)")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("dump", help="print a schematic layer by layer")
@@ -306,6 +309,10 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=_cmd_redesign)
 
     args = parser.parse_args(argv)
+    if args.sim_core:
+        from .sim import core
+
+        core.use(args.sim_core)
     return args.func(args)
 
 
