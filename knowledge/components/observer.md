@@ -28,7 +28,7 @@ des Blocks, auf den sein Gesicht zeigt, und gibt daraufhin hinten einen Puls von
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ObserverBlock#ownSignal`, `ObserverBlock#getDirectSignal`; [SRC-WIKI-OBSERVER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-sources.yaml)
 
 ### OBS-004: Erkannt werden Shape-Updates, nicht Neighbor-Updates
 - Aussage: Der Observer reagiert nur über `updateShape`; er überschreibt `neighborChanged` nicht und reagiert daher nicht auf reine Neighbor-Updates (Block-Updates).
@@ -43,7 +43,7 @@ des Blocks, auf den sein Gesicht zeigt, und gibt daraufhin hinten einen Puls von
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ObserverBlock#updateShape`, `ObserverBlock#startSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-sources.yaml)
 - Hinweise: Änderungen während des Pulses werden ignoriert.
 
 ### OBS-006: Verzögerung bis zum Einschalten: 2 Game-Ticks, Priorität NORMAL
@@ -89,5 +89,5 @@ des Blocks, auf den sein Gesicht zeigt, und gibt daraufhin hinten einen Puls von
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ObserverBlock#shouldRedstoneWireConnectTo`
 - Konfidenz: mittel
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-sources.yaml)
 - Hinweise: Richtungskonvention der Staub-Abfrage nicht separat geprüft; siehe Staub-Dokumentation.

@@ -1,0 +1,567 @@
+name: verify-conductors
+description: Welche Bloecke leiten (Repeater laedt X stark, Lampe dahinter), Staerken, Repeater-Ausgang und starkes/schwaches Laden.
+build:
+  size:
+  - 18
+  - 2
+  - 35
+  fill:
+  - - 0
+    - 0
+    - 0
+    - 17
+    - 0
+    - 34
+    - stone
+  blocks:
+  - - 0
+    - 1
+    - 0
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 0
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 0
+    - stone
+  - - 3
+    - 1
+    - 0
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 2
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 2
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 2
+    - glass
+  - - 3
+    - 1
+    - 2
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 4
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 4
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 4
+    - tinted_glass
+  - - 3
+    - 1
+    - 4
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 6
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 6
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 6
+    - glowstone
+  - - 3
+    - 1
+    - 6
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 8
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 8
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 8
+    - ice
+  - - 3
+    - 1
+    - 8
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 10
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 10
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 10
+    - oak_leaves[distance=7,persistent=true,waterlogged=false]
+  - - 3
+    - 1
+    - 10
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 12
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 12
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 12
+    - soul_sand
+  - - 3
+    - 1
+    - 12
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 14
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 14
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 14
+    - mud
+  - - 3
+    - 1
+    - 14
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 16
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 16
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 16
+    - oak_slab[type=double,waterlogged=false]
+  - - 3
+    - 1
+    - 16
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 18
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 18
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 18
+    - oak_slab[type=bottom,waterlogged=false]
+  - - 3
+    - 1
+    - 18
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 20
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 20
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 20
+    - oak_slab[type=top,waterlogged=false]
+  - - 3
+    - 1
+    - 20
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 22
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 22
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 22
+    - oak_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]
+  - - 3
+    - 1
+    - 22
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 24
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 24
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 24
+    - observer[facing=up,powered=false]
+  - - 3
+    - 1
+    - 24
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 26
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 2
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 3
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 4
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 5
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 6
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 7
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 8
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 9
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 10
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 11
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 12
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 13
+    - 1
+    - 26
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 14
+    - 1
+    - 26
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 15
+    - 1
+    - 26
+    - redstone_wire[east=none,north=none,power=0,south=none,west=side]
+  - - 0
+    - 1
+    - 28
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 28
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 28
+    - stone
+  - - 3
+    - 1
+    - 28
+    - comparator[facing=west,mode=compare,powered=false]
+  - - 0
+    - 1
+    - 30
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 30
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 2
+    - 1
+    - 30
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 3
+    - 1
+    - 30
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 4
+    - 1
+    - 30
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 5
+    - 1
+    - 30
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 6
+    - 1
+    - 30
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 7
+    - 1
+    - 30
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 8
+    - 1
+    - 30
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 9
+    - 1
+    - 30
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 10
+    - 1
+    - 30
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 11
+    - 1
+    - 30
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 12
+    - 1
+    - 30
+    - stone
+  - - 13
+    - 1
+    - 30
+    - comparator[facing=west,mode=compare,powered=false]
+  - - 1
+    - 1
+    - 32
+    - stone
+  - - 2
+    - 1
+    - 32
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 33
+    - redstone_lamp[lit=false]
+ticks: 24
+inputs:
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 0
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 2
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 4
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 6
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 8
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 10
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 12
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 14
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 16
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 18
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 20
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 22
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 24
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 26
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 28
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 30
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 32
+  action: setblock
+  state: redstone_block
+probes:
+  lamp_stone:
+  - 3
+  - 1
+  - 0
+  lamp_glass:
+  - 3
+  - 1
+  - 2
+  lamp_tinted_glass:
+  - 3
+  - 1
+  - 4
+  lamp_glowstone:
+  - 3
+  - 1
+  - 6
+  lamp_ice:
+  - 3
+  - 1
+  - 8
+  lamp_leaves:
+  - 3
+  - 1
+  - 10
+  lamp_soul_sand:
+  - 3
+  - 1
+  - 12
+  lamp_mud:
+  - 3
+  - 1
+  - 14
+  lamp_slab_double:
+  - 3
+  - 1
+  - 16
+  lamp_slab_bottom:
+  - 3
+  - 1
+  - 18
+  lamp_slab_top:
+  - 3
+  - 1
+  - 20
+  lamp_stairs:
+  - 3
+  - 1
+  - 22
+  lamp_observer:
+  - 3
+  - 1
+  - 24
+  rep_stone:
+  - 1
+  - 1
+  - 0
+  dust_into_rep:
+  - 13
+  - 1
+  - 26
+  rep_dust_fed:
+  - 14
+  - 1
+  - 26
+  dust_after_rep:
+  - 15
+  - 1
+  - 26
+  cmp_strong_stone:
+  - 3
+  - 1
+  - 28
+  dust11:
+  - 11
+  - 1
+  - 30
+  cmp_dust_stone:
+  - 13
+  - 1
+  - 30
+  lamp_behind_rsblock_stone:
+  - 2
+  - 1
+  - 32
+  lamp_next_rsblock:
+  - 0
+  - 1
+  - 33
+

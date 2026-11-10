@@ -1,0 +1,428 @@
+{
+  "format": 1,
+  "scenario": "verify-dust-structure",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 24,
+  "probes": {
+    "chain1": [
+      1,
+      1,
+      0
+    ],
+    "chain14": [
+      14,
+      1,
+      0
+    ],
+    "chain15": [
+      15,
+      1,
+      0
+    ],
+    "chain16": [
+      16,
+      1,
+      0
+    ],
+    "chain17": [
+      17,
+      1,
+      0
+    ],
+    "lamp_under_dust": [
+      1,
+      0,
+      2
+    ],
+    "lamp_over_dust": [
+      1,
+      2,
+      2
+    ],
+    "dust_on_glass": [
+      0,
+      2,
+      4
+    ],
+    "repeater_on_glass": [
+      0,
+      2,
+      6
+    ],
+    "dust_on_slab_top": [
+      2,
+      2,
+      4
+    ],
+    "repeater_on_slab_top": [
+      2,
+      2,
+      6
+    ],
+    "dust_on_stairs_flipped": [
+      4,
+      2,
+      4
+    ],
+    "repeater_on_stairs_flipped": [
+      4,
+      2,
+      6
+    ],
+    "dust_on_slab_bottom": [
+      6,
+      2,
+      4
+    ],
+    "repeater_on_slab_bottom": [
+      6,
+      2,
+      6
+    ],
+    "dust_on_stone2": [
+      8,
+      2,
+      4
+    ],
+    "repeater_on_stone2": [
+      8,
+      2,
+      6
+    ],
+    "diag_upper_air": [
+      1,
+      2,
+      8
+    ],
+    "diag_lower_air": [
+      2,
+      1,
+      8
+    ],
+    "diag_upper_stone": [
+      1,
+      2,
+      10
+    ],
+    "diag_lower_stone": [
+      2,
+      1,
+      10
+    ],
+    "diag_upper_glass": [
+      1,
+      2,
+      12
+    ],
+    "diag_lower_glass": [
+      2,
+      1,
+      12
+    ],
+    "oneway_lower_fed": [
+      1,
+      1,
+      14
+    ],
+    "oneway_upper_receives": [
+      2,
+      2,
+      14
+    ],
+    "oneway_lower_not_fed": [
+      1,
+      1,
+      16
+    ],
+    "oneway_upper_fed": [
+      2,
+      2,
+      16
+    ],
+    "wd_dust_before": [
+      2,
+      1,
+      19
+    ],
+    "wd_dust_behind_stone": [
+      4,
+      1,
+      19
+    ],
+    "wd_lamp": [
+      3,
+      1,
+      20
+    ],
+    "wd_repeater": [
+      3,
+      1,
+      18
+    ]
+  },
+  "samples": {
+    "chain1": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=none,power=15,south=none,west=side]"
+      ]
+    ],
+    "chain14": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=none,power=2,south=none,west=side]"
+      ]
+    ],
+    "chain15": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=none,power=1,south=none,west=side]"
+      ]
+    ],
+    "chain16": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ]
+    ],
+    "chain17": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ]
+    ],
+    "lamp_under_dust": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        2,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "lamp_over_dust": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ],
+    "dust_on_glass": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ]
+    ],
+    "repeater_on_glass": [
+      [
+        0,
+        "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+      ]
+    ],
+    "dust_on_slab_top": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ]
+    ],
+    "repeater_on_slab_top": [
+      [
+        0,
+        "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+      ]
+    ],
+    "dust_on_stairs_flipped": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ]
+    ],
+    "repeater_on_stairs_flipped": [
+      [
+        0,
+        "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+      ]
+    ],
+    "dust_on_slab_bottom": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ],
+      [
+        8,
+        "minecraft:air"
+      ]
+    ],
+    "repeater_on_slab_bottom": [
+      [
+        0,
+        "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+      ],
+      [
+        8,
+        "minecraft:air"
+      ]
+    ],
+    "dust_on_stone2": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ]
+    ],
+    "repeater_on_stone2": [
+      [
+        0,
+        "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+      ]
+    ],
+    "diag_upper_air": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=none,power=15,south=none,west=side]"
+      ]
+    ],
+    "diag_lower_air": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=none,north=none,power=14,south=none,west=up]"
+      ]
+    ],
+    "diag_upper_stone": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=none,power=15,south=none,west=side]"
+      ]
+    ],
+    "diag_lower_stone": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=side,power=0,south=side,west=side]"
+      ]
+    ],
+    "diag_upper_glass": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=none,power=15,south=none,west=side]"
+      ]
+    ],
+    "diag_lower_glass": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=none,north=none,power=14,south=none,west=up]"
+      ]
+    ],
+    "oneway_lower_fed": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=none]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=up,north=none,power=15,south=none,west=side]"
+      ]
+    ],
+    "oneway_upper_receives": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=none,north=none,power=14,south=none,west=side]"
+      ]
+    ],
+    "oneway_lower_not_fed": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=none]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=up,north=none,power=0,south=none,west=none]"
+      ]
+    ],
+    "oneway_upper_fed": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=none,power=15,south=none,west=side]"
+      ]
+    ],
+    "wd_dust_before": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=none,power=14,south=none,west=side]"
+      ]
+    ],
+    "wd_dust_behind_stone": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=side]"
+      ]
+    ],
+    "wd_lamp": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        2,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "wd_repeater": [
+      [
+        0,
+        "minecraft:repeater[delay=1,facing=south,locked=false,powered=false]"
+      ],
+      [
+        4,
+        "minecraft:repeater[delay=1,facing=south,locked=false,powered=true]"
+      ]
+    ]
+  }
+}

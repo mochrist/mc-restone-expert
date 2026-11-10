@@ -63,14 +63,14 @@ meistens das Maximum. Nur Redstone-Staub verliert pro Block eine Stufe, alle and
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireEvaluator#getIncomingWireSignal`; [SRC-WIKI-REDSTONE-DUST]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-dust-structure.yaml)
 
 ### SIG-008: Redstone-Block liefert konstant 15 in alle Richtungen
 - Aussage: Der Redstone-Block (`PoweredBlock`) ist Signalquelle mit `ownSignal` 15 für alle Richtungen, aber `getDirectSignal` 0 (keine starke Ladung).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PoweredBlock#ownSignal`, `PoweredBlock#isSignalSource`, `BlockBehaviour#getDirectSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-conductors.yaml)
 - Hinweise: Ein Redstone-Block powert daher angrenzende Blöcke nicht; er ist außerdem kein Leiter (siehe PWR).
 
 ### SIG-009: Hebel und Knopf liefern 15 im aktiven Zustand
@@ -78,14 +78,14 @@ meistens das Maximum. Nur Redstone-Staub verliert pro Block eine Stufe, alle and
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `LeverBlock#ownSignal`, `LeverBlock#getDirectSignal`, `ButtonBlock#getDirectSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-sources.yaml)
 
 ### SIG-010: Redstone-Fackel liefert 15, aber nicht in Richtung ihres Trägerblocks
 - Aussage: Eine brennende Redstone-Fackel liefert 15 an alle Empfänger außer an den Block, an dem sie hängt (Bodenfackel: `direction == UP` ergibt 0; Wandfackel: `direction == FACING` ergibt 0); stark powert sie nur den Block über sich.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneTorchBlock#getSignal`, `RedstoneTorchBlock#getDirectSignal`, `RedstoneWallTorchBlock#getSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-sources.yaml)
 - Hinweise: Details zur Fackel gehören in die Komponenten-Datei der Fackel.
 
 ### SIG-011: Repeater geben immer 15 aus
@@ -93,7 +93,7 @@ meistens das Maximum. Nur Redstone-Staub verliert pro Block eine Stufe, alle and
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#getOutputSignal`, `DiodeBlock#getSignal`, `DiodeBlock#ownSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-conductors.yaml)
 - Hinweise: Der Komparator überschreibt `getOutputSignal` und liest den Wert aus seinem Block-Entity.
 
 ### SIG-012: Gewichtete Druckplatten liefern ceil(Anzahl/Maximum · 15)
@@ -116,7 +116,7 @@ meistens das Maximum. Nur Redstone-Staub verliert pro Block eine Stufe, alle and
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `SignalGetter#getSignal`, `SignalGetter#getDirectSignalTo`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-conductors.yaml)
 - Hinweise: Ein gepowerter Block gibt also die Stärke der stärksten direkten Quelle verlustfrei weiter.
 
 ### SIG-015: Staub liefert nach oben kein Signal
@@ -124,4 +124,4 @@ meistens das Maximum. Nur Redstone-Staub verliert pro Block eine Stufe, alle and
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-dust-structure.yaml)
