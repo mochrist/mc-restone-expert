@@ -64,3 +64,28 @@ Stand der Entscheidung (2026-11-05): Der Nutzer ist offen für einen Rust-Kern. 
 M4-Pipeline (Spezifikation → Kandidaten → Bewertung) in Python läuft und die Messung zeigt, dass die exakte
 Bewertung der Engpass ist. Bis dahin bleibt die Schnittstelle des Kerns schmal (`World.place_grid`, `tick`,
 `apply_input`, Snapshot), damit ein PyO3-Modul sie später 1:1 ersetzen kann.
+
+## Messung nach Aufbau der Pipeline (2026-11-10, Session 5)
+
+Die M4-Pipeline läuft vollständig in Python: Vorlagen, Fackel-PLA, Komposition (Logik vor Speicher,
+Zerlegung `f = h(g(x_S), x_F)`, Ausgänge nebeneinander), Router, Bewertung im Simulator.
+
+`rsx redesign examples/specs/composed/xor4.yaml` dauert 26 s. Aufteilung (Zeit pro Kandidat):
+
+| Schritt | Aufrufe | Zeit |
+|---|---|---|
+| volle Bewertung PLA (470 Blöcke, 4 Eingänge) | 1 | 8,9 s |
+| volle Bewertung Komposition pla → xor2 (199 Blöcke) | 1 | 4,4 s |
+| Schnellprüfungen PLA / Kompositionen | 20 | 4,4 s |
+| `normalize` (Einschwingen nach dem Zusammensetzen) | 18 | 1,8 s |
+| Router, Platzierung, Logikminimierung | – | < 1 s |
+
+**Über 90 % der Zeit liegen im Simulator-Kern** (Neighbor-Updates, Signalabfragen, Staub). Die Suche selbst
+(BFS-Router, Zerlegung, Quine-McCluskey) kostet fast nichts. Auch die Testsuite ist dadurch von 25 s auf
+~65 s gewachsen.
+
+Folgerung: Die vereinbarte Bedingung für den Rust-Kern ist erfüllt. Die Pipeline läuft, und die exakte
+Bewertung ist der Engpass. Breitere Suche (mehr Zerlegungen, mehr Layouts je Paar, Mutation/Kompaktieren
+großer Entwürfe) scheitert derzeit an Sekunden pro Kandidat. Umfang wie geplant: nur `sim/world.py` und
+die Block-Komponenten als PyO3-Modul hinter der schmalen Schnittstelle (`World.place_grid`, `tick`,
+`apply_input`, Snapshot), Python-Simulator bleibt Referenz, alle Golden Traces müssen bestehen.

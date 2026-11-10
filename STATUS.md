@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-05, Ende Session 4. Geschätzter Gesamtfortschritt: **ca. 80 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-10, Session 5. Geschätzter Gesamtfortschritt: **ca. 84 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
@@ -8,8 +8,30 @@ Stand: 2026-11-05, Ende Session 4. Geschätzter Gesamtfortschritt: **ca. 80 %** 
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
 | M2 Oracle + Simulator | 35 % | ~90 % | Oracle läuft; Simulator stimmt mit allen 84 Golden Traces tick-genau überein |
 | M3 Analyse + Erklärung | 20 % | ~80 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~50 % | `rsx redesign` für Logik (24 Vorlagen + Fackel-PLA) und Zeitverhalten/Speicher (17 Vorlagen, 60 Varianten), Kompaktieren; alles im Spiel geprüft |
+| M4 Redesign | 25 % | ~65 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA, Komposition mit Router (Logik vor Speicher, Zerlegung, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
+
+### Session 5 (2026-11-10)
+
+- Komposition (`design/compose.py`): Ausgang eines Bausteins treibt den Eingang eines anderen.
+  - Lampe wird zu Verstärker, Staub oder Block plus Verstärker; der Hebel wird zu Staub oder Verstärker.
+  - Gerade Leitungen oder BFS-Router (Staub auf Stein, Stufen hoch/runter, Abstand zu allem, Verstärker
+    nach 15 Blöcken); Bausteine werden in 4 Richtungen gedreht (`rotate`).
+  - `wire`: Leitung innerhalb eines Kandidaten, auch durch Abgreifen eines Hebels.
+- Logik vor Speicher: YAML `inputs`/`gate` (`behaviour.gated`), z. B. `examples/behaviour/t-flip-flop-and.yaml`.
+  Aus aufgezeichnetem Verhalten wird das Gatter erraten (`search.gate_guesses`, zweistufig).
+  Bei Verhaltensaufnahmen gelten nur Lampen als Ausgänge, wenn es welche gibt.
+- Zerlegung von Wahrheitstabellen (`design/decompose.py`, Ashenhurst): and5 (5 Eingänge, über der
+  PLA-Grenze) 27 Blöcke; xor4 199 statt 470. Mehrere Ausgänge nebeneinander mit abgegriffenen Hebeln
+  (`decompose.parallel`).
+- T-Flip-Flop-Spezifikation hat einen zweiten Flankenabstand (ein 30-gt-Monoflop galt sonst als T-FF).
+- Agent: Volladdierer-Vorlage `fulladder-comparator` (108 statt 270 Blöcke), Observer-Monoflop 2 gt.
+  Kompaktere XOR nicht gefunden (28 Blöcke bleibt Minimum der geprüften Bauweisen).
+- 5 Kompositions-Szenarien `scenarios/cmp-*.yaml` im Spiel aufgezeichnet, alle identisch
+  (`scripts/compose_scenarios.py`).
+- **Rust-Messung:** >90 % der Redesign-Zeit liegen im Simulator-Kern (volle Bewertung PLA xor4: 8,9 s).
+  Bedingung für den Rust-Kern ist erfüllt; Details in `docs/m4-search-and-performance.md`.
+  Entscheidung steht beim Nutzer (will dafür Fable 5.2 ausprobieren).
 
 ### Session 4 (2026-11-05)
 
@@ -64,7 +86,7 @@ Stand: 2026-11-05, Ende Session 4. Geschätzter Gesamtfortschritt: **ca. 80 %** 
 ## Befehle
 
 ```
-uv run pytest -q                                   # 663 Tests, alle grün (~25 s)
+uv run pytest -q                                   # 709 Tests, alle grün (~65 s)
 uv run rsx redesign examples/specs/xor.yaml -o out.litematic   # Redesign Logik (M4)
 uv run rsx redesign examples/behaviour/t-flip-flop.yaml        # Redesign Zeitverhalten/Speicher
 uv run rsx redesign <schematic> [--max-size X,Y,Z] [--no-qc] [--compact N] [--time S]
@@ -89,14 +111,17 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    - Teiltabellen sehen nur Abhängigkeiten, die beim einzelnen Umschalten sichtbar sind.
    - Erledigt (Session 4): Clock-Erkennung an echten Clocks. Offen: optional SVG-Timing-Diagramm; Analyse großer Schaltungen beschleunigen (`_run_steps` spielt jede Eingabe-Sequenz von vorn ab).
    - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet).
-2. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
-   - Lücken der Vorlagen: kein Monoflop unter 4 gt; Comparator-Monoflop mit Hebel nur bis 8 gt, längere nur per Kupferbirne (größer, 8 gt Verzögerung); kein Pulsverlängerer mit max(p, L) per Comparator-Fade-out; keine kompakte Volladdierer-Vorlage; XOR-Vorlagen groß (28–33 Blöcke).
-   - Verhalten aus Bestandsschaltungen nur bis 3 Eingänge; Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen (Lampe bleibt an).
-   - Bausteine kombinieren (Place-and-Route), z. B. Logik plus Speicher; danach Topologie per SAT/SMT und gezielte Suche (Mutation, Kompaktieren).
-   - Danach Kandidaten/s messen und **die Rust-Frage mit dem Nutzer neu besprechen** (vereinbart). Datenpunkte: volle Bewertung mux3-8 2,4 s, Volladdierer-PLA mehrere Sekunden; Schätzung Rust 20–50× pro Bewertung.
-   - Kompaktierung großer Originale ist langsam (mux3-8: ~0,5 s pro Versuch).
+2. **Rust-Kern (Entscheidung beim Nutzer, Bedingung erfüllt):** nur `sim/world.py` + Blöcke als PyO3-Modul,
+   Python bleibt Referenz, alle Golden Traces (`tests/sim/test_golden.py`) müssen bestehen. Messwerte in
+   `docs/m4-search-and-performance.md` (Abschnitt Session 5). Als Messlatte `azazo1/redstone-rs` nur ansehen.
+3. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
+   - Lücken der Vorlagen: kein Monoflop mit 3 gt (2 gt per Observer, sonst ab 4 gt); Comparator-Monoflop mit Hebel nur bis 8 gt; kein Pulsverlängerer max(p, L) per Comparator-Fade-out (nur konzipiert); XOR-Vorlagen groß (28–33 Blöcke).
+   - Komposition: XOR-Vorlagen lassen sich nicht als zweiter Baustein ansteuern (Hebel eingebaut; Agent meint, freie Nachbarn lägen außerhalb des zugeschnittenen Rasters – prüfen). PLA-Eingänge vertragen keinen Staub an Hebelstelle (Block über der Inverter-Fackel liegt daneben) – PLA-Variante mit ansteuerbaren Eingängen wäre nützlich. Geteilte Teilfunktionen zwischen Ausgängen werden nicht genutzt (Volladdierer per `parallel` nicht gefunden; Vorlage gewinnt).
+   - Verhalten aus Bestandsschaltungen nur bis 3 Eingänge; Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
+   - M3-Analyse erkennt „Logik vor Speicher“ nicht (Wahrheitstabelle meldet AND für das T-FF hinter AND); nur `rsx redesign` errät es.
+   - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – lohnt erst mit schnellerem Kern.
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
-3. **Restliche Simulator-Lücken (M2):**
+4. **Restliche Simulator-Lücken (M2):**
    - Tageslichtsensor (Block-Entity alle 20 gt, Himmelslicht/Tageszeit), Druckplatten, Detektorschiene, Sculk, Crafter, Truhen als Container.
    - Notenblock-Instrument nur über Blocknamen (ASSUMPTION; Feld `instrument` im Block-Dump fehlt).
    - Dispenser: item-spezifisches Verhalten, zufällige Slotwahl → erster Slot (ASSUMPTIONs in `dispenser_hopper.py`).
@@ -116,7 +141,7 @@ src/redstone/
                 notes.py, runner.py, blocks/{basic,diode,torch_observer,container,wire,piston,dispenser_hopper,outputs}.py, data/
   analysis/     ports.py, experiment.py, analyze.py, patterns.py, explain.py
   design/       candidate.py, spec.py, behaviour.py, evaluate.py, templates.py, seq_templates.py, synth.py,
-                search.py, compact.py, report.py
+                search.py, compact.py, report.py, compose.py (Router), decompose.py
   knowledge.py  Linter, Index, mark
   oracle.py     Start des Fabric-Servers
 oracle/         Fabric-Mod (Java)
