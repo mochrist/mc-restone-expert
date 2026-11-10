@@ -26,7 +26,8 @@ def test_names_unique_and_kebab_case():
 def test_templates_for():
     assert {t.name for t in templates_for(2, 1)} >= {"and2-torch", "xor2-comparator", "or2-direct"}
     assert all(len(t.inputs) == 3 and len(t.outputs) == 1 for t in templates_for(3, 1))
-    assert [t.name for t in templates_for(2, 2)] == [t.name for t in TEMPLATES if len(t.outputs) == 2]
+    assert [t.name for t in templates_for(2, 2)] == [t.name for t in TEMPLATES if len(t.inputs) == len(t.outputs) == 2]
+    assert [t.name for t in templates_for(3, 2)] == ["fulladder-comparator"]
     assert templates_for(9, 9) == []
 
 

@@ -423,3 +423,53 @@ _register(
     "xor2-comparator für die Summe; der Übertrag ist ein dritter Komparator: Ende der a-Leitung minus (nicht b) "
     "von einer Fackel am Block unter Hebel b. Verzögerung 2 gt (Summe), bis 4 gt (Übertrag).",
     _halfadder)
+
+
+# --- full adder -----------------------------------------------------------------------------------------------
+def _mirror_x(state: str) -> str:
+    """Block state mirrored at a plane x = const (east and west exchanged)."""
+    swap = {"east": "west", "west": "east"}
+    bs = BlockState.parse(state)
+    props = dict(bs.props)
+    if props.get("facing") in swap:
+        props["facing"] = swap[props["facing"]]
+    if "east" in props and "west" in props:
+        props["east"], props["west"] = props["west"], props["east"]
+    return str(BlockState.of(bs.name, props)).removeprefix("minecraft:")
+
+
+# s1 line from the top of the first sum block to the a input of the second half adder (found by a small router,
+# kept as data): dust on blocks one level up, a repeater restores full strength near the end
+_FA_LINE = [(2, 1, 1), (1, 2, 1), (0, 2, 1), (-1, 2, 1), (-1, 2, 0), (-2, 2, 0), (-3, 2, 0), (-4, 2, 0), (-5, 2, 0),
+            (-6, 2, 0), (-7, 2, 0), (-8, 2, 0), (-8, 1, -1)]
+_FA_REPEATER = (-7, 2, 0)
+
+
+def _fulladder() -> _Layout:
+    ha = _halfadder()
+    (la, lb), (sum1, carry1) = ha.inputs, ha.outputs
+    blocks = dict(ha.blocks)
+    blocks[sum1] = STONE  # s1 = a xor b: strongly powered block instead of the lamp
+    mx = 2 * carry1[0]  # mirror plane through the carry lamp, which both half adders share
+    for (x, y, z), state in ha.blocks.items():
+        q = (mx - x, y, z)
+        if q in blocks and q != carry1:
+            raise AssertionError(f"full adder: half adders overlap at {q}")
+        blocks[q] = _mirror_x(state)
+    port = (mx - la[0], la[1], la[2])
+    blocks[port] = WIRE  # second half adder: its a input is fed by the s1 line
+    for p in _FA_LINE:
+        blocks[p] = REPEATER("east") if p == _FA_REPEATER else WIRE
+        blocks.setdefault((p[0], p[1] - 1, p[2]), STONE)
+    cin = (mx - lb[0], lb[1], lb[2])
+    total = (mx - sum1[0], sum1[1], sum1[2])
+    return _Layout(blocks, (la, lb, cin), (total, carry1))
+
+
+_register(
+    "fulladder-comparator", "a b c", "sum carry", {"sum": "a ^ b ^ c", "carry": "(a and b) or (c and (a ^ b))"},
+    "Zwei halfadder-comparator, gespiegelt, teilen sich die Übertrags-Lampe (Übertrag = c1 oder c2). Die Summe "
+    "des ersten (a xor b) versorgt einen Block; von ihm führt eine Leitung über die Schaltung (eine Ebene höher, "
+    "mit Verstärker) zum a-Eingang des zweiten Halbaddierers, dessen b-Eingang ist der Hebel c. "
+    "Verzögerung bis 6 gt; 108 Blöcke statt 270 der Fackel-PLA.",
+    _fulladder)

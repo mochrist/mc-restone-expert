@@ -1,0 +1,66 @@
+name: seq-monostable-observer
+description: 'Vorlage monostable-observer (length=2, delay=4, kind=lever) aus src/redstone/design/seq_templates.py: Kupferbirne
+  direkt am Eingang wechselt bei jeder steigenden Flanke; ein Komparator liest sie aus, ein Observer schaut auf den Komparator
+  und gibt bei jedem Wechsel einen 2-gt-Puls an die Lampe. Fallende Flanken ändern die Birne nicht. 2 gt lang, Verzögerung
+  4 gt. Achtung: Bekommt beim Einfügen jeder Block ein Update, feuert der Observer einmal. Testabläufe nacheinander: Hebel
+  1 gt an ab Tick 0; Hebel 2 gt an ab Tick 58; Hebel 3 gt an ab Tick 116; Hebel 5 gt an ab Tick 174; Hebel 10 gt an ab Tick
+  232; Hebel 20 gt an ab Tick 294; Hebel 40 gt an ab Tick 366.'
+build:
+  size: [5, 2, 1]
+  blocks:
+  - [0, 0, 0, stone]
+  - [0, 1, 0, 'lever[face=floor,facing=east,powered=false]']
+  - [1, 1, 0, 'copper_bulb[lit=false,powered=false]']
+  - [2, 0, 0, stone]
+  - [2, 1, 0, 'comparator[facing=west,mode=compare,powered=false]']
+  - [3, 1, 0, 'observer[facing=west,powered=false]']
+  - [4, 1, 0, 'redstone_lamp[lit=false]']
+  block_entities:
+  - [2, 1, 0, '{id: "minecraft:comparator", OutputSignal: 0}']
+ticks: 458
+inputs:
+- tick: 2
+  pos: [0, 1, 0]
+  action: use
+- tick: 3
+  pos: [0, 1, 0]
+  action: use
+- tick: 60
+  pos: [0, 1, 0]
+  action: use
+- tick: 62
+  pos: [0, 1, 0]
+  action: use
+- tick: 118
+  pos: [0, 1, 0]
+  action: use
+- tick: 121
+  pos: [0, 1, 0]
+  action: use
+- tick: 176
+  pos: [0, 1, 0]
+  action: use
+- tick: 181
+  pos: [0, 1, 0]
+  action: use
+- tick: 234
+  pos: [0, 1, 0]
+  action: use
+- tick: 244
+  pos: [0, 1, 0]
+  action: use
+- tick: 296
+  pos: [0, 1, 0]
+  action: use
+- tick: 316
+  pos: [0, 1, 0]
+  action: use
+- tick: 368
+  pos: [0, 1, 0]
+  action: use
+- tick: 408
+  pos: [0, 1, 0]
+  action: use
+probes:
+  in: [0, 1, 0]
+  out: [4, 1, 0]

@@ -48,8 +48,10 @@ def test_grid_is_tight_and_ports_are_real(template, params, cand):
 @pytest.mark.parametrize("template,params,cand", [v for v in VARIANTS if v[0].behaviour != "clock"],
                          ids=[c.name for t, _, c in VARIANTS if t.behaviour != "clock"])
 def test_stored_state_is_settled(template, params, cand):
-    rec = Circuit(cand.grid).run([], max_ticks=20, kick=True)
-    assert rec.settled_at == 0 and not rec.changes
+    # an observer fires once when every block gets an update (tag "observer"), so only check the plain load
+    for kick in (False,) if "observer" in template.tags else (False, True):
+        rec = Circuit(cand.grid).run([], max_ticks=20, kick=kick)
+        assert rec.settled_at == 0 and not rec.changes, f"kick={kick}"
 
 
 def test_names_and_parameters():

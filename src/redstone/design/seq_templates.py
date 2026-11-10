@@ -48,6 +48,11 @@ def INPUT(kind: str, facing: str = "north") -> str:
     return BUTTON(facing) if kind == "button" else LEVER(facing)
 
 
+def OBSERVER(facing: str) -> str:
+    """Observer looking at the `facing` side and powering the opposite side."""
+    return f"observer[facing={facing},powered=false]"
+
+
 def POWERED_REPEATER(facing: str, delay: int = 1) -> str:
     return f"repeater[delay={delay},facing={facing},locked=false,powered=true]"
 
@@ -198,6 +203,26 @@ _register(
     "Pulslänge bis 20 gt (so lang wie der Knopfpuls).",
     [({"length": n, "delay": 2, "kind": "button"}, (lambda n=n: _comparator_mono("button", 0, _button_side(n))))
      for n in (4, 6, 8, 10, 12, 16, 20)])
+
+
+# --- monostable: observer behind a T flip-flop ----------------------------------------------------------------
+def _observer_mono(kind: str) -> _Layout:
+    """Copper bulb (toggles on every rising edge) -> comparator -> observer watching the comparator -> lamp."""
+    return _Layout(_support({(0, 1, 0): INPUT(kind, "east"), (1, 1, 0): BULB,
+                             (2, 1, 0): COMPARATOR("west", "compare"), (3, 1, 0): OBSERVER("west"),
+                             (4, 1, 0): LAMP}), ((0, 1, 0),), ((4, 1, 0),))
+
+
+_OBSERVER_TEXT = ("Kupferbirne direkt am Eingang wechselt bei jeder steigenden Flanke; ein Komparator liest sie aus, "
+                  "ein Observer schaut auf den Komparator und gibt bei jedem Wechsel einen 2-gt-Puls an die Lampe. "
+                  "Fallende Flanken ändern die Birne nicht. 2 gt lang, Verzögerung 4 gt. Achtung: Bekommt beim "
+                  "Einfügen jeder Block ein Update, feuert der Observer einmal.")
+_register("monostable-observer", "monostable", "in", "lever", _OBSERVER_TEXT,
+          [({"length": 2, "delay": 4, "kind": "lever"}, lambda: _observer_mono("lever"))],
+          tags=frozenset({"observer"}))
+_register("monostable-observer-button", "monostable", "in", "button", _OBSERVER_TEXT + " Mit Knopf.",
+          [({"length": 2, "delay": 4, "kind": "button"}, lambda: _observer_mono("button"))],
+          tags=frozenset({"observer"}))
 
 
 # --- monostable / pulse extender: copper bulb with feedback ------------------------------------------------------

@@ -1,0 +1,26 @@
+name: seq-monostable-observer-button
+description: 'Vorlage monostable-observer-button (length=2, delay=4, kind=button) aus src/redstone/design/seq_templates.py:
+  Kupferbirne direkt am Eingang wechselt bei jeder steigenden Flanke; ein Komparator liest sie aus, ein Observer schaut auf
+  den Komparator und gibt bei jedem Wechsel einen 2-gt-Puls an die Lampe. Fallende Flanken ändern die Birne nicht. 2 gt lang,
+  Verzögerung 4 gt. Achtung: Bekommt beim Einfügen jeder Block ein Update, feuert der Observer einmal. Mit Knopf. Testabläufe
+  nacheinander: Knopfdruck ab Tick 0.'
+build:
+  size: [5, 2, 1]
+  blocks:
+  - [0, 0, 0, stone]
+  - [0, 1, 0, 'stone_button[face=floor,facing=east,powered=false]']
+  - [1, 1, 0, 'copper_bulb[lit=false,powered=false]']
+  - [2, 0, 0, stone]
+  - [2, 1, 0, 'comparator[facing=west,mode=compare,powered=false]']
+  - [3, 1, 0, 'observer[facing=west,powered=false]']
+  - [4, 1, 0, 'redstone_lamp[lit=false]']
+  block_entities:
+  - [2, 1, 0, '{id: "minecraft:comparator", OutputSignal: 0}']
+ticks: 58
+inputs:
+- tick: 2
+  pos: [0, 1, 0]
+  action: use
+probes:
+  in: [0, 1, 0]
+  out: [4, 1, 0]
