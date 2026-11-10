@@ -1,0 +1,46 @@
+name: gated-t-flip-flop-xor
+description: 'T-Flip-Flop: schaltet bei jeder steigenden Flanke um, ausgelöst von (a and not b) or (not a and b): xor2-comparator-repeater
+  → t-flip-flop-copper-bulb (delay=2), erzeugt mit `rsx redesign` (Komposition) aus {behaviour: t-flip-flop, gate: (a and
+  not b) or (not a and b), inputs: [a, b]}. Hebel a (1, 1, 1), b (2, 1, 3), Ausgang (7, 1, 1).'
+ticks: 0
+build:
+  size: [8, 3, 4]
+  blocks:
+  - [0, 1, 0, stone]
+  - [0, 1, 1, stone]
+  - [0, 1, 2, stone]
+  - [0, 1, 3, stone]
+  - [0, 2, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [0, 2, 1, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [0, 2, 2, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [0, 2, 3, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [1, 0, 1, stone]
+  - [1, 0, 2, stone]
+  - [1, 0, 3, stone]
+  - [1, 1, 0, stone]
+  - [1, 1, 1, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 1, 2, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [1, 1, 3, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [1, 2, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [2, 0, 1, stone]
+  - [2, 0, 2, stone]
+  - [2, 0, 3, stone]
+  - [2, 1, 0, stone]
+  - [2, 1, 1, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [2, 1, 2, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [2, 1, 3, 'lever[face=floor,facing=north,powered=false]']
+  - [2, 2, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [3, 0, 1, stone]
+  - [3, 1, 0, stone]
+  - [3, 1, 1, 'redstone_wire[east=side,north=up,power=0,south=none,west=side]']
+  - [3, 2, 0, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [4, 0, 1, stone]
+  - [4, 1, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [5, 1, 1, 'copper_bulb[lit=false,powered=false]']
+  - [6, 0, 1, stone]
+  - [6, 1, 1, 'comparator[facing=west,mode=compare,powered=false]']
+  - [7, 1, 1, 'redstone_lamp[lit=false]']
+  block_entities:
+  - [1, 1, 3, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [2, 1, 1, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [6, 1, 1, '{id: "minecraft:comparator", OutputSignal: 0}']

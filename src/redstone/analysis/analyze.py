@@ -5,7 +5,10 @@ Experiments (all in the simulator, which is validated against the real game):
 2. Anstoß: every block gets one neighbour update. Does a stored-but-stopped clock start?
 3. Per input: lever toggled 4 times (on/off/on/off) or button pressed 3 times, each time waiting
    until the circuit is idle. Yields delays, pulse lengths, edge reactions, toggling.
-4. Truth table for 2-4 levers: every combination in a fresh world.
+4. Truth table for 2-6 levers: every combination in a fresh world.
+5. Logic in front of a block, for 2-3 levers: experiment 3 for every lever while the other levers hold each
+   combination (`patterns.gate_from_edges`). Finds e.g. a T flip-flop clocked by in1 AND in2, whose truth
+   table alone would look like an AND gate.
 """
 
 from __future__ import annotations
@@ -16,13 +19,15 @@ from dataclasses import dataclass, field
 from ..model import Grid, Pos
 from ..sim.notes import Note, notes_of
 from .experiment import Circuit, Recording, is_on
-from .patterns import OFF_DELAY, Latch, PulseResponse, find_latches, is_decoder, pulse_response
+from .patterns import (OFF_DELAY, GatedBlock, Latch, PulseResponse, find_latches, gated_block, is_decoder,
+                       pulse_response)
 from .ports import Port, find_ports
 
 MAX_TICKS = 400
 QUIET = 12
 MAX_TRUTH_TABLE_LEVERS = 6  # 64 fresh runs
 MAX_OUTPUTS = 64  # beyond that the schematic is rarely one circuit; analysing all would be slow
+MAX_GATED_LEVERS = 3  # logic in front of a block: n * 2^(n-1) toggle experiments (as `search.GUESS_INPUTS`)
 
 
 @dataclass
@@ -75,6 +80,7 @@ class Analysis:
     notes: list[Note] = field(default_factory=list)
     pulse_responses: list[PulseResponse] = field(default_factory=list)
     latches: list[Latch] = field(default_factory=list)
+    gated: list[GatedBlock] = field(default_factory=list)  # logic in front of a T flip-flop / pulse generator
     patterns: list[str] = field(default_factory=list)  # recognised building blocks, German
     # with too many levers for one table: (levers, outputs, table) per group of outputs with the same inputs
     partial_tables: list[tuple[list[Port], list[Port], list]] = field(default_factory=list)
@@ -82,14 +88,23 @@ class Analysis:
 
 
 # ---------------------------------------------------------------------- experiments
-def _run_steps(circuit: Circuit, pos: Pos, kind: str, name: str) -> tuple[Recording, list[Step], list[Note], bool]:
-    """Apply input actions one after another, each once the circuit is idle."""
+def _run_steps(circuit: Circuit, pos: Pos, kind: str, name: str,
+               setup: list[Pos] = ()) -> tuple[Recording, list[Step], list[Note], bool]:
+    """Apply input actions one after another, each once the circuit is idle.
+
+    The levers in `setup` are switched on first (tick 1), the steps start once the circuit is idle again."""
     labels = (["an", "aus", "an", "aus"] if kind == "lever" else
               ["betreten"] * 3 if kind == "plate" else ["gedrückt"] * 3)
     steps: list[Step] = []
-    actions: list = []
+    actions: list = [(1, p, "use") for p in setup]
     next_tick = 1  # tick 0 shows the stored state before anything is touched
     rec, world = None, None
+    if setup:
+        world = circuit.new_world()
+        rec = circuit.run(list(actions), max_ticks=1 + MAX_TICKS, quiet=QUIET, world=world)
+        if rec.settled_at is None:
+            return rec, [Step(1, "Vorbereitung")], notes_of(world), True
+        next_tick = rec.ticks + 1
     for label in labels:
         steps.append(Step(next_tick, f"{name} {label}"))
         actions.append((next_tick, pos, "use"))
@@ -186,7 +201,7 @@ def _reaction(rec: Recording, steps: list[Step], out: Port) -> OutputReaction:
     prev = None
     for t, v in rec.series.get(pos, []):
         on = is_on(v)
-        if prev is not None and on != prev:
+        if prev is not None and on != prev and t >= steps[0].tick:  # not while setup levers switch on
             events.append((t, on))
         prev = on
     bounds = [s.tick for s in steps] + [rec.ticks + 1]
@@ -215,6 +230,41 @@ def _chain(rec: Recording, step_tick: int, end_tick: int) -> list[tuple[int, Pos
             block = old.split("[")[0].removeprefix("minecraft:")
         out.append((t - step_tick, pos, block, old, new))
     return out
+
+
+def _reactions(rec: Recording, steps: list[Step], kind: str, outputs: list[Port]) -> list[OutputReaction]:
+    out = []
+    for o in outputs:
+        r = _reaction(rec, steps, o)
+        # state before the first step (after the setup levers, if any)
+        _classify(r, kind, rec.on_at(o.pos, steps[0].tick - 1) if o.pos in rec.series else False)
+        out.append(r)
+    return out
+
+
+def _gated_blocks(analysis: Analysis, circuit: Circuit, levers: list[Port], outputs: list[Port]) -> None:
+    """Toggle every lever while the other levers hold each combination, and look for outputs whose
+    reactions fit an edge-triggered block behind a logic function of several levers."""
+    n = len(levers)
+    alone = {r.input.name: r for r in analysis.responses}
+    edges: list[dict] = [{} for _ in outputs]
+    for i, lever in enumerate(levers):
+        for others in itertools.product([False, True], repeat=n - 1):
+            low = others[:i] + (False,) + others[i:]
+            if not any(low) and lever.name in alone:
+                reactions = alone[lever.name].reactions  # experiment 3 already did this one
+            else:
+                rec, steps, _, oscillates = _run_steps(
+                    circuit, lever.pos, "lever", lever.name, [levers[k].pos for k in range(n) if low[k]])
+                if oscillates:
+                    return
+                reactions = _reactions(rec, steps, "lever", outputs)
+            for j, x in enumerate(reactions):
+                edges[j][(i, low)] = (x.kind, x.detail)
+    for j, out in enumerate(outputs):
+        block = gated_block(out, levers, edges[j])
+        if block is not None:
+            analysis.gated.append(block)
 
 
 def _truth_table(circuit: Circuit, levers: list[Port], outputs: list[Port]):
@@ -331,11 +381,7 @@ def analyze(grid: Grid, inputs: list[Port] | None = None, outputs: list[Port] | 
             continue
         rec, steps, notes, oscillates = _run_steps(circuit, port.pos, port.kind, port.name)
         analysis.notes.extend(notes)
-        reactions = []
-        for out in outputs:
-            r = _reaction(rec, steps, out)
-            _classify(r, port.kind, rec.on_at(out.pos, 0) if out.pos in rec.series else False)
-            reactions.append(r)
+        reactions = _reactions(rec, steps, port.kind, outputs)
         end = steps[1].tick - 1 if len(steps) > 1 else rec.ticks
         analysis.responses.append(
             InputResponse(port, steps, rec, reactions, _chain(rec, steps[0].tick, end), oscillates))
@@ -360,6 +406,14 @@ def analyze(grid: Grid, inputs: list[Port] | None = None, outputs: list[Port] | 
                 continue
             analysis.pulse_responses.extend(pulse_response(circuit, port, outputs, notes=analysis.notes))
         analysis.latches = find_latches(circuit, inputs, outputs)
+        if (2 <= len(levers) <= MAX_GATED_LEVERS and outputs
+                and not any(p.state.get_bool("powered") for p in levers)):
+            _gated_blocks(analysis, circuit, levers, outputs)
+        for block in analysis.gated:
+            # the truth table of such an output only shows the block after one switch-on, not a gate
+            analysis.gates[block.output.name] = block.summary
+            analysis.patterns.append(f"{block.summary} ({', '.join(p.name for p in block.levers)} → "
+                                     f"{block.output.name})")
         for latch in analysis.latches:
             analysis.patterns.append(
                 f"RS-Latch an {latch.output.name}: {latch.set_input.name} setzt, {latch.reset_input.name} setzt zurück")

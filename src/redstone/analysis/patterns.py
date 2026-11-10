@@ -5,10 +5,14 @@
 - Sequences for two inputs: each input is operated once ("pulse": lever on and off again, or a button
   press), in different orders. An output that remembers which input was operated last is an RS latch.
 - Decoder: in the truth table every output is on for exactly one input combination, all different.
+- Logic in front of a block (`gate_from_edges`): a lever is toggled while the other levers hold every
+  combination. Where an edge-triggered block (T flip-flop, pulse generator) reacts, the logic function in
+  front of it changes; the reactions on all edges of the lever cube give that function and the block.
 """
 
 from __future__ import annotations
 
+import itertools
 from dataclasses import dataclass, field
 
 from ..model import Pos
@@ -210,3 +214,100 @@ def is_decoder(truth_table: list[tuple[tuple[bool, ...], tuple[bool, ...]]] | No
             return False
         hits.append(on[0])
     return len(set(hits)) == n_out
+
+
+# ---------------------------------------------------------------------- logic in front of a block
+TFF_RISING = "T-Flip-Flop (schaltet bei steigender Flanke um)"
+TFF_FALLING = "T-Flip-Flop (schaltet bei fallender Flanke um)"
+PULSE_RISING = "Pulsgenerator / Flankendetektor (steigende Flanke)"
+PULSE_FALLING = "Pulsgenerator / Flankendetektor (fallende Flanke)"
+PULSE_BOTH = "Pulsgenerator / Flankendetektor (steigende und fallende Flanke)"
+# reaction to a lever under a gate that follows it -> reaction under a gate that inverts it
+MIRROR = {TFF_RISING: TFF_FALLING, TFF_FALLING: TFF_RISING, PULSE_RISING: PULSE_FALLING,
+          PULSE_FALLING: PULSE_RISING, PULSE_BOTH: PULSE_BOTH}
+NO_REACTION = "keine Reaktion"
+
+Combo = tuple[bool, ...]
+
+
+@dataclass
+class GatedBlock:
+    output: Port
+    levers: list[Port]  # the levers the gate depends on
+    gate: str  # readable, e.g. "in1 AND in2"
+    expression: str  # Python bool expression over the lever names
+    table: dict[Combo, bool]  # gate value per combination of `levers`
+    kind: str  # the block behind the gate (classification of a lever toggle when the gate follows it)
+    detail: str = ""
+
+    @property
+    def summary(self) -> str:
+        verb = "getaktet durch" if self.kind.startswith("T-Flip-Flop") else "ausgelöst durch"
+        return f"{self.kind}, {verb} {self.gate}"
+
+
+def gate_from_edges(n: int, edges: dict[tuple[int, Combo], str]) -> tuple[dict[Combo, bool], str] | None:
+    """Logic function g in front of an edge-triggered block, from the block's reactions on the lever cube.
+
+    `edges[(i, c)]` is the classification of toggling lever i (on/off/on/off) while the levers hold c
+    (c[i] off). The block reacts on an edge iff g changes there; g is off with all levers off. Returns g and
+    the block's own reaction (on edges where g rises) if all edges fit one block, else None."""
+    combos = list(itertools.product([False, True], repeat=n))
+    if len(edges) != n * 2 ** (n - 1) or any(k != NO_REACTION and k not in MIRROR for k in edges.values()):
+        return None
+    g: dict[Combo, bool] = {combos[0]: False}
+    for c in sorted(combos[1:], key=sum):
+        i = c.index(True)
+        low = c[:i] + (False,) + c[i + 1:]
+        g[c] = g[low] != (edges[(i, low)] != NO_REACTION)
+    rising: set[str] = set()
+    falling: set[str] = set()
+    for (i, low), kind in edges.items():
+        high = low[:i] + (True,) + low[i + 1:]
+        if (g[low] != g[high]) != (kind != NO_REACTION):
+            return None  # the reactions do not fit any function
+        if g[low] != g[high]:
+            (rising if g[high] else falling).add(kind)
+    if len(rising) != 1:
+        return None
+    kind = rising.pop()
+    if falling - {MIRROR[kind]}:
+        return None
+    return g, kind
+
+
+def gate_label(names: list[str], ones: list[Combo]) -> str:
+    """Readable gate: AND/OR/XOR chains for the symmetric functions, else a minimal sum of products."""
+    from ..design.search import gate_expression
+
+    n = len(names)
+    combos = list(itertools.product([False, True], repeat=n))
+    for op, want in (("AND", [c for c in combos if all(c)]), ("OR", [c for c in combos if any(c)]),
+                     ("XOR", [c for c in combos if sum(c) % 2])):
+        if sorted(ones) == sorted(want):
+            return f" {op} ".join(names)
+    expr = gate_expression(names, ones)
+    return expr.replace(" and ", " AND ").replace(" or ", " OR ").replace("not ", "NOT ")
+
+
+def gated_block(output: Port, levers: list[Port], edges: dict[tuple[int, Combo], tuple[str, str]]) -> GatedBlock | None:
+    """`gate_from_edges` for one output; edges map to (kind, detail). The gate is reduced to the levers it
+    depends on and must depend on at least two (a block behind one lever is reported per input)."""
+    from ..design.search import depends_on_all, gate_expression
+
+    found = gate_from_edges(len(levers), {k: v[0] for k, v in edges.items()})
+    if found is None:
+        return None
+    g, kind = found
+    n = len(levers)
+    used = [i for i in range(n) if any(g[c] != g[c[:i] + (not c[i],) + c[i + 1:]] for c in g)]
+    if len(used) < 2:
+        return None
+    table = {tuple(c[i] for i in used): v for c, v in g.items() if all(not c[i] for i in range(n) if i not in used)}
+    assert depends_on_all(table)
+    names = [levers[i].name for i in used]
+    ones = [c for c, v in sorted(table.items()) if v]
+    detail = next(d for (i, low), (k, d) in sorted(edges.items())
+                  if k == kind and not g[low] and g[low[:i] + (True,) + low[i + 1:]])
+    return GatedBlock(output, [levers[i] for i in used], gate_label(names, ones), gate_expression(names, ones),
+                      table, kind, f"{detail} ab dem auslösenden Hebel" if detail else "")
