@@ -66,7 +66,7 @@ def test_buffer_composed_with_itself_is_a_delay():
 @pytest.mark.parametrize("path", gen.examples(), ids=lambda p: p.stem)
 def test_composed_example(path):
     c = gen.design(path)
-    assert c.origin.startswith("komponiert")
+    assert c.origin.removeprefix(gen.COMPACTED).startswith("komponiert")
     assert evaluate_any(c, gen.spec_of(path)).ok
 
 

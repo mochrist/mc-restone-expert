@@ -101,6 +101,8 @@ def seq_candidates(spec, templates: list | None = None) -> list[Candidate]:
 COMPOSE_LOGIC = 3  # best logic candidates tried in front of a building block
 COMPOSE_BLOCKS = 4  # best building blocks tried behind the logic
 COMPOSE_TRIES = 16  # layouts tried per pair before giving up
+COMPACT_COMPOSED = 2  # best working compositions that are compacted (with compact_budget > 0)
+COMPACT_SKIP = 2  # generated designs more than this many times the volume of the best working one are not compacted
 
 
 GUESS_INPUTS = 3  # gate functions are guessed for recorded specs with up to this many levers
@@ -233,8 +235,10 @@ def redesign(spec: Spec, constraints: Constraints | None = None,
     """Evaluate all candidates and return them best first.
 
     Sources: templates (matched up to permutation), the generic torch PLA (`synth.pla`) and `extra`
-    (e.g. the original). With compact_budget > 0 the PLA and every extra candidate are also compacted, with
-    at most that many evaluations each and `time_limit` seconds in total; the steps go to `log`."""
+    (e.g. the original). With compact_budget > 0 the COMPACT_COMPOSED best working compositions, the PLA and
+    every extra candidate are also compacted, with at most that many evaluations each and `time_limit` seconds
+    in total; the steps go to `log`. Compositions and the PLA are skipped when they are more than COMPACT_SKIP
+    times as large as the best working design found so far."""
     import time
 
     from .compact import compact
@@ -243,23 +247,24 @@ def redesign(spec: Spec, constraints: Constraints | None = None,
     from .behaviour import BehaviourSpec
 
     constraints = constraints or Constraints()
+    composed: list[Candidate] = []  # compositions and decompositions of smaller parts
     if isinstance(spec, BehaviourSpec):
         synthesized = None
         if spec.gate is not None:
-            generated = compose_candidates(spec, constraints, log)
+            generated = composed = compose_candidates(spec, constraints, log)
         else:
             generated = seq_candidates(spec, templates)
             for gated_spec, blocks in gate_guesses(spec, log):
-                generated += compose_candidates(gated_spec, constraints, log, blocks)
+                composed += compose_candidates(gated_spec, constraints, log, blocks)
+            generated += composed
     else:
         synthesized = pla(spec) if synthesize else None
         generated = template_candidates(spec, templates)
         if synthesize:
-            from .decompose import decomposed
+            from .decompose import decomposed, parallel
 
-            from .decompose import parallel
-
-            generated += decomposed(spec, log=log) + parallel(spec, log=log)
+            composed = decomposed(spec, log=log) + parallel(spec, log=log)
+            generated += composed
     to_compact = ([synthesized] if synthesized is not None else []) + list(extra or [])
     candidates = generated + to_compact
     results = []
@@ -267,18 +272,32 @@ def redesign(spec: Spec, constraints: Constraints | None = None,
         quick = evaluate_any(cand, spec, constraints, quick=True)
         results.append(evaluate_any(cand, spec, constraints) if quick.correct else quick)
     if compact_budget:
+        # the best working compositions as well (first: they are built from parts with air and lines in between
+        # and shrink the most); generated designs far larger than the best working one so far are skipped
+        ids = {id(c) for c in composed}
+        best = sorted((r for r in results if r.correct and id(r.candidate) in ids), key=Evaluation.rank_key)
+        own = [r.candidate for r in best[:COMPACT_COMPOSED]] + to_compact[:1 if synthesized is not None else 0]
+        to_compact = own + list(extra or [])
+        smallest = min((r.candidate.volume for r in results if r.ok), default=None)
         deadline = None if time_limit is None else time.perf_counter() + time_limit
-        for cand in to_compact:
+        for k, cand in enumerate(to_compact):
             left = None if deadline is None else deadline - time.perf_counter()
             if left is not None and left <= 0:
                 if log is not None:
                     log.append(f"{cand.name}: nicht kompaktiert (Zeitlimit)")
+                continue
+            if k < len(own) and smallest is not None and cand.volume > COMPACT_SKIP * smallest:
+                if log is not None:
+                    log.append(f"{cand.name}: nicht kompaktiert (mehr als {COMPACT_SKIP}× so groß wie der beste Entwurf)")
                 continue
             # constraints other than function and delay are checked on the result, not during shrinking
             small, steps = compact(cand, spec, Constraints(max_delay=constraints.max_delay), compact_budget, left)
             if log is not None:
                 log.extend(f"{cand.name}: {s}" for s in steps)
             if small.grid is not cand.grid:
-                results.append(evaluate_any(small, spec, constraints))
+                ev = evaluate_any(small, spec, constraints)
+                results.append(ev)
+                if ev.ok:
+                    smallest = min(smallest or ev.candidate.volume, ev.candidate.volume)
     results.sort(key=Evaluation.rank_key)
     return results

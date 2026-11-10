@@ -5,6 +5,9 @@ scenarios/cmp-<name>.yaml.
 * examples/specs/composed/*.yaml (truth tables split into chains of gates, `design/decompose.py`); these
   scenarios walk through all lever combinations like scripts/template_scenarios.py.
 
+The designs are compacted like in `rsx redesign` (`design/compact.py`), so the real game checks the moved parts
+and rerouted lines as well.
+
 All trials run one after another in one scenario (as in seq_template_scenarios.py). Gated trials leave the
 setup levers on, so every lever that is on at the end of a trial is switched off again before the next one.
 `check_trace` compares a recorded trace with the spec, trial by trial.
@@ -25,6 +28,8 @@ from redstone.io.nbtutil import to_nbt
 
 ROOT = Path(__file__).parents[1]
 GAP = 30
+COMPACT = 100  # evaluations for compacting, as `rsx redesign` (no time limit, so the result is reproducible)
+COMPACTED = "kompaktiert aus "
 
 
 def examples() -> list[Path]:
@@ -38,7 +43,7 @@ def spec_of(path: Path) -> bh.BehaviourSpec:
 
 @cache
 def design(path: Path):
-    best = redesign(spec_of(path))[0]
+    best = redesign(spec_of(path), compact_budget=COMPACT)[0]
     if not best.ok:
         raise RuntimeError(f"{path.name}: no working design")
     return best.candidate
@@ -126,8 +131,8 @@ def table_examples() -> list[Path]:
 def table_design(path: Path):
     from redstone.design.spec import load
 
-    best = redesign(load(path))[0]
-    if not best.ok or not best.candidate.origin.startswith(("zerlegt", "nebeneinander")):
+    best = redesign(load(path), compact_budget=COMPACT)[0]
+    if not best.ok or not best.candidate.origin.removeprefix(COMPACTED).startswith(("zerlegt", "nebeneinander")):
         raise RuntimeError(f"{path.name}: no working decomposition")
     return best.candidate
 
