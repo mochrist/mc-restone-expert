@@ -169,6 +169,14 @@ def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layou
     merged[p] = rep if layout.input_mode == "repeater" else WIRE
     if p + DOWN not in merged:
         merged[p + DOWN] = STONE
+    return _assemble(src, out_index, dst, in_index, shift, merged, layout.describe())
+
+
+def _assemble(src: Candidate, out_index: int, dst: Candidate, in_index: int, shift: Pos, merged: dict,
+              how: str) -> Candidate:
+    """Grid of all `merged` blocks (src coordinates; dst moved by `shift`) with the block entities and ports
+    of both parts, normalised."""
+    q, p_dst = src.outputs[out_index], dst.inputs[in_index]
     lo = Pos(*(min(x[i] for x in merged) for i in range(3)))
     hi = Pos(*(max(x[i] for x in merged) for i in range(3)))
     grid = Grid(tuple(h - l + 1 for h, l in zip(hi, lo)))
@@ -186,8 +194,150 @@ def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layou
 
     return normalize(Candidate(
         name=f"{src.name} → {dst.name}", grid=grid, inputs=inputs, outputs=outputs,
-        description=f"{src.description} Dahinter: {dst.description} ({layout.describe()})",
+        description=f"{src.description} Dahinter: {dst.description} ({how})",
         origin=f"komponiert: {src.origin} → {dst.origin}", tags=set(src.tags) | set(dst.tags)))
+
+
+# ---------------------------------------------------------------------- routed connections
+UP = Pos(0, 1, 0)
+SPACING = 3  # air blocks between the bounding boxes of the two parts in a routed layout
+MARGIN = 3  # the route may leave the joint bounding box by this much
+SIGNAL = 15
+
+
+def _box(blocks) -> tuple[Pos, Pos]:
+    blocks = list(blocks)
+    return (Pos(*(min(x[i] for x in blocks) for i in range(3))),
+            Pos(*(max(x[i] for x in blocks) for i in range(3))))
+
+
+def _route(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], lo: Pos, hi: Pos) -> list[Pos] | None:
+    """Shortest dust path (the cells the dust stands in) from `start` to one of `goals`, by breadth-first search.
+
+    Moves: flat; one up (the block in front becomes the new floor, the cell above the current dust stays
+    empty); one down (the cell in front stays empty). Goals are entered flat. Every cell and its floor keep
+    one block of air (also diagonally) to `keep_clear`, except the goal cells; `solid` is never entered.
+    The start cell is not checked (it is the joint at the output)."""
+    from collections import deque
+
+    def inside(c: Pos) -> bool:
+        return all(lo[i] <= c[i] <= hi[i] for i in range(3))
+
+    def ok(c: Pos) -> bool:
+        if not inside(c) or c in solid or c + DOWN in solid:
+            return False
+        return c in goals or not (_near(c, keep_clear) or _near(c + DOWN, keep_clear))
+
+    prev: dict[Pos, Pos | None] = {start: None}
+    queue = deque([start])
+    while queue:
+        c = queue.popleft()
+        if c in goals:
+            path = [c]
+            while prev[path[-1]] is not None:
+                path.append(prev[path[-1]])
+            return path[::-1]
+        for d in HORIZONTAL:
+            h = c + Pos(*d.vec)
+            steps = [h]
+            if c != start:
+                if c + UP not in solid:
+                    steps.append(h + UP)
+                if h not in solid:
+                    steps.append(h + DOWN)
+            for n in steps:
+                if n in prev or (n.y != c.y and n in goals):
+                    continue
+                if ok(n):
+                    prev[n] = c
+                    queue.append(n)
+    return None
+
+
+def _direction(a: Pos, b: Pos) -> Direction:
+    """Horizontal direction of the step from a to b (b may be one higher or lower)."""
+    return next(d for d in HORIZONTAL if (b.x - a.x, b.z - a.z) == (d.vec[0], d.vec[2]))
+
+
+def _line_blocks(path: list[Pos]) -> dict[Pos, str] | None:
+    """Dust along the path (full signal at its first cell), with a repeater on a straight flat cell wherever
+    the signal would run out. None if no such cell comes in time."""
+    out: dict[Pos, str] = {}
+    power = SIGNAL + 1
+    for k, c in enumerate(path):
+        power -= 1
+        prv = path[k - 1] if k > 0 else None
+        nxt = path[k + 1] if k + 1 < len(path) else None
+        straight = (prv is not None and nxt is not None and prv.y == c.y == nxt.y
+                    and _direction(prv, c) == _direction(c, nxt))
+        if power <= 2 and straight:
+            out[c] = _repeater(_direction(prv, c).opposite)
+            power = SIGNAL + 1
+        elif power <= 0:
+            return None
+        else:
+            out[c] = WIRE
+    return out
+
+
+def routed(src: Candidate, out_index: int, dst: Candidate, in_index: int, side: Direction, output_mode: str,
+           input_mode: str) -> Candidate | None:
+    """dst is placed beside src (on `side`, SPACING blocks of air between the boxes, same floor height) and
+    the output is routed through the free space to the input. None if no route exists.
+
+    output_mode "repeater": a repeater replaces the lamp, reading from one side (all four are tried); the
+    dust starts in front of it. "dust": dust replaces the lamp and starts there."""
+    q, p_dst = src.outputs[out_index], dst.inputs[in_index]
+    a = {x: s for x, s in src.grid.items()}
+    if a[q].id != "redstone_lamp":
+        return None
+    if q + DOWN in a and a[q + DOWN].id not in SUPPORTS:
+        return None
+    alo, ahi = _box(a)
+    sx, _, sz = dst.grid.size
+    v = side.vec
+    shift = Pos(alo.x if v[0] == 0 else (ahi.x + SPACING + 1 if v[0] > 0 else alo.x - SPACING - sx),
+                alo.y,
+                alo.z if v[2] == 0 else (ahi.z + SPACING + 1 if v[2] > 0 else alo.z - SPACING - sz))
+    b = {x + shift: s for x, s in dst.grid.items()}
+    p = p_dst + shift
+    goals = {p - Pos(*d.vec) for d in HORIZONTAL}
+    goals = {g for g in goals if g not in a and g not in b and g + DOWN not in b}
+    solid = (set(a) - {q}) | set(b)
+    keep = {x for x in a if x not in (q, q + DOWN)} | {x for x in b if x not in (p, p + DOWN)}
+    lo, hi = _box(list(a) + list(b))
+    lo, hi = lo - Pos(MARGIN, 1, MARGIN), hi + Pos(MARGIN, MARGIN, MARGIN)
+    best = None
+    starts = [(q, None)] if output_mode == "dust" else [(q + Pos(*d.vec), d) for d in HORIZONTAL]
+    for st, d_out in starts:
+        if st != q and (st in solid or st + DOWN in solid):
+            continue
+        path = _route(st, goals, solid | ({q} if st != q else set()), keep, lo, hi)
+        if path is not None and (best is None or len(path) < len(best[0])):
+            best = (path, d_out)
+    if best is None:
+        return None
+    path, d_out = best
+    line = _line_blocks(path)
+    if line is None:
+        return None
+    m: dict[Pos, object] = dict(a)
+    m.update(b)
+    if d_out is not None:
+        m[q] = _repeater(d_out.opposite)
+    if q + DOWN not in m:
+        m[q + DOWN] = STONE
+    for c, blk in line.items():
+        m[c] = blk
+        if c + DOWN not in m:
+            m[c + DOWN] = STONE
+    d_in = _direction(path[-1], p)
+    m[p] = _repeater(d_in.opposite) if input_mode == "repeater" else WIRE
+    if p + DOWN not in m:
+        m[p + DOWN] = STONE
+    how = (f"Leitung über {len(path)} Blöcke geführt, Lampe → {'Staub' if output_mode == 'dust' else 'Verstärker'}, "
+           f"Eingang als {input_mode}")
+    return _assemble(src, out_index, dst, in_index, shift, m, how)
 
 
 MAX_GAP = 8
@@ -208,3 +358,14 @@ def chains(src: Candidate, out_index: int, dst: Candidate, in_index: int, max_ga
             c = connect(src, out_index, t, in_index, lay)
             if c is not None:
                 yield lay, c
+    found = []
+    for k, t in enumerate(turned):
+        for side in HORIZONTAL:
+            for out_mode in ("repeater", "dust"):
+                for in_mode in ("dust", "repeater"):
+                    c = routed(src, out_index, t, in_index, side, out_mode, in_mode)
+                    if c is not None:
+                        found.append(((c.volume, c.block_count), (k, side.label, out_mode, in_mode), c))
+    found.sort(key=lambda f: f[:2])
+    for _, how, c in found:
+        yield how, c

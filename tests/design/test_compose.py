@@ -91,3 +91,28 @@ def test_gate_is_guessed_from_recorded_behaviour():
     guesses = gate_guesses(spec)
     assert [g.gate for g, _ in guesses] == ["in1 and in2"]
     assert guesses[0][1][0].candidate.name.startswith("t-flip-flop")
+
+
+# ---------------------------------------------------------------------- decomposition of truth tables
+def test_splits_of_and5_are_deduplicated():
+    from redstone.design.decompose import splits
+
+    spec = from_functions(list("abcde"), {"y": "a and b and c and d and e"})
+    sp = splits(spec)
+    assert [len(s.bound) for s in sp] == [2, 3, 4]  # one split per size: the function is symmetric
+    assert all(s.h.table[(True,) * len(s.h.inputs)] == (True,) for s in sp)
+
+
+def test_no_split_for_majority():
+    from redstone.design.decompose import splits
+
+    assert splits(from_functions(list("abc"), {"y": "(a and b) or (a and c) or (b and c)"})) == []
+
+
+@pytest.mark.parametrize("path", gen.table_examples(), ids=lambda p: p.stem)
+def test_decomposed_scenario_and_golden_up_to_date(path):
+    scen = ROOT / "scenarios" / f"cmp-{path.stem}.yaml"
+    stored = yaml.safe_load(scen.read_text(encoding="utf-8"))
+    assert stored == yaml.safe_load(yaml.safe_dump(gen.table_scenario_for(path), allow_unicode=True))
+    golden = ROOT / "tests" / "golden" / f"cmp-{path.stem}.trace.json"
+    assert gen.check_table_trace(path, Trace.load(golden)) == []  # the real game shows the truth table

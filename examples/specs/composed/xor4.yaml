@@ -1,0 +1,4 @@
+# Parität von vier Hebeln (XOR über a, b, c, d); als PLA groß, als Kette aus XOR-Gattern klein
+inputs: [a, b, c, d]
+function:
+  y: a ^ b ^ c ^ d

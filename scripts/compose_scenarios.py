@@ -1,5 +1,9 @@
-"""Write one oracle scenario per composed example (examples/behaviour/*.yaml with `gate:`): the best design
-`rsx redesign` finds for it, as scenarios/cmp-<name>.yaml.
+"""Write one oracle scenario per composed example: the best design `rsx redesign` finds for it, as
+scenarios/cmp-<name>.yaml.
+
+* examples/behaviour/*.yaml with `gate:` (logic in front of a timing/memory block),
+* examples/specs/composed/*.yaml (truth tables split into chains of gates, `design/decompose.py`); these
+  scenarios walk through all lever combinations like scripts/template_scenarios.py.
 
 All trials run one after another in one scenario (as in seq_template_scenarios.py). Gated trials leave the
 setup levers on, so every lever that is on at the end of a trial is switched off again before the next one.
@@ -113,7 +117,75 @@ def check_trace(path: Path, trace) -> list[str]:
     return errors
 
 
+# ---------------------------------------------------------------------- truth tables (decomposition)
+def table_examples() -> list[Path]:
+    return sorted((ROOT / "examples" / "specs" / "composed").glob("*.yaml"))
+
+
+@cache
+def table_design(path: Path):
+    from redstone.design.spec import load
+
+    best = redesign(load(path))[0]
+    if not best.ok or not best.candidate.origin.startswith("zerlegt"):
+        raise RuntimeError(f"{path.name}: no working decomposition")
+    return best.candidate
+
+
+def _template_gen():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("template_scenarios", ROOT / "scripts" / "template_scenarios.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def table_scenario_for(path: Path) -> dict:
+    from redstone.design.spec import load
+
+    spec, c = load(path), table_design(path)
+    return _template_gen().candidate_scenario(
+        c, f"cmp-{path.stem}", spec.inputs, spec.outputs,
+        f"Zerlegung für examples/specs/composed/{path.name}: {c.name} ({c.origin}).")
+
+
+def check_table_trace(path: Path, trace) -> list[str]:
+    """German errors if the outputs in a trace of table_scenario_for(path) differ from the truth table
+    (read just before each next lever toggle)."""
+    from redstone.analysis.experiment import is_on
+    from redstone.design.spec import load
+
+    spec = load(path)
+    tgen = _template_gen()
+    state = [False] * len(spec.inputs)
+    tick, errors = 2, []
+
+    def value(probe: str, t: int) -> bool:
+        v = None
+        for at, x in trace.samples[probe]:
+            if at > t:
+                break
+            v = x
+        return v is not None and is_on(v)
+
+    for i in tgen.gray_sequence(len(spec.inputs)):
+        state[i] = not state[i]
+        tick += tgen.STEP
+        want = spec.table[tuple(state)]
+        got = tuple(value(o, tick - 1) for o in spec.outputs)
+        if got != want:
+            errors.append(f"bei {state}: {got} statt {want}")
+    return errors
+
+
 def main() -> None:
+    for path in table_examples():
+        d = table_scenario_for(path)
+        (ROOT / "scenarios" / f"{d['name']}.yaml").write_text(
+            yaml.safe_dump(d, allow_unicode=True, sort_keys=False, width=120, default_flow_style=None),
+            encoding="utf-8", newline="\n")
+        print("wrote", d["name"], table_design(path).name, tuple(table_design(path).grid.size))
     for path in examples():
         d = scenario_for(path)
         (ROOT / "scenarios" / f"{d['name']}.yaml").write_text(

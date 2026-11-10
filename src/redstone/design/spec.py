@@ -27,7 +27,7 @@ Combo = tuple[bool, ...]
 
 _ALLOWED_NODES = (ast.Expression, ast.BoolOp, ast.UnaryOp, ast.BinOp, ast.Compare, ast.Name, ast.Load,
                   ast.And, ast.Or, ast.Not, ast.BitXor, ast.BitAnd, ast.BitOr, ast.Eq, ast.NotEq,
-                  ast.Constant)
+                  ast.Constant, ast.Add, ast.Sub, ast.Mod, ast.Gt, ast.GtE, ast.Lt, ast.LtE)  # arithmetic on bools: (a + b + c) % 2
 
 
 @dataclass
