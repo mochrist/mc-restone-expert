@@ -411,7 +411,12 @@ impl World {
             }
         }
         if self.has_block_entity(info.kind) {
-            if let Some(data) = self.new_block_entity(pos, state) {
+            if let Some(mut data) = self.new_block_entity(pos, state) {
+                // place_grid in Python always calls `be.load(data or {})`: an empty lectern clamps its page
+                // to page_count - 1 = -1 (data from the grid is loaded afterwards and overrides this).
+                if let BeData::Lectern(l) = &mut data {
+                    l.page = -1;
+                }
                 let be = self.create_be(pos, data);
                 self.add_block_entity(pos, be);
             }

@@ -2,10 +2,22 @@
 
 from redstone.model import BlockState, Pos
 from redstone.sim import World
-from redstone.sim.blocks.container import add_item, container_max_stack, item_max_stack_size
+from redstone.sim.blocks.container import add_item as _py_add_item
+from redstone.sim.blocks.container import container_max_stack, item_max_stack_size
 from redstone.sim.blocks.dispenser_hopper import HopperBlockEntity
 
 P = Pos(0, 10, 0)
+
+
+def add_item(world: World, source, container, item: str, count: int = 1) -> int:
+    """container.add_item on either core (the Rust core takes block entity ids)."""
+    if hasattr(world, "_c"):
+        return world._c.add_item(None if source is None else source._id, container._id, item, count)
+    return _py_add_item(world, source, container, item, count)
+
+
+def _is_hopper(be) -> bool:
+    return isinstance(be, HopperBlockEntity) or getattr(be, "kind", None) == "hopper"
 
 
 def _place(world: World, pos: Pos, state: str, items: list[tuple[int, str, int]] = (), **extra) -> object:
@@ -61,7 +73,7 @@ def test_hopper_does_not_push_into_full_container():
 def test_custom_cooldown_is_kept_on_receive():
     w = World()
     target = _place(w, P, "hopper[enabled=true,facing=down]", TransferCooldown=20)
-    assert isinstance(target, HopperBlockEntity)
+    assert _is_hopper(target)
     add_item(w, None, target, "minecraft:stone")
     assert target.cooldown_time == 20
 
