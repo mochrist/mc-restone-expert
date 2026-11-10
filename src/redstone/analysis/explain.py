@@ -98,7 +98,10 @@ def explain(a: Analysis, title: str | None = None) -> str:
         for x in r.reactions:
             if x.kind != "keine Reaktion":
                 summary.append(f"- {r.input.name} → {x.output.name}: {x.kind}")
-    multi = _multi_input_outputs(a)
+    gated = {b.output.name: b for b in a.gated}
+    for b in a.gated:
+        summary.append(f"- {b.output.name}: **{b.summary}**" + (f" ({b.detail})" if b.detail else ""))
+    multi = [n for n in _multi_input_outputs(a) if n not in gated]
     for name in multi:
         summary.append(f"- {name} hängt von mehreren Eingängen ab: **{a.gates[name]}**")
     lines += summary or ["- Keine Reaktion an den Ausgängen gefunden."]
@@ -109,14 +112,22 @@ def explain(a: Analysis, title: str | None = None) -> str:
         lines += [f"- {p}" for p in a.patterns]
         lines.append("")
 
+    if a.gated:
+        lines += _gated_section(a)
+
     if a.truth_table and multi:
         levers = [p for p in a.inputs if p.kind == "lever"]
+        # outputs behind a gated block are left out: their steady state depends on the history
+        cols = [i for i, o in enumerate(a.outputs) if o.name not in gated]
         lines += ["## Wahrheitstabelle (Ruhezustände, jede Kombination frisch simuliert)", ""]
-        lines.append("| " + " | ".join(p.name for p in levers) + " | " + " | ".join(o.name for o in a.outputs) + " |")
-        lines.append("|" + "---|" * (len(levers) + len(a.outputs)))
+        if gated:
+            lines += ["Ohne " + ", ".join(gated) + " (Baustein hinter Logik, siehe oben).", ""]
+        lines.append("| " + " | ".join(p.name for p in levers) + " | "
+                     + " | ".join(a.outputs[i].name for i in cols) + " |")
+        lines.append("|" + "---|" * (len(levers) + len(cols)))
         for combo, outs in a.truth_table:
             lines.append("| " + " | ".join("1" if c else "0" for c in combo) + " | "
-                         + " | ".join("1" if o else "0" for o in outs) + " |")
+                         + " | ".join("1" if outs[i] else "0" for i in cols) + " |")
         lines.append("")
 
     for group_levers, outs, table in a.partial_tables:
@@ -165,6 +176,22 @@ def explain(a: Analysis, title: str | None = None) -> str:
                  "Oracle-Position (Min-Ecke 0, 200, 0) simuliert. An anderer Stelle in der Welt kann es abweichen.")
     lines += [f"- {h}" for h in hints]
     return "\n".join(lines) + "\n"
+
+
+def _gated_section(a: Analysis) -> list[str]:
+    lines = ["## Logik vor Speicher / Pulsgeber", "",
+             "Jeder Hebel wurde viermal umgeschaltet (an, aus, an, aus), während die übrigen Hebel jede "
+             "Kombination hielten. Die folgenden Ausgänge reagieren genau dann, wenn die genannte Logikfunktion "
+             "der Hebel sich ändert; dahinter sitzt ein flankengesteuerter Baustein. Die Wahrheitstabelle "
+             "(alle Hebel gleichzeitig in einer frischen Welt) zeigt für sie nur den Zustand nach dem ersten "
+             "Einschalten und ist keine Gatterfunktion.", ""]
+    for b in a.gated:
+        lines.append(f"- **{b.output.name}** ({b.output.kind} {b.output.pos}): {b.kind}, "
+                     f"Logik davor: **{b.gate}**" + (f". {b.detail}" if b.detail else ""))
+        ones = ["".join("1" if x else "0" for x in c) for c, v in sorted(b.table.items()) if v]
+        lines.append(f"  - Logik an bei {', '.join(p.name for p in b.levers)} = {', '.join(ones)}")
+    lines.append("")
+    return lines
 
 
 def _origin(a: Analysis) -> Pos:

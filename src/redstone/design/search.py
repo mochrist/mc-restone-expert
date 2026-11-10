@@ -106,7 +106,8 @@ COMPOSE_TRIES = 16  # layouts tried per pair before giving up
 GUESS_INPUTS = 3  # gate functions are guessed for recorded specs with up to this many levers
 
 
-def _gate_expression(names: list[str], ones: list[tuple[bool, ...]]) -> str:
+def gate_expression(names: list[str], ones: list[tuple[bool, ...]]) -> str:
+    """Minimal sum-of-products Python expression over `names` that is on exactly for `ones`."""
     from .synth import minimize
 
     terms = []
@@ -114,6 +115,22 @@ def _gate_expression(names: list[str], ones: list[tuple[bool, ...]]) -> str:
         lits = [n if v else f"not {n}" for n, v in zip(names, imp) if v is not None]
         terms.append(" and ".join(lits) if lits else "True")
     return " or ".join(f"({t})" if " and " in t and len(terms) > 1 else t for t in terms)
+
+
+def depends_on_all(table: dict[tuple[bool, ...], bool]) -> bool:
+    """A complete truth table changes with every input somewhere (no input is ignored)."""
+    n = len(next(iter(table)))
+    return all(any(table[c] != table[c[:i] + (not c[i],) + c[i + 1:]] for c in table) for i in range(n))
+
+
+def gate_functions(n: int):
+    """Every gate function of n levers that is off when all levers are off and depends on all of them, as
+    the list of combinations for which it is on (the candidates `gate_guesses` tries)."""
+    combos = list(itertools.product([False, True], repeat=n))[1:]
+    for bits in itertools.product([False, True], repeat=len(combos)):
+        ones = [c for c, b in zip(combos, bits) if b]
+        if ones and depends_on_all({c: (c in ones) for c in combos} | {(False,) * n: False}):
+            yield ones
 
 
 def _derived_inner(spec, gate: str):
@@ -150,17 +167,10 @@ def gate_guesses(spec, log: list[str] | None = None) -> list:
     if (spec.gate is not None or not 2 <= n <= GUESS_INPUTS or len(spec.outputs) != 1
             or any(k != "lever" for k in spec.input_kinds) or any(t.periodic for t in spec.trials)):
         return []
-    combos = list(itertools.product([False, True], repeat=n))[1:]
     blocks_all = None
     out = []
-    for bits in itertools.product([False, True], repeat=len(combos)):
-        ones = [c for c, b in zip(combos, bits) if b]
-        if not ones:
-            continue
-        table = {c: (c in ones) for c in combos} | {(False,) * n: False}
-        if any(all(table[c] == table[c[:i] + (not c[i],) + c[i + 1:]] for c in table) for i in range(n)):
-            continue  # ignores a lever
-        gate = _gate_expression(list(spec.inputs), ones)
+    for ones in gate_functions(n):
+        gate = gate_expression(list(spec.inputs), ones)
         inner = _derived_inner(spec, gate)
         if blocks_all is None:
             blocks_all = seq_candidates(inner)
