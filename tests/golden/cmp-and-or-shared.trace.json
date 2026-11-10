@@ -8,27 +8,27 @@
   "a": [
    0,
    2,
-   0
+   1
   ],
   "b": [
    2,
    2,
-   0
+   1
   ],
   "c": [
-   0,
+   5,
    2,
-   6
+   2
   ],
   "y": [
    0,
    0,
-   2
+   3
   ],
   "z": [
-   0,
+   5,
    1,
-   6
+   2
   ]
  },
  "samples": {
@@ -71,15 +71,15 @@
   "c": [
    [
     0,
-    "minecraft:lever[face=floor,facing=south,powered=false]"
+    "minecraft:lever[face=floor,facing=east,powered=false]"
    ],
    [
     62,
-    "minecraft:lever[face=floor,facing=south,powered=true]"
+    "minecraft:lever[face=floor,facing=east,powered=true]"
    ],
    [
     142,
-    "minecraft:lever[face=floor,facing=south,powered=false]"
+    "minecraft:lever[face=floor,facing=east,powered=false]"
    ]
   ],
   "y": [

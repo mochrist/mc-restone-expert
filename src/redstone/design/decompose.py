@@ -180,7 +180,17 @@ def support(spec: Spec, out: int) -> list[int]:
 def parallel(spec: Spec, log: list[str] | None = None) -> list[Candidate]:
     """A multi-output spec as one part per output, placed side by side. A lever needed by several parts sits
     in the first part that uses it; the later parts get its signal over a tapped line (`compose.wire`).
-    After every added part the outputs so far are checked in the simulator."""
+    After every added part the outputs so far are checked in the simulator. One result per working
+    spacing between the parts (`compose.SPACINGS`); the ranking picks the smallest."""
+    from .compose import SPACINGS
+
+    out: list[Candidate] = []
+    for spacing in SPACINGS:
+        out += _parallel(spec, spacing, log if spacing == SPACINGS[-1] else None)
+    return out
+
+
+def _parallel(spec: Spec, spacing: int, log: list[str] | None) -> list[Candidate]:
     from .compose import HORIZONTAL, place_beside, rotate, wire
     from .evaluate import evaluate_any
 
@@ -209,7 +219,7 @@ def parallel(spec: Spec, log: list[str] | None = None) -> list[Candidate]:
                 if tp is None:
                     continue
                 for side in HORIZONTAL[:SIDES_TRIED]:
-                    cand, _ = place_beside(comp, tp, side)
+                    cand, _ = place_beside(comp, tp, side, spacing)
                     lab = labels + list(supports[j])
                     for k in supports[j]:
                         if cand is None or k not in labels:

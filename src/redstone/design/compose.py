@@ -211,7 +211,8 @@ def _assemble(src: Candidate, out_index: int, dst: Candidate, in_index: int, shi
 
 # ---------------------------------------------------------------------- routed connections
 UP = Pos(0, 1, 0)
-SPACING = 3  # air blocks between the bounding boxes of the two parts in a routed layout
+SPACING = 3  # default air blocks between the bounding boxes of two parts placed side by side
+SPACINGS = (1, 2, 3)  # tried by the searches; the simulation decides whether parts this close still work
 MARGIN = 3  # the route may leave the joint bounding box by this much
 SIGNAL = 15
 
@@ -296,8 +297,8 @@ def _line_blocks(path: list[Pos]) -> dict[Pos, str] | None:
 
 
 def routed(src: Candidate, out_index: int, dst: Candidate, in_index: int, side: Direction, output_mode: str,
-           input_mode: str, settle: bool = True) -> Candidate | None:
-    """dst is placed beside src (on `side`, SPACING blocks of air between the boxes, same floor height) and
+           input_mode: str, settle: bool = True, spacing: int = SPACING) -> Candidate | None:
+    """dst is placed beside src (on `side`, `spacing` blocks of air between the boxes, same floor height) and
     the output is routed through the free space to the input. None if no route exists.
 
     output_mode "repeater": a repeater replaces the lamp, reading from one side (all four are tried); the
@@ -311,9 +312,9 @@ def routed(src: Candidate, out_index: int, dst: Candidate, in_index: int, side: 
     alo, ahi = _box(a)
     sx, _, sz = dst.grid.size
     v = side.vec
-    shift = Pos(alo.x if v[0] == 0 else (ahi.x + SPACING + 1 if v[0] > 0 else alo.x - SPACING - sx),
+    shift = Pos(alo.x if v[0] == 0 else (ahi.x + spacing + 1 if v[0] > 0 else alo.x - spacing - sx),
                 alo.y,
-                alo.z if v[2] == 0 else (ahi.z + SPACING + 1 if v[2] > 0 else alo.z - SPACING - sz))
+                alo.z if v[2] == 0 else (ahi.z + spacing + 1 if v[2] > 0 else alo.z - spacing - sz))
     b = {x + shift: s for x, s in dst.grid.items()}
     p = p_dst + shift
     goals = {p - Pos(*d.vec) for d in HORIZONTAL}
@@ -355,15 +356,15 @@ def routed(src: Candidate, out_index: int, dst: Candidate, in_index: int, side: 
     return _assemble(src, out_index, dst, in_index, shift, m, how, settle)
 
 
-def place_beside(c1: Candidate, c2: Candidate, side: Direction) -> tuple[Candidate, Pos]:
-    """Both candidates in one grid, c2 on `side` of c1 with SPACING blocks of air between the boxes, floors
+def place_beside(c1: Candidate, c2: Candidate, side: Direction, spacing: int = SPACING) -> tuple[Candidate, Pos]:
+    """Both candidates in one grid, c2 on `side` of c1 with `spacing` blocks of air between the boxes, floors
     level; nothing is connected. Inputs and outputs: those of c1, then those of c2. Also returns the shift
     of c2 (in the coordinates of the result)."""
     alo, ahi = Pos(0, 0, 0), Pos(*(s - 1 for s in c1.grid.size))
     sx, _, sz = c2.grid.size
     v = side.vec
-    shift = Pos(0 if v[0] == 0 else (ahi.x + SPACING + 1 if v[0] > 0 else alo.x - SPACING - sx), 0,
-                0 if v[2] == 0 else (ahi.z + SPACING + 1 if v[2] > 0 else alo.z - SPACING - sz))
+    shift = Pos(0 if v[0] == 0 else (ahi.x + spacing + 1 if v[0] > 0 else alo.x - spacing - sx), 0,
+                0 if v[2] == 0 else (ahi.z + spacing + 1 if v[2] > 0 else alo.z - spacing - sz))
     m = dict(c1.grid.items()) | {x + shift: s for x, s in c2.grid.items()}
     lo = Pos(min(0, shift.x), 0, min(0, shift.z))
     hi = Pos(max(c1.grid.size[0], shift.x + sx) - 1, max(c1.grid.size[1], c2.grid.size[1]) - 1,
@@ -478,9 +479,12 @@ def chains(src: Candidate, out_index: int, dst: Candidate, in_index: int, max_ga
         for side in HORIZONTAL:
             for out_mode in ("repeater", "dust"):
                 for in_mode in ("dust", "repeater"):
-                    c = routed(src, out_index, t, in_index, side, out_mode, in_mode, settle=False)
-                    if c is not None:
-                        found.append(((c.volume, c.block_count), (k, side.label, out_mode, in_mode), c))
+                    for spacing in SPACINGS:
+                        c = routed(src, out_index, t, in_index, side, out_mode, in_mode, settle=False,
+                                   spacing=spacing)
+                        if c is not None:
+                            found.append(((c.volume, c.block_count),
+                                          (k, side.label, out_mode, in_mode, spacing), c))
     found.sort(key=lambda f: f[:2])
     from .compact import normalize
 
