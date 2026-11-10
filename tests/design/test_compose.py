@@ -116,3 +116,36 @@ def test_decomposed_scenario_and_golden_up_to_date(path):
     assert stored == yaml.safe_load(yaml.safe_dump(gen.table_scenario_for(path), allow_unicode=True))
     golden = ROOT / "tests" / "golden" / f"cmp-{path.stem}.trace.json"
     assert gen.check_table_trace(path, Trace.load(golden)) == []  # the real game shows the truth table
+
+
+def test_spec_of_existing_outputs_option():
+    """--outputs overrides the lamps-only rule (all outputs) or picks outputs by name; unknown names fail."""
+    import pytest
+
+    from redstone.analysis.analyze import analyze
+    from redstone.cli import _spec_of_existing
+    from redstone.verify import load_scenario
+
+    a = analyze(load_scenario(ROOT / "scenarios" / "cmp-t-flip-flop-and.yaml").grid)
+    spec, original = _spec_of_existing(a, "cmp", "all")
+    assert spec.outputs == [o.name for o in a.outputs] and len(original.outputs) == len(a.outputs)
+    lamp = next(o for o in a.outputs if a.grid.get(o.pos).id == "redstone_lamp")
+    spec, original = _spec_of_existing(a, "cmp", lamp.name)
+    assert spec.outputs == [lamp.name] and original.outputs == [lamp.pos]
+    with pytest.raises(ValueError, match="unbekannte Ausgänge"):
+        _spec_of_existing(a, "cmp", "out99")
+
+
+def test_spec_of_existing_outputs_subset_of_truth_table():
+    from redstone.analysis.analyze import analyze
+    from redstone.cli import _spec_of_existing
+    from redstone.design.evaluate import evaluate
+    from redstone.verify import load_scenario
+
+    a = analyze(load_scenario(ROOT / "scenarios" / "tpl-fulladder-comparator.yaml").grid)
+    full, _ = _spec_of_existing(a, "ha")
+    name = full.outputs[1]
+    spec, original = _spec_of_existing(a, "ha", name)
+    assert spec.outputs == [name]
+    assert all(v == (full.table[c][1],) for c, v in spec.table.items())
+    assert evaluate(original, spec).ok
