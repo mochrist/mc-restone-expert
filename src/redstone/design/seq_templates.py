@@ -279,6 +279,110 @@ _register(
      for n in (8, 12, 16, 20, 30, 40)])
 
 
+# --- monostable: sticky piston as odd delay ----------------------------------------------------------------------
+def _piston_mono(kind: str = "button") -> _Layout:
+    """Comparator in subtraction mode: the button powers the rear input at once (comparator output after 2 gt) and,
+    over a separate dust line, a sticky piston. A piston powered by a player action starts one tick later
+    (PIS-019) and its redstone block arrives 2 gt after that, so 3 gt after the press it powers the comparator
+    side (odd delay, no repeater or torch gives one) and the output goes off after another 2 gt: exactly 3 gt."""
+    return _Layout(_support({
+        (0, 1, 0): INPUT(kind, "east"), (1, 1, 0): WIRE, (2, 1, 0): COMPARATOR("west"), (3, 1, 0): LAMP,
+        (0, 1, 1): WIRE, (0, 1, 2): WIRE, (0, 1, 3): WIRE, (1, 1, 3): WIRE,  # dust to the piston, clear of the side
+        (2, 1, 3): "sticky_piston[extended=false,facing=north]", (2, 1, 2): REDSTONE_BLOCK}),
+        ((0, 1, 0),), ((3, 1, 0),))
+
+
+_register(
+    "monostable-piston-button", "monostable", "in", "button",
+    "Genau 3 gt: Der Knopf speist den Rückeingang eines Komparators (Subtraktion) und über eine getrennte "
+    "Staubleitung einen Klebekolben. Ein per Spieleraktion bestromter Kolben fährt einen Tick später aus und "
+    "schiebt seinen Redstone-Block nach weiteren 2 gt neben den Komparator; das ist der einzige ungerade "
+    "Verzögerungsanteil. Der Ausgang geht 2 gt nach dem Knopfdruck an und 2 gt nach der Ankunft des Blocks wieder "
+    "aus. Der Staub zum Kolben darf den Zielplatz des Blocks nicht berühren, sonst hielte er sich selbst. "
+    "Mit Hebel nicht möglich: Pulse unter 3 gt lassen den Klebekolben den Block fallen oder gar nicht ausfahren.",
+    [({"length": 3, "delay": 2, "kind": "button"}, lambda: _piston_mono("button"))],
+    tags=frozenset({"piston"}))
+
+
+# --- comparator fade-out: pulse extender and long monostable ----------------------------------------------------
+def _fade_front(a: int, m: int, k: int) -> tuple[dict, int, int]:
+    """Lever -> short pulse (comparator subtraction, 2a gt of 15) -> fade-out ring -> tap comparator.
+
+    The ring is two rows of `m` comparators (compare mode) with dust at the corners; its dust loses 1 power per
+    half circuit, so the pulse circulates, fading 1 per 2m gt, until it is gone. The pulse enters at strength
+    15-2-k (dust on the way) and the tail lasts about 2m times that. The tap comparator at the east end copies the
+    ring, 2 gt later. Also returns the row of the tap (rz) and its output column (X), where the caller puts
+    the lamp or more dust. The lever reaches X as well, through a bypass of two repeaters (same total delay), so
+    long pulses pass unchanged; the bypass needs row z=2 clear."""
+    b = {(0, 1, 0): LEVER("east"), (1, 1, 0): REPEATER("west", a), (2, 1, 0): WIRE, (3, 1, 0): COMPARATOR("west"),
+         (4, 1, 0): WIRE}
+    _side_path(b, [a])
+    rx, rz = 5, -2 - k
+    for z in range(rz + 1, 0):
+        b[(4, 1, z)] = WIRE
+    b[(rx, 1, rz)] = b[(rx, 1, rz + 1)] = WIRE
+    for i in range(m):
+        b[(rx + 1 + i, 1, rz)] = COMPARATOR("west")
+        b[(rx + 1 + i, 1, rz + 1)] = COMPARATOR("east")
+    e = rx + m + 1
+    b[(e, 1, rz)] = b[(e, 1, rz + 1)] = WIRE
+    b[(e + 1, 1, rz)] = COMPARATOR("west")
+    x = e + 2
+    b[(4, 1, 2)] = REPEATER("west", 1)
+    for i in range(5, x + 1):
+        b[(i, 1, 2)] = WIRE
+    for z in range(rz + 2, 2):
+        b[(x, 1, z)] = WIRE
+    b[(x, 1, rz + 1)] = REPEATER("south", 1)
+    return b, rz, x
+
+
+def _fade_extender(a: int, m: int, k: int) -> _Layout:
+    b, rz, x = _fade_front(a, m, k)
+    b[(x, 1, rz)] = LAMP
+    return _Layout(_support(b), ((0, 1, 0),), ((x, 1, rz),))
+
+
+def _fade_mono(a: int, m: int, k: int, length: int) -> _Layout:
+    """Fade-out extender as front end (R long enough for any lever pulse), then the button-style comparator
+    monostable: its loop delays the extended signal by `length` gt and cuts the output there."""
+    b, rz, x = _fade_front(a, m, k)
+    b[(x, 1, rz)] = WIRE
+    sub = {(x + 1, 1, 0): WIRE, (x + 2, 1, 0): WIRE, (x + 3, 1, 0): COMPARATOR("west"), (x + 4, 1, 0): LAMP}
+    _side_path(sub, _button_side(length), x + 2)
+    b.update({(px, py, pz + rz): s for (px, py, pz), s in sub.items()})
+    return _Layout(_support(b), ((0, 1, 0),), ((x + 4, 1, rz),))
+
+
+_FADE_TEXT = ("Lever -> kurzer Puls (Komparator-Subtraktion) -> Ring aus Komparatoren im Vergleichsmodus mit "
+              "Staub in den Ecken. Der Staub kostet je Halbrunde 1 Signalstärke, der Puls kreist also und "
+              "schwindet (Fade-out), bis er weg ist; die Dauer bestimmt die Startstärke (Staublänge vor dem Ring) "
+              "und die Ringgröße. Ein Komparator am Ende liest den Ring.")
+
+_register(
+    "pulse-extender-comparator-fade", "pulse-extender", "in", "lever",
+    _FADE_TEXT + " Der Hebel erreicht die Lampe zusätzlich über zwei Verstärker genau so spät wie der Ring, "
+    "längere Pulse kommen also unverändert durch. Mindestlänge 10 bis 26 gt, ohne Kupferbirne.",
+    [({"length": n, "delay": 8}, (lambda k=k: _fade_extender(2, 1, k))) for n, k in
+     ((26, 0), (22, 2), (18, 4), (14, 6), (10, 8))])
+
+_register(
+    "pulse-extender-comparator-fade-long", "pulse-extender", "in", "lever",
+    _FADE_TEXT + " Großer Ring (zwei Komparatoren je Reihe) und 6-gt-Startpuls für Mindestlängen von 34 bis "
+    "50 gt; sonst wie pulse-extender-comparator-fade.",
+    [({"length": n, "delay": 10}, (lambda k=k: _fade_extender(3, 2, k))) for n, k in ((50, 0), (42, 2), (34, 4))])
+
+_register(
+    "monostable-comparator-fade", "monostable", "in", "lever",
+    "Monoflop mit Hebel über 8 gt: Das Fade-out-Verlängerungsglied (großer Ring, siehe "
+    "pulse-extender-comparator-fade-long) macht jeden Hebelpuls mindestens so lang wie nötig und speist dann den "
+    "Rückeingang eines Komparators im Subtraktionsmodus; dasselbe Signal läuft über eine Verstärker-Schleife an "
+    "den Seiteneingang und schaltet den Ausgang nach deren Laufzeit ab. 10 bis 40 gt. Nicht jede gerade Länge "
+    "lässt sich einstellen (Rundung der Schleife, Stufen aus der Knopf-Vorlage).",
+    [({"length": n, "delay": 12, "kind": "lever"}, (lambda n=n: _fade_mono(3, 2, 0, n)))
+     for n in (24, 10, 14, 18, 30, 34, 40)])
+
+
 # --- pulse extender: one repeater -------------------------------------------------------------------------------
 _register(
     "pulse-extender-repeater", "pulse-extender", "in", "lever",
