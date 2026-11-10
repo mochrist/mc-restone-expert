@@ -1,16 +1,18 @@
 """Measure simulator speed for the M4 design note (docs/m4-search-and-performance.md).
 
-uv run python scripts/bench_sim.py
+uv run python scripts/bench_sim.py [--sim-core python|rust|auto]
 """
 
 from __future__ import annotations
 
+import argparse
 import time
 from pathlib import Path
 
 from redstone.analysis.analyze import analyze
 from redstone.analysis.experiment import Circuit
 from redstone.io import load
+from redstone.sim import core
 from redstone.verify import load_scenario
 
 ROOT = Path(__file__).parents[1]
@@ -30,19 +32,12 @@ def grid_of(path: Path):
 def bench_ticks(grid, ticks: int = 400) -> tuple[float, int]:
     circuit = Circuit(grid)
     world = circuit.new_world(kick=True)
-    updates = 0
-    orig = world._execute_update
-
-    def counting(*a, **k):
-        nonlocal updates
-        updates += 1
-        return orig(*a, **k)
-
-    world._execute_update = counting
+    start = world.neighbor_update_count
     t0 = time.perf_counter()
     for _ in range(ticks):
         world.tick()
-    return time.perf_counter() - t0, updates
+    dt = time.perf_counter() - t0
+    return dt, world.neighbor_update_count - start
 
 
 def bench_place(grid, n: int = 20) -> float:
@@ -54,6 +49,13 @@ def bench_place(grid, n: int = 20) -> float:
 
 
 def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--sim-core", choices=("python", "rust", "auto"), default=None,
+                    help="simulator core (default: RSX_SIM_CORE or auto)")
+    args = ap.parse_args()
+    if args.sim_core:
+        core.use(args.sim_core)
+    print(f"simulator core: {core.active()}")
     print("| Fall | Blöcke | Welt aufbauen | Ticks/s (400 gt, angestoßen) | Neighbor-Updates/s | rsx-Analyse |")
     print("|---|---|---|---|---|---|")
     for name, path in CASES:

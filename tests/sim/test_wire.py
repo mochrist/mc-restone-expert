@@ -3,9 +3,12 @@
 import pytest
 
 from redstone.model import BlockState, Direction, Pos
-from redstone.sim import World
+from redstone.sim import World, core
 from redstone.sim.blocks.wire import JavaHashSet, block_pos_hash, update_order
 from redstone.sim.constants import UPDATE_ALL
+
+python_core_only = pytest.mark.skipif(
+    core.active() != "python", reason="needs Python internals (own Block subclasses / monkeypatching); Rust is covered by the golden traces")
 
 D = Direction
 STONE = BlockState.parse("stone")
@@ -97,6 +100,7 @@ def test_hashset_long_bin_resizes_instead_of_treeifying():
     assert list(s) == [0, 32, 64, 96, 128, 16, 48, 80, 112]
 
 
+@python_core_only
 def test_power_change_updates_neighbors_in_hashset_order():
     """DUST-017/018: seven updateNeighborsAt calls, in the order of update_order."""
     w = World()
@@ -222,9 +226,10 @@ def test_conductor_above_lower_dust_separates_both_ways():
     lower, upper = Pos(0, 1, 0), Pos(1, 2, 0)
     place_dust(w, lower)
     place_dust(w, upper)
-    wire = _wire_block(w)
-    assert wire.get_connecting_side(w, lower, D.EAST) == "none"
-    assert wire.get_connecting_side(w, upper, D.WEST) == "none"
+    if core.active() == "python":  # the power checks below show the same on both cores
+        wire = _wire_block(w)
+        assert wire.get_connecting_side(w, lower, D.EAST) == "none"
+        assert wire.get_connecting_side(w, upper, D.WEST) == "none"
     # no signal from the upper to the lower dust (upper powers the stone, DUST-015 keeps that out) ...
     w.set_block(Pos(2, 2, 0), BlockState.parse("redstone_block"))
     assert power(w, upper) == 15 and power(w, lower) == 0
@@ -289,3 +294,31 @@ def test_dust_lights_lamp_it_points_into_but_not_beside():
     w.set_block(Pos(-1, 1, 0), BlockState.parse("redstone_block"))
     assert power(w, Pos(1, 1, 0)) == 14
     assert w.has_neighbor_signal(lamp_front) and not w.has_neighbor_signal(lamp_side)
+
+
+@pytest.mark.skipif(core.active() != "rust", reason="compares the Rust helpers with the Python reference")
+@pytest.mark.parametrize("pos", [(0, 64, 0), (1, 64, 0), (0, 200, 0), (-1, 64, -1), (0, -64, 0), (1000000, 0, 0),
+                                 (30_000_000, 319, -30_000_000)])
+def test_rust_update_order_matches_python(pos):
+    import rsx_core
+
+    p = Pos(*pos)
+    assert [Pos(*q) for q in rsx_core.update_order(pos)] == update_order(p)
+    assert rsx_core.block_pos_hash(pos) == block_pos_hash(p)
+
+
+@pytest.mark.skipif(core.active() != "rust", reason="Rust counterpart of the HashSet-order test")
+def test_power_change_triggers_updates_rust():
+    """DUST-016/017: a power change updates the neighbours (7 updateNeighborsAt), an unchanged power does not."""
+    w = World()
+    pos = Pos(0, 64, 0)
+    w.blocks[pos.offset(D.DOWN)] = STONE
+    w.blocks[pos] = BlockState.parse("redstone_wire[east=side,north=none,power=0,south=none,west=side]")
+    w.blocks[pos.offset(D.WEST)] = BlockState.parse("redstone_block")
+    before = w.neighbor_update_count
+    _wire_block(w).update_power_strength(w, pos, w.get(pos))
+    assert power(w, pos) == 15
+    assert w.neighbor_update_count > before
+    before = w.neighbor_update_count
+    _wire_block(w).update_power_strength(w, pos, w.get(pos))
+    assert w.neighbor_update_count == before

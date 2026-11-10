@@ -1,9 +1,14 @@
 """Unit tests of the simulator core against behaviour read from the 26.3 code."""
 
+import pytest
+
 from redstone.model import BlockState, Pos
-from redstone.sim import World
+from redstone.sim import World, core
 from redstone.sim.block import REGISTRY, Block
 from redstone.sim.constants import TickPriority
+
+python_core_only = pytest.mark.skipif(
+    core.active() != "python", reason="needs Python internals (own Block subclasses / monkeypatching); Rust is covered by the golden traces")
 
 
 class Recorder(Block):
@@ -28,6 +33,7 @@ def _world_with_recorders(positions):
     return w, rec, log
 
 
+@python_core_only
 def test_update_neighbors_order_is_w_e_d_u_n_s():
     c = Pos(5, 5, 5)
     ns = [c.offset(d) for d in __import__("redstone.sim.world", fromlist=["UPDATE_ORDER"]).UPDATE_ORDER]
@@ -36,6 +42,7 @@ def test_update_neighbors_order_is_w_e_d_u_n_s():
     assert [p for _, p in log] == ns
 
 
+@python_core_only
 def test_ticks_ordered_by_time_priority_then_insertion():
     a, b, c = Pos(0, 0, 0), Pos(1, 0, 0), Pos(2, 0, 0)
     w, rec, log = _world_with_recorders([a, b, c])
@@ -48,6 +55,7 @@ def test_ticks_ordered_by_time_priority_then_insertion():
     assert log == [("tick", c, 1), ("tick", b, 2), ("tick", a, 2)]
 
 
+@python_core_only
 def test_neighbor_updates_are_depth_first():
     """A block that updates its neighbours while being updated: those run before the remaining siblings."""
     log = []
