@@ -1,4 +1,4 @@
-# UND über fünf Hebel (über der 4-Eingänge-Grenze der Fackel-PLA)
+# UND über fünf Hebel (als Fackel-PLA möglich, aber groß; die Zerlegung in kleine Gatter ist viel kleiner)
 inputs: [a, b, c, d, e]
 function:
   y: a and b and c and d and e

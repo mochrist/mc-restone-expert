@@ -146,5 +146,5 @@ def test_pla_random_functions():
 
 
 def test_pla_limits():
-    spec = from_functions(["a", "b", "c", "d", "e"], {"y": "a"})
+    spec = from_functions(list("abcdefg"), {"y": "a"})  # 7 inputs, over MAX_INPUTS
     assert pla(spec) is None

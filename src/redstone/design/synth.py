@@ -46,7 +46,7 @@ from .spec import Spec
 
 Implicant = tuple[bool | None, ...]  # per input: True = literal x, False = literal not x, None = unused
 
-MAX_INPUTS = 4
+MAX_INPUTS = 6  # same limit as the full truth table of the analysis; 5-6 inputs give large PLAs (400-2500 blocks)
 MAX_ORDERS = 24  # output orders tried per term selection (all of them for up to 4 outputs)
 
 

@@ -6,7 +6,7 @@ has at most two distinct columns; g then says which of the two columns an assign
 
 Both parts are designed on their own (templates, torch PLA, or again by decomposition), joined with the
 output of g into the first input of h, and the result is checked against the whole spec in the simulator.
-That lifts the 4-input limit of the PLA and splits wide functions (e.g. XOR of four levers) into chains of
+That goes beyond the input limit of the PLA (`synth.MAX_INPUTS`) and splits wide functions (e.g. XOR of four levers) into chains of
 small gates.
 """
 

@@ -25,6 +25,7 @@ from redstone.io.nbtutil import to_nbt
 
 ROOT = Path(__file__).parents[1]
 GAP = 30
+COMPOSED = ("zerlegt", "komponiert", "nebeneinander")  # origins of composed designs
 
 
 def examples() -> list[Path]:
@@ -38,10 +39,12 @@ def spec_of(path: Path) -> bh.BehaviourSpec:
 
 @cache
 def design(path: Path):
-    best = redesign(spec_of(path))[0]
-    if not best.ok:
-        raise RuntimeError(f"{path.name}: no working design")
-    return best.candidate
+    """The best working composed design (the scenarios check compositions in the game, so a plain PLA or
+    template that happens to rank higher is skipped)."""
+    for ev in redesign(spec_of(path)):
+        if ev.ok and ev.candidate.origin.startswith(COMPOSED):
+            return ev.candidate
+    raise RuntimeError(f"{path.name}: no working composed design")
 
 
 def _trial_length(trial: bh.Trial) -> int:
@@ -126,10 +129,10 @@ def table_examples() -> list[Path]:
 def table_design(path: Path):
     from redstone.design.spec import load
 
-    best = redesign(load(path))[0]
-    if not best.ok or not best.candidate.origin.startswith(("zerlegt", "nebeneinander")):
-        raise RuntimeError(f"{path.name}: no working decomposition")
-    return best.candidate
+    for ev in redesign(load(path)):  # the best decomposition, even if a plain PLA ranks higher
+        if ev.ok and ev.candidate.origin.startswith(("zerlegt", "nebeneinander")):
+            return ev.candidate
+    raise RuntimeError(f"{path.name}: no working decomposition")
 
 
 def _template_gen():
