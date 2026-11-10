@@ -185,6 +185,9 @@ def _random_state(rng: random.Random) -> str:
         f"powered_rail[powered=false,shape={rng.choice(('north_south', 'east_west'))},waterlogged=false]",
         f"activator_rail[powered=false,shape={rng.choice(('north_south', 'east_west'))},waterlogged=false]",
         f"hopper[enabled=true,facing={rng.choice(('down',) + DIRS)}]", "barrel[facing=up,open=false]",
+        f"chest[facing={f},type={rng.choice(('single', 'left', 'right'))},waterlogged=false]",
+        f"trapped_chest[facing={f},type={rng.choice(('single', 'left', 'right'))},waterlogged=false]",
+        f"copper_chest[facing={f},type={rng.choice(('single', 'left', 'right'))},waterlogged=false]",
         f"dropper[facing={f6},triggered=false]", f"dispenser[facing={f6},triggered=false]",
         "daylight_detector[inverted=false,power=0]",
     ])

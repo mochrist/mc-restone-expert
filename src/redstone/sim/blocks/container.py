@@ -49,6 +49,15 @@ def container_max_stack(item: str) -> int:
     return min(CONTAINER_MAX_STACK, item_max_stack_size(item))
 
 
+def redstone_signal_of(stacks, size: int) -> int:
+    """AbstractContainerMenu#getRedstoneSignalFromContainer over the given ``[item, count]`` stacks."""
+    if not size:
+        return 0
+    fullness = sum(count / container_max_stack(item) for item, count in stacks) / size
+    # Mth.lerpDiscrete(fullness, 0, 15) = floor(f * 14) + (f > 0 ? 1 : 0)
+    return math.floor(fullness * 14) + (1 if fullness > 0 else 0)
+
+
 class ContainerBlockEntity:
     ticks = False
 
@@ -97,12 +106,7 @@ class ContainerBlockEntity:
 
     def redstone_signal(self) -> int:
         """AbstractContainerMenu#getRedstoneSignalFromContainer"""
-        if not self.size:
-            return 0
-        fullness = sum(count / container_max_stack(item) for item, count in self.items.values())
-        fullness /= self.size
-        # Mth.lerpDiscrete(fullness, 0, 15) = floor(f * 14) + (f > 0 ? 1 : 0)
-        return math.floor(fullness * 14) + (1 if fullness > 0 else 0)
+        return redstone_signal_of(self.items.values(), self.size)
 
 
 def get_container_at(world: World, pos: Pos) -> ContainerBlockEntity | None:
@@ -111,7 +115,10 @@ def get_container_at(world: World, pos: Pos) -> ContainerBlockEntity | None:
     if not world.block(state).has_block_entity(state):
         return None
     be = world.get_block_entity(pos)
-    return be if isinstance(be, ContainerBlockEntity) else None
+    if not isinstance(be, ContainerBlockEntity):
+        return None
+    as_container = getattr(be, "as_container", None)  # chests: a double chest is a CompoundContainer
+    return as_container(world, state) if as_container is not None else be
 
 
 def add_item(world: World, source: ContainerBlockEntity | None, container: ContainerBlockEntity, item: str,

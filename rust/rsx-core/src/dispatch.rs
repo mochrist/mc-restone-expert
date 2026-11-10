@@ -23,7 +23,8 @@ impl World {
             | Kind::WallTorch
             | Kind::Observer
             | Kind::Target
-            | Kind::Lectern => true,
+            | Kind::Lectern
+            | Kind::TrappedChest => true,
             Kind::Wire => self.wire_should_signal,
             _ => false,
         }
@@ -33,18 +34,29 @@ impl World {
     pub fn has_block_entity(&self, kind: Kind) -> bool {
         matches!(
             kind,
-            Kind::Comparator | Kind::MovingPiston | Kind::Barrel | Kind::Dispenser | Kind::Hopper | Kind::Lectern
+            Kind::Comparator
+                | Kind::MovingPiston
+                | Kind::Barrel
+                | Kind::Chest
+                | Kind::TrappedChest
+                | Kind::Dispenser
+                | Kind::Hopper
+                | Kind::Lectern
         )
     }
 
     #[inline]
     pub fn has_analog_output_signal(&self, kind: Kind) -> bool {
-        matches!(kind, Kind::Barrel | Kind::Dispenser | Kind::Hopper | Kind::CopperBulb | Kind::Lectern)
+        matches!(
+            kind,
+            Kind::Barrel | Kind::Chest | Kind::TrappedChest | Kind::Dispenser | Kind::Hopper | Kind::CopperBulb | Kind::Lectern
+        )
     }
 
     pub fn get_analog_output_signal(&mut self, pos: Pos, state: StateId, _direction: Dir) -> i32 {
         match self.info(state).kind {
             Kind::Barrel | Kind::Dispenser | Kind::Hopper => self.container_analog_output(pos),
+            Kind::Chest | Kind::TrappedChest => self.chest_analog_output(pos, state),
             Kind::CopperBulb => {
                 if self.info_at(pos).lit() {
                     15
@@ -62,7 +74,9 @@ impl World {
         let info = self.info(state);
         match info.kind {
             Kind::Comparator => Some(BeData::Comparator { output_signal: 0 }),
-            Kind::Barrel => Some(BeData::Container(Container { size: 27, items: Vec::new(), kind: ContainerKind::Plain })),
+            Kind::Barrel | Kind::Chest | Kind::TrappedChest => {
+                Some(BeData::Container(Container { size: 27, items: Vec::new(), kind: ContainerKind::Plain }))
+            }
             Kind::Dispenser => {
                 Some(BeData::Container(Container { size: 9, items: Vec::new(), kind: ContainerKind::Dispenser }))
             }
@@ -235,7 +249,9 @@ impl World {
             Kind::Observer => self.observer_affect_neighbors_after_removal(pos, state),
             Kind::PistonHead => self.piston_head_affect_neighbors_after_removal(pos, state),
             // Containers#updateNeighboursAfterDestroy
-            Kind::Barrel | Kind::Dispenser | Kind::Hopper => self.update_neighbour_for_output_signal(pos, info.block),
+            Kind::Barrel | Kind::Chest | Kind::TrappedChest | Kind::Dispenser | Kind::Hopper => {
+                self.update_neighbour_for_output_signal(pos, info.block)
+            }
             Kind::Rail | Kind::PoweredRail => self.rail_affect_neighbors_after_removal(pos, state, moved),
             Kind::Lectern => self.lectern_affect_neighbors_after_removal(pos, state),
             _ => {}
@@ -255,6 +271,7 @@ impl World {
             Kind::NoteBlock => self.note_block_update_shape(pos, state, direction),
             Kind::Door => self.door_update_shape(pos, state, direction, neighbor_state),
             Kind::FenceGate => self.fence_gate_update_shape(pos, state, direction, neighbor_state),
+            Kind::Chest | Kind::TrappedChest => self.chest_update_shape(state, direction, neighbor_state),
             _ => state,
         }
     }
