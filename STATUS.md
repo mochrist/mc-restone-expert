@@ -1,17 +1,41 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-10, Session 7 (Rust-Kern fertig). Geschätzter Gesamtfortschritt: **ca. 86 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-10, Session 8. Geschätzter Gesamtfortschritt: **ca. 88 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
-| M0 Wissensbasis | 10 % | ~95 % | 264 Aussagen aus dem 26.3-Code belegt, 83 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
+| M0 Wissensbasis | 10 % | ~95 % | 272 Aussagen aus dem 26.3-Code belegt, 90 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 92 Golden Traces tick-genau überein |
-| M3 Analyse + Erklärung | 20 % | ~80 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~65 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA, Komposition mit Router (Logik vor Speicher, Zerlegung, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
+| M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 98 Golden Traces tick-genau überein; Truhen neu |
+| M3 Analyse + Erklärung | 20 % | ~85 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Logik vor T-FF/Pulsgeber, Sonderfall-Notizen |
+| M4 Redesign | 25 % | ~70 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (auch mit ansteuerbaren Eingängen), Komposition mit Router (Logik vor Speicher, Zerlegung, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
 ## Verlauf
+
+### Session 8 (2026-11-10): parallel M2/M3/M4 (Opus-Hauptsession, 1 Opus- und 2 Sonnet-Agents)
+
+- M4 Komposition (Hauptsession):
+  - Ansteuerbarkeit aller Vorlagen-Eingänge gemessen: fast alle gehen (auch `xor2-comparator`); nicht ansteuerbar
+    sind `mux2 s`, `halfadder b`, `fulladder b/c`, `a-and-not-b-torch a` und die Repeater-XOR/XNOR bei `a`.
+  - PLA mit ansteuerbaren Eingängen: `synth.pla(drivable=True)`. Der Eingang ist ein Wandhebel an einem Block P
+    am Westende der Leitungen; P speist die wahre Leitung, eine Fackel an P die invertierte direkt. Der Block
+    über der Inverter-Fackel lag beim normalen PLA neben dem Eingang und koppelte zurück. Kostet 10–30 % mehr
+    Blöcke, wird in der Zerlegung als letzte Wahl für den angesteuerten Teil h probiert.
+  - Zerlegung: Versuchsbudget pro Bausteinpaar statt pro Zerlegung. Zufällige zerlegbare Funktionen mit 5 Eingängen:
+    7 statt 5 von 15 gelöst. Neues Beispiel `examples/specs/composed/drivable-pla.yaml` (Mehrheit als Auswahl eines
+    Multiplexers, 130 Blöcke), im Spiel identisch (`cmp-drivable-pla`).
+  - Abstand zwischen nebeneinander gesetzten Bausteinen 1–3 Blöcke statt fest 3 (`compose.SPACINGS`):
+    and-or-shared 34 → 22 Blöcke, im Spiel identisch.
+  - Kompaktieren der Kompositionen bringt nichts (keine einzelne Entfernung/Ebene geht); größere Züge nötig.
+- M3 (Opus-Agent): `rsx explain` erkennt Logik vor T-Flip-Flop bzw. Pulsgeber (2–3 Hebel, Experiment 5:
+  jeder Hebel 4× umgeschaltet bei jeder Kombination der anderen; `patterns.gate_from_edges`, `Analysis.gated`).
+  Grenzen: nur flankengesteuerte Bausteine, Logik bei „alle aus“ aus.
+- M4 Vorlagen (Sonnet-Agent): `monostable-piston-button` (genau 3 gt, nur Knopf; ungerade Verzögerung über
+  Kolben, PIS-019), `pulse-extender-comparator-fade` (L 10–26) und `-long` (L 34–50),
+  `monostable-comparator-fade` (Hebel, 10–40 gt, nicht jede gerade Länge). Alle im Spiel identisch.
+- M2 (Sonnet-Agent): Truhen, Redstone-Truhen, Kupfertruhen in beiden Kernen (Doppeltruhe, Sperre durch Block
+  darüber gilt nicht für Trichter); Szenario `chest-container` im Spiel identisch; `knowledge/components/chests.md`.
 
 ### Session 7 (2026-11-10): Rust-Kern fertig
 
@@ -111,7 +135,7 @@ Stand: 2026-11-10, Session 7 (Rust-Kern fertig). Geschätzter Gesamtfortschritt:
 ## Befehle
 
 ```
-uv run pytest -q [--sim-core python|rust]         # ~1000 Tests, alle grün (Rust ~25 s, Python ~80 s)
+uv run pytest -q [--sim-core python|rust]         # ~1100 Tests, alle grün (Rust ~30 s, Python ~105 s)
 uv sync                                            # baut auch den Rust-Kern; nach Rust-Änderungen:
 uv pip install --reinstall-package rsx-core ./rust/rsx-core
 uv run rsx --sim-core python|rust <befehl>         # Kern wählen (Standard: Rust, wenn gebaut)
@@ -143,14 +167,14 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    `tests/sim/test_core_equivalence.py` deckt Abweichungen auf. Mögliche Folgearbeit: BFS-Router
    (`design/compose.py: _route`) beschleunigen, Lauf-Schleife samt Aufzeichnung (`Circuit.run`) nach Rust.
 3. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
-   - Lücken der Vorlagen: kein Monoflop mit 3 gt (2 gt per Observer, sonst ab 4 gt); Comparator-Monoflop mit Hebel nur bis 8 gt; kein Pulsverlängerer max(p, L) per Comparator-Fade-out (nur konzipiert); XOR-Vorlagen groß (28–33 Blöcke).
-   - Komposition: XOR-Vorlagen lassen sich nicht als zweiter Baustein ansteuern (Hebel eingebaut; Agent meint, freie Nachbarn lägen außerhalb des zugeschnittenen Rasters – prüfen). PLA-Eingänge vertragen keinen Staub an Hebelstelle (Block über der Inverter-Fackel liegt daneben) – PLA-Variante mit ansteuerbaren Eingängen wäre nützlich. Geteilte Teilfunktionen zwischen Ausgängen werden nicht genutzt (Volladdierer per `parallel` nicht gefunden; Vorlage gewinnt).
+   - Lücken der Vorlagen: Monoflop 3 gt nur mit Knopf (Hebel unmöglich, siehe Session 8); Hebel-Comparator-Monoflop nicht für jede gerade Länge; XOR-Vorlagen groß (28–33 Blöcke).
+   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); 8 von 15 zufälligen 5-Eingänge-Funktionen bleiben ungelöst (Zerlegung nur g(3)+h(3); andere Aufteilungen, tiefere Ketten prüfen). Kompaktieren braucht größere Züge (Route neu legen, Bausteine zusammenschieben). Geteilte Teilfunktionen zwischen Ausgängen werden nicht genutzt (Volladdierer per `parallel` nicht gefunden; Vorlage gewinnt).
    - Verhalten aus Bestandsschaltungen nur bis 3 Eingänge; Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
-   - M3-Analyse erkennt „Logik vor Speicher“ nicht (Wahrheitstabelle meldet AND für das T-FF hinter AND); nur `rsx redesign` errät es.
+   - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8), nicht aber vor Set-only-Speicher oder Pulsverlängerer.
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
 4. **Restliche Simulator-Lücken (M2):**
-   - Tageslichtsensor (Block-Entity alle 20 gt, Himmelslicht/Tageszeit), Druckplatten, Detektorschiene, Sculk, Crafter, Truhen als Container.
+   - Tageslichtsensor (Block-Entity alle 20 gt, Himmelslicht/Tageszeit), Druckplatten, Detektorschiene, Sculk, Crafter. Truhen erledigt (Session 8; ohne Katzen/Spieler).
    - Notenblock-Instrument nur über Blocknamen (ASSUMPTION; Feld `instrument` im Block-Dump fehlt).
    - Dispenser: item-spezifisches Verhalten, zufällige Slotwahl → erster Slot (ASSUMPTIONs in `dispenser_hopper.py`).
    - Weitere ungeprüfte Aussagen per Szenario verifizieren (`knowledge/UNVERIFIED.md`).
