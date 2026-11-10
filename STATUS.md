@@ -54,6 +54,29 @@ Nächste Schritte:
    Abgleich `state_facts` gegen `blockdata` für alle Zustände der Tabelle.
 6. Messen, Designnotiz und diese Datei aktualisieren.
 
+### Aufgabenverteilung für die nächste Session (Opus 5.5 als Hauptsession, Sonnet 5.5 als Agents)
+
+Die Hauptsession läuft mit Opus 5.5 und startet Sonnet-Agents über das Agent-Tool mit `model: "sonnet"` und
+`isolation: "worktree"`. Jeder Agent ändert nur die genannten Dateien, committet in seinem Worktree und meldet
+Branch und Commit. Opus prüft und merged.
+
+| Nr. | Aufgabe | Modell | Abhängig von |
+|---|---|---|---|
+| 1 | `wip/rust-piston` und `wip/rust-outputs` nach `master` mergen, zum Kompilieren bringen | Opus | – |
+| 2 | `piston.rs` gegen `blocks/piston.py` gegenlesen und fertigstellen (Resolver, `PosHashMap`, Block-Events, BUD-Notizen); Kolben-Traces und `tests/sim/test_piston.py` grün | Opus | 1 |
+| 3 | `container.rs` neu portieren (`blocks/container.py`, `blocks/dispenser_hopper.py`); Traces comparator-container, dispenser-trigger, dropper-hopper, hopper-chain, hopper-lock, hopper-stack-sizes | Sonnet | 1 |
+| 4 | `outputs.rs` fertigstellen und gegenlesen; Traces copper-bulb, doors, lectern, note-block, powered-rails, target-block, seq-*-copper-bulb*, cmp-t-flip-flop-and; Zufallsvergleich für Schienen gegen den Python-Kern | Sonnet | 1 |
+| 5 | Differenztest beider Kerne (`tests/sim/test_core_equivalence.py`): alle Szenarien, Vorlagen und Fixtures, `Recording` und Notizen exakt gleich; Abgleich `state_facts` gegen `blockdata` | Opus | 1 |
+| 6 | Tests auf beide Kerne umstellen, die Python-Interna nutzen (`test_world.py`, `test_wire.py`, `test_dispenser_hopper.py`, `test_outputs.py`); `--sim-core` nach `conftest.py` im Repo-Root; `scripts/bench_sim.py` auf `neighbor_update_count` | Sonnet | 3, 4 |
+| 7 | Abweichungen aus 5 und 6 suchen und beheben, bis `RSX_SIM_CORE=rust uv run pytest -q` und `RSX_SIM_CORE=python uv run pytest -q` grün sind | Opus | 2–6 |
+| 8 | Messen (`bench_sim.py`, `rsx redesign examples/specs/composed/xor4.yaml`, beide Kerne), Profil ansehen, bei Bedarf Hot Paths im Wrapper/Kern beschleunigen | Opus | 7 |
+| 9 | Ergebnis in `docs/m4-search-and-performance.md`, `STATUS.md` und Befehlsliste eintragen; Worktrees und WIP-Branches aufräumen | Sonnet | 8 |
+
+Reihenfolge: 1 zuerst (kurz). Dann 3 und 4 parallel als Sonnet-Agents, währenddessen 2 und 5 in der
+Hauptsession. Danach 6 (Sonnet), 7, 8 (Opus), 9 (Sonnet). Für die Agent-Aufträge taugen die Prompts dieser
+Session als Vorlage: Referenzdatei nennen, nur eine Rust-Datei ändern, Signaturen behalten, Abnahme über die
+genannten Golden Traces, Build-Befehle mitgeben.
+
 Build: `uv sync` baut die Erweiterung (Gruppe `rust`, Standard). Nach Rust-Änderungen
 `uv pip install --reinstall-package rsx-core ./rust/rsx-core`, schneller Check mit
 `cd rust/rsx-core && PYO3_PYTHON=../../.venv/Scripts/python.exe cargo check`. In Git Bash vorher
