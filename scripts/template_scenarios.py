@@ -39,22 +39,29 @@ def pla_scenario(spec_path: Path) -> dict:
 
     spec = load(spec_path)
     c = pla(spec)
+    groups = None
+    if spec.partial:  # only the combinations that matter: switch each one on and off again
+        groups = [[i for i, b in enumerate(combo) if b] for combo in spec.combos() if any(combo)]
+        groups = [g for g in groups for _ in (0, 1)]
     return candidate_scenario(c, f"pla-{spec_path.stem}", spec.inputs, spec.outputs,
-                              f"Fackel-PLA aus examples/specs/{spec_path.name} ({c.description})")
+                              f"Fackel-PLA aus examples/specs/{spec_path.name} ({c.description})", groups)
 
 
-def candidate_scenario(c, name: str, in_names: list[str], out_names: list[str], text: str) -> dict:
+def candidate_scenario(c, name: str, in_names: list[str], out_names: list[str], text: str,
+                       groups: list[list[int]] | None = None) -> dict:
+    """groups: levers switched together per step; default all combinations in Gray code."""
     blocks = [[*p, str(s).removeprefix("minecraft:")] for p, s in sorted(c.grid.items())]
     tick = 2
     inputs = []
-    for i in gray_sequence(len(c.inputs)):
-        inputs.append({"tick": tick, "pos": list(c.inputs[i]), "action": "use"})
+    for group in groups if groups is not None else [[i] for i in gray_sequence(len(c.inputs))]:
+        inputs += [{"tick": tick, "pos": list(c.inputs[i]), "action": "use"} for i in group]
         tick += STEP
     probes = {n: list(p) for n, p in zip(in_names, c.inputs)}
     probes |= {n: list(p) for n, p in zip(out_names, c.outputs)}
     d = {
         "name": name,
-        "description": f"{text} Alle Hebel-Kombinationen im Gray-Code, je {STEP} gt Abstand.",
+        "description": f"{text} " + ("Alle Hebel-Kombinationen im Gray-Code" if groups is None else
+                                     "Jede verlangte Hebel-Kombination an und wieder aus") + f", je {STEP} gt Abstand.",
         "build": {"size": list(c.grid.size), "blocks": blocks},
         "ticks": tick,
         "inputs": inputs,

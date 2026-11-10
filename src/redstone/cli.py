@@ -173,12 +173,15 @@ def _spec_of_existing(analysis, title: str, wanted: str | None = None):
             idx = [spec.outputs.index(o.name) for o in chosen]
             spec = specmod.Spec(spec.inputs, [spec.outputs[i] for i in idx],
                                 {c: tuple(v[i] for i in idx) for c, v in spec.table.items()},
-                                spec.max_delay, spec.source, list(spec.notes))
+                                spec.max_delay, spec.source, list(spec.notes), spec.care)
             original = replace(original, outputs=[o.pos for o in chosen])
         if evaluate(original, spec).ok:
             return spec, original
     except ValueError:
         pass
+    partial = _partial_spec(analysis, title, original, chosen)
+    if partial is not None:
+        return partial
     ports = [p for p in analysis.inputs if p.kind in ("lever", "button")]
     if not ports or not analysis.outputs:
         raise ValueError("Die Schaltung hat keine Hebel/Knöpfe als Eingänge oder keine Ausgänge")
@@ -201,6 +204,39 @@ def _spec_of_existing(analysis, title: str, wanted: str | None = None):
                           + ", ".join(f"{o.name} ({analysis.grid.get(o.pos).id})" for o in skipped))
     cand = Candidate("Original", analysis.grid, [p.pos for p in ports], [o.pos for o in outputs],
                      "die analysierte Bestandsschaltung", origin="original")
+    return spec, cand
+
+
+def _partial_spec(analysis, title: str, original, chosen):
+    """For many levers (no full truth table): a partial table with the stored lever states and each lever
+    flipped on its own, measured on the original; every other combination does not matter. None if that does
+    not apply."""
+    from dataclasses import replace
+
+    from .design import spec as specmod
+    from .design.evaluate import evaluate, observe
+
+    levers = [p for p in analysis.inputs if p.kind == "lever"]
+    if analysis.truth_table or analysis.oscillates or len(levers) < 2 or len(levers) != len(analysis.inputs):
+        return None
+    outs = chosen if chosen is not None else list(analysis.outputs)
+    if not outs:
+        return None
+    cand = replace(original, outputs=[o.pos for o in outs])
+    n = len(levers)
+    rest = tuple(analysis.grid.get(p.pos).get_bool("powered") for p in levers)
+    combos = [rest] + [tuple(b != (j == i) for j, b in enumerate(rest)) for i in range(n)]
+    try:
+        table = observe(cand, combos)
+    except ValueError:
+        return None
+    delays = [d for r in analysis.responses for x in r.reactions for d in x.delays if d is not None]
+    spec = specmod.Spec([p.name for p in levers], [o.name for o in outs], table, max(delays) if delays else None,
+                        source=f"Analyse von {title}", care=frozenset(combos))
+    spec.notes.append(f"{n} Hebel: verlangt sind nur der gespeicherte Zustand der Hebel und jeder Hebel einzeln "
+                      "umgelegt; alle anderen Kombinationen sind egal.")
+    if not evaluate(cand, spec).ok:
+        return None
     return spec, cand
 
 

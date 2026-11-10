@@ -10,7 +10,6 @@ Delays are measured from the lever change to the last output change.
 
 from __future__ import annotations
 
-import itertools
 from dataclasses import dataclass, field
 
 from ..analysis.experiment import Circuit, Recording
@@ -136,10 +135,10 @@ def evaluate(candidate: Candidate, spec: Spec, constraints: Constraints | None =
     if rec.settled_at is None:
         ev.errors.append("kommt ohne Eingabe nicht zur Ruhe")
         return ev
-    if _outputs_at(rec, candidate, rec.ticks) != spec.table[zero]:
+    if zero in spec.table and _outputs_at(rec, candidate, rec.ticks) != spec.table[zero]:
         ev.errors.append(f"falscher Ruhezustand bei {_fmt(spec.inputs, zero)}")
 
-    for combo in itertools.product([False, True], repeat=len(spec.inputs)):
+    for combo in spec.combos():
         if stop_early and ev.errors:
             break
         actions = [(1, p, "use") for p, on, st in zip(candidate.inputs, combo, stored) if on != st]
@@ -179,12 +178,14 @@ def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: E
     the settled outputs after every change."""
     n = len(spec.inputs)
     stored = _stored(candidate)
-    for combo in itertools.product([False, True], repeat=n):
+    for combo in spec.combos():
         actions = [(1, p, "use") for p, on, st in zip(candidate.inputs, combo, stored) if on != st]
         phases = []  # (start tick, expected combination, label)
         t = 1
         for i in range(n):
             flipped = tuple(not b if j == i else b for j, b in enumerate(combo))
+            if flipped not in spec.table:
+                continue  # a combination that does not matter (partial spec)
             for want in (flipped, combo):
                 t += GAP
                 actions.append((t, candidate.inputs[i], "use"))
@@ -210,6 +211,21 @@ def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: E
         if rec.settled_at is None:
             ev.errors.append(f"Übergang ab {_fmt(spec.inputs, combo)}: kommt nicht zur Ruhe")
             return
+
+
+def observe(candidate: Candidate, combos: list[tuple[bool, ...]]) -> dict[tuple[bool, ...], tuple[bool, ...]]:
+    """Settled outputs of the candidate for each lever combination, each from a fresh world (like `evaluate`).
+    Raises ValueError if a combination does not come to rest."""
+    circuit = Circuit(candidate.grid)
+    stored = _stored(candidate)
+    out = {}
+    for combo in combos:
+        actions = [(1, p, "use") for p, on, st in zip(candidate.inputs, combo, stored) if on != st]
+        rec = circuit.run(actions, max_ticks=MAX_TICKS, quiet=QUIET, world=circuit.new_world())
+        if rec.settled_at is None:
+            raise ValueError(f"kommt bei {combo} nicht zur Ruhe")
+        out[combo] = _outputs_at(rec, candidate, rec.ticks)
+    return out
 
 
 def evaluate_any(candidate: Candidate, spec, constraints: Constraints | None = None, quick: bool = False) -> Evaluation:

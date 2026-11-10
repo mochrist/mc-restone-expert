@@ -47,6 +47,7 @@ from .spec import Spec
 Implicant = tuple[bool | None, ...]  # per input: True = literal x, False = literal not x, None = unused
 
 MAX_INPUTS = 6  # same limit as the full truth table of the analysis; 5-6 inputs give large PLAs (400-2500 blocks)
+MAX_PARTIAL_INPUTS = 16  # partial specs (most combinations "egal") have few, short terms
 MAX_ORDERS = 24  # output orders tried per term selection (all of them for up to 4 outputs)
 
 
@@ -98,6 +99,30 @@ def minimize(n: int, ones: list[tuple[bool, ...]]) -> list[Implicant]:
         best = max(sorted(primes, key=str), key=lambda p: (sum(_covers(p, m) for m in remaining), _size(p)))
         chosen.append(best)
         remaining -= {m for m in remaining if _covers(best, m)}
+    return chosen
+
+
+def minimize_partial(n: int, ones: list[tuple[bool, ...]], offs: list[tuple[bool, ...]]) -> list[Implicant]:
+    """Cover `ones` with terms that cover none of `offs`; every other combination does not matter.
+
+    Espresso-like expand instead of Quine-McCluskey (the don't-cares can be almost all 2^n combinations):
+    each still uncovered on-combination is grown by dropping literals, negative ones first (they need an
+    inverted rail), as long as no off-combination gets covered."""
+    chosen: list[Implicant] = []
+    for m in sorted(ones, key=lambda c: (-sum(c), c)):
+        if any(_covers(p, m) for p in chosen):
+            continue
+        imp = list(m)
+        for i in sorted(range(n), key=lambda i: (m[i], i)):
+            trial = imp[:i] + [None] + imp[i + 1:]
+            if not any(_covers(trial, o) for o in offs):
+                imp = trial
+        chosen.append(tuple(imp))
+    # drop terms the others make redundant
+    for p in list(chosen):
+        rest = [q for q in chosen if q != p]
+        if all(any(_covers(q, m) for q in rest) for m in ones if _covers(p, m)):
+            chosen = rest
     return chosen
 
 
@@ -580,14 +605,18 @@ def pla(spec: Spec, name: str = "pla", *, share: bool | None = None, drivable: b
     lever on an input block that also carries the inverter: the inputs can then be driven by other parts
     (`compose`), at the cost of longer rails."""
     n, m = len(spec.inputs), len(spec.outputs)
-    if n > MAX_INPUTS:
+    if n > (MAX_PARTIAL_INPUTS if spec.partial else MAX_INPUTS):
         return None
-    combos = list(itertools.product([False, True], repeat=n))
+    combos = spec.combos()
     ones = [[c for c in combos if spec.table[c][j]] for j in range(m)]
-    selections = [[minimize(n, o) for o in ones]]
-    multi = minimize_multi(n, ones)
-    if multi != selections[0]:
-        selections.append(multi)
+    if spec.partial:
+        selections = [[minimize_partial(n, o, [c for c in combos if not spec.table[c][j]])
+                       for j, o in enumerate(ones)]]
+    else:
+        selections = [[minimize(n, o) for o in ones]]
+        multi = minimize_multi(n, ones)
+        if multi != selections[0]:
+            selections.append(multi)
     best = None
     for terms in selections:
         for shared in ((True, False) if share is None else (share,)):
