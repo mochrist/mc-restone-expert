@@ -89,3 +89,40 @@ Bewertung ist der Engpass. Breitere Suche (mehr Zerlegungen, mehr Layouts je Paa
 großer Entwürfe) scheitert derzeit an Sekunden pro Kandidat. Umfang wie geplant: nur `sim/world.py` und
 die Block-Komponenten als PyO3-Modul hinter der schmalen Schnittstelle (`World.place_grid`, `tick`,
 `apply_input`, Snapshot), Python-Simulator bleibt Referenz, alle Golden Traces müssen bestehen.
+
+## Rust-Kern (2026-11-10, Session 7)
+
+`rust/rsx-core` (PyO3, Modul `rsx_core`) ersetzt `sim/world.py` und alle Block-Komponenten. Umschalten mit
+`RSX_SIM_CORE=python|rust|auto` (Standard `auto`: Rust, wenn installiert), `rsx --sim-core …` oder
+`pytest --sim-core …`. Der Python-Kern bleibt Referenz.
+
+Abnahme:
+- alle 92 Golden Traces und die ganze Testsuite auf beiden Kernen grün;
+- `tests/sim/test_core_equivalence.py` vergleicht beide Kerne **jeden Tick über die ganze Welt** (Blöcke,
+  Block-Entities in Dict-Reihenfolge, geplante Ticks, Block-Events, Zahl der Neighbor-Updates; am Ende Notizen
+  und Warnungen): alle Szenarien, alle Logik- und Sequenz-Vorlagen mit zufälligen Eingaben, die externen
+  Fixtures und 150 zufällige Block-Soups (6×3×6, Kolben, Trichter, Schienen, Türen …, zufällige Klicks und
+  `setblock`s). Dazu die statischen Fakten aller 35 723 Blockzustände der Blocktabelle.
+- Einzige gefundene Abweichung: ein leeres Lesepult hat in Python `page = -1` (Clamp in `load({})`); Rust
+  übernimmt das. Für das Signal ohne Buch ohne Folgen.
+
+Messwerte (`scripts/bench_sim.py --sim-core …`, gleicher Rechner):
+
+| Fall | Python | Rust | Faktor |
+|---|---|---|---|
+| repeater-ring, Ticks/s (angestoßen) | 4 361 | 655 630 | 150× |
+| torch-repeater-4, Ticks/s | 3 663 | 569 801 | 156× |
+| Neighbor-Updates/s | ~210 000 | ~32 Mio. | 150× |
+| `rsx`-Analyse mux3-8 | 2,99 s | 0,06 s | 50× |
+| `rsx`-Analyse seg7 | 8,03 s | 0,15 s | 54× |
+| Testsuite | 80 s | 25 s | 3× |
+| `rsx redesign examples/specs/composed/xor4.yaml` | 70 s | 8,7 s | 8× |
+
+Nach dem Wechsel lag der Engpass von `rsx redesign` nicht mehr im Simulator (0,5 s von 8,7 s), sondern im
+Router (`compose._near`: 27 Mengenabfragen pro BFS-Zelle, 22 Mio. Aufrufe). Ersetzt durch eine einmal
+berechnete Hülle (`_halo`), Ergebnis identisch: **xor4 jetzt 3,3 s mit Rust** (57 s mit Python).
+Verbleibend: BFS-Router in Python (~2 s, `Pos.__add__`), Simulator ~0,5 s. Die Grenze für breitere Suche ist
+damit wieder die Suche selbst, nicht die Bewertung.
+
+Hinweis: Session 5 maß für xor4 mit Python 26 s; heute 70 s (Pipeline seither erweitert, andere Last auf dem
+Rechner möglich). Die Faktoren oben stammen aus Läufen direkt nacheinander.
