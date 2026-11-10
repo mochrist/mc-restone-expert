@@ -20,7 +20,7 @@ from .spec import Spec
 
 MAX_SPLITS = 6  # decompositions tried per spec (smallest parts first)
 PARTS = 2  # best designs per part that are combined
-TRIES = 12  # layouts tried per split (over all combinations of part designs)
+TRIES = 12  # layouts tried per pair of part designs
 
 
 @dataclass(frozen=True)
@@ -135,8 +135,8 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None) -> list
     for sp in splits(spec):
         gs, hs = _best(sp.g, depth), _best(sp.h, depth) + _drivable_pla(sp.h)
         found = None
-        tries = 0
         for gc, hc in itertools.product(gs, hs):
+            tries = 0
             for _, cand in chains(gc, 0, hc, 0):
                 tries += 1
                 if tries > TRIES:
