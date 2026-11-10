@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-10, Session 5. Geschätzter Gesamtfortschritt: **ca. 84 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-10, Session 6 (Rust-Kern begonnen, siehe Übergabe unten). Geschätzter Gesamtfortschritt: **ca. 84 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
@@ -10,6 +10,57 @@ Stand: 2026-11-10, Session 5. Geschätzter Gesamtfortschritt: **ca. 84 %** (gewi
 | M3 Analyse + Erklärung | 20 % | ~80 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Sonderfall-Notizen |
 | M4 Redesign | 25 % | ~65 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA, Komposition mit Router (Logik vor Speicher, Zerlegung, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
+
+## Übergabe: Rust-Kern in Arbeit (Session 6, 2026-11-10, abgebrochen wegen Sitzungslimit)
+
+**Zuerst diesen Abschnitt lesen.** Auftrag: `sim/world.py` + `sim/blocks/*` als Rust-Erweiterung (PyO3/maturin),
+Schnittstelle 1:1, umschaltbar, Python bleibt Referenz. Abnahme: alle Golden Traces und die ganze Testsuite grün
+mit dem Rust-Kern, tick-genau. Danach messen (`scripts/bench_sim.py`, `rsx redesign examples/specs/composed/xor4.yaml`,
+Python gegen Rust) und in `docs/m4-search-and-performance.md` eintragen. `azazo1/redstone-rs` nur ansehen.
+
+Stand auf `master`:
+- `rust/rsx-core/` (Modul `rsx_core`): `common.rs`, `data.rs` (Blocktabelle, Heuristiken), `state.rs` (Zustände
+  interniert pro Welt, `Kind` je Block), `world.rs` (Port von `world.py`), `dispatch.rs` (Verteilung nach `Kind`),
+  `basic.rs`, `wire.rs`, `diode.rs`, `torch.rs` (fertig), `lib.rs` (Python-Bindung).
+- **Stubs:** `piston.rs`, `container.rs`, `outputs.rs`. Deshalb laufen erst 65 von 92 Golden Traces auf Rust.
+- `src/redstone/sim/core.py`: Umschalter (`RSX_SIM_CORE=python|rust|auto`, `core.use()`, `rsx --sim-core`).
+  `redstone.sim.World` ist eine Fassade. `sim/rust_world.py`: `RustWorld` mit Sichten für `blocks`,
+  `block_entities`, `dirty`, `block_events`, `registry`, `block()`.
+- Für beide Kerne neu: `World.is_idle()`, `World.neighbor_update_count`. `Circuit` nutzt beim Rust-Kern
+  `snapshot`/`probe_values`/`comparator_positions` (gleiche Reihenfolge wie der Python-Weg).
+- Python-Kern: 709 Tests grün nach dem ersten Commit; nach den Änderungen an `cli.py`/`tests/conftest.py` nicht
+  erneut gelaufen.
+
+Ungeprüfte Zwischenstände der abgebrochenen Agents (nur je eine Datei geändert, Basis `a0d4c05`):
+- Branch `wip/rust-piston` (`b49c0fa`): `piston.rs`, ca. 750 Zeilen.
+- Branch `wip/rust-outputs` (`0718be6`): `outputs.rs`, ca. 700 Zeilen.
+- Container/Hopper/Dispenser (`container.rs`): nichts erhalten, neu portieren.
+- Worktrees liegen noch unter `.claude/worktrees/` (löschen mit `git worktree remove`, wenn übernommen).
+
+Nächste Schritte:
+1. `git merge wip/rust-piston wip/rust-outputs` (getrennte Dateien), bauen, Golden Traces auf Rust laufen lassen,
+   Code gegen `blocks/piston.py` und `blocks/outputs.py` gegenlesen. Unklar, ob die Stände kompilieren.
+2. `container.rs` portieren (`blocks/container.py`, `blocks/dispenser_hopper.py`). `items` muss die
+   Einfügereihenfolge des Python-Dicts behalten (Float-Summe in `redstone_signal`).
+3. Ganze Suite auf Rust: `RSX_SIM_CORE=rust uv run pytest -q`. Zu erwarten sind Anpassungen an Tests, die
+   Python-Interna nutzen: `tests/sim/test_world.py` (eigene `Block`-Unterklassen in `REGISTRY`),
+   `test_wire.py` (`JavaHashSet`; `rsx_core.update_order`/`block_pos_hash` gibt es), `test_dispenser_hopper.py`
+   (`add_item`, `isinstance(..., HopperBlockEntity)`; `world._c.add_item` und `RustBlockEntity.kind` gibt es),
+   `test_outputs.py` (`_instrument`; `world._c.instrument` gibt es), `scripts/bench_sim.py` (patcht
+   `_execute_update`; stattdessen `neighbor_update_count`).
+4. `pytest --sim-core rust` geht nur mit Pfad (`pytest tests --sim-core rust`), weil die Option in
+   `tests/conftest.py` steht; nach `conftest.py` im Repo-Root verschieben.
+5. Sinnvoll: Differenztest beider Kerne über alle Szenarien und Vorlagen (`Recording` muss exakt gleich sein),
+   Abgleich `state_facts` gegen `blockdata` für alle Zustände der Tabelle.
+6. Messen, Designnotiz und diese Datei aktualisieren.
+
+Build: `uv sync` baut die Erweiterung (Gruppe `rust`, Standard). Nach Rust-Änderungen
+`uv pip install --reinstall-package rsx-core ./rust/rsx-core`, schneller Check mit
+`cd rust/rsx-core && PYO3_PYTHON=../../.venv/Scripts/python.exe cargo check`. In Git Bash vorher
+`export PATH="$HOME/.cargo/bin:$PATH"`. Ohne Rust: `uv sync --no-group rust` (dann Python-Kern).
+Toolchain auf diesem Rechner: rustup, `stable-x86_64-pc-windows-gnu` (keine MSVC-Build-Tools), Komponente
+`llvm-tools`; `~/.cargo/config.toml` setzt `-C dlltool=~/.cargo/tools/llvm-dlltool.exe` (Kopie von `llvm-ar`,
+geht bei einem Toolchain-Update nicht verloren).
 
 ### Session 5 (2026-11-10)
 
