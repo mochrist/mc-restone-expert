@@ -1,8 +1,11 @@
-//! Containers, dispenser, dropper, hopper (port of redstone/sim/blocks/container.py and
-//! dispenser_hopper.py).
+//! Containers, chests, dispenser, dropper, hopper (port of redstone/sim/blocks/container.py,
+//! chest.py and dispenser_hopper.py).
 //!
 //! `Container::items` is the Python dict `slot -> [item, count]`: `set_slot` replaces in place or
 //! appends, `del_slot` removes (insertion order is kept).
+//!
+//! The item transfer code works on `CRef`, a single block entity or a double chest (the Python
+//! `CompoundContainer`).
 
 use crate::common::*;
 use crate::state::*;
@@ -12,6 +15,20 @@ use crate::world::*;
 const CONTAINER_MAX_STACK: i32 = 99;
 const TRIGGER_DURATION: i64 = 4; // DispenserBlock.TRIGGER_DURATION
 const MOVE_ITEM_SPEED: i32 = 8; // HopperBlockEntity.MOVE_ITEM_SPEED
+
+/// A container as seen by the hoppers: one block entity, or a double chest (CompoundContainer) whose
+/// slots are those of `a` (the RIGHT half) followed by those of `b` (the LEFT half).
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub struct CRef {
+    pub a: BeId,
+    pub b: Option<BeId>,
+}
+
+impl CRef {
+    pub fn single(be: BeId) -> CRef {
+        CRef { a: be, b: None }
+    }
+}
 
 impl Container {
     fn find(&self, slot: usize) -> Option<usize> {
@@ -84,6 +101,162 @@ impl World {
         CONTAINER_MAX_STACK.min(self.item_max(item))
     }
 
+    // --- container references (single block entity or CompoundContainer) -----------------------
+    fn c_size(&self, r: CRef) -> usize {
+        self.cont(r.a).size + r.b.map_or(0, |b| self.cont(b).size)
+    }
+
+    /// The block entity and local slot of a (compound) slot number.
+    fn c_part(&self, r: CRef, slot: usize) -> (BeId, usize) {
+        let first = self.cont(r.a).size;
+        match r.b {
+            Some(b) if slot >= first => (b, slot - first),
+            _ => (r.a, slot),
+        }
+    }
+
+    fn c_get(&self, r: CRef, slot: usize) -> Option<(ItemId, i32)> {
+        let (be, local) = self.c_part(r, slot);
+        self.cont(be).get_slot(local)
+    }
+
+    fn c_set(&mut self, r: CRef, slot: usize, item: ItemId, count: i32) {
+        let (be, local) = self.c_part(r, slot);
+        self.cont_mut(be).set_slot(local, item, count);
+    }
+
+    fn c_shrink(&mut self, r: CRef, slot: usize, n: i32) {
+        let (be, local) = self.c_part(r, slot);
+        self.cont_mut(be).shrink(local, n);
+    }
+
+    fn c_is_empty(&self, r: CRef) -> bool {
+        self.cont(r.a).items.is_empty() && r.b.map_or(true, |b| self.cont(b).items.is_empty())
+    }
+
+    fn c_is_hopper(&self, r: CRef) -> bool {
+        r.b.is_none() && self.cont(r.a).is_hopper()
+    }
+
+    /// `set_changed` of the container (a CompoundContainer notifies both halves).
+    fn c_changed(&mut self, r: CRef) {
+        self.container_set_changed(r.a);
+        if let Some(b) = r.b {
+            self.container_set_changed(b);
+        }
+    }
+
+    /// BaseContainerBlockEntity#removeItem notifies only the half that lost the item.
+    fn c_changed_part(&mut self, r: CRef, slot: usize) {
+        let (be, _) = self.c_part(r, slot);
+        self.container_set_changed(be);
+    }
+
+    fn c_redstone_signal(&self, r: CRef) -> i32 {
+        let size = self.c_size(r);
+        if size == 0 {
+            return 0;
+        }
+        let mut fullness = 0.0f64;
+        for be in std::iter::once(r.a).chain(r.b) {
+            for s in &self.cont(be).items {
+                fullness += s.count as f64 / self.container_max(s.item) as f64;
+            }
+        }
+        fullness /= size as f64;
+        // Mth.lerpDiscrete(fullness, 0, 15) = floor(f * 14) + (f > 0 ? 1 : 0)
+        (fullness * 14.0).floor() as i32 + if fullness > 0.0 { 1 } else { 0 }
+    }
+
+    // --- chests ------------------------------------------------------------------------------
+    /// ChestBlock#isChestBlockedAt: a redstone conductor above (cats are not modeled).
+    fn chest_blocked_at(&self, pos: Pos) -> bool {
+        self.is_conductor(pos.above())
+    }
+
+    /// ChestBlock#getConnectedDirection
+    fn chest_connected_direction(&self, state: StateId) -> Dir {
+        let facing = self.info(state).facing_or(Dir::North);
+        if self.st.get(state, sym::TYPE) == Some(sym::LEFT) {
+            facing.clockwise()
+        } else {
+            facing.counter_clockwise()
+        }
+    }
+
+    /// ChestBlock#getContainer / DoubleBlockCombiner#combineWithNeigbour
+    fn chest_container(&mut self, pos: Pos, state: StateId, ignore_blocked: bool) -> Option<CRef> {
+        let be = self.get_block_entity(pos)?;
+        if !self.is_container_be(be) {
+            return None;
+        }
+        if !ignore_blocked && self.chest_blocked_at(pos) {
+            return None;
+        }
+        let typ = self.st.get(state, sym::TYPE).unwrap_or(sym::SINGLE);
+        if typ == sym::SINGLE {
+            return Some(CRef::single(be));
+        }
+        let neighbour_pos = pos.offset(self.chest_connected_direction(state));
+        let neighbour = self.get(neighbour_pos);
+        if self.info(neighbour).name == self.info(state).name {
+            let ntyp = self.st.get(neighbour, sym::TYPE).unwrap_or(sym::SINGLE);
+            if ntyp != sym::SINGLE
+                && ntyp != typ
+                && self.st.get(neighbour, sym::FACING) == self.st.get(state, sym::FACING)
+            {
+                if !ignore_blocked && self.chest_blocked_at(neighbour_pos) {
+                    return None;
+                }
+                if let Some(nbe) = self.get_block_entity(neighbour_pos) {
+                    if self.is_container_be(nbe) {
+                        let (first, second) = if typ == sym::RIGHT { (be, nbe) } else { (nbe, be) };
+                        return Some(CRef { a: first, b: Some(second) });
+                    }
+                }
+            }
+        }
+        Some(CRef::single(be))
+    }
+
+    /// ChestBlock#get_analog_output_signal
+    pub fn chest_analog_output(&mut self, pos: Pos, state: StateId) -> i32 {
+        match self.chest_container(pos, state, false) {
+            Some(r) => self.c_redstone_signal(r),
+            None => 0,
+        }
+    }
+
+    fn is_copper_chest(&self, name: BlockId) -> bool {
+        self.st.block_name(name).ends_with("copper_chest")
+    }
+
+    /// ChestBlock#updateShape (waterlogging ticks are not modeled)
+    pub fn chest_update_shape(&mut self, state: StateId, direction: Dir, neighbor_state: StateId) -> StateId {
+        let own_name = self.info(state).name;
+        let neighbor_name = self.info(neighbor_state).name;
+        let can_connect = if self.is_copper_chest(own_name) {
+            self.is_copper_chest(neighbor_name) && self.st.get(neighbor_state, sym::TYPE).is_some()
+        } else {
+            neighbor_name == own_name
+        };
+        if can_connect && direction.is_horizontal() {
+            let ntyp = self.st.get(neighbor_state, sym::TYPE).unwrap_or(sym::SINGLE);
+            let typ = self.st.get(state, sym::TYPE).unwrap_or(sym::SINGLE);
+            if typ == sym::SINGLE
+                && ntyp != sym::SINGLE
+                && self.st.get(state, sym::FACING) == self.st.get(neighbor_state, sym::FACING)
+                && self.chest_connected_direction(neighbor_state) == direction.opposite()
+            {
+                let new = if ntyp == sym::RIGHT { sym::LEFT } else { sym::RIGHT };
+                return self.st.with(state, sym::TYPE, new);
+            }
+        } else if self.chest_connected_direction(state) == direction {
+            return self.st.with(state, sym::TYPE, sym::SINGLE);
+        }
+        state
+    }
+
     /// BlockEntity#setChanged: comparators next to the container re-read it.
     fn container_set_changed(&mut self, be: BeId) {
         let pos = self.bes[be].pos;
@@ -95,18 +268,21 @@ impl World {
     }
 
     /// HopperBlockEntity#getContainerAt; container entities (minecarts) are not modeled.
-    fn get_container_at(&mut self, pos: Pos) -> Option<BeId> {
+    /// Chests: ChestBlock#getContainer with ignoreBeingBlocked = true.
+    fn get_container_at(&mut self, pos: Pos) -> Option<CRef> {
         let state = self.get(pos);
         let info = self.info(state);
         if !(self.has_block_entity(info.kind) || info.flags & SF_DATA_BLOCK_ENTITY != 0) {
             return None;
         }
         let be = self.get_block_entity(pos)?;
-        if self.is_container_be(be) {
-            Some(be)
-        } else {
-            None
+        if !self.is_container_be(be) {
+            return None;
         }
+        if matches!(info.kind, Kind::Chest | Kind::TrappedChest) {
+            return Some(self.chest_container(pos, state, true).unwrap_or(CRef::single(be)));
+        }
+        Some(CRef::single(be))
     }
 
     /// ContainerBlock#get_analog_output_signal: the redstone signal of the container at `pos`
@@ -120,23 +296,13 @@ impl World {
 
     /// ContainerBlockEntity#redstone_signal (AbstractContainerMenu#getRedstoneSignalFromContainer)
     pub fn container_redstone_signal(&self, be: BeId) -> i32 {
-        let c = self.cont(be);
-        if c.size == 0 {
-            return 0;
-        }
-        let mut fullness = 0.0f64;
-        for s in &c.items {
-            fullness += s.count as f64 / self.container_max(s.item) as f64;
-        }
-        fullness /= c.size as f64;
-        // Mth.lerpDiscrete(fullness, 0, 15) = floor(f * 14) + (f > 0 ? 1 : 0)
-        (fullness * 14.0).floor() as i32 + if fullness > 0.0 { 1 } else { 0 }
+        self.c_redstone_signal(CRef::single(be))
     }
 
     /// container.add_item (HopperBlockEntity#addItem). Returns the count that did not fit.
-    pub fn add_item(&mut self, source: Option<BeId>, container: BeId, item: ItemId, count: i32) -> i32 {
+    pub fn add_item(&mut self, source: Option<CRef>, container: CRef, item: ItemId, count: i32) -> i32 {
         let mut count = count;
-        let size = self.cont(container).size;
+        let size = self.c_size(container);
         for slot in 0..size {
             if count <= 0 {
                 break;
@@ -147,39 +313,39 @@ impl World {
     }
 
     /// HopperBlockEntity#tryMoveInItem
-    fn try_move_in_item(&mut self, source: Option<BeId>, container: BeId, item: ItemId, count: i32, slot: usize) -> i32 {
+    fn try_move_in_item(&mut self, source: Option<CRef>, container: CRef, item: ItemId, count: i32, slot: usize) -> i32 {
         let mut count = count;
-        let current = self.cont(container).get_slot(slot);
-        let was_empty = self.cont(container).items.is_empty();
+        let current = self.c_get(container, slot);
+        let was_empty = self.c_is_empty(container);
         let mut success = false;
         let item_max = self.item_max(item);
         match current {
             None => {
                 let n = count.min(self.container_max(item));
-                self.cont_mut(container).set_slot(slot, item, n);
+                self.c_set(container, slot, item, n);
                 count = 0;
                 success = true;
             }
             Some((cur_item, cur_count)) if cur_item == item && cur_count <= item_max => {
                 let moved = count.min(item_max - cur_count);
                 count -= moved;
-                self.cont_mut(container).set_slot(slot, cur_item, cur_count + moved);
+                self.c_set(container, slot, cur_item, cur_count + moved);
                 success = moved > 0;
             }
             _ => {}
         }
         if success {
             if was_empty {
-                self.hopper_on_item_received(container, source);
+                self.hopper_on_item_received(container.a, source);
             }
-            self.container_set_changed(container);
+            self.c_changed(container);
         }
         count
     }
 
     /// HopperBlockEntity#on_item_received: an empty hopper that receives an item waits (DDH-011).
-    fn hopper_on_item_received(&mut self, hopper: BeId, source: Option<BeId>) {
-        let source_ticked = source.and_then(|s| match &self.bes[s].data {
+    fn hopper_on_item_received(&mut self, hopper: BeId, source: Option<CRef>) {
+        let source_ticked = source.and_then(|s| match &self.bes[s.a].data {
             BeData::Container(Container { kind: ContainerKind::Hopper { ticked_game_time, .. }, .. }) => {
                 Some(*ticked_game_time)
             }
@@ -232,7 +398,7 @@ impl World {
             match self.get_container_at(pos.offset(direction)) {
                 None => count -= 1,
                 Some(into) => {
-                    if self.add_item(Some(be), into, item, 1) == 0 {
+                    if self.add_item(Some(CRef::single(be)), into, item, 1) == 0 {
                         count -= 1;
                     }
                 }
@@ -321,10 +487,9 @@ impl World {
     }
 
     /// HopperBlockEntity#isFullContainer
-    fn is_full_container(&self, be: BeId) -> bool {
-        let c = self.cont(be);
-        for slot in 0..c.size {
-            match c.get_slot(slot) {
+    fn is_full_container(&self, r: CRef) -> bool {
+        for slot in 0..self.c_size(r) {
+            match self.c_get(r, slot) {
                 None => return false,
                 Some((item, count)) if count < self.item_max(item) => return false,
                 _ => {}
@@ -344,8 +509,8 @@ impl World {
         for slot in 0..self.cont(be).size {
             let Some((item, _)) = self.cont(be).get_slot(slot) else { continue };
             self.cont_mut(be).shrink(slot, 1); // HopperBlockEntity#removeItem does not call setChanged
-            if self.add_item(Some(be), target, item, 1) == 0 {
-                self.container_set_changed(target);
+            if self.add_item(Some(CRef::single(be)), target, item, 1) == 0 {
+                self.c_changed(target);
                 return true;
             }
             // restore the original stack
@@ -362,24 +527,23 @@ impl World {
     fn hopper_suck_in_items(&mut self, be: BeId) -> bool {
         let pos = self.bes[be].pos;
         let Some(source) = self.get_container_at(pos.offset(Dir::Up)) else { return false };
-        let source_is_hopper = self.cont(source).is_hopper();
-        for slot in 0..self.cont(source).size {
-            let Some((item, _)) = self.cont(source).get_slot(slot) else { continue };
-            self.cont_mut(source).shrink(slot, 1);
+        let source_is_hopper = self.c_is_hopper(source);
+        for slot in 0..self.c_size(source) {
+            let Some((item, _)) = self.c_get(source, slot) else { continue };
+            self.c_shrink(source, slot, 1);
             if !source_is_hopper {
-                self.container_set_changed(source);
+                self.c_changed_part(source, slot);
             }
-            if self.add_item(Some(source), be, item, 1) == 0 {
-                self.container_set_changed(source);
+            if self.add_item(Some(source), CRef::single(be), item, 1) == 0 {
+                self.c_changed(source);
                 return true;
             }
-            let c = self.cont_mut(source);
-            match c.get_slot(slot) {
-                Some((i, n)) => c.set_slot(slot, i, n + 1),
+            match self.c_get(source, slot) {
+                Some((i, n)) => self.c_set(source, slot, i, n + 1),
                 None => {
-                    c.set_slot(slot, item, 1);
+                    self.c_set(source, slot, item, 1);
                     if !source_is_hopper {
-                        self.container_set_changed(source);
+                        self.c_changed(source);
                     }
                 }
             }

@@ -49,7 +49,7 @@ define_syms! {
     ASCENDING_NORTH => "ascending_north", ASCENDING_SOUTH => "ascending_south",
     SOUTH_EAST => "south_east", SOUTH_WEST => "south_west", NORTH_WEST => "north_west",
     NORTH_EAST => "north_east",
-    HARP => "harp",
+    HARP => "harp", LEFT => "left", RIGHT => "right", SINGLE => "single",
 }
 
 fn known_syms() -> &'static FxHashMap<&'static str, Sym> {
@@ -145,6 +145,8 @@ pub enum Kind {
     PistonHead,
     MovingPiston,
     Barrel,
+    Chest,
+    TrappedChest,
     Dispenser,
     Hopper,
     CopperBulb,
@@ -209,6 +211,10 @@ fn kind_of(name: &str) -> (Kind, u16, u16) {
         "moving_piston" => return (Kind::MovingPiston, 0, 0),
         "slime_block" | "honey_block" => return (Kind::Plain, 0, 0),
         "barrel" => return (Kind::Barrel, 27, 0),
+        "chest" | "copper_chest" | "exposed_copper_chest" | "weathered_copper_chest" | "oxidized_copper_chest"
+        | "waxed_copper_chest" | "waxed_exposed_copper_chest" | "waxed_weathered_copper_chest"
+        | "waxed_oxidized_copper_chest" => return (Kind::Chest, 27, 0),
+        "trapped_chest" => return (Kind::TrappedChest, 27, 0),
         "dispenser" => return (Kind::Dispenser, 9, 0),
         "dropper" => return (Kind::Dispenser, 9, 1),
         "hopper" => return (Kind::Hopper, 5, 0),

@@ -1,0 +1,330 @@
+{
+  "format": 1,
+  "scenario": "chest-container",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 60,
+  "probes": {
+    "single_cmp": [
+      2,
+      1,
+      0
+    ],
+    "single_wire": [
+      0,
+      1,
+      0
+    ],
+    "trapped_cmp": [
+      2,
+      1,
+      2
+    ],
+    "trapped_wire": [
+      0,
+      1,
+      2
+    ],
+    "double_cmp_left": [
+      0,
+      1,
+      4
+    ],
+    "double_cmp_right": [
+      3,
+      1,
+      4
+    ],
+    "blocked_cmp_left": [
+      0,
+      1,
+      6
+    ],
+    "blocked_cmp_right": [
+      3,
+      1,
+      6
+    ],
+    "hopper_single_cmp": [
+      3,
+      1,
+      8
+    ],
+    "hopper_double_cmp": [
+      3,
+      1,
+      10
+    ],
+    "pull_chest_cmp": [
+      2,
+      2,
+      12
+    ],
+    "pull_barrel_cmp": [
+      3,
+      1,
+      12
+    ],
+    "pair_cmp": [
+      0,
+      1,
+      14
+    ],
+    "pair_chest": [
+      1,
+      1,
+      14
+    ],
+    "copper_cmp": [
+      2,
+      1,
+      16
+    ],
+    "pull_blocked_barrel_cmp": [
+      3,
+      1,
+      18
+    ],
+    "pull_blocked_chest_cmp": [
+      0,
+      2,
+      18
+    ]
+  },
+  "samples": {
+    "single_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=6"
+      ]
+    ],
+    "single_wire": [
+      [
+        0,
+        "minecraft:air"
+      ],
+      [
+        1,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ]
+    ],
+    "trapped_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=6"
+      ]
+    ],
+    "trapped_wire": [
+      [
+        0,
+        "minecraft:air"
+      ],
+      [
+        1,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ],
+      [
+        3,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ]
+    ],
+    "double_cmp_left": [
+      [
+        0,
+        "minecraft:comparator[facing=east,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=east,mode=subtract,powered=true]|output=8"
+      ]
+    ],
+    "double_cmp_right": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=8"
+      ]
+    ],
+    "blocked_cmp_left": [
+      [
+        0,
+        "minecraft:comparator[facing=east,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=east,mode=subtract,powered=false]|output=0"
+      ],
+      [
+        14,
+        "minecraft:comparator[facing=east,mode=compare,powered=true]|output=8"
+      ]
+    ],
+    "blocked_cmp_right": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+      ],
+      [
+        14,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=8"
+      ]
+    ],
+    "hopper_single_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+      ],
+      [
+        44,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=3"
+      ]
+    ],
+    "hopper_double_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=11"
+      ],
+      [
+        19,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=12"
+      ]
+    ],
+    "pull_chest_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=7"
+      ],
+      [
+        27,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=6"
+      ],
+      [
+        59,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=5"
+      ]
+    ],
+    "pull_barrel_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+      ],
+      [
+        11,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=1"
+      ],
+      [
+        19,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=2"
+      ],
+      [
+        35,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=3"
+      ],
+      [
+        51,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=4"
+      ]
+    ],
+    "pair_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=east,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=east,mode=subtract,powered=true]|output=15"
+      ],
+      [
+        8,
+        "minecraft:comparator[facing=east,mode=compare,powered=true]|output=8"
+      ],
+      [
+        24,
+        "minecraft:comparator[facing=east,mode=subtract,powered=true]|output=15"
+      ]
+    ],
+    "pair_chest": [
+      [
+        0,
+        "minecraft:chest[facing=north,type=single,waterlogged=false]"
+      ],
+      [
+        5,
+        "minecraft:chest[facing=north,type=left,waterlogged=false]"
+      ],
+      [
+        20,
+        "minecraft:chest[facing=north,type=single,waterlogged=false]"
+      ]
+    ],
+    "copper_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=6"
+      ]
+    ],
+    "pull_blocked_barrel_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+      ],
+      [
+        11,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=1"
+      ],
+      [
+        19,
+        "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=2"
+      ]
+    ],
+    "pull_blocked_chest_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=east,mode=compare,powered=false]|output=0"
+      ],
+      [
+        2,
+        "minecraft:comparator[facing=east,mode=subtract,powered=false]|output=0"
+      ]
+    ]
+  }
+}

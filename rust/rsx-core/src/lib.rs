@@ -633,7 +633,7 @@ impl World {
         self.be(container)?;
         let name = if item.contains(':') { item.to_owned() } else { format!("minecraft:{item}") };
         let item = self.w.item_id(&name);
-        Ok(self.w.add_item(source, container, item, count))
+        Ok(self.w.add_item(source.map(container::CRef::single), container::CRef::single(container), item, count))
     }
 
     // ------------------------------------------------------------------ notes
