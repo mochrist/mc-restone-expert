@@ -77,3 +77,17 @@ def test_composed_scenario_and_golden_up_to_date(path):
     assert stored == yaml.safe_load(yaml.safe_dump(gen.scenario_for(path), allow_unicode=True))
     golden = ROOT / "tests" / "golden" / f"cmp-{path.stem}.trace.json"
     assert gen.check_trace(path, Trace.load(golden)) == []  # the real game shows the behaviour
+
+
+def test_gate_is_guessed_from_recorded_behaviour():
+    from redstone.analysis.analyze import analyze
+    from redstone.cli import _spec_of_existing
+    from redstone.design.search import gate_guesses
+    from redstone.verify import load_scenario
+
+    grid = load_scenario(ROOT / "scenarios" / "cmp-t-flip-flop-and.yaml").grid
+    spec, original = _spec_of_existing(analyze(grid), "cmp")
+    assert len(spec.outputs) == 1  # only the lamp; bulb and torch are internal
+    guesses = gate_guesses(spec)
+    assert [g.gate for g, _ in guesses] == ["in1 and in2"]
+    assert guesses[0][1][0].candidate.name.startswith("t-flip-flop")

@@ -166,9 +166,15 @@ def _spec_of_existing(analysis, title: str):
         raise ValueError("Verhaltens-Spezifikationen werden bisher nur für bis zu 3 Eingänge aufgezeichnet")
     from .analysis.experiment import Circuit
 
-    spec = bh.from_recordings([p.name for p in ports], [p.kind for p in ports], [o.name for o in analysis.outputs],
-                              Circuit(analysis.grid), [o.pos for o in analysis.outputs], [p.pos for p in ports], title)
-    cand = Candidate("Original", analysis.grid, [p.pos for p in ports], [o.pos for o in analysis.outputs],
+    # lamps are what the builder looks at; bulbs, torches etc. next to them are usually internal
+    outputs = [o for o in analysis.outputs if analysis.grid.get(o.pos).id == "redstone_lamp"] or analysis.outputs
+    spec = bh.from_recordings([p.name for p in ports], [p.kind for p in ports], [o.name for o in outputs],
+                              Circuit(analysis.grid), [o.pos for o in outputs], [p.pos for p in ports], title)
+    skipped = [o for o in analysis.outputs if o not in outputs]
+    if skipped:
+        spec.notes.append("Nur die Lampen gelten als Ausgänge; nicht verlangt: "
+                          + ", ".join(f"{o.name} ({analysis.grid.get(o.pos).id})" for o in skipped))
+    cand = Candidate("Original", analysis.grid, [p.pos for p in ports], [o.pos for o in outputs],
                      "die analysierte Bestandsschaltung", origin="original")
     return spec, cand
 

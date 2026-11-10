@@ -13,6 +13,7 @@ from dataclasses import replace
 from ..analysis.analyze import Analysis
 from .candidate import Candidate
 from .evaluate import Constraints, Evaluation, evaluate_any
+from .report import COMPOSE_PREFIX
 from .spec import Spec, from_functions
 
 MAX_PERMUTED_INPUTS = 4
@@ -102,14 +103,84 @@ COMPOSE_BLOCKS = 4  # best building blocks tried behind the logic
 COMPOSE_TRIES = 16  # layouts tried per pair before giving up
 
 
-def compose_candidates(spec, constraints: Constraints | None = None, log: list[str] | None = None) -> list[Candidate]:
+GUESS_INPUTS = 3  # gate functions are guessed for recorded specs with up to this many levers
+
+
+def _gate_expression(names: list[str], ones: list[tuple[bool, ...]]) -> str:
+    from .synth import minimize
+
+    terms = []
+    for imp in minimize(len(names), ones):
+        lits = [n if v else f"not {n}" for n, v in zip(names, imp) if v is not None]
+        terms.append(" and ".join(lits) if lits else "True")
+    return " or ".join(f"({t})" if " and " in t and len(terms) > 1 else t for t in terms)
+
+
+def _derived_inner(spec, gate: str):
+    """The recorded trials as seen behind an ideal (zero-delay) gate: one lever 'in' that toggles whenever
+    the gate value changes. Trials in which the gate never changes expect the block to stay idle."""
+    from .behaviour import GATE_SLACK, BehaviourSpec, Trial
+    from .spec import evaluate_expression
+
+    trials = []
+    for t in spec.trials:
+        state = dict.fromkeys(spec.inputs, False)
+        value, actions = False, []
+        for tick, group in itertools.groupby(sorted(t.actions), key=lambda a: a[0]):
+            for _, i in group:  # levers switched in the same tick change the gate together
+                state[spec.inputs[i]] = not state[spec.inputs[i]]
+            now = evaluate_expression(gate, state)
+            if now != value:
+                actions.append((tick, 0))
+                value = now
+        trials.append(Trial(t.name, actions, t.expected, t.length, t.periodic))
+    return BehaviourSpec(["in"], ["lever"], list(spec.outputs), trials, f"Baustein hinter {gate}",
+                         spec.delay_tolerance + GATE_SLACK, spec.length_tolerance + 2)
+
+
+def gate_guesses(spec, log: list[str] | None = None) -> list:
+    """For a recorded behaviour spec with several levers and one output: every gate function g (off when all
+    levers are off, depending on all levers) for which some timing/memory block, driven by g without delay,
+    reproduces the recording. Returns gated specs (gate, inner = the derived one-lever spec) with the blocks
+    that passed, as (spec, [Evaluation]). This is the cheap first stage; `compose_candidates` builds and
+    checks the real layouts."""
+    from dataclasses import replace as dc_replace
+
+    n = len(spec.inputs)
+    if (spec.gate is not None or not 2 <= n <= GUESS_INPUTS or len(spec.outputs) != 1
+            or any(k != "lever" for k in spec.input_kinds) or any(t.periodic for t in spec.trials)):
+        return []
+    combos = list(itertools.product([False, True], repeat=n))[1:]
+    blocks_all = None
+    out = []
+    for bits in itertools.product([False, True], repeat=len(combos)):
+        ones = [c for c, b in zip(combos, bits) if b]
+        if not ones:
+            continue
+        table = {c: (c in ones) for c in combos} | {(False,) * n: False}
+        if any(all(table[c] == table[c[:i] + (not c[i],) + c[i + 1:]] for c in table) for i in range(n)):
+            continue  # ignores a lever
+        gate = _gate_expression(list(spec.inputs), ones)
+        inner = _derived_inner(spec, gate)
+        if blocks_all is None:
+            blocks_all = seq_candidates(inner)
+        passed = [e for e in (evaluate_any(c, inner) for c in blocks_all) if e.correct]
+        if passed:
+            passed.sort(key=Evaluation.rank_key)
+            out.append((dc_replace(spec, gate=gate, inner=inner), passed))
+            if log is not None:
+                log.append(f"{COMPOSE_PREFIX}Vermutung {gate}: passt zu " + ", ".join(e.candidate.name for e in passed[:3]))
+    return out
+
+
+def compose_candidates(spec, constraints: Constraints | None = None, log: list[str] | None = None,
+                       blocks: list | None = None) -> list[Candidate]:
     """Candidates for a gated behaviour spec (`behaviour.gated`): a logic template or PLA for the gate in
     front of a timing/memory template for the inner spec, joined by `compose.chains`.
 
     Both parts are checked on their own first, so only working parts are combined; per pair the first
     layout that meets the whole spec is kept."""
     from .compose import chains
-    from .report import COMPOSE_PREFIX
     from .synth import pla
 
     gate_spec = from_functions(list(spec.inputs), {"y": spec.gate})
@@ -119,8 +190,9 @@ def compose_candidates(spec, constraints: Constraints | None = None, log: list[s
         logic.append(synthesized)
     good_logic = [e for e in (evaluate_any(c, gate_spec) for c in logic) if e.correct]
     good_logic.sort(key=Evaluation.rank_key)
-    blocks = [e for e in (evaluate_any(c, spec.inner) for c in seq_candidates(spec.inner)) if e.correct]
-    blocks.sort(key=Evaluation.rank_key)
+    if blocks is None:
+        blocks = [e for e in (evaluate_any(c, spec.inner) for c in seq_candidates(spec.inner)) if e.correct]
+        blocks.sort(key=Evaluation.rank_key)
     out = []
     for le in good_logic[:COMPOSE_LOGIC]:
         for be in blocks[:COMPOSE_BLOCKS]:
@@ -167,6 +239,8 @@ def redesign(spec: Spec, constraints: Constraints | None = None,
             generated = compose_candidates(spec, constraints, log)
         else:
             generated = seq_candidates(spec, templates)
+            for gated_spec, blocks in gate_guesses(spec, log):
+                generated += compose_candidates(gated_spec, constraints, log, blocks)
     else:
         synthesized = pla(spec) if synthesize else None
         generated = template_candidates(spec, templates)
