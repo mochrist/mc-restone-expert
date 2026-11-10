@@ -1,0 +1,116 @@
+name: seq-pulse-extender-comparator-fade
+description: 'Vorlage pulse-extender-comparator-fade (length=26, delay=8) aus src/redstone/design/seq_templates.py: Lever
+  -> kurzer Puls (Komparator-Subtraktion) -> Ring aus Komparatoren im Vergleichsmodus mit Staub in den Ecken. Der Staub kostet
+  je Halbrunde 1 Signalstärke, der Puls kreist also und schwindet (Fade-out), bis er weg ist; die Dauer bestimmt die Startstärke
+  (Staublänge vor dem Ring) und die Ringgröße. Ein Komparator am Ende liest den Ring. Der Hebel erreicht die Lampe zusätzlich
+  über zwei Verstärker genau so spät wie der Ring, längere Pulse kommen also unverändert durch. Mindestlänge 10 bis 26 gt,
+  ohne Kupferbirne. Testabläufe nacheinander: Hebel 1 gt an ab Tick 0; Hebel 2 gt an ab Tick 86; Hebel 3 gt an ab Tick 172;
+  Hebel 5 gt an ab Tick 258; Hebel 10 gt an ab Tick 344; Hebel 20 gt an ab Tick 430; Hebel 40 gt an ab Tick 516.'
+build:
+  size: [10, 2, 5]
+  blocks:
+  - [0, 0, 2, stone]
+  - [0, 1, 2, 'lever[face=floor,facing=east,powered=false]']
+  - [1, 0, 2, stone]
+  - [1, 1, 2, 'repeater[delay=2,facing=west,locked=false,powered=false]']
+  - [2, 0, 2, stone]
+  - [2, 0, 3, stone]
+  - [2, 0, 4, stone]
+  - [2, 1, 2, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
+  - [2, 1, 3, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [2, 1, 4, 'redstone_wire[east=side,north=side,power=0,south=none,west=none]']
+  - [3, 0, 2, stone]
+  - [3, 0, 3, stone]
+  - [3, 0, 4, stone]
+  - [3, 1, 2, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [3, 1, 3, 'repeater[delay=2,facing=south,locked=false,powered=false]']
+  - [3, 1, 4, 'redstone_wire[east=side,north=side,power=0,south=none,west=side]']
+  - [4, 0, 1, stone]
+  - [4, 0, 2, stone]
+  - [4, 0, 4, stone]
+  - [4, 1, 1, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [4, 1, 2, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  - [4, 1, 4, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [5, 0, 0, stone]
+  - [5, 0, 1, stone]
+  - [5, 0, 4, stone]
+  - [5, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [5, 1, 1, 'redstone_wire[east=side,north=side,power=0,south=none,west=side]']
+  - [5, 1, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [6, 0, 0, stone]
+  - [6, 0, 1, stone]
+  - [6, 0, 4, stone]
+  - [6, 1, 0, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [6, 1, 1, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [6, 1, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [7, 0, 0, stone]
+  - [7, 0, 1, stone]
+  - [7, 0, 4, stone]
+  - [7, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
+  - [7, 1, 1, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  - [7, 1, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [8, 0, 0, stone]
+  - [8, 0, 4, stone]
+  - [8, 1, 0, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [8, 1, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [9, 0, 1, stone]
+  - [9, 0, 2, stone]
+  - [9, 0, 3, stone]
+  - [9, 0, 4, stone]
+  - [9, 1, 0, 'redstone_lamp[lit=false]']
+  - [9, 1, 1, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [9, 1, 2, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [9, 1, 3, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [9, 1, 4, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  block_entities:
+  - [3, 1, 2, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [6, 1, 0, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [6, 1, 1, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [8, 1, 0, '{id: "minecraft:comparator", OutputSignal: 0}']
+ticks: 616
+inputs:
+- tick: 2
+  pos: [0, 1, 2]
+  action: use
+- tick: 3
+  pos: [0, 1, 2]
+  action: use
+- tick: 88
+  pos: [0, 1, 2]
+  action: use
+- tick: 90
+  pos: [0, 1, 2]
+  action: use
+- tick: 174
+  pos: [0, 1, 2]
+  action: use
+- tick: 177
+  pos: [0, 1, 2]
+  action: use
+- tick: 260
+  pos: [0, 1, 2]
+  action: use
+- tick: 265
+  pos: [0, 1, 2]
+  action: use
+- tick: 346
+  pos: [0, 1, 2]
+  action: use
+- tick: 356
+  pos: [0, 1, 2]
+  action: use
+- tick: 432
+  pos: [0, 1, 2]
+  action: use
+- tick: 452
+  pos: [0, 1, 2]
+  action: use
+- tick: 518
+  pos: [0, 1, 2]
+  action: use
+- tick: 558
+  pos: [0, 1, 2]
+  action: use
+probes:
+  in: [0, 1, 2]
+  out: [9, 1, 0]

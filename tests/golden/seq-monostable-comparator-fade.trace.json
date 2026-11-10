@@ -1,0 +1,145 @@
+{
+  "format": 1,
+  "scenario": "seq-monostable-comparator-fade",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 620,
+  "probes": {
+    "in": [
+      0,
+      1,
+      2
+    ],
+    "out": [
+      14,
+      1,
+      0
+    ]
+  },
+  "samples": {
+    "in": [
+      [
+        0,
+        "minecraft:lever[face=floor,facing=east,powered=false]"
+      ],
+      [
+        2,
+        "minecraft:lever[face=floor,facing=east,powered=true]"
+      ],
+      [
+        3,
+        "minecraft:lever[face=floor,facing=east,powered=false]"
+      ],
+      [
+        90,
+        "minecraft:lever[face=floor,facing=east,powered=true]"
+      ],
+      [
+        92,
+        "minecraft:lever[face=floor,facing=east,powered=false]"
+      ],
+      [
+        178,
+        "minecraft:lever[face=floor,facing=east,powered=true]"
+      ],
+      [
+        181,
+        "minecraft:lever[face=floor,facing=east,powered=false]"
+      ],
+      [
+        266,
+        "minecraft:lever[face=floor,facing=east,powered=true]"
+      ],
+      [
+        271,
+        "minecraft:lever[face=floor,facing=east,powered=false]"
+      ],
+      [
+        354,
+        "minecraft:lever[face=floor,facing=east,powered=true]"
+      ],
+      [
+        364,
+        "minecraft:lever[face=floor,facing=east,powered=false]"
+      ],
+      [
+        442,
+        "minecraft:lever[face=floor,facing=east,powered=true]"
+      ],
+      [
+        462,
+        "minecraft:lever[face=floor,facing=east,powered=false]"
+      ],
+      [
+        530,
+        "minecraft:lever[face=floor,facing=east,powered=true]"
+      ],
+      [
+        570,
+        "minecraft:lever[face=floor,facing=east,powered=false]"
+      ]
+    ],
+    "out": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        14,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        42,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        102,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        130,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        190,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        218,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        278,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        306,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        366,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        394,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        454,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        482,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        542,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        570,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ]
+  }
+}
