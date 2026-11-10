@@ -173,7 +173,7 @@ def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layou
 
 
 def _assemble(src: Candidate, out_index: int, dst: Candidate, in_index: int, shift: Pos, merged: dict,
-              how: str) -> Candidate:
+              how: str, settle: bool = True) -> Candidate:
     """Grid of all `merged` blocks (src coordinates; dst moved by `shift`) with the block entities and ports
     of both parts, normalised."""
     q, p_dst = src.outputs[out_index], dst.inputs[in_index]
@@ -192,10 +192,11 @@ def _assemble(src: Candidate, out_index: int, dst: Candidate, in_index: int, shi
     outputs = [x + shift - lo for x in dst.outputs] + [x - lo for k, x in enumerate(src.outputs) if k != out_index]
     from .compact import normalize
 
-    return normalize(Candidate(
+    c = Candidate(
         name=f"{src.name} → {dst.name}", grid=grid, inputs=inputs, outputs=outputs,
         description=f"{src.description} Dahinter: {dst.description} ({how})",
-        origin=f"komponiert: {src.origin} → {dst.origin}", tags=set(src.tags) | set(dst.tags)))
+        origin=f"komponiert: {src.origin} → {dst.origin}", tags=set(src.tags) | set(dst.tags))
+    return normalize(c) if settle else c
 
 
 # ---------------------------------------------------------------------- routed connections
@@ -281,7 +282,7 @@ def _line_blocks(path: list[Pos]) -> dict[Pos, str] | None:
 
 
 def routed(src: Candidate, out_index: int, dst: Candidate, in_index: int, side: Direction, output_mode: str,
-           input_mode: str) -> Candidate | None:
+           input_mode: str, settle: bool = True) -> Candidate | None:
     """dst is placed beside src (on `side`, SPACING blocks of air between the boxes, same floor height) and
     the output is routed through the free space to the input. None if no route exists.
 
@@ -337,7 +338,107 @@ def routed(src: Candidate, out_index: int, dst: Candidate, in_index: int, side: 
         m[p + DOWN] = STONE
     how = (f"Leitung über {len(path)} Blöcke geführt, Lampe → {'Staub' if output_mode == 'dust' else 'Verstärker'}, "
            f"Eingang als {input_mode}")
-    return _assemble(src, out_index, dst, in_index, shift, m, how)
+    return _assemble(src, out_index, dst, in_index, shift, m, how, settle)
+
+
+def place_beside(c1: Candidate, c2: Candidate, side: Direction) -> tuple[Candidate, Pos]:
+    """Both candidates in one grid, c2 on `side` of c1 with SPACING blocks of air between the boxes, floors
+    level; nothing is connected. Inputs and outputs: those of c1, then those of c2. Also returns the shift
+    of c2 (in the coordinates of the result)."""
+    alo, ahi = Pos(0, 0, 0), Pos(*(s - 1 for s in c1.grid.size))
+    sx, _, sz = c2.grid.size
+    v = side.vec
+    shift = Pos(0 if v[0] == 0 else (ahi.x + SPACING + 1 if v[0] > 0 else alo.x - SPACING - sx), 0,
+                0 if v[2] == 0 else (ahi.z + SPACING + 1 if v[2] > 0 else alo.z - SPACING - sz))
+    m = dict(c1.grid.items()) | {x + shift: s for x, s in c2.grid.items()}
+    lo = Pos(min(0, shift.x), 0, min(0, shift.z))
+    hi = Pos(max(c1.grid.size[0], shift.x + sx) - 1, max(c1.grid.size[1], c2.grid.size[1]) - 1,
+             max(c1.grid.size[2], shift.z + sz) - 1)
+    grid = Grid(tuple(h - l + 1 for h, l in zip(hi, lo)))
+    for x, s in m.items():
+        grid.set(x - lo, s)
+    for x, be in c1.grid.block_entities.items():
+        grid.block_entities[x - lo] = be
+    for x, be in c2.grid.block_entities.items():
+        grid.block_entities[x + shift - lo] = be
+    return Candidate(
+        name=f"{c1.name} + {c2.name}", grid=grid,
+        inputs=[x - lo for x in c1.inputs] + [x + shift - lo for x in c2.inputs],
+        outputs=[x - lo for x in c1.outputs] + [x + shift - lo for x in c2.outputs],
+        description=f"{c1.description} Daneben: {c2.description}", origin=f"{c1.origin} + {c2.origin}",
+        tags=set(c1.tags) | set(c2.tags)), shift - lo
+
+
+def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
+         input_mode: str = "dust") -> Candidate | None:
+    """Route a signal inside one candidate from `source` to the input lever at `target`.
+
+    source is an output lamp (it is replaced: output_mode "repeater" or "dust", the output disappears) or an
+    input lever (it stays; dust next to it is tapped, so one lever drives two parts). The target lever is
+    replaced by dust or a repeater (`input_mode`) and is no longer an input. None if there is no route."""
+    a = dict(c.grid.items())
+    src_state, tgt_state = a.get(source), a.get(target)
+    if src_state is None or tgt_state is None or tgt_state.id != "lever" or source == target:
+        return None
+    lamp = src_state.id == "redstone_lamp"
+    if not lamp and src_state.id != "lever":
+        return None
+    if lamp and source + DOWN in a and a[source + DOWN].id not in SUPPORTS:
+        return None
+    goals = {target - Pos(*d.vec) for d in HORIZONTAL}
+    goals = {g for g in goals if g not in a and (g + DOWN not in a or a[g + DOWN].id in SUPPORTS)}
+    solid = set(a) - ({source} if lamp else set())
+    keep = {x for x in a if x not in (source, source + DOWN, target, target + DOWN)}
+    lo, hi = Pos(0, 0, 0) - Pos(MARGIN, 1, MARGIN), Pos(*c.grid.size) + Pos(MARGIN - 1, MARGIN, MARGIN - 1)
+    if lamp and output_mode == "dust":
+        starts = [(source, None)]
+    else:  # a repeater on the lamp (reading from the side opposite to d), or a tap next to the lever
+        starts = [(source + Pos(*d.vec), d) for d in HORIZONTAL]
+    best = None
+    for st, d_out in starts:
+        if st != source and (st in a or (st + DOWN in a and a[st + DOWN].id not in SUPPORTS)):
+            continue
+        path = _route(st, goals, solid | ({source} if st != source else set()), keep, lo, hi)
+        if path is not None and (best is None or len(path) < len(best[0])):
+            best = (path, d_out)
+    if best is None:
+        return None
+    path, d_out = best
+    line = _line_blocks(path)
+    if line is None:
+        return None
+    m: dict[Pos, object] = dict(a)
+    if lamp:
+        if d_out is not None:
+            m[source] = _repeater(d_out.opposite)
+        if source + DOWN not in m:
+            m[source + DOWN] = STONE
+    for x, blk in line.items():
+        if x != source:
+            m[x] = blk
+        if x + DOWN not in m:
+            m[x + DOWN] = STONE
+    d_in = _direction(path[-1], target)
+    m[target] = _repeater(d_in.opposite) if input_mode == "repeater" else WIRE
+    if target + DOWN not in m:
+        m[target + DOWN] = STONE
+    lo = Pos(*(min(x[i] for x in m) for i in range(3)))
+    hi = Pos(*(max(x[i] for x in m) for i in range(3)))
+    grid = Grid(tuple(h - l + 1 for h, l in zip(hi, lo)))
+    for x, s in m.items():
+        grid.set(x - lo, s)
+    for x, be in c.grid.block_entities.items():
+        if x not in (source, target):
+            grid.block_entities[x - lo] = be
+    from dataclasses import replace
+
+    from .compact import normalize
+
+    how = "abgegriffen" if not lamp else ("Lampe → Staub" if output_mode == "dust" else "Lampe → Verstärker")
+    return normalize(replace(
+        c, grid=grid, inputs=[x - lo for x in c.inputs if x != target],
+        outputs=[x - lo for x in c.outputs if not (lamp and x == source)],
+        description=f"{c.description} (Leitung über {len(path)} Blöcke, {how})"))
 
 
 MAX_GAP = 8
@@ -363,9 +464,11 @@ def chains(src: Candidate, out_index: int, dst: Candidate, in_index: int, max_ga
         for side in HORIZONTAL:
             for out_mode in ("repeater", "dust"):
                 for in_mode in ("dust", "repeater"):
-                    c = routed(src, out_index, t, in_index, side, out_mode, in_mode)
+                    c = routed(src, out_index, t, in_index, side, out_mode, in_mode, settle=False)
                     if c is not None:
                         found.append(((c.volume, c.block_count), (k, side.label, out_mode, in_mode), c))
     found.sort(key=lambda f: f[:2])
-    for _, how, c in found:
-        yield how, c
+    from .compact import normalize
+
+    for _, how, c in found:  # settled only when the caller gets that far
+        yield how, normalize(c)

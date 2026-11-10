@@ -127,7 +127,7 @@ def table_design(path: Path):
     from redstone.design.spec import load
 
     best = redesign(load(path))[0]
-    if not best.ok or not best.candidate.origin.startswith("zerlegt"):
+    if not best.ok or not best.candidate.origin.startswith(("zerlegt", "nebeneinander")):
         raise RuntimeError(f"{path.name}: no working decomposition")
     return best.candidate
 

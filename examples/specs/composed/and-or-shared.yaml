@@ -1,0 +1,5 @@
+# Zwei Ausgänge, die sich Hebel b teilen: y = a UND b, z = b ODER c (Bausteine nebeneinander, b abgegriffen)
+inputs: [a, b, c]
+function:
+  y: a and b
+  z: b or c

@@ -247,7 +247,9 @@ def redesign(spec: Spec, constraints: Constraints | None = None,
         if synthesize:
             from .decompose import decomposed
 
-            generated += decomposed(spec, log=log)
+            from .decompose import parallel
+
+            generated += decomposed(spec, log=log) + parallel(spec, log=log)
     to_compact = ([synthesized] if synthesized is not None else []) + list(extra or [])
     candidates = generated + to_compact
     results = []

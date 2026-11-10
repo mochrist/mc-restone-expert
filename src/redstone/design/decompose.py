@@ -20,7 +20,7 @@ from .spec import Spec
 
 MAX_SPLITS = 6  # decompositions tried per spec (smallest parts first)
 PARTS = 2  # best designs per part that are combined
-TRIES = 12  # layouts tried per combination
+TRIES = 12  # layouts tried per split (over all combinations of part designs)
 
 
 @dataclass(frozen=True)
@@ -102,7 +102,9 @@ def _design_part(spec: Spec, depth: int) -> list[Candidate]:
         cands.append(p)
     if depth > 0:  # also when a template or the PLA works: a chain of small gates is often smaller
         cands += decomposed(spec, depth - 1)
-    evs = [e for e in (evaluate_any(c, spec) for c in cands) if e.ok]
+    # the quick check (every combination, no transitions) is enough for a part: the whole design is
+    # checked in full later
+    evs = [e for e in (evaluate_any(c, spec, quick=True) for c in cands) if e.ok]
     evs.sort(key=Evaluation.rank_key)
     return [e.candidate for e in evs[:PARTS]]
 
@@ -118,9 +120,11 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None) -> list
     for sp in splits(spec):
         gs, hs = _best(sp.g, depth), _best(sp.h, depth)
         found = None
+        tries = 0
         for gc, hc in itertools.product(gs, hs):
-            for k, (_, cand) in enumerate(chains(gc, 0, hc, 0)):
-                if k >= TRIES:
+            for _, cand in chains(gc, 0, hc, 0):
+                tries += 1
+                if tries > TRIES:
                     break
                 # composite inputs: bound inputs (g order), then free inputs (h order); put them in spec order
                 order = list(sp.bound) + list(sp.free)
@@ -143,3 +147,98 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None) -> list
         if found is not None:
             out.append(found)
     return out
+
+
+# ---------------------------------------------------------------------- several outputs side by side
+SIDES_TRIED = 4
+
+
+def _project(spec: Spec, ins: list[int], outs: list[int]) -> Spec:
+    """The spec restricted to some inputs (the others off) and outputs."""
+    table = {}
+    for combo in itertools.product([False, True], repeat=len(ins)):
+        x = [False] * len(spec.inputs)
+        for i, v in zip(ins, combo):
+            x[i] = v
+        row = spec.table[tuple(x)]
+        table[combo] = tuple(row[j] for j in outs)
+    return Spec([spec.inputs[i] for i in ins], [spec.outputs[j] for j in outs], table, source=spec.source)
+
+
+def support(spec: Spec, out: int) -> list[int]:
+    """Inputs output `out` depends on."""
+    dep = []
+    for i in range(len(spec.inputs)):
+        for combo, row in spec.table.items():
+            flipped = combo[:i] + (not combo[i],) + combo[i + 1:]
+            if row[out] != spec.table[flipped][out]:
+                dep.append(i)
+                break
+    return dep
+
+
+def parallel(spec: Spec, log: list[str] | None = None) -> list[Candidate]:
+    """A multi-output spec as one part per output, placed side by side. A lever needed by several parts sits
+    in the first part that uses it; the later parts get its signal over a tapped line (`compose.wire`).
+    After every added part the outputs so far are checked in the simulator."""
+    from .compose import HORIZONTAL, place_beside, rotate, wire
+    from .evaluate import evaluate_any
+
+    m = len(spec.outputs)
+    if m < 2:
+        return []
+    supports = [support(spec, j) for j in range(m)]
+    if any(not s for s in supports):
+        return []  # constant outputs are not built as parts
+    comp: Candidate | None = None
+    labels: list[int] = []  # spec input index of every input of comp, in order
+    for j in range(m):
+        sub = _project(spec, supports[j], [j])
+        parts = _best(sub, 1)
+        if not parts:
+            return []
+        if comp is None:
+            comp, labels = parts[0], list(supports[j])
+            continue
+        done = None
+        ins_so_far = sorted(set(labels) | set(supports[j]))
+        check = _project(spec, ins_so_far, list(range(j + 1)))
+        for part in parts:
+            for turn in range(4):
+                tp = rotate(part, turn)
+                if tp is None:
+                    continue
+                for side in HORIZONTAL[:SIDES_TRIED]:
+                    cand, _ = place_beside(comp, tp, side)
+                    lab = labels + list(supports[j])
+                    for k in supports[j]:
+                        if cand is None or k not in labels:
+                            continue
+                        src = cand.inputs[lab.index(k)]
+                        t = len(lab) - 1 - lab[::-1].index(k)
+                        cand = wire(cand, src, cand.inputs[t])
+                        if cand is not None:
+                            del lab[t]
+                    if cand is None:
+                        continue
+                    order = [lab.index(i) for i in ins_so_far]
+                    trial = replace(cand, inputs=[cand.inputs[o] for o in order])
+                    if evaluate_any(trial, check, quick=True).correct:
+                        done = (cand, lab)
+                        break
+                if done:
+                    break
+            if done:
+                break
+        if log is not None:
+            from .report import COMPOSE_PREFIX
+
+            log.append(f"{COMPOSE_PREFIX}Ausgang {spec.outputs[j]} daneben gesetzt: "
+                       + ("verbunden" if done else "keine funktionierende Anordnung gefunden"))
+        if done is None:
+            return []
+        comp, labels = done
+    order = [labels.index(i) for i in range(len(spec.inputs))]
+    comp = replace(comp, inputs=[comp.inputs[o] for o in order], name="parallel: " + comp.name,
+                   origin="nebeneinander: " + comp.origin)
+    return [comp] if evaluate_any(comp, spec).ok else []
