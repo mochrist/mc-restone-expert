@@ -3,7 +3,7 @@
  "scenario": "seq-t-flip-flop-copper-bulb",
  "source": "oracle",
  "version": "26.3",
- "ticks": 152,
+ "ticks": 274,
  "probes": {
   "in": [
    0,
@@ -53,6 +53,22 @@
    [
     102,
     "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    154,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    164,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    214,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    224,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
    ]
   ],
   "out": [
@@ -74,6 +90,14 @@
    ],
    [
     98,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    156,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    220,
     "minecraft:redstone_lamp[lit=false]"
    ]
   ]

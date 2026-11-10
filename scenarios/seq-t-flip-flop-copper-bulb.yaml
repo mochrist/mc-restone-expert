@@ -1,7 +1,8 @@
 name: seq-t-flip-flop-copper-bulb
 description: 'Vorlage t-flip-flop-copper-bulb (delay=2, kind=lever) aus src/redstone/design/seq_templates.py: Kupferbirne
   direkt am Eingang: Sie wechselt bei jeder steigenden Flanke zwischen an und aus. Ein Komparator liest sie aus (15 oder 0)
-  und speist die Lampe. Verzögerung 2 gt. Testabläufe nacheinander: vier Flanken ab Tick 0.'
+  und speist die Lampe. Verzögerung 2 gt. Testabläufe nacheinander: vier Flanken ab Tick 0; zwei Flanken, langer Abstand ab
+  Tick 152.'
 build:
   size: [4, 2, 1]
   blocks:
@@ -13,7 +14,7 @@ build:
   - [3, 1, 0, 'redstone_lamp[lit=false]']
   block_entities:
   - [2, 1, 0, '{id: "minecraft:comparator", OutputSignal: 0}']
-ticks: 152
+ticks: 274
 inputs:
 - tick: 2
   pos: [0, 1, 0]
@@ -37,6 +38,18 @@ inputs:
   pos: [0, 1, 0]
   action: use
 - tick: 102
+  pos: [0, 1, 0]
+  action: use
+- tick: 154
+  pos: [0, 1, 0]
+  action: use
+- tick: 164
+  pos: [0, 1, 0]
+  action: use
+- tick: 214
+  pos: [0, 1, 0]
+  action: use
+- tick: 224
   pos: [0, 1, 0]
   action: use
 probes:

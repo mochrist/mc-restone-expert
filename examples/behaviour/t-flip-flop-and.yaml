@@ -1,0 +1,4 @@
+# T-Flip-Flop, das umschaltet, wenn a UND b einschaltet (Logik vor Speicher, M4-Komposition)
+behaviour: t-flip-flop
+inputs: [a, b]
+gate: a and b

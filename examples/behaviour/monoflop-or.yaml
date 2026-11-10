@@ -1,0 +1,5 @@
+# Monoflop, ausgelöst von a ODER b: steigende Flanke von (a or b) -> 8-gt-Puls (M4-Komposition)
+behaviour: monostable
+length: 8
+inputs: [a, b]
+gate: a or b

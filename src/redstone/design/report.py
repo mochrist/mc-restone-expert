@@ -6,6 +6,9 @@ from .evaluate import Constraints, Evaluation
 from .spec import Spec
 
 
+COMPOSE_PREFIX = "Komposition: "  # log entries of search.compose_candidates
+
+
 def _size(c) -> str:
     return "{}×{}×{}".format(*c.size)
 
@@ -84,6 +87,14 @@ def report(spec: Spec, constraints: Constraints, results: list[Evaluation], titl
                      f"{r.max_delay:+d} gt" if hasattr(spec, "trials") and spec.nominal_delay is None
                      else f"{r.max_delay} gt")
             lines.append(f"| {rank} | {c.name} | {c.origin} | {_size(c)} | {c.block_count} | {delay} | {_status(r)} |")
+        lines.append("")
+    composed = [x.removeprefix(COMPOSE_PREFIX) for x in compact_log or [] if x.startswith(COMPOSE_PREFIX)]
+    compact_log = [x for x in compact_log or [] if not x.startswith(COMPOSE_PREFIX)]
+    if composed:
+        lines += ["## Komposition", "",
+                  "Logik vor einem Baustein mit Zeitverhalten bzw. Speicher; je Paar die erste Verbindung, die "
+                  "im Simulator die ganze Spezifikation erfüllt:", ""]
+        lines += [f"- {s}" for s in composed]
         lines.append("")
     if compact_log:
         lines += ["## Kompaktierung", "",

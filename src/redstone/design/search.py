@@ -97,6 +97,47 @@ def seq_candidates(spec, templates: list | None = None) -> list[Candidate]:
     return out
 
 
+COMPOSE_LOGIC = 3  # best logic candidates tried in front of a building block
+COMPOSE_BLOCKS = 4  # best building blocks tried behind the logic
+COMPOSE_TRIES = 16  # layouts tried per pair before giving up
+
+
+def compose_candidates(spec, constraints: Constraints | None = None, log: list[str] | None = None) -> list[Candidate]:
+    """Candidates for a gated behaviour spec (`behaviour.gated`): a logic template or PLA for the gate in
+    front of a timing/memory template for the inner spec, joined by `compose.chains`.
+
+    Both parts are checked on their own first, so only working parts are combined; per pair the first
+    layout that meets the whole spec is kept."""
+    from .compose import chains
+    from .report import COMPOSE_PREFIX
+    from .synth import pla
+
+    gate_spec = from_functions(list(spec.inputs), {"y": spec.gate})
+    logic = template_candidates(gate_spec)
+    synthesized = pla(gate_spec, name="pla-gate")
+    if synthesized is not None:
+        logic.append(synthesized)
+    good_logic = [e for e in (evaluate_any(c, gate_spec) for c in logic) if e.correct]
+    good_logic.sort(key=Evaluation.rank_key)
+    blocks = [e for e in (evaluate_any(c, spec.inner) for c in seq_candidates(spec.inner)) if e.correct]
+    blocks.sort(key=Evaluation.rank_key)
+    out = []
+    for le in good_logic[:COMPOSE_LOGIC]:
+        for be in blocks[:COMPOSE_BLOCKS]:
+            found = False
+            for k, (_, cand) in enumerate(chains(le.candidate, 0, be.candidate, 0)):
+                if k >= COMPOSE_TRIES:
+                    break
+                if evaluate_any(cand, spec, constraints, quick=True).correct:
+                    out.append(cand)
+                    found = True
+                    break
+            if log is not None:
+                log.append(f"{COMPOSE_PREFIX}{le.candidate.name} → {be.candidate.name}: "
+                           + ("verbunden" if found else "keine funktionierende Verbindung gefunden"))
+    return out
+
+
 def original_candidate(analysis: Analysis, title: str = "Original") -> Candidate:
     levers = [p for p in analysis.inputs if p.kind == "lever"]
     return Candidate(title, analysis.grid, [p.pos for p in levers], [o.pos for o in analysis.outputs],
@@ -122,7 +163,10 @@ def redesign(spec: Spec, constraints: Constraints | None = None,
     constraints = constraints or Constraints()
     if isinstance(spec, BehaviourSpec):
         synthesized = None
-        generated = seq_candidates(spec, templates)
+        if spec.gate is not None:
+            generated = compose_candidates(spec, constraints, log)
+        else:
+            generated = seq_candidates(spec, templates)
     else:
         synthesized = pla(spec) if synthesize else None
         generated = template_candidates(spec, templates)

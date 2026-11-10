@@ -48,6 +48,9 @@ class BehaviourSpec:
     # delay the expected intervals already contain; with it the evaluation reports the real delay from the
     # input. None (recorded specs) = report the difference to the recording.
     nominal_delay: int | None = None
+    # composed specs (`gated`): a logic function of the levers drives a one-input building block
+    gate: str | None = None  # Python bool expression over `inputs`
+    inner: BehaviourSpec | None = None  # the building block's own spec (input "in")
 
     def describe(self) -> str:
         return self.kind or f"{len(self.trials)} Testabläufe"
@@ -217,8 +220,13 @@ def t_flip_flop(delay: int | None = None, tolerance: int = 4, kind: str = "lever
         rises = [START + k * gap for k in range(4)]
         actions = [a for t in rises for a in ((t, 0), (t + 10, 0))]
     expected = [(rises[0] + delay, rises[1] + delay), (rises[2] + delay, rises[3] + delay)]
+    # a second spacing, so that a monostable of about `gap` gt does not pass for a flip-flop
+    slow = [START, START + 2 * gap]
+    slow_actions = [(t, 0) for t in slow] if kind == "button" else [a for t in slow for a in ((t, 0), (t + 10, 0))]
+    trials = [Trial("vier Flanken", actions, [expected]),
+              Trial("zwei Flanken, langer Abstand", slow_actions, [[(slow[0] + delay, slow[1] + delay)]])]
     # memory: switching on and off may have different delays, so the on-time may differ by the tolerance
-    return BehaviourSpec(["in"], [kind], ["out"], [Trial("vier Flanken", actions, [expected])],
+    return BehaviourSpec(["in"], [kind], ["out"], trials,
                          "T-Flip-Flop: schaltet bei jeder steigenden Flanke um", tolerance, tolerance,
                          nominal_delay=delay)
 
@@ -256,9 +264,80 @@ CONSTRUCTORS = {
 }
 
 
+SETUP = 20  # gated trials: the other levers are set at START, the trial itself starts SETUP gt later
+GATE_SLACK = 4  # gated trials without a given delay: the gate may add this many gt
+
+
+def _sensitizing(inputs: list[str], gate: str, i: int, blocked: bool) -> dict[str, bool] | None:
+    """Values of the other levers under which the gate follows lever i (gate == x_i), or with blocked=True
+    under which the gate stays off whatever lever i does. Fewest levers on first."""
+    from .spec import evaluate_expression
+
+    others = [n for k, n in enumerate(inputs) if k != i]
+    for combo in sorted(itertools.product([False, True], repeat=len(others)), key=sum):
+        env = dict(zip(others, combo))
+        lo = evaluate_expression(gate, {**env, inputs[i]: False})
+        hi = evaluate_expression(gate, {**env, inputs[i]: True})
+        if (not blocked and not lo and hi) or (blocked and not lo and not hi):
+            return env
+    return None
+
+
+def gated(inputs: list[str], gate: str, inner: BehaviourSpec, delay_given: bool = False) -> BehaviourSpec:
+    """A one-input building block driven by a logic function of several levers, e.g. a T flip-flop that
+    toggles when `a and b` rises.
+
+    For every lever there is a trial set in which the other levers make the gate follow that lever (they
+    are switched on at START, the block's own trials run SETUP gt later), and one pulse under which the gate
+    stays off (no output). Without a given delay the gate may add GATE_SLACK gt."""
+    from .spec import evaluate_expression
+
+    if len(inner.inputs) != 1 or inner.input_kinds != ["lever"] or any(t.periodic for t in inner.trials):
+        raise ValueError("Logik davor geht nur bei Bausteinen mit einem Hebel-Eingang")
+    if evaluate_expression(gate, dict.fromkeys(inputs, False)):
+        raise ValueError(f"'{gate}' ist an, wenn alle Hebel aus sind; der Baustein hätte im Ruhezustand "
+                         "einen eingeschalteten Eingang")
+    slack = 0 if delay_given else GATE_SLACK
+    shift = SETUP + slack
+    trials: list[Trial] = []
+    for i, name in enumerate(inputs):
+        follow = _sensitizing(inputs, gate, i, blocked=False)
+        setup = [(START, k) for k, n in enumerate(inputs) if follow and follow.get(n)]
+        label = ", ".join(f"{n}=1" for n, v in (follow or {}).items() if v)
+        if follow is not None:
+            for t in inner.trials:
+                trials.append(Trial(
+                    f"{name}: {t.name}" + (f" ({label})" if label else ""),
+                    setup + [(at + SETUP, i) for at, _ in t.actions],
+                    [[(a + shift, None if b is None else b + shift) for a, b in out] for out in t.expected]))
+        block = _sensitizing(inputs, gate, i, blocked=True)
+        if block is not None:
+            on = [(START, k) for k, n in enumerate(inputs) if block.get(n)]
+            label = ", ".join(f"{n}=1" for n, v in block.items() if v) or "alle anderen aus"
+            trials.append(Trial(f"{name} gesperrt ({label})", on + _lever_pulse(i, 5, START + SETUP),
+                                [[] for _ in inner.outputs]))
+    if not any(_sensitizing(inputs, gate, i, False) for i in range(len(inputs))):
+        raise ValueError(f"'{gate}' schaltet bei keinem Hebel ein")
+    spec = BehaviourSpec(list(inputs), ["lever"] * len(inputs), list(inner.outputs), trials,
+                         f"{inner.kind}, ausgelöst von {gate}", inner.delay_tolerance + slack,
+                         inner.length_tolerance,
+                         nominal_delay=None if inner.nominal_delay is None else inner.nominal_delay + slack,
+                         gate=gate, inner=inner)
+    return spec
+
+
 def from_dict(d: dict, source: str = "") -> BehaviourSpec:
-    """YAML form: `behaviour: monostable` plus the constructor's parameters, e.g. `length: 10`."""
-    params = {k: v for k, v in d.items() if k not in ("behaviour", "delay_tolerance")}
+    """YAML form: `behaviour: monostable` plus the constructor's parameters, e.g. `length: 10`.
+
+    With `inputs: [a, b]` and `gate: a and b` the block is driven by that logic function (`gated`)."""
+    params = {k: v for k, v in d.items() if k not in ("behaviour", "delay_tolerance", "inputs", "gate")}
+    if "gate" in d:
+        inner = CONSTRUCTORS[d["behaviour"]](**params)
+        spec = gated([str(x) for x in d["inputs"]], str(d["gate"]), inner, delay_given="delay" in params)
+        if "delay_tolerance" in d:
+            spec.delay_tolerance = int(d["delay_tolerance"])
+        spec.source = source
+        return spec
     spec = CONSTRUCTORS[d["behaviour"]](**params)
     if "delay_tolerance" in d:
         spec.delay_tolerance = int(d["delay_tolerance"])

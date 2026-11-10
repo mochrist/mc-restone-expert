@@ -1,0 +1,142 @@
+name: cmp-t-flip-flop-and
+description: 'Komposition für t-flip-flop-and.yaml (T-Flip-Flop: schaltet bei jeder steigenden Flanke um, ausgelöst von a
+  and b): and2-torch → t-flip-flop-copper-bulb (delay=2). Testabläufe nacheinander, danach werden eingeschaltete Hebel wieder
+  ausgeschaltet: a: vier Flanken (b=1) ab Tick 0; a: zwei Flanken, langer Abstand (b=1) ab Tick 172; a gesperrt (alle anderen
+  aus) ab Tick 314; b: vier Flanken (a=1) ab Tick 391; b: zwei Flanken, langer Abstand (a=1) ab Tick 563; b gesperrt (alle
+  anderen aus) ab Tick 705.'
+build:
+  size: [7, 4, 3]
+  blocks:
+  - [0, 1, 2, 'redstone_lamp[lit=false]']
+  - [1, 0, 2, stone]
+  - [1, 1, 2, 'comparator[facing=east,mode=compare,powered=false]']
+  - [2, 1, 2, 'copper_bulb[lit=false,powered=false]']
+  - [3, 0, 2, stone]
+  - [3, 1, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [4, 0, 2, stone]
+  - [4, 1, 2, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [4, 2, 0, stone]
+  - [4, 2, 1, 'redstone_wall_torch[facing=south,lit=true]']
+  - [4, 3, 0, 'lever[face=floor,facing=north,powered=false]']
+  - [5, 1, 1, stone]
+  - [5, 1, 2, 'redstone_wall_torch[facing=south,lit=false]']
+  - [5, 2, 1, 'redstone_wire[east=side,north=none,power=15,south=none,west=side]']
+  - [6, 2, 0, stone]
+  - [6, 2, 1, 'redstone_wall_torch[facing=south,lit=true]']
+  - [6, 3, 0, 'lever[face=floor,facing=north,powered=false]']
+  block_entities:
+  - [1, 1, 2, '{id: "minecraft:comparator", OutputSignal: 0}']
+ticks: 782
+inputs:
+- tick: 2
+  pos: [6, 3, 0]
+  action: use
+- tick: 22
+  pos: [4, 3, 0]
+  action: use
+- tick: 32
+  pos: [4, 3, 0]
+  action: use
+- tick: 52
+  pos: [4, 3, 0]
+  action: use
+- tick: 62
+  pos: [4, 3, 0]
+  action: use
+- tick: 82
+  pos: [4, 3, 0]
+  action: use
+- tick: 92
+  pos: [4, 3, 0]
+  action: use
+- tick: 112
+  pos: [4, 3, 0]
+  action: use
+- tick: 122
+  pos: [4, 3, 0]
+  action: use
+- tick: 142
+  pos: [6, 3, 0]
+  action: use
+- tick: 174
+  pos: [6, 3, 0]
+  action: use
+- tick: 194
+  pos: [4, 3, 0]
+  action: use
+- tick: 204
+  pos: [4, 3, 0]
+  action: use
+- tick: 254
+  pos: [4, 3, 0]
+  action: use
+- tick: 264
+  pos: [4, 3, 0]
+  action: use
+- tick: 284
+  pos: [6, 3, 0]
+  action: use
+- tick: 336
+  pos: [4, 3, 0]
+  action: use
+- tick: 341
+  pos: [4, 3, 0]
+  action: use
+- tick: 393
+  pos: [4, 3, 0]
+  action: use
+- tick: 413
+  pos: [6, 3, 0]
+  action: use
+- tick: 423
+  pos: [6, 3, 0]
+  action: use
+- tick: 443
+  pos: [6, 3, 0]
+  action: use
+- tick: 453
+  pos: [6, 3, 0]
+  action: use
+- tick: 473
+  pos: [6, 3, 0]
+  action: use
+- tick: 483
+  pos: [6, 3, 0]
+  action: use
+- tick: 503
+  pos: [6, 3, 0]
+  action: use
+- tick: 513
+  pos: [6, 3, 0]
+  action: use
+- tick: 533
+  pos: [4, 3, 0]
+  action: use
+- tick: 565
+  pos: [4, 3, 0]
+  action: use
+- tick: 585
+  pos: [6, 3, 0]
+  action: use
+- tick: 595
+  pos: [6, 3, 0]
+  action: use
+- tick: 645
+  pos: [6, 3, 0]
+  action: use
+- tick: 655
+  pos: [6, 3, 0]
+  action: use
+- tick: 675
+  pos: [4, 3, 0]
+  action: use
+- tick: 727
+  pos: [6, 3, 0]
+  action: use
+- tick: 732
+  pos: [6, 3, 0]
+  action: use
+probes:
+  a: [4, 3, 0]
+  b: [6, 3, 0]
+  out: [0, 1, 2]
