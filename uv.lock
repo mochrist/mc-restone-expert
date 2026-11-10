@@ -303,6 +303,9 @@ dev = [
     { name = "litemapy" },
     { name = "pytest" },
 ]
+rust = [
+    { name = "rsx-core" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -316,6 +319,12 @@ dev = [
     { name = "litemapy", specifier = ">=0.11.0b0" },
     { name = "pytest", specifier = ">=9.2.0" },
 ]
+rust = [{ name = "rsx-core", directory = "rust/rsx-core" }]
+
+[[package]]
+name = "rsx-core"
+version = "0.1.0"
+source = { directory = "rust/rsx-core" }
 
 [[package]]
 name = "sortedcontainers"

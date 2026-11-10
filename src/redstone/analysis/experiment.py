@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from ..model import BlockState, Grid, Pos
 from ..sim.constants import UPDATE_ALL
 from ..sim.runner import ORACLE_ORIGIN, apply_input, probe_value
-from ..sim.world import World
+from ..sim.core import World
 from ..verify.trace import _is_on
 
 Action = tuple[int, Pos, str]  # (tick, position relative to the grid, "use")
@@ -69,21 +69,9 @@ def is_on(value: str) -> bool:
     return _is_on(value, None)
 
 
-def _ticker_busy(wrapper) -> bool:
-    ticker = getattr(wrapper, "ticker", wrapper)
-    if ticker is None or getattr(ticker, "removed", False):
-        return False
-    is_idle = getattr(ticker, "is_idle", None)
-    return not (is_idle and is_idle())
-
-
 def world_is_idle(world: World) -> bool:
-    """No scheduled ticks, no block events and no block entity with pending work.
-
-    Hoppers tick every game tick; one without cooldown has found nothing to move and only changes when
-    something else in the world changes (there are no item entities in the simulator)."""
-    return not world._ticks and not world.block_events and not any(
-        _ticker_busy(w) for w in world._be_tickers + world._pending_be_tickers)
+    """No scheduled ticks, no block events and no block entity with pending work (see World.is_idle)."""
+    return world.is_idle()
 
 
 class Circuit:
@@ -155,12 +143,21 @@ class Circuit:
 
     def _snapshot(self, world: World) -> dict[Pos, str]:
         """Probe values of all non-air blocks inside the schematic box plus a 1-block margin."""
+        fast = getattr(world, "snapshot", None)  # Rust core: one call instead of one per block
+        if fast is not None:
+            return dict(fast(self.origin - (1, 1, 1), self.origin + tuple(self.grid.size), self.origin))
         return {p - self.origin: probe_value(world, p) for p in world.blocks if self._in_box(p)}
 
     def _snapshot_changed(self, world: World) -> dict[Pos, str]:
         """Probe values of blocks changed since the last call (air included) and of all comparators."""
         positions = set(world.dirty)
         world.dirty.clear()
+        fast = getattr(world, "probe_values", None)  # Rust core: same positions in the same order, one call
+        if fast is not None:
+            positions.update(world.comparator_positions())
+            inside = [p for p in positions if self._in_box(p)]
+            origin = self.origin
+            return {p - origin: v for p, v in zip(inside, fast(inside))}
         positions.update(p for p, be in world.block_entities.items() if world.get(p).id == "comparator")
         out = {}
         for p in positions:

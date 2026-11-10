@@ -92,10 +92,9 @@ def _settle(grid: Grid) -> Grid:
     import nbtlib
 
     from ..analysis.experiment import Circuit
-    from ..sim.blocks.wire import RedstoneWireBlock
     from ..sim.constants import UPDATE_ALL
     from ..sim.runner import ORACLE_ORIGIN
-    from ..sim.world import World
+    from ..sim.core import World
 
     origin = ORACLE_ORIGIN
     world = World()
@@ -104,7 +103,7 @@ def _settle(grid: Grid) -> Grid:
     for _ in range(2):
         for p in wires:
             block = world.block(world.get(p))
-            assert isinstance(block, RedstoneWireBlock)
+            assert block.name == "minecraft:redstone_wire"
             world.blocks[p] = block.get_connection_state(world, block.cross_state(0), p)
     positions = [p + origin for p, _ in grid.items()]
     for p in positions:

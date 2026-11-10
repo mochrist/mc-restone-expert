@@ -16,7 +16,7 @@ from dataclasses import replace
 from ..model import Grid, Pos
 from ..sim.constants import UPDATE_ALL
 from ..sim.runner import ORACLE_ORIGIN
-from ..sim.world import World
+from ..sim.core import World
 from .candidate import Candidate
 from .evaluate import Constraints, evaluate_any
 from .spec import Spec

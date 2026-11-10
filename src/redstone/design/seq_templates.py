@@ -70,9 +70,8 @@ def _shape_dust(grid: Grid) -> Grid:
     """Dust shapes as if placed by a player; all other states (power, lit, powered) stay as written."""
     import nbtlib
 
-    from ..sim.blocks.wire import RedstoneWireBlock
     from ..sim.runner import ORACLE_ORIGIN
-    from ..sim.world import World
+    from ..sim.core import World
 
     world = World()
     world.place_grid(grid, ORACLE_ORIGIN)
@@ -81,7 +80,7 @@ def _shape_dust(grid: Grid) -> Grid:
         for p in wires:
             wp = p + ORACLE_ORIGIN
             block = world.block(world.get(wp))
-            assert isinstance(block, RedstoneWireBlock)
+            assert block.name == "minecraft:redstone_wire"
             shaped = block.get_connection_state(world, block.cross_state(0), wp)
             world.blocks[wp] = shaped.with_(power=grid.get(p).get("power"))
     out = _copy_grid(grid)

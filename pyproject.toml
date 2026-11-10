@@ -21,6 +21,15 @@ dev = [
     "litemapy>=0.11.0b0",
     "pytest>=9.2.0",
 ]
+# Rust simulator core (rust/rsx-core, needs a Rust toolchain). Without it the Python core is used:
+# uv sync --no-group rust
+rust = ["rsx-core"]
+
+[tool.uv]
+default-groups = ["dev", "rust"]
+
+[tool.uv.sources]
+rsx-core = { path = "rust/rsx-core" }
 
 [project.scripts]
 rsx = "redstone.cli:main"

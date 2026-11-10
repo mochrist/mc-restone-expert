@@ -1,4 +1,4 @@
 from .runner import run, simulate
-from .world import World
+from .core import World
 
 __all__ = ["World", "run", "simulate"]

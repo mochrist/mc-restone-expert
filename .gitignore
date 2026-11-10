@@ -8,3 +8,4 @@ oracle/.gradle/
 oracle/run/
 .cache/
 tests/fixtures/external/
+rust/rsx-core/target/

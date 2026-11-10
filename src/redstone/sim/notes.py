@@ -65,6 +65,9 @@ def register_state_check(check: Callable[[World], None]) -> None:
 
 def notes_of(world: World) -> list[Note]:
     """All notes so far, including those from the state checks applied to the current state of the world."""
+    collect = getattr(world, "collect_notes", None)  # Rust core: notes and state checks live in the core
+    if collect is not None:
+        return collect()
     for check in _STATE_CHECKS:
         check(world)
     return list(world.__dict__.get("notes", []))

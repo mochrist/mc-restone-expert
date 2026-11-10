@@ -1,0 +1,16 @@
+[project]
+name = "rsx-core"
+version = "0.1.0"
+description = "Rust simulator core for the redstone toolkit (PyO3)"
+requires-python = ">=3.12"
+
+[build-system]
+requires = ["maturin>=1.9,<2"]
+build-backend = "maturin"
+
+[tool.maturin]
+module-name = "rsx_core"
+features = ["pyo3/extension-module"]
+
+[tool.uv]
+cache-keys = [{ file = "pyproject.toml" }, { file = "Cargo.toml" }, { file = "src/**/*.rs" }]

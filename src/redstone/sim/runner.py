@@ -7,10 +7,13 @@ from ..verify.scenario import Scenario
 from ..verify.trace import Trace
 from . import blocks  # noqa: F401  (registers block behaviours)
 from .constants import UPDATE_ALL
-from .world import World
+from .core import World
 
 
 def probe_value(world: World, pos: Pos) -> str:
+    fast = getattr(world, "probe_value", None)  # Rust core
+    if fast is not None:
+        return fast(pos)
     state = world.get(pos)
     value = str(state)
     if state.id == "comparator":
@@ -21,6 +24,10 @@ def probe_value(world: World, pos: Pos) -> str:
 
 def apply_input(world: World, action: str, pos: Pos, state: BlockState | None) -> None:
     if action == "use":
+        use_at = getattr(world, "use_at", None)  # Rust core
+        if use_at is not None:
+            use_at(pos)
+            return
         current = world.get(pos)
         world.block(current).use_without_item(world, pos, current)
     elif action == "setblock":

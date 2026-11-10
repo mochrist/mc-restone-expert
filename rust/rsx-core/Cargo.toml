@@ -1,0 +1,20 @@
+[package]
+name = "rsx-core"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "rsx_core"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.30", features = ["abi3-py312", "generate-import-lib"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+rustc-hash = "2"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "unwind"

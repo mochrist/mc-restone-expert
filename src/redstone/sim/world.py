@@ -61,6 +61,8 @@ class BlockEvent:
 
 
 class World:
+    core = "python"
+
     def __init__(self, registry: Registry = REGISTRY) -> None:
         self.registry = registry
         self.blocks: dict[Pos, BlockState] = {}
@@ -84,6 +86,8 @@ class World:
         self.warnings: list[str] = []
         # Not part of the game: positions whose block state changed since the recorder last cleared it.
         self.dirty: set[Pos] = set()
+        # Not part of the game: number of executed neighbor updates (benchmark statistics).
+        self.neighbor_update_count = 0
 
     # ------------------------------------------------------------------ construction
     @classmethod
@@ -266,6 +270,7 @@ class World:
                     self.neighbor_changed_with_state(st, rel, source, False)
 
     def _execute_update(self, state: BlockState, pos: Pos, source: Block, moved: bool) -> None:
+        self.neighbor_update_count += 1
         self.block(state).neighbor_changed(self, pos, state, source, moved)
 
     def _execute_shape_update(self, direction: Direction, pos: Pos, neighbor_pos: Pos,
@@ -434,6 +439,22 @@ class World:
             wrapper.tick(self)
             i += 1
         self._ticking_block_entities = False
+
+    def is_idle(self) -> bool:
+        """Not part of the game: no scheduled ticks, no block events and no block entity with pending work.
+
+        Hoppers tick every game tick; one without cooldown has found nothing to move and only changes when
+        something else in the world changes (there are no item entities in the simulator)."""
+        if self._ticks or self.block_events:
+            return False
+        for wrapper in self._be_tickers + self._pending_be_tickers:
+            ticker = wrapper.ticker
+            if ticker is None or getattr(ticker, "removed", False):
+                continue
+            is_idle = getattr(ticker, "is_idle", None)
+            if not (is_idle and is_idle()):
+                return False
+        return True
 
     # ------------------------------------------------------------------ the game tick
     def tick(self) -> None:
