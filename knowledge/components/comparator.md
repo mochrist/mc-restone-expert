@@ -62,7 +62,7 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#getAlternateSignal`, `SignalGetter#getControlInputSignal`; [SRC-WIKI-COMPARATOR]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-sources.yaml)
 - Hinweise: Praktisch zählen Repeater/Comparatoren/Observer, die auf die Seite zeigen. Eine daneben stehende Redstone-Fackel zählt nicht (ihr `getDirectSignal` ist nur nach oben ungleich 0). Wiki: „Seiteneingänge zählen nur, wenn sie den Comparator stark laden" – entspricht dem Code bis auf die Sonderfälle Staub/Redstone-Block.
 
 ### CMP-008: Ein Block mit analogem Ausgang ersetzt das normale Eingangssignal
@@ -77,7 +77,7 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ComparatorBlock#getInputSignal`, `ComparatorBlock#getItemFrame`; [SRC-WIKI-COMPARATOR]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-sources.yaml)
 - Hinweise: Ist der Leiter mit 15 geladen, gewinnt die 15. Bei mehreren Item-Rahmen im Feld wird keiner gelesen (genau einer, mit `getDirection()==facing`). Gibt es Rahmen und Block, zählt das Maximum.
 
 ### CMP-010: Container-Signalstärke

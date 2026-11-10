@@ -43,7 +43,7 @@ bekommen. Zeiten in Game-Ticks (gt).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ButtonBlock#getDirectSignal`, `ButtonBlock#ownSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-sources.yaml)
 
 ### SRCB-006: Druckplatten laden den Block darunter stark
 - Aussage: Druckplatten liefern ihr Signal schwach an alle Nachbarn und stark an den Block darunter; bei Änderung werden die eigene Position und der Block darunter aktualisiert.

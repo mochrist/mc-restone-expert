@@ -23,7 +23,7 @@ während der Block-Event-Phase entstehen, werden in derselben Phase abgearbeitet
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#triggerEvent`, `PistonBaseBlock#checkIfExtend`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-timing.yaml)
 - Hinweise: Die Abschaltung vor dem Event erzeugt kein Contract-Event, weil `extended` zu diesem Zeitpunkt noch false ist.
 
 ### ZT-003: Ein Piston reagiert, wenn die Abschaltung nach seinem Extend-Event in derselben Block-Event-Phase passiert
@@ -48,20 +48,20 @@ während der Block-Event-Phase entstehen, werden in derselben Phase abgearbeitet
 - Konfidenz: hoch
 - Status: im-Spiel-verifiziert (scenarios/zero-tick-piston.yaml)
 
-### ZT-006: Repeater und Comparator übertragen 0-Tick-Pulse nicht
-- Aussage: Komponenten, die auf Eingangsänderungen nur mit einem geplanten Tick reagieren und im Tick die aktuelle Eingangsleistung neu prüfen, geben einen 0-Tick-Puls nicht weiter.
+### ZT-006: Wiki: Repeater verlieren 0-Tick-Pulse; im Spiel verlängert der Repeater sie, nur Comparatoren ignorieren sie
+- Aussage: Ein Comparator gibt einen 0-Tick-Puls an seinem Eingang nicht weiter (sein Tick berechnet die Ausgabe aus der aktuellen Leistung neu). Ein ausgeschalteter Repeater schaltet dagegen im Tick immer ein und plant erst danach das Ausschalten, wenn der Eingang fehlt; ein 0-Tick-Puls erscheint daher als Puls von `delay * 2` Game-Ticks am Ausgang.
 - Version: 26.3
-- Quelle: [SRC-M-WIKI-ZEROTICK]
-- Konfidenz: mittel
-- Status: belegt
-- Hinweise: Das Wiki nennt Comparatoren („reagieren nicht") und Repeater („verlieren den Puls"). Code-Details in den Dateien zu Repeater und Comparator. Als Workaround nennt das Wiki „0-Tick-Repeater" auf Basis von Block-Events (Pistons).
+- Quelle: [SRC-M-WIKI-ZEROTICK]; [SRC-MC-CODE] `RepeaterBlock#tick`
+- Konfidenz: hoch
+- Status: widersprüchlich
+- Hinweise: Im Spiel geprüft (scenarios/verify-timing.yaml, Sonden `zt_repeater`, `zt_comparator`): Ein Repeater (delay 1) wird bei einem 0-Tick-Puls (Redstone-Block setzen und im selben Tick entfernen) 2 gt später für 2 gt eingeschaltet, der Comparator bleibt unverändert. Das Wiki („Repeater verlieren den Puls") stimmt in 26.3 nicht; Simulator und Spiel sind identisch. Ein kurzer Puls an einem Repeater wird also zu einem Puls der Länge `delay * 2` (vgl. Pulsverlängerer). Der Workaround „0-Tick-Repeater" über Block-Events (Pistons) bleibt davon unberührt.
 
 ### ZT-007: Dispenser und Dropper werden durch einen 0-Tick-Puls ausgelöst
 - Aussage: Erhält ein Dispenser/Dropper während eines 0-Tick-Pulses ein `neighborChanged` im bestromten Zustand, wird der 4-gt-Tick geplant und die Ausgabe erfolgt unabhängig davon, dass die Leistung im selben Tick wieder wegfällt.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DispenserBlock#neighborChanged`, `DispenserBlock#tick`
 - Konfidenz: mittel
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-timing.yaml)
 - Hinweise: Aus dem Code abgeleitet, nicht im Spiel geprüft.
 
 ### ZT-008: Zero-Tick-Pflanzenfarmen funktionieren nicht mehr

@@ -81,7 +81,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#triggerEvent`, `PistonMovingBlockEntity#tick`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-timing.yaml)
 - Hinweise: Leistungsänderungen während des Einfahrens werden nicht gesehen, weil `MovingPistonBlock` kein `checkIfExtend` hat.
 
 ### PIS-010: Ein neues Event beendet laufende Bewegungen sofort (finalTick)
@@ -128,7 +128,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonStructureResolver#resolve`, `PistonStructureResolver#addBlockLine`, `PistonBaseBlock#moveBlocks`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-timing.yaml)
 
 ### PIS-016: Slime- und Honigblöcke ziehen seitliche Blöcke mit, aber nicht einander
 - Aussage: Slime- und Honigblöcke nehmen bei der Strukturauflösung angrenzende schiebbare Blöcke quer zur Schieberichtung (und hinter sich) mit; Slime und Honig haften nicht aneinander.

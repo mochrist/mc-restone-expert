@@ -15,7 +15,7 @@ häufigem Schalten durchbrennen.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneTorchBlock#hasNeighborSignal`, `SignalGetter#getSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-sources.yaml)
 
 ### TRCH-002: Wandfackel liest den Block hinter sich
 - Aussage: Eine Wandfackel liest den Block in Richtung `facing.getOpposite()` (den Block, an dem sie hängt); `facing` zeigt von der Wand weg.
@@ -60,7 +60,7 @@ häufigem Schalten durchbrennen.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneTorchBlock#getSignal`; [SRC-WIKI-TORCH]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-sources.yaml)
 
 ### TRCH-008: Wandfackel versorgt alle Nachbarn außer dem Befestigungsblock
 - Aussage: `getSignal` einer Wandfackel liefert 15 für jede Abfrage-Richtung außer `facing`, d. h. nicht an den Block, an dem sie hängt.

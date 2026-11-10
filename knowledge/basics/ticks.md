@@ -96,7 +96,7 @@ auslöst (siehe UPD).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ServerLevel#tickBlock`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-timing.yaml)
 - Hinweise: Der Blockstate darf sich geändert haben (z. B. andere `delay`/`powered`), nur der Block-Typ muss gleich sein.
 
 ### TCK-012: Höchstens 65536 Block-Ticks pro Spieltick

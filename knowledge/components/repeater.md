@@ -49,14 +49,14 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#getOutputSignal`, `DiodeBlock#ownSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-conductors.yaml)
 
 ### REP-006: Der Repeater lädt den Block vor sich stark
 - Aussage: `getDirectSignal` gibt denselben Wert wie `getSignal` zurück, daher wird ein Leiterblock am Ausgang stark geladen (Stärke 15), nicht nur schwach.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#getDirectSignal`; [SRC-WIKI-REPEATER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-conductors.yaml)
 
 ### REP-007: Bei Zustandswechsel werden nur der Ausgangsblock und dessen Nachbarn aktualisiert
 - Aussage: Bei jedem Setzen des Repeater-Zustands (über `onPlace`) erhält der Block am Ausgang ein `neighborChanged` und danach alle Nachbarn des Ausgangsblocks außer dem Repeater selbst (`updateNeighborsAtExceptFromFacing`); der Repeater setzt seinen Zustand selbst mit Flag 2 (ohne allgemeine Nachbar-Updates).
@@ -103,7 +103,7 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#tick`; [SRC-WIKI-REPEATER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-timing.yaml)
 - Hinweise: Zusammen mit der Tick-Deduplizierung werden Aus-Pulse, die kürzer als die Verzögerung sind, unterdrückt; Randfälle (Puls fällt mit bereits geplantem Tick zusammen) laut Wiki möglich.
 
 ### REP-013: Gesperrt wird nur durch seitliche Dioden
@@ -143,4 +143,4 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#canSurviveOn`, `RepeaterBlock#updateShape`, `DiodeBlock#neighborChanged`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-dust-structure.yaml)

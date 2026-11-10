@@ -1,0 +1,562 @@
+name: verify-dust-structure
+description: 'Staub: Kettenlaenge, Stuetzen, Diagonalen, Einwegverbindung ueber Glas, schwach gepowerter Block, Lampe/Repeater am Staub.'
+build:
+  size:
+  - 20
+  - 4
+  - 22
+  fill:
+  - - 0
+    - 0
+    - 0
+    - 19
+    - 0
+    - 21
+    - stone
+  blocks:
+  - - 0
+    - 1
+    - 0
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 2
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 3
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 4
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 5
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 6
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 7
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 8
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 9
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 10
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 11
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 12
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 13
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 14
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 15
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 16
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 17
+    - 1
+    - 0
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 0
+    - 1
+    - 2
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 0
+    - 2
+    - redstone_lamp[lit=false]
+  - - 1
+    - 1
+    - 2
+    - redstone_wire[east=none,north=none,power=0,south=none,west=side]
+  - - 1
+    - 2
+    - 2
+    - redstone_lamp[lit=false]
+  - - 0
+    - 1
+    - 4
+    - stone
+  - - 0
+    - 2
+    - 4
+    - redstone_wire[east=none,north=none,power=0,south=none,west=none]
+  - - 0
+    - 1
+    - 6
+    - stone
+  - - 0
+    - 2
+    - 6
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 2
+    - 1
+    - 4
+    - stone
+  - - 2
+    - 2
+    - 4
+    - redstone_wire[east=none,north=none,power=0,south=none,west=none]
+  - - 2
+    - 1
+    - 6
+    - stone
+  - - 2
+    - 2
+    - 6
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 4
+    - 1
+    - 4
+    - stone
+  - - 4
+    - 2
+    - 4
+    - redstone_wire[east=none,north=none,power=0,south=none,west=none]
+  - - 4
+    - 1
+    - 6
+    - stone
+  - - 4
+    - 2
+    - 6
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 6
+    - 1
+    - 4
+    - stone
+  - - 6
+    - 2
+    - 4
+    - redstone_wire[east=none,north=none,power=0,south=none,west=none]
+  - - 6
+    - 1
+    - 6
+    - stone
+  - - 6
+    - 2
+    - 6
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 8
+    - 1
+    - 4
+    - stone
+  - - 8
+    - 2
+    - 4
+    - redstone_wire[east=none,north=none,power=0,south=none,west=none]
+  - - 8
+    - 1
+    - 6
+    - stone
+  - - 8
+    - 2
+    - 6
+    - repeater[delay=1,facing=west,locked=false,powered=false]
+  - - 0
+    - 1
+    - 8
+    - stone
+  - - 0
+    - 2
+    - 8
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 8
+    - stone
+  - - 1
+    - 2
+    - 8
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 2
+    - 1
+    - 8
+    - redstone_wire[east=none,north=none,power=0,south=none,west=side]
+  - - 0
+    - 1
+    - 10
+    - stone
+  - - 0
+    - 2
+    - 10
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 10
+    - stone
+  - - 1
+    - 2
+    - 10
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 2
+    - 1
+    - 10
+    - redstone_wire[east=none,north=none,power=0,south=none,west=side]
+  - - 2
+    - 2
+    - 10
+    - stone
+  - - 0
+    - 1
+    - 12
+    - stone
+  - - 0
+    - 2
+    - 12
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 12
+    - stone
+  - - 1
+    - 2
+    - 12
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 2
+    - 1
+    - 12
+    - redstone_wire[east=none,north=none,power=0,south=none,west=side]
+  - - 2
+    - 2
+    - 12
+    - glass
+  - - 0
+    - 1
+    - 14
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 14
+    - redstone_wire[east=side,north=none,power=0,south=none,west=none]
+  - - 2
+    - 1
+    - 14
+    - glass
+  - - 2
+    - 2
+    - 14
+    - redstone_wire[east=none,north=none,power=0,south=none,west=side]
+  - - 1
+    - 1
+    - 16
+    - redstone_wire[east=side,north=none,power=0,south=none,west=none]
+  - - 2
+    - 1
+    - 16
+    - glass
+  - - 2
+    - 2
+    - 16
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 3
+    - 1
+    - 16
+    - stone
+  - - 3
+    - 2
+    - 16
+    - lever[face=floor,facing=east,powered=false]
+  - - 0
+    - 1
+    - 19
+    - lever[face=floor,facing=east,powered=false]
+  - - 1
+    - 1
+    - 19
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 2
+    - 1
+    - 19
+    - redstone_wire[east=side,north=none,power=0,south=none,west=side]
+  - - 3
+    - 1
+    - 19
+    - stone
+  - - 4
+    - 1
+    - 19
+    - redstone_wire[east=none,north=none,power=0,south=none,west=side]
+  - - 3
+    - 1
+    - 20
+    - redstone_lamp[lit=false]
+  - - 3
+    - 1
+    - 18
+    - repeater[delay=1,facing=south,locked=false,powered=false]
+ticks: 24
+inputs:
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 0
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 2
+  action: use
+- tick: 8
+  pos:
+  - 0
+  - 1
+  - 4
+  action: setblock
+  state: glass
+- tick: 8
+  pos:
+  - 0
+  - 1
+  - 6
+  action: setblock
+  state: glass
+- tick: 8
+  pos:
+  - 2
+  - 1
+  - 4
+  action: setblock
+  state: oak_slab[type=top,waterlogged=false]
+- tick: 8
+  pos:
+  - 2
+  - 1
+  - 6
+  action: setblock
+  state: oak_slab[type=top,waterlogged=false]
+- tick: 8
+  pos:
+  - 4
+  - 1
+  - 4
+  action: setblock
+  state: oak_stairs[facing=east,half=top,shape=straight,waterlogged=false]
+- tick: 8
+  pos:
+  - 4
+  - 1
+  - 6
+  action: setblock
+  state: oak_stairs[facing=east,half=top,shape=straight,waterlogged=false]
+- tick: 8
+  pos:
+  - 6
+  - 1
+  - 4
+  action: setblock
+  state: oak_slab[type=bottom,waterlogged=false]
+- tick: 8
+  pos:
+  - 6
+  - 1
+  - 6
+  action: setblock
+  state: oak_slab[type=bottom,waterlogged=false]
+- tick: 8
+  pos:
+  - 8
+  - 1
+  - 4
+  action: setblock
+  state: stone
+- tick: 8
+  pos:
+  - 8
+  - 1
+  - 6
+  action: setblock
+  state: stone
+- tick: 2
+  pos:
+  - 0
+  - 2
+  - 8
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 2
+  - 10
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 2
+  - 12
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 14
+  action: use
+- tick: 2
+  pos:
+  - 3
+  - 2
+  - 16
+  action: use
+- tick: 2
+  pos:
+  - 0
+  - 1
+  - 19
+  action: use
+probes:
+  chain1:
+  - 1
+  - 1
+  - 0
+  chain14:
+  - 14
+  - 1
+  - 0
+  chain15:
+  - 15
+  - 1
+  - 0
+  chain16:
+  - 16
+  - 1
+  - 0
+  chain17:
+  - 17
+  - 1
+  - 0
+  lamp_under_dust:
+  - 1
+  - 0
+  - 2
+  lamp_over_dust:
+  - 1
+  - 2
+  - 2
+  dust_on_glass:
+  - 0
+  - 2
+  - 4
+  repeater_on_glass:
+  - 0
+  - 2
+  - 6
+  dust_on_slab_top:
+  - 2
+  - 2
+  - 4
+  repeater_on_slab_top:
+  - 2
+  - 2
+  - 6
+  dust_on_stairs_flipped:
+  - 4
+  - 2
+  - 4
+  repeater_on_stairs_flipped:
+  - 4
+  - 2
+  - 6
+  dust_on_slab_bottom:
+  - 6
+  - 2
+  - 4
+  repeater_on_slab_bottom:
+  - 6
+  - 2
+  - 6
+  dust_on_stone2:
+  - 8
+  - 2
+  - 4
+  repeater_on_stone2:
+  - 8
+  - 2
+  - 6
+  diag_upper_air:
+  - 1
+  - 2
+  - 8
+  diag_lower_air:
+  - 2
+  - 1
+  - 8
+  diag_upper_stone:
+  - 1
+  - 2
+  - 10
+  diag_lower_stone:
+  - 2
+  - 1
+  - 10
+  diag_upper_glass:
+  - 1
+  - 2
+  - 12
+  diag_lower_glass:
+  - 2
+  - 1
+  - 12
+  oneway_lower_fed:
+  - 1
+  - 1
+  - 14
+  oneway_upper_receives:
+  - 2
+  - 2
+  - 14
+  oneway_lower_not_fed:
+  - 1
+  - 1
+  - 16
+  oneway_upper_fed:
+  - 2
+  - 2
+  - 16
+  wd_dust_before:
+  - 2
+  - 1
+  - 19
+  wd_dust_behind_stone:
+  - 4
+  - 1
+  - 19
+  wd_lamp:
+  - 3
+  - 1
+  - 20
+  wd_repeater:
+  - 3
+  - 1
+  - 18
+
