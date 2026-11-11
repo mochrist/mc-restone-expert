@@ -1,19 +1,19 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 93 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 94 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~95 % | 279 Aussagen aus dem 26.3-Code belegt, 137 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 106 Golden Traces tick-genau überein; Truhen, Crafter neu |
+| M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 107 Golden Traces tick-genau überein; Truhen, Crafter neu |
 | M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~80 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
+| M4 Redesign | 25 % | ~83 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
 ## Verlauf
 
-### Session 11 (2026-11-11): M3, etwas M4 (Fable-5.2-/Opus-Hauptsession, keine Agents)
+### Session 11 (2026-11-11): M3 und M4 (Fable-5.2-/Opus-Hauptsession, keine Agents)
 
 - Logik vor Zeitglied (Pulsverlängerer, Pulsverkürzer, Monoflop hinter einem Gatter): Folgt ein Ausgang einem
   Hebel laut Wahrheitstabelle nur, wenn andere Hebel an sind, wird die Pulsantwort mit diesen Hebeln gehalten
@@ -28,6 +28,12 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 93 %** (gew
   Pulsverlängerer hinter AND nichts). Bestehende Szenarien unverändert. Neues Beispiel
   `examples/behaviour/pulse-extender-and.yaml` (49 Blöcke, 1 s), `cmp-pulse-extender-and` im Spiel identisch;
   `rsx explain` erkennt den Entwurf als „AND, dahinter ein Zeitglied“ wieder.
+- M4: PLA bis 8 Eingänge (`synth.MAX_INPUTS`, vorher 6). Engpass war `_primes` (Quine-McCluskey verglich alle
+  Paare); jetzt Partnersuche per Hash, gleiche Entwürfe, 9 Eingänge 47 s → 1,7 s. Zufallsfunktionen mit 7–10
+  Eingängen und bis 3 Ausgängen alle korrekt; Bewertung dauert dann 1–25 s (2^n Kombinationen plus Übergänge),
+  deshalb Grenze 8. Ganzer `rsx redesign` mit 7 Eingängen 5–25 s. Neues Beispiel `examples/specs/lock7.yaml`
+  (Codeschloss, 7 Hebel, zwei komplementäre Codes, nicht einfach zerlegbar, vorher kein Entwurf; 182 Blöcke),
+  `pla-lock7` im Spiel identisch (alle 128 Kombinationen, offen genau bei den zwei Codes).
 - Teiltabellen: zusätzlich Einzel-Umschaltungen an zufälligen Hebelstellungen (fester Seed, ~600 Läufe,
   `analyze._sampled_dependencies`). Ein AND aus drei in Ruhe ausgeschalteten Hebeln bekommt so eine Tabelle.
   seg7 unverändert (die 15 Ausgänge ohne Tabelle hängen wirklich von mehr als 6 Hebeln ab), 1,7 s.
@@ -210,7 +216,7 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 93 %** (gew
 ## Befehle
 
 ```
-uv run pytest -q [--sim-core python|rust] [--slow] # ~1260 Tests, alle grün (Rust ~75 s, Python ~6 min)
+uv run pytest -q [--sim-core python|rust] [--slow] # ~1265 Tests, alle grün (Rust ~75 s, Python ~6 min)
 uv sync                                            # baut auch den Rust-Kern; nach Rust-Änderungen:
 uv pip install --reinstall-package rsx-core ./rust/rsx-core
 uv run rsx --sim-core python|rust <befehl>         # Kern wählen (Standard: Rust, wenn gebaut)
@@ -247,7 +253,7 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    (`design/compose.py: _route`) beschleunigen, Lauf-Schleife samt Aufzeichnung (`Circuit.run`) nach Rust.
 3. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
    - Lücken der Vorlagen: Monoflop 3 gt nur mit Knopf (Hebel unmöglich, siehe Session 8); Hebel-Comparator-Monoflop nicht für jede gerade Länge; XOR-Vorlagen groß (28–33 Blöcke).
-   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); Nicht einfach zerlegbare Funktionen über 6 Eingängen bleiben ungelöst (kein PLA; nur einfache disjunkte Zerlegung). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); offen sind Bausteine drehen/umsetzen. Geteilte Teilfunktionen: nur eine gemeinsame Leitung g je Zerlegung (Session 10); mehrere gemeinsame Signale (z. B. Carry-Lookahead) nicht.
+   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); Nicht einfach zerlegbare Funktionen über 8 Eingängen bleiben ungelöst (PLA bis 8, Session 11; nur einfache disjunkte Zerlegung). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); offen sind Bausteine drehen/umsetzen. Geteilte Teilfunktionen: nur eine gemeinsame Leitung g je Zerlegung (Session 10); mehrere gemeinsame Signale (z. B. Carry-Lookahead) nicht.
    - Verhalten aus Bestandsschaltungen nur bis 3 Eingänge; Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
    - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8), Set-only-Speicher (Session 10) und Zeitgliedern (Session 11).
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.
