@@ -41,7 +41,20 @@ def _diagram(rec: Recording, rows: list[tuple[str, Pos]], marks: list[int]) -> s
     return "\n".join(lines)
 
 
-def _response_section(a: Analysis, r: InputResponse) -> list[str]:
+def _svg_name(name: str) -> str:
+    return "".join(c if c.isalnum() or c in "-_" else "_" for c in name) or "input"
+
+
+def _response_svg(a: Analysis, r: InputResponse) -> str:
+    from ..render.svg_timing import render_timing
+
+    rec = r.recording
+    rows = [(n, p) for n, p in [(r.input.name, r.input.pos)] + [(o.name, o.pos) for o in a.outputs] if p in rec.series]
+    data = [(n, [is_on(rec.value_at(p, t)) for t in range(rec.ticks + 1)]) for n, p in rows]
+    return render_timing(data, [s.tick for s in r.steps], title=f"{r.input.name}: {r.input.kind}")
+
+
+def _response_section(a: Analysis, r: InputResponse, svg: tuple[str, dict[str, str]] | None = None) -> list[str]:
     out = [f"### {r.input.name}: {r.input.kind} bei {r.input.pos}", ""]
     if r.oscillates:
         out.append("Nach diesem Eingang kommt die Schaltung nicht mehr zur Ruhe (läuft dauerhaft).")
@@ -52,6 +65,10 @@ def _response_section(a: Analysis, r: InputResponse) -> list[str]:
         out.append(f"- **{x.output.name}** ({x.output.kind} {x.output.pos}): {x.kind}. {x.detail}")
     out.append("")
     out.append("Ablauf: " + ", ".join(f"Tick {s.tick}: {s.label}" for s in r.steps) + " (jeweils nach Ruhe).")
+    if svg is not None:
+        fname = f"{_svg_name(r.input.name)}.svg"
+        svg[1][fname] = _response_svg(a, r)
+        out += ["", f"![{r.input.name}]({svg[0]}/{fname})"]
     out += ["", "```", _diagram(r.recording, [(r.input.name, r.input.pos)] + [(o.name, o.pos) for o in a.outputs],
                                [s.tick for s in r.steps]), "```", ""]
     if r.chain:
@@ -65,7 +82,8 @@ def _response_section(a: Analysis, r: InputResponse) -> list[str]:
     return out
 
 
-def explain(a: Analysis, title: str | None = None) -> str:
+def explain(a: Analysis, title: str | None = None, svg: tuple[str, dict[str, str]] | None = None) -> str:
+    """svg = (link directory used in the Markdown, dict that receives file name -> SVG text); None = ASCII only."""
     grid = a.grid
     inventory = Counter(s.id for _, s in grid.items())
     redstone = {k: v for k, v in inventory.items() if k in _REDSTONE_IDS or k.endswith(("_button", "_pressure_plate"))}
@@ -142,7 +160,7 @@ def explain(a: Analysis, title: str | None = None) -> str:
 
     lines += ["## Verhalten je Eingang", ""]
     for r in a.responses:
-        lines += _response_section(a, r)
+        lines += _response_section(a, r, svg)
 
     pulses = [r for r in a.pulse_responses if r.kind not in ("keine Reaktion auf Pulse", "Ausgang ist im Ruhezustand an")]
     if pulses:

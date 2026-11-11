@@ -117,6 +117,14 @@ def timing_diagram(trace: Trace, prop: str | None = None, width: int | None = No
     return "\n".join(lines)
 
 
+def trace_svg(trace: Trace, title: str | None = None, prop: str | None = None) -> str:
+    """Same rows as timing_diagram, rendered as a standalone SVG."""
+    from ..render.svg_timing import render_timing
+
+    rows = [(p, [_is_on(trace.value_at(p, t), prop) for t in range(trace.ticks + 1)]) for p in trace.probes]
+    return render_timing(rows, title=title)
+
+
 def _is_on(value: str, prop: str | None) -> bool:
     from ..model import BlockState
 
