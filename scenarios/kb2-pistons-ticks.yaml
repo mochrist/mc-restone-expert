@@ -1,0 +1,60 @@
+name: kb2-pistons-ticks
+description: >
+  Kolben-Events und doppelt geplante Ticks. z=0 (PIS-005): Ein Redstone-Block wird neben einen Kolben gesetzt und
+  im selben Tick wieder entfernt; das Block-Event (Ausfahren) wird in der Event-Phase verworfen, der Kolben
+  bleibt eingefahren. z=2: Kontrolle, der Block bleibt, der Kolben fährt aus. z=4 und z=7 (PIS-008, BUD-008):
+  Ein Schiebekolben Q schiebt einen eingefahrenen Kolben P zur Seite; liegt am Ziel ein Redstone-Block neben P
+  (z=4), fährt P nach der Ankunft von selbst aus (die Zielposition bekommt ein eigenes neighborChanged), ohne
+  Redstone-Block (z=7) bleibt P eingefahren. z=9..13 (TCK-009, ORD-005, TCK-004, ORD-002): Ein Repeater mit Delay 4 (8 gt)
+  bekommt bei Tick 2 Eingang, bei Tick 3 wird der Eingang wieder abgeschaltet und bei Tick 4 erneut
+  eingeschaltet (z=9); der erste geplante Tick (Tick 10) bleibt bestehen, der zweite wird verworfen (die Lampe
+  geht bei 10 an, nicht bei 12). z=11: Eingang nur 1 gt lang (Tick 2 bis 3): die Lampe geht trotzdem bei 10 an
+  und bei 22 wieder aus (Repeater-Tick 18, Lampe 4 gt später). z=13: Eingang 2..3 und 4..5: an bei 10, aus bei 22.
+build:
+  size: [5, 4, 15]
+  fill:
+    - [0, 0, 0, 4, 0, 14, "stone"]
+  blocks:
+    - [1, 1, 0, "piston[extended=false,facing=up]"]
+    - [1, 1, 2, "piston[extended=false,facing=up]"]
+    - [0, 1, 4, "piston[extended=false,facing=east]"]
+    - [1, 1, 4, "piston[extended=false,facing=up]"]
+    - [2, 1, 5, "redstone_block"]
+    - [0, 1, 7, "piston[extended=false,facing=east]"]
+    - [1, 1, 7, "piston[extended=false,facing=up]"]
+    - [0, 1, 9, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 9, "repeater[delay=4,facing=west,locked=false,powered=false]"]
+    - [2, 1, 9, "redstone_lamp[lit=false]"]
+    - [0, 1, 11, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 11, "repeater[delay=4,facing=west,locked=false,powered=false]"]
+    - [2, 1, 11, "redstone_lamp[lit=false]"]
+    - [0, 1, 13, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 13, "repeater[delay=4,facing=west,locked=false,powered=false]"]
+    - [2, 1, 13, "redstone_lamp[lit=false]"]
+ticks: 40
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: setblock, state: "redstone_block"}
+  - {tick: 2, pos: [0, 1, 0], action: setblock, state: "air"}
+  - {tick: 2, pos: [0, 1, 2], action: setblock, state: "redstone_block"}
+  - {tick: 2, pos: [0, 2, 4], action: setblock, state: "redstone_block"}
+  - {tick: 2, pos: [0, 2, 7], action: setblock, state: "redstone_block"}
+  - {tick: 2, pos: [0, 1, 9], action: use}
+  - {tick: 3, pos: [0, 1, 9], action: use}
+  - {tick: 4, pos: [0, 1, 9], action: use}
+  - {tick: 2, pos: [0, 1, 11], action: use}
+  - {tick: 3, pos: [0, 1, 11], action: use}
+  - {tick: 2, pos: [0, 1, 13], action: use}
+  - {tick: 3, pos: [0, 1, 13], action: use}
+  - {tick: 4, pos: [0, 1, 13], action: use}
+  - {tick: 5, pos: [0, 1, 13], action: use}
+probes:
+  piston_flash: [1, 1, 0]
+  piston_ctrl: [1, 1, 2]
+  head_ctrl: [1, 2, 2]
+  p_powered: [2, 1, 4]
+  p_powered_head: [2, 2, 4]
+  p_plain: [2, 1, 7]
+  p_plain_head: [2, 2, 7]
+  lamp_dup: [2, 1, 9]
+  lamp_short: [2, 1, 11]
+  lamp_two: [2, 1, 13]

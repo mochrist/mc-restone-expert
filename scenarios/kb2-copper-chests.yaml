@@ -1,0 +1,105 @@
+name: kb2-copper-chests
+description: >
+  Kupfertruhen (CHEST-008): Alle acht Kupfertruhen (normal, exposed, weathered, oxidized, jeweils gewachst) mit
+  3, 6, ..., 24 Stacks Stein; ein Comparator daneben liest dieselbe Stärke wie bei einer normalen Truhe
+  (1 + floor(Stacks / 27 * 14)). Danach eine normale Truhe mit 15 Stacks als Kontrolle, eine Doppelkupfertruhe
+  gleicher Art (27 Stacks links, beide Comparator lesen 15) und eine gemischte Doppeltruhe (Kupfer links,
+  oxidiert rechts). Rechtsklick auf die Comparator (Moduswechsel) löst die Neuberechnung aus, danach noch einmal.
+build:
+  size: [4, 3, 22]
+  fill:
+    - [0, 0, 0, 3, 0, 21, "stone"]
+  blocks:
+    - [1, 1, 0, "copper_chest[facing=north,type=single,waterlogged=false]"]
+    - [2, 1, 0, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 2, "exposed_copper_chest[facing=north,type=single,waterlogged=false]"]
+    - [2, 1, 2, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 4, "weathered_copper_chest[facing=north,type=single,waterlogged=false]"]
+    - [2, 1, 4, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 6, "oxidized_copper_chest[facing=north,type=single,waterlogged=false]"]
+    - [2, 1, 6, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 8, "waxed_copper_chest[facing=north,type=single,waterlogged=false]"]
+    - [2, 1, 8, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 10, "waxed_exposed_copper_chest[facing=north,type=single,waterlogged=false]"]
+    - [2, 1, 10, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 12, "waxed_weathered_copper_chest[facing=north,type=single,waterlogged=false]"]
+    - [2, 1, 12, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 14, "waxed_oxidized_copper_chest[facing=north,type=single,waterlogged=false]"]
+    - [2, 1, 14, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 16, "chest[facing=north,type=single,waterlogged=false]"]
+    - [2, 1, 16, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 18, "copper_chest[facing=north,type=left,waterlogged=false]"]
+    - [0, 1, 18, "comparator[facing=east,mode=compare,powered=false]"]
+    - [2, 1, 18, "copper_chest[facing=north,type=right,waterlogged=false]"]
+    - [3, 1, 18, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 20, "copper_chest[facing=north,type=left,waterlogged=false]"]
+    - [0, 1, 20, "comparator[facing=east,mode=compare,powered=false]"]
+    - [2, 1, 20, "oxidized_copper_chest[facing=north,type=right,waterlogged=false]"]
+    - [3, 1, 20, "comparator[facing=west,mode=compare,powered=false]"]
+  block_entities:
+    - [1, 1, 0, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64}]}']
+    - [2, 1, 0, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 2, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64},{Slot:3b,id:"minecraft:stone",count:64},{Slot:4b,id:"minecraft:stone",count:64},{Slot:5b,id:"minecraft:stone",count:64}]}']
+    - [2, 1, 2, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 4, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64},{Slot:3b,id:"minecraft:stone",count:64},{Slot:4b,id:"minecraft:stone",count:64},{Slot:5b,id:"minecraft:stone",count:64},{Slot:6b,id:"minecraft:stone",count:64},{Slot:7b,id:"minecraft:stone",count:64},{Slot:8b,id:"minecraft:stone",count:64}]}']
+    - [2, 1, 4, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 6, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64},{Slot:3b,id:"minecraft:stone",count:64},{Slot:4b,id:"minecraft:stone",count:64},{Slot:5b,id:"minecraft:stone",count:64},{Slot:6b,id:"minecraft:stone",count:64},{Slot:7b,id:"minecraft:stone",count:64},{Slot:8b,id:"minecraft:stone",count:64},{Slot:9b,id:"minecraft:stone",count:64},{Slot:10b,id:"minecraft:stone",count:64},{Slot:11b,id:"minecraft:stone",count:64}]}']
+    - [2, 1, 6, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 8, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64},{Slot:3b,id:"minecraft:stone",count:64},{Slot:4b,id:"minecraft:stone",count:64},{Slot:5b,id:"minecraft:stone",count:64},{Slot:6b,id:"minecraft:stone",count:64},{Slot:7b,id:"minecraft:stone",count:64},{Slot:8b,id:"minecraft:stone",count:64},{Slot:9b,id:"minecraft:stone",count:64},{Slot:10b,id:"minecraft:stone",count:64},{Slot:11b,id:"minecraft:stone",count:64},{Slot:12b,id:"minecraft:stone",count:64},{Slot:13b,id:"minecraft:stone",count:64},{Slot:14b,id:"minecraft:stone",count:64}]}']
+    - [2, 1, 8, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 10, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64},{Slot:3b,id:"minecraft:stone",count:64},{Slot:4b,id:"minecraft:stone",count:64},{Slot:5b,id:"minecraft:stone",count:64},{Slot:6b,id:"minecraft:stone",count:64},{Slot:7b,id:"minecraft:stone",count:64},{Slot:8b,id:"minecraft:stone",count:64},{Slot:9b,id:"minecraft:stone",count:64},{Slot:10b,id:"minecraft:stone",count:64},{Slot:11b,id:"minecraft:stone",count:64},{Slot:12b,id:"minecraft:stone",count:64},{Slot:13b,id:"minecraft:stone",count:64},{Slot:14b,id:"minecraft:stone",count:64},{Slot:15b,id:"minecraft:stone",count:64},{Slot:16b,id:"minecraft:stone",count:64},{Slot:17b,id:"minecraft:stone",count:64}]}']
+    - [2, 1, 10, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 12, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64},{Slot:3b,id:"minecraft:stone",count:64},{Slot:4b,id:"minecraft:stone",count:64},{Slot:5b,id:"minecraft:stone",count:64},{Slot:6b,id:"minecraft:stone",count:64},{Slot:7b,id:"minecraft:stone",count:64},{Slot:8b,id:"minecraft:stone",count:64},{Slot:9b,id:"minecraft:stone",count:64},{Slot:10b,id:"minecraft:stone",count:64},{Slot:11b,id:"minecraft:stone",count:64},{Slot:12b,id:"minecraft:stone",count:64},{Slot:13b,id:"minecraft:stone",count:64},{Slot:14b,id:"minecraft:stone",count:64},{Slot:15b,id:"minecraft:stone",count:64},{Slot:16b,id:"minecraft:stone",count:64},{Slot:17b,id:"minecraft:stone",count:64},{Slot:18b,id:"minecraft:stone",count:64},{Slot:19b,id:"minecraft:stone",count:64},{Slot:20b,id:"minecraft:stone",count:64}]}']
+    - [2, 1, 12, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 14, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64},{Slot:3b,id:"minecraft:stone",count:64},{Slot:4b,id:"minecraft:stone",count:64},{Slot:5b,id:"minecraft:stone",count:64},{Slot:6b,id:"minecraft:stone",count:64},{Slot:7b,id:"minecraft:stone",count:64},{Slot:8b,id:"minecraft:stone",count:64},{Slot:9b,id:"minecraft:stone",count:64},{Slot:10b,id:"minecraft:stone",count:64},{Slot:11b,id:"minecraft:stone",count:64},{Slot:12b,id:"minecraft:stone",count:64},{Slot:13b,id:"minecraft:stone",count:64},{Slot:14b,id:"minecraft:stone",count:64},{Slot:15b,id:"minecraft:stone",count:64},{Slot:16b,id:"minecraft:stone",count:64},{Slot:17b,id:"minecraft:stone",count:64},{Slot:18b,id:"minecraft:stone",count:64},{Slot:19b,id:"minecraft:stone",count:64},{Slot:20b,id:"minecraft:stone",count:64},{Slot:21b,id:"minecraft:stone",count:64},{Slot:22b,id:"minecraft:stone",count:64},{Slot:23b,id:"minecraft:stone",count:64}]}']
+    - [2, 1, 14, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 16, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64},{Slot:3b,id:"minecraft:stone",count:64},{Slot:4b,id:"minecraft:stone",count:64},{Slot:5b,id:"minecraft:stone",count:64},{Slot:6b,id:"minecraft:stone",count:64},{Slot:7b,id:"minecraft:stone",count:64},{Slot:8b,id:"minecraft:stone",count:64},{Slot:9b,id:"minecraft:stone",count:64},{Slot:10b,id:"minecraft:stone",count:64},{Slot:11b,id:"minecraft:stone",count:64},{Slot:12b,id:"minecraft:stone",count:64},{Slot:13b,id:"minecraft:stone",count:64},{Slot:14b,id:"minecraft:stone",count:64}]}']
+    - [2, 1, 16, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 18, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64},{Slot:3b,id:"minecraft:stone",count:64},{Slot:4b,id:"minecraft:stone",count:64},{Slot:5b,id:"minecraft:stone",count:64},{Slot:6b,id:"minecraft:stone",count:64},{Slot:7b,id:"minecraft:stone",count:64},{Slot:8b,id:"minecraft:stone",count:64},{Slot:9b,id:"minecraft:stone",count:64},{Slot:10b,id:"minecraft:stone",count:64},{Slot:11b,id:"minecraft:stone",count:64},{Slot:12b,id:"minecraft:stone",count:64},{Slot:13b,id:"minecraft:stone",count:64},{Slot:14b,id:"minecraft:stone",count:64},{Slot:15b,id:"minecraft:stone",count:64},{Slot:16b,id:"minecraft:stone",count:64},{Slot:17b,id:"minecraft:stone",count:64},{Slot:18b,id:"minecraft:stone",count:64},{Slot:19b,id:"minecraft:stone",count:64},{Slot:20b,id:"minecraft:stone",count:64},{Slot:21b,id:"minecraft:stone",count:64},{Slot:22b,id:"minecraft:stone",count:64},{Slot:23b,id:"minecraft:stone",count:64},{Slot:24b,id:"minecraft:stone",count:64},{Slot:25b,id:"minecraft:stone",count:64},{Slot:26b,id:"minecraft:stone",count:64}]}']
+    - [0, 1, 18, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [3, 1, 18, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 20, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64},{Slot:3b,id:"minecraft:stone",count:64},{Slot:4b,id:"minecraft:stone",count:64},{Slot:5b,id:"minecraft:stone",count:64},{Slot:6b,id:"minecraft:stone",count:64},{Slot:7b,id:"minecraft:stone",count:64},{Slot:8b,id:"minecraft:stone",count:64},{Slot:9b,id:"minecraft:stone",count:64},{Slot:10b,id:"minecraft:stone",count:64},{Slot:11b,id:"minecraft:stone",count:64},{Slot:12b,id:"minecraft:stone",count:64},{Slot:13b,id:"minecraft:stone",count:64},{Slot:14b,id:"minecraft:stone",count:64},{Slot:15b,id:"minecraft:stone",count:64},{Slot:16b,id:"minecraft:stone",count:64},{Slot:17b,id:"minecraft:stone",count:64},{Slot:18b,id:"minecraft:stone",count:64},{Slot:19b,id:"minecraft:stone",count:64},{Slot:20b,id:"minecraft:stone",count:64},{Slot:21b,id:"minecraft:stone",count:64},{Slot:22b,id:"minecraft:stone",count:64},{Slot:23b,id:"minecraft:stone",count:64},{Slot:24b,id:"minecraft:stone",count:64},{Slot:25b,id:"minecraft:stone",count:64},{Slot:26b,id:"minecraft:stone",count:64}]}']
+    - [0, 1, 20, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [3, 1, 20, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 20
+inputs:
+  - {tick: 2, pos: [2, 1, 0], action: use}
+  - {tick: 6, pos: [2, 1, 0], action: use}
+  - {tick: 2, pos: [2, 1, 2], action: use}
+  - {tick: 6, pos: [2, 1, 2], action: use}
+  - {tick: 2, pos: [2, 1, 4], action: use}
+  - {tick: 6, pos: [2, 1, 4], action: use}
+  - {tick: 2, pos: [2, 1, 6], action: use}
+  - {tick: 6, pos: [2, 1, 6], action: use}
+  - {tick: 2, pos: [2, 1, 8], action: use}
+  - {tick: 6, pos: [2, 1, 8], action: use}
+  - {tick: 2, pos: [2, 1, 10], action: use}
+  - {tick: 6, pos: [2, 1, 10], action: use}
+  - {tick: 2, pos: [2, 1, 12], action: use}
+  - {tick: 6, pos: [2, 1, 12], action: use}
+  - {tick: 2, pos: [2, 1, 14], action: use}
+  - {tick: 6, pos: [2, 1, 14], action: use}
+  - {tick: 2, pos: [2, 1, 16], action: use}
+  - {tick: 6, pos: [2, 1, 16], action: use}
+  - {tick: 2, pos: [0, 1, 18], action: use}
+  - {tick: 6, pos: [0, 1, 18], action: use}
+  - {tick: 2, pos: [3, 1, 18], action: use}
+  - {tick: 6, pos: [3, 1, 18], action: use}
+  - {tick: 2, pos: [0, 1, 20], action: use}
+  - {tick: 6, pos: [0, 1, 20], action: use}
+  - {tick: 2, pos: [3, 1, 20], action: use}
+  - {tick: 6, pos: [3, 1, 20], action: use}
+probes:
+  cmp_copper_chest: [2, 1, 0]
+  cmp_exposed_copper_chest: [2, 1, 2]
+  cmp_weathered_copper_chest: [2, 1, 4]
+  cmp_oxidized_copper_chest: [2, 1, 6]
+  cmp_waxed_copper_chest: [2, 1, 8]
+  cmp_waxed_exposed_copper_chest: [2, 1, 10]
+  cmp_waxed_weathered_copper_chest: [2, 1, 12]
+  cmp_waxed_oxidized_copper_chest: [2, 1, 14]
+  cmp_chest_15: [2, 1, 16]
+  dbl_same_left: [0, 1, 18]
+  dbl_same_right: [3, 1, 18]
+  dbl_mixed_left: [0, 1, 20]
+  dbl_mixed_right: [3, 1, 20]

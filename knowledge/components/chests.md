@@ -72,5 +72,5 @@ Zeitabläufe. Zeitangaben in Game-Ticks (gt).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `CopperChestBlock`, `BlockEntityTypes#CHEST`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-copper-chests.yaml)
 - Hinweise: `CopperChestBlock#updateShape` gleicht die Blockart einer verbundenen Hälfte an (Oxidation, Wachs); der Simulator bildet das nicht nach.

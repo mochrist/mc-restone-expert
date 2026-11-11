@@ -124,7 +124,7 @@ experimentelle Redstone relevant.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `Level#updateNeighbourForOutputSignal`, `Direction.Plane.HORIZONTAL`; [SRC-WIKI-BLOCK-UPDATE]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-comparator-updates.yaml)
 - Hinweise: Die Ausrichtung des Komparators wird nicht geprüft. Ausgelöst von `setBlock` (Flag 1, neuer Zustand mit `hasAnalogOutputSignal`), von `BlockEntity#setChanged` (Inventaränderung) und einigen Blöcken direkt.
 
 ### UPD-015: Komparator-Updates nach Inventaränderung laufen bei jedem setChanged
@@ -132,7 +132,7 @@ experimentelle Redstone relevant.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `BlockEntity#setChanged`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-comparator-updates.yaml)
 
 ### UPD-016: Nur Staub erzeugt indirekte Shape-Updates
 - Aussage: `updateIndirectNeighbourShapes` ist im Default leer und wird in 26.3 nur von `RedstoneWireBlock` überschrieben (Shape-Updates an diagonal darüber/darunter liegenden Staub).

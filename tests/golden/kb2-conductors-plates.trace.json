@@ -1,0 +1,145 @@
+{
+  "format": 1,
+  "scenario": "kb2-conductors-plates",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 60,
+  "probes": {
+    "lamp_stone": [
+      2,
+      1,
+      0
+    ],
+    "lamp_glass": [
+      2,
+      1,
+      2
+    ],
+    "lamp_slab_bottom": [
+      2,
+      1,
+      4
+    ],
+    "lamp_slab_double": [
+      2,
+      1,
+      6
+    ],
+    "lamp_soul_sand": [
+      2,
+      1,
+      14
+    ],
+    "lamp_hopper": [
+      2,
+      1,
+      16
+    ],
+    "plate": [
+      1,
+      2,
+      18
+    ],
+    "lamp_below": [
+      2,
+      1,
+      18
+    ],
+    "lamp_beside": [
+      2,
+      2,
+      18
+    ],
+    "lamp_above": [
+      2,
+      3,
+      18
+    ]
+  },
+  "samples": {
+    "lamp_stone": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        2,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "lamp_glass": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ],
+    "lamp_slab_bottom": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ],
+    "lamp_slab_double": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        2,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "lamp_soul_sand": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        2,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "lamp_hopper": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ],
+    "plate": [
+      [
+        0,
+        "minecraft:stone_pressure_plate[powered=false]"
+      ],
+      [
+        2,
+        "minecraft:stone_pressure_plate[powered=true]"
+      ]
+    ],
+    "lamp_below": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        6,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "lamp_beside": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        2,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "lamp_above": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ]
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "format": 1,
+  "scenario": "kb2-qc-updates",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 30,
+  "probes": {
+    "piston_qc_updated": [
+      1,
+      1,
+      0
+    ],
+    "piston_qc_updated_head": [
+      2,
+      1,
+      0
+    ],
+    "piston_qc_untouched": [
+      1,
+      1,
+      3
+    ],
+    "piston_qc_untouched_head": [
+      2,
+      1,
+      3
+    ],
+    "dropper_qc_updated": [
+      1,
+      1,
+      7
+    ],
+    "dropper_qc_updated_cmp": [
+      3,
+      1,
+      7
+    ],
+    "dropper_qc_untouched": [
+      1,
+      1,
+      10
+    ],
+    "dropper_qc_untouched_cmp": [
+      3,
+      1,
+      10
+    ],
+    "dropper_via_repeater": [
+      3,
+      1,
+      14
+    ],
+    "dropper_via_repeater_cmp": [
+      5,
+      1,
+      14
+    ],
+    "dropper_via_repeater_gap": [
+      4,
+      1,
+      17
+    ],
+    "dropper_via_repeater_gap_cmp": [
+      6,
+      1,
+      17
+    ]
+  },
+  "samples": {
+    "piston_qc_updated": [
+      [
+        0,
+        "minecraft:piston[extended=false,facing=east]"
+      ],
+      [
+        3,
+        "minecraft:piston[extended=true,facing=east]"
+      ]
+    ],
+    "piston_qc_updated_head": [
+      [
+        0,
+        "minecraft:air"
+      ],
+      [
+        3,
+        "minecraft:moving_piston[facing=east,type=normal]"
+      ],
+      [
+        5,
+        "minecraft:piston_head[facing=east,short=false,type=normal]"
+      ]
+    ],
+    "piston_qc_untouched": [
+      [
+        0,
+        "minecraft:piston[extended=false,facing=east]"
+      ]
+    ],
+    "piston_qc_untouched_head": [
+      [
+        0,
+        "minecraft:air"
+      ]
+    ],
+    "dropper_qc_updated": [
+      [
+        0,
+        "minecraft:dropper[facing=east,triggered=false]"
+      ],
+      [
+        2,
+        "minecraft:dropper[facing=east,triggered=true]"
+      ]
+    ],
+    "dropper_qc_updated_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        8,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=1"
+      ]
+    ],
+    "dropper_qc_untouched": [
+      [
+        0,
+        "minecraft:dropper[facing=east,triggered=false]"
+      ]
+    ],
+    "dropper_qc_untouched_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ]
+    ],
+    "dropper_via_repeater": [
+      [
+        0,
+        "minecraft:dropper[facing=east,triggered=false]"
+      ],
+      [
+        4,
+        "minecraft:dropper[facing=east,triggered=true]"
+      ]
+    ],
+    "dropper_via_repeater_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        10,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=1"
+      ]
+    ],
+    "dropper_via_repeater_gap": [
+      [
+        0,
+        "minecraft:dropper[facing=east,triggered=false]"
+      ]
+    ],
+    "dropper_via_repeater_gap_cmp": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ]
+    ]
+  }
+}

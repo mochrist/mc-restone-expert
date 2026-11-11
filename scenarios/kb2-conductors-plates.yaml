@@ -1,0 +1,59 @@
+name: kb2-conductors-plates
+description: >
+  Leiter-Eigenschaft und Druckplatten. z=0..16 (PWR-001): Ein Hebel an der Westseite eines Blocks B lädt B stark,
+  daneben liegt eine Lampe; sie leuchtet nur, wenn B ein Redstone-Leiter ist (voller Kollisionswürfel: Stein,
+  Doppelplatte; nicht: Glas, untere Platte, Trichter; Seelensand leitet im Spiel trotz 14/16 Kollisionshöhe). z=18 (PWR-008, SRCB-006): Eine eingedrückte Druckplatte (powered=true per setblock, ohne Entity) lädt
+  den Stein darunter stark (Lampe daneben leuchtet, sobald sie bei Tick 6 ein Neighbor-Update bekommt; setblock aktualisiert nur die Nachbarn der Platte), versorgt ihre Nachbarn schwach (Lampe neben der Platte
+  leuchtet) und lädt den Stein darüber nicht (Lampe daneben bleibt aus).
+build:
+  size: [4, 5, 20]
+  fill:
+    - [0, 0, 0, 3, 0, 19, "stone"]
+  blocks:
+    - [1, 1, 0, "stone"]
+    - [0, 1, 0, "lever[face=wall,facing=west,powered=false]"]
+    - [2, 1, 0, "redstone_lamp[lit=false]"]
+    - [1, 1, 2, "glass"]
+    - [0, 1, 2, "lever[face=wall,facing=west,powered=false]"]
+    - [2, 1, 2, "redstone_lamp[lit=false]"]
+    - [1, 1, 4, "oak_slab[type=bottom,waterlogged=false]"]
+    - [0, 1, 4, "lever[face=wall,facing=west,powered=false]"]
+    - [2, 1, 4, "redstone_lamp[lit=false]"]
+    - [1, 1, 6, "oak_slab[type=double,waterlogged=false]"]
+    - [0, 1, 6, "lever[face=wall,facing=west,powered=false]"]
+    - [2, 1, 6, "redstone_lamp[lit=false]"]
+    - [1, 1, 14, "soul_sand"]
+    - [0, 1, 14, "lever[face=wall,facing=west,powered=false]"]
+    - [2, 1, 14, "redstone_lamp[lit=false]"]
+    - [1, 1, 16, "hopper[enabled=true,facing=down]"]
+    - [0, 1, 16, "lever[face=wall,facing=west,powered=false]"]
+    - [2, 1, 16, "redstone_lamp[lit=false]"]
+    - [1, 1, 18, "stone"]
+    - [1, 2, 18, "stone_pressure_plate[powered=false]"]
+    - [1, 3, 18, "stone"]
+    - [2, 1, 18, "redstone_lamp[lit=false]"]
+    - [2, 2, 18, "redstone_lamp[lit=false]"]
+    - [2, 3, 18, "redstone_lamp[lit=false]"]
+ticks: 60
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 2, pos: [0, 1, 2], action: use}
+  - {tick: 2, pos: [0, 1, 4], action: use}
+  - {tick: 2, pos: [0, 1, 6], action: use}
+  - {tick: 2, pos: [0, 1, 14], action: use}
+  - {tick: 2, pos: [0, 1, 16], action: use}
+  - {tick: 2, pos: [1, 2, 18], action: setblock, state: "stone_pressure_plate[powered=true]"}
+  - {tick: 6, pos: [3, 1, 18], action: setblock, state: "stone"}
+  - {tick: 6, pos: [3, 2, 18], action: setblock, state: "stone"}
+  - {tick: 6, pos: [3, 3, 18], action: setblock, state: "stone"}
+probes:
+  lamp_stone: [2, 1, 0]
+  lamp_glass: [2, 1, 2]
+  lamp_slab_bottom: [2, 1, 4]
+  lamp_slab_double: [2, 1, 6]
+  lamp_soul_sand: [2, 1, 14]
+  lamp_hopper: [2, 1, 16]
+  plate: [1, 2, 18]
+  lamp_below: [2, 1, 18]
+  lamp_beside: [2, 2, 18]
+  lamp_above: [2, 3, 18]

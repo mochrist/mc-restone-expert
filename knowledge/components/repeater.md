@@ -79,7 +79,7 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#shouldPrioritize`, `DiodeBlock#checkTickOnNeighbor`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-priorities.yaml)
 - Hinweise: Gilt für in Reihe geschaltete Dioden und für Dioden, die seitlich gespeist (gesperrt) werden.
 
 ### REP-010: Tick-Priorität VERY_HIGH beim Ausschalten, sonst HIGH
@@ -127,7 +127,7 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RepeaterBlock#updateShape`, `RepeaterBlock#getStateForPlacement`, `RepeaterBlock#isLocked`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-priorities.yaml)
 - Hinweise: Für den Simulator: `locked` im Blockstate ist ein Anzeigewert; entscheidend ist die aktuelle Seitenleistung beim Tick/Update.
 
 ### REP-016: Beim Platzieren mit anliegendem Eingang wird ein Tick nach 1 gt geplant

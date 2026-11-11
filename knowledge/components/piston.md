@@ -49,7 +49,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#triggerEvent`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-pistons-ticks.yaml)
 - Hinweise: Entscheidend ist also der Leistungszustand zur Block-Event-Phase, nicht nur der zum Zeitpunkt des Einreihens.
 
 ### PIS-006: Ausfahren setzt sofort extended=true und erzeugt moving_piston-Blöcke
@@ -73,7 +73,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonMovingBlockEntity#tick`, `PistonMovingBlockEntity#finalTick`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-pistons-ticks.yaml)
 - Hinweise: Würde der Endblock an der Position nicht überleben (`updateFromNeighbourShapes` liefert Luft), wird er stattdessen platziert und über `Block#updateOrDestroy` entfernt.
 
 ### PIS-009: Eine eingefahrene Basis kann frühestens in T+3 wieder ausfahren

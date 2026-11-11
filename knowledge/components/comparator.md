@@ -31,7 +31,7 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ComparatorBlock#checkTickOnNeighbor`, `DiodeBlock#shouldPrioritize`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-priorities.yaml)
 - Hinweise: Anders als beim Repeater gibt es kein EXTREMELY_HIGH/VERY_HIGH.
 
 ### CMP-004: Ein Tick wird nur geplant, wenn sich Ausgangsstärke oder `powered` ändern würden
@@ -122,8 +122,8 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ComparatorBlock#tick`, `ComparatorBlock#refreshOutputState`
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: Im Compare-Modus wird also auch ohne Änderung ein Update nach vorne ausgelöst. Ändert sich `powered`, kommt über `DiodeBlock#onPlace` ein weiteres `updateNeighborsInFront` hinzu.
+- Status: im-Spiel-verifiziert (scenarios/kb2-comparator-updates.yaml)
+- Hinweise: Im Compare-Modus wird also auch ohne Änderung ein Update nach vorne ausgelöst. Ändert sich `powered`, kommt über `DiodeBlock#onPlace` ein weiteres `updateNeighborsInFront` hinzu. Im Spiel geprüft: Compare-Modus mit unverändertem Wert aktualisiert den Staub davor; im Subtract-Modus mit gleichem Eingang (2) und veraltetem powered=false passierte dagegen gar nichts (kein Tick, powered bleibt false), das Verhalten dort ist nicht Teil der Verifikation.
 
 ### CMP-016: Moduswechsel wirkt sofort ohne Verzögerung
 - Aussage: Ein Rechtsklick ändert `mode` (Flag 2) und ruft sofort `refreshOutputState` auf, also ohne 2-gt-Verzögerung.
@@ -137,7 +137,7 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `Level#updateNeighbourForOutputSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-comparator-updates.yaml)
 - Hinweise: Reihenfolge aus `Direction.Plane.HORIZONTAL`.
 
 ### CMP-018: Auslöser für Comparator-Updates
@@ -145,5 +145,5 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `Level#setBlock`, `BlockEntity#setChanged`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-comparator-updates.yaml)
 - Hinweise: Damit reagieren Comparatoren auf Inventaränderungen von Truhen, Trichtern usw.
