@@ -80,13 +80,15 @@ def _values(spec: Spec) -> tuple:
     return tuple(spec.output_column(i) for i in range(len(spec.outputs)))
 
 
-_BEST: dict[tuple, list[Candidate]] = {}  # parts already designed in this process (by table and depth)
+# parts already designed in this process, by input names, table and depth (the names are in the designs'
+# descriptions, so a part with the same table but other inputs must not reuse them)
+_BEST: dict[tuple, list[Candidate]] = {}
 
 
 def _best(spec: Spec, depth: int, driven: bool = False) -> list[Candidate]:
     """The best few working designs of a part: templates, PLA, or a further decomposition. driven: the
     first input will take a line from another part (`drivable_first`)."""
-    key = (len(spec.inputs), _values(spec), depth, driven)
+    key = (tuple(spec.inputs), _values(spec), depth, driven)
     if key not in _BEST:
         _BEST[key] = _design_part(spec, depth, driven)
     return [replace(c, inputs=list(c.inputs)) for c in _BEST[key]]

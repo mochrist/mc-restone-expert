@@ -1,7 +1,7 @@
 name: cmp-xor4
 description: 'Zerlegung für examples/specs/composed/xor4.yaml: xor2-comparator-repeater → xor2-comparator-repeater → xor2-comparator-repeater-kompakt
   (kompaktiert aus zerlegt: g(a, b), h(g, c, d); komponiert: template:xor2-comparator-repeater (a→a, b→b) → zerlegt: g(g,
-  c), h(g, d); komponiert: template:xor2-comparator-repeater (g→b, c→a) → template:xor2-comparator-repeater (g→b, c→a)). Alle
+  c), h(g, d); komponiert: template:xor2-comparator-repeater (g→b, c→a) → template:xor2-comparator-repeater (g→b, d→a)). Alle
   Hebel-Kombinationen im Gray-Code, je 30 gt Abstand.'
 build:
   size: [9, 3, 9]
