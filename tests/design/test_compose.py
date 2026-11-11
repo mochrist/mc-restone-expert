@@ -196,3 +196,33 @@ def test_enclosed_output_connects_with_tight_lines():
     fa = next(t for t in TEMPLATES if t.name == "fulladder-comparator").build()
     assert all(connect(fa, 1, fa, 0, lay) is None for lay in layouts())  # output 1: the carry
     assert len(list(itertools.islice(chains(fa, 1, fa, 0), 3))) == 3
+
+
+def test_redesign_of_recorded_behaviour_with_four_levers():
+    """Beyond GUESS_INPUTS levers only the gate the analysis found is tried; the pulses under held levers
+    keep compaction from dropping half of the logic (without them a 24-block design passed)."""
+    from redstone.analysis.analyze import analyze
+    from redstone.cli import _spec_of_existing
+    from redstone.design.search import GUESS_INPUTS, gate_guesses, redesign
+    from redstone.verify import load_scenario
+
+    grid = load_scenario(ROOT / "tests/fixtures/analysis/gated/t-flip-flop-and-or4.yaml").grid
+    spec, original = _spec_of_existing(analyze(grid), "and-or4")
+    assert len(spec.inputs) == 4 > GUESS_INPUTS
+    assert spec.gate_hints == ["(in3 and in4) or (in1 and in2)"]
+    assert any(t.name == "in1 5 gt an, während in2 an" for t in spec.trials)
+    assert [g.gate for g, _ in gate_guesses(spec)] == spec.gate_hints
+    best = next(e for e in redesign(spec, compact_budget=100) if e.ok)
+    assert best.candidate.origin.removeprefix("kompaktiert aus ").startswith("komponiert")
+    assert len(best.candidate.grid) >= 40
+
+
+def test_timing_behind_logic_is_not_redesigned_as_a_truth_table():
+    from redstone.analysis.analyze import analyze
+    from redstone.cli import _spec_of_existing
+    from redstone.verify import load_scenario
+
+    grid = load_scenario(ROOT / "scenarios/cmp-pulse-extender-and.yaml").grid
+    spec, _ = _spec_of_existing(analyze(grid), "cmp")
+    assert isinstance(spec, bh.BehaviourSpec)  # the AND table alone meets steady states and transitions
+    assert spec.gate_hints == ["in1 and in2"]

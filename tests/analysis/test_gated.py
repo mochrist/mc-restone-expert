@@ -183,3 +183,12 @@ def test_plain_gates_have_no_timing_block(path):
     a = _analysis(ROOT / path)
     assert a.timing == {}
     assert not any(p.startswith("Logik vor Zeitglied") or "während" in p for p in a.patterns)
+
+
+def test_t_flip_flop_behind_gate_of_four_levers():
+    a = _analysis(GATED / "t-flip-flop-and-or4.yaml")
+    blocks = {b.output.name: b for b in a.gated}
+    assert set(blocks) == {"out1", "out2"}
+    for b in blocks.values():
+        assert (b.kind, b.gate) == (TFF_RISING, "(in3 AND in4) OR (in1 AND in2)")
+        assert [p.name for p in b.levers] == ["in1", "in2", "in3", "in4"]

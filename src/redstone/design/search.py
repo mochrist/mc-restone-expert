@@ -176,17 +176,22 @@ def gate_guesses(spec, log: list[str] | None = None) -> list:
     levers are off, depending on all levers) for which some timing/memory block, driven by g without delay,
     reproduces the recording. Returns gated specs (gate, inner = the derived one-lever spec) with the blocks
     that passed, as (spec, [Evaluation]). This is the cheap first stage; `compose_candidates` builds and
-    checks the real layouts."""
+    checks the real layouts.
+
+    The gates the analysis found (`spec.gate_hints`) come first; beyond GUESS_INPUTS levers only they are
+    tried (there are 2^(2^n - 1) functions)."""
     from dataclasses import replace as dc_replace
 
     n = len(spec.inputs)
-    if (spec.gate is not None or not 2 <= n <= GUESS_INPUTS or len(spec.outputs) != 1
+    hints = list(dict.fromkeys(spec.gate_hints))
+    if (spec.gate is not None or n < 2 or (n > GUESS_INPUTS and not hints) or len(spec.outputs) != 1
             or any(k != "lever" for k in spec.input_kinds) or any(t.periodic for t in spec.trials)):
         return []
+    gates = hints + ([g for g in (gate_expression(list(spec.inputs), ones) for ones in gate_functions(n))
+                      if g not in hints] if n <= GUESS_INPUTS else [])
     blocks_all = None
     out = []
-    for ones in gate_functions(n):
-        gate = gate_expression(list(spec.inputs), ones)
+    for gate in gates:
         inner = _derived_inner(spec, gate)
         if blocks_all is None:
             blocks_all = seq_candidates(inner)

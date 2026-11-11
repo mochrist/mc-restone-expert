@@ -167,7 +167,13 @@ def _spec_of_existing(analysis, title: str, wanted: str | None = None):
                              + ", ".join(by_name))
         chosen = [by_name[n] for n in names]
     original = original_candidate(analysis, "Original")
+    # an output with a timing block or memory behind its logic meets the truth table in steady states and
+    # transitions, but the table would drop the timing: use the recorded behaviour for it
+    timed = set(analysis.timing) | {b.output.name for b in analysis.gated}
+    considered = chosen if chosen is not None else analysis.outputs
     try:
+        if any(o.name in timed for o in considered):
+            raise ValueError("timing behind logic")
         spec = specmod.from_analysis(analysis, title)
         if chosen is not None:
             idx = [spec.outputs.index(o.name) for o in chosen]
@@ -185,8 +191,9 @@ def _spec_of_existing(analysis, title: str, wanted: str | None = None):
     ports = [p for p in analysis.inputs if p.kind in ("lever", "button")]
     if not ports or not analysis.outputs:
         raise ValueError("Die Schaltung hat keine Hebel/Knöpfe als Eingänge oder keine Ausgänge")
-    if len(ports) > 3:
-        raise ValueError("Verhaltens-Spezifikationen werden bisher nur für bis zu 3 Eingänge aufgezeichnet")
+    if len(ports) > MAX_RECORDED_INPUTS:
+        raise ValueError(f"Verhaltens-Spezifikationen werden bisher nur für bis zu {MAX_RECORDED_INPUTS} Eingänge "
+                         "aufgezeichnet")
     from .analysis.experiment import Circuit
 
     # lamps are what the builder looks at; bulbs, torches etc. next to them are usually internal
@@ -198,6 +205,8 @@ def _spec_of_existing(analysis, title: str, wanted: str | None = None):
         outputs = [o for o in analysis.outputs if analysis.grid.get(o.pos).id == "redstone_lamp"] or analysis.outputs
     spec = bh.from_recordings([p.name for p in ports], [p.kind for p in ports], [o.name for o in outputs],
                               Circuit(analysis.grid), [o.pos for o in outputs], [p.pos for p in ports], title)
+    if len(outputs) == 1 and len(ports) == len(levers := [p for p in ports if p.kind == "lever"]):
+        spec.gate_hints = _gate_hints(analysis, levers, outputs[0])
     skipped = [o for o in analysis.outputs if o not in outputs]
     if skipped and chosen is None:
         spec.notes.append("Nur die Lampen gelten als Ausgänge (andere mit --outputs wählen); nicht verlangt: "
@@ -205,6 +214,28 @@ def _spec_of_existing(analysis, title: str, wanted: str | None = None):
     cand = Candidate("Original", analysis.grid, [p.pos for p in ports], [o.pos for o in outputs],
                      "die analysierte Bestandsschaltung", origin="original")
     return spec, cand
+
+
+MAX_RECORDED_INPUTS = 6  # stimuli: per input 8 pulses, plus every ordered pair (49 + 30 runs for 6 inputs)
+
+
+def _gate_hints(analysis, levers, output) -> list[str]:
+    """Gate expressions over all levers that the analysis found in front of the output: the logic in front of
+    an edge-triggered block or memory (`analysis.gated`), or the truth table in front of a timing block
+    (`analysis.timing`). Gates that leave a lever out are skipped (the composed logic has every lever)."""
+    from .design.search import depends_on_all, gate_expression
+
+    names = [p.name for p in levers]
+    hints = []
+    for b in analysis.gated:
+        if b.output.name == output.name and [p.name for p in b.levers] == names:
+            hints.append(b.expression)
+    if output.name in analysis.timing and analysis.truth_table:
+        j = analysis.outputs.index(output)
+        table = {c: o[j] for c, o in analysis.truth_table}
+        if depends_on_all(table):
+            hints.append(gate_expression(names, [c for c, v in sorted(table.items()) if v]))
+    return hints
 
 
 def _partial_spec(analysis, title: str, original, chosen):

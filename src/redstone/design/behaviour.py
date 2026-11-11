@@ -51,6 +51,9 @@ class BehaviourSpec:
     # composed specs (`gated`): a logic function of the levers drives a one-input building block
     gate: str | None = None  # Python bool expression over `inputs`
     inner: BehaviourSpec | None = None  # the building block's own spec (input "in")
+    # recorded specs: gate expressions the analysis found in front of a block (`search.gate_guesses` tries
+    # them first, and with more than GUESS_INPUTS levers only them)
+    gate_hints: list[str] = field(default_factory=list)
 
     def describe(self) -> str:
         return self.kind or f"{len(self.trials)} Testabläufe"
@@ -357,6 +360,10 @@ def from_dict(d: dict, source: str = "") -> BehaviourSpec:
     return spec
 
 
+HELD_ALL = 4  # recorded specs with up to this many levers: pulses under every combination of the other levers
+HELD_LEVERS = 2  # with more levers: under every combination of at most this many other levers
+
+
 def from_recordings(names_in: list[str], kinds: list[str], names_out: list[str], circuit: Circuit,
                     out_positions, in_positions, title: str = "", tolerance: int = 4) -> BehaviourSpec:
     """Record the standard stimuli on an existing circuit and use its outputs as the expected behaviour."""
@@ -379,6 +386,16 @@ def from_recordings(names_in: list[str], kinds: list[str], names_out: list[str],
     # inputs held together (combinational overlap)
     if len(kinds) > 1 and all(k == "lever" for k in kinds):
         stimuli.append(("alle Hebel zusammen 20 gt an", [a for i in range(len(kinds)) for a in pulse(i, START, 20)]))
+        # logic in front of a block (as experiment 5 of the analysis): pulse each lever while others are on;
+        # without these a gate like (a and b) or (c and d) is only ever seen with all levers on
+        n = len(kinds)
+        for i in range(n):
+            others = [k for k in range(n) if k != i]
+            for r in range(1, min(len(others), HELD_LEVERS if n > HELD_ALL else n) + 1):
+                for held in itertools.combinations(others, r):
+                    label = ", ".join(names_in[k] for k in held)
+                    stimuli.append((f"{names_in[i]} 5 gt an, während {label} an",
+                                    [(START, k) for k in held] + pulse(i, START + SETUP, 5)))
     skipped = []
     for label, actions in stimuli:
         acts = [(t, in_positions[k], "use") for t, k in actions]
@@ -392,7 +409,7 @@ def from_recordings(names_in: list[str], kinds: list[str], names_out: list[str],
     if not trials:
         raise ValueError("Die Schaltung kommt bei keinem Testablauf zur Ruhe; Verhalten nicht aufzeichenbar")
     spec = BehaviourSpec(names_in, kinds, names_out, trials,
-                         "gemessenes Verhalten (Pulse je Eingang, Eingangspaare)", tolerance,
+                         "gemessenes Verhalten (Pulse je Eingang, Eingangspaare, Pulse bei gehaltenen Hebeln)", tolerance,
                          source=f"Analyse von {title}" if title else "Analyse")
     if skipped:
         spec.notes.append("Nicht aufgezeichnet, weil die Schaltung danach nicht zur Ruhe kommt: " + ", ".join(skipped))

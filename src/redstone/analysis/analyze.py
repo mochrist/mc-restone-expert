@@ -6,7 +6,7 @@ Experiments (all in the simulator, which is validated against the real game):
 3. Per input: lever toggled 4 times (on/off/on/off) or button pressed 3 times, each time waiting
    until the circuit is idle. Yields delays, pulse lengths, edge reactions, toggling.
 4. Truth table for 2-6 levers: every combination in a fresh world.
-5. Logic in front of a block, for 2-3 levers: experiment 3 for every lever while the other levers hold each
+5. Logic in front of a block, for 2-4 levers: experiment 3 for every lever while the other levers hold each
    combination (`patterns.gate_from_edges`). Finds e.g. a T flip-flop clocked by in1 AND in2, whose truth
    table alone would look like an AND gate.
 6. Pulse response behind logic: where an output follows a lever only while other levers are on (e.g. an AND
@@ -32,7 +32,7 @@ QUIET = 12
 MAX_TRUTH_TABLE_LEVERS = 6  # 64 fresh runs
 MAX_OUTPUTS = 64  # beyond that the schematic is rarely one circuit; analysing all would be slow
 MAX_HELD_PULSE_GROUPS = 24  # pulse responses with other levers held on: 11 runs per (lever, held levers)
-MAX_GATED_LEVERS = 3  # logic in front of a block: n * 2^(n-1) toggle experiments (as `search.GUESS_INPUTS`)
+MAX_GATED_LEVERS = 4  # logic in front of a block: n * 2^(n-1) toggle experiments (32 for 4 levers)
 
 
 @dataclass
