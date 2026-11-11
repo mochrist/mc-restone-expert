@@ -151,3 +151,35 @@ def test_memory_behind_gate(name, gate):
     assert (b.kind, b.gate) == (MEMORY, gate)
     assert b.summary == f"{MEMORY}, gesetzt durch {gate}"
     assert ("nicht beobachtbar" in b.detail) == (gate == "in1 OR in2")
+
+
+# ---------------------------------------------------------------------- timing block behind a gate
+EXTENDED = "kurze Pulse werden auf mindestens 12 gt verlängert"
+
+
+@pytest.mark.parametrize("name, gate", [("pulse-extender-and", "AND"), ("pulse-extender-or", "OR")])
+def test_pulse_extender_behind_gate(name, gate):
+    a = _analysis(GATED / f"{name}.yaml")
+    assert a.gates["out2"] == gate  # the lamp; out1 is the copper bulb inside the extender
+    assert a.timing == {"out2": EXTENDED}
+    assert f"Logik vor Zeitglied an out2: {gate}, dahinter: {EXTENDED}" in a.patterns
+    held = [r for r in a.pulse_responses if r.held and r.output.name == "out2"]
+    if gate == "AND":  # the lamp follows a lever only while the other one is on
+        assert sorted((r.input.name, [p.name for p in r.held]) for r in held) == [("in1", ["in2"]), ("in2", ["in1"])]
+        assert all(r.table[1] == [] and r.table[5][0][1] == 16 and r.table[20][0][1] == 24 for r in held)
+        assert held[0].label == "in1 → out2, während in2 an"
+    else:  # an OR passes each lever on its own: nothing to hold
+        assert held == []
+    text = explain(a, name)
+    assert f"- out2 hängt von mehreren Eingängen ab: **{gate}**, dahinter ein Zeitglied: **{EXTENDED}**" in text
+    assert ("während in2 an |" in text) == (gate == "AND")
+
+
+@pytest.mark.parametrize("path", [
+    "scenarios/tpl-and2-torch.yaml", "scenarios/pla-fulladder.yaml", "scenarios/cmp-and5.yaml",
+    "scenarios/tpl-or2-direct.yaml",
+])
+def test_plain_gates_have_no_timing_block(path):
+    a = _analysis(ROOT / path)
+    assert a.timing == {}
+    assert not any(p.startswith("Logik vor Zeitglied") or "während" in p for p in a.patterns)

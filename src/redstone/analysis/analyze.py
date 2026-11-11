@@ -9,6 +9,9 @@ Experiments (all in the simulator, which is validated against the real game):
 5. Logic in front of a block, for 2-3 levers: experiment 3 for every lever while the other levers hold each
    combination (`patterns.gate_from_edges`). Finds e.g. a T flip-flop clocked by in1 AND in2, whose truth
    table alone would look like an AND gate.
+6. Pulse response behind logic: where an output follows a lever only while other levers are on (e.g. an AND
+   gate), the pulses of `patterns.pulse_response` are repeated with those levers held on. Finds e.g. a pulse
+   extender behind in1 AND in2, whose toggle reactions alone look like a slow gate.
 """
 
 from __future__ import annotations
@@ -27,6 +30,7 @@ MAX_TICKS = 400
 QUIET = 12
 MAX_TRUTH_TABLE_LEVERS = 6  # 64 fresh runs
 MAX_OUTPUTS = 64  # beyond that the schematic is rarely one circuit; analysing all would be slow
+MAX_HELD_PULSE_GROUPS = 24  # pulse responses with other levers held on: 11 runs per (lever, held levers)
 MAX_GATED_LEVERS = 3  # logic in front of a block: n * 2^(n-1) toggle experiments (as `search.GUESS_INPUTS`)
 
 
@@ -81,6 +85,8 @@ class Analysis:
     pulse_responses: list[PulseResponse] = field(default_factory=list)
     latches: list[Latch] = field(default_factory=list)
     gated: list[GatedBlock] = field(default_factory=list)  # logic in front of a T flip-flop / pulse generator
+    # output name -> what happens to pulses behind its logic (e.g. a pulse extender behind an AND gate)
+    timing: dict[str, str] = field(default_factory=dict)
     patterns: list[str] = field(default_factory=list)  # recognised building blocks, German
     # with too many levers for one table: (levers, outputs, table) per group of outputs with the same inputs
     partial_tables: list[tuple[list[Port], list[Port], list]] = field(default_factory=list)
@@ -265,6 +271,48 @@ def _gated_blocks(analysis: Analysis, circuit: Circuit, levers: list[Port], outp
         block = gated_block(out, levers, edges[j])
         if block is not None:
             analysis.gated.append(block)
+
+
+def _held_pulse_responses(analysis: Analysis, circuit: Circuit, levers: list[Port], outputs: list[Port]) -> None:
+    """Pulse responses for outputs that follow a lever only while other levers are on (truth table), with the
+    fewest such levers held on. Outputs behind an edge-triggered block or memory (`gated`) are left out."""
+    table = dict(analysis.truth_table)
+    n = len(levers)
+    gated = {b.output.name for b in analysis.gated}
+    seen = {(r.input.name, r.output.name) for r in analysis.pulse_responses if any(r.table.values())}
+    groups: dict[tuple[int, tuple[bool, ...]], list[Port]] = {}
+    for j, out in enumerate(outputs):
+        if out.name in gated or table[(False,) * n][j]:
+            continue
+        for i, lever in enumerate(levers):
+            if (lever.name, out.name) in seen:
+                continue
+            for low in sorted((c for c in table if not c[i]), key=lambda c: (sum(c), c)):
+                if not table[low][j] and table[low[:i] + (True,) + low[i + 1:]][j]:
+                    if any(low):
+                        groups.setdefault((i, low), []).append(out)
+                    break
+    if len(groups) > MAX_HELD_PULSE_GROUPS:
+        analysis.warnings.append(
+            f"Pulsantwort hinter Logik nur für die ersten {MAX_HELD_PULSE_GROUPS} von {len(groups)} "
+            "Kombinationen aus Hebel und gehaltenen Hebeln gemessen")
+    for (i, low), outs in sorted(groups.items())[:MAX_HELD_PULSE_GROUPS]:
+        analysis.pulse_responses.extend(pulse_response(
+            circuit, levers[i], outs, notes=analysis.notes, held=[levers[k] for k in range(n) if low[k]]))
+
+
+def _timing_behind_logic(analysis: Analysis) -> None:
+    """Outputs that depend on several levers and change the pulse length the same way for each of them."""
+    gated = {b.output.name for b in analysis.gated}
+    by_output: dict[str, list[PulseResponse]] = {}
+    for r in analysis.pulse_responses:
+        if any(r.table.values()):
+            by_output.setdefault(r.output.name, []).append(r)
+    for name, rs in by_output.items():
+        kinds = {r.kind.removeprefix("Pulsfilter; ") for r in rs}
+        if (len({r.input.name for r in rs}) >= 2 and name not in gated and len(kinds) == 1
+                and all(r.changes_length for r in rs)):
+            analysis.timing[name] = kinds.pop()
 
 
 def _truth_table(circuit: Circuit, levers: list[Port], outputs: list[Port]):
@@ -457,7 +505,14 @@ def analyze(grid: Grid, inputs: list[Port] | None = None, outputs: list[Port] | 
         for latch in analysis.latches:
             analysis.patterns.append(
                 f"RS-Latch an {latch.output.name}: {latch.set_input.name} setzt, {latch.reset_input.name} setzt zurück")
+        if analysis.truth_table and not any(p.state.get_bool("powered") for p in levers):
+            _held_pulse_responses(analysis, circuit, levers, outputs)
+            _timing_behind_logic(analysis)
+        for name, kind in analysis.timing.items():
+            analysis.patterns.append(f"Logik vor Zeitglied an {name}: {analysis.gates[name]}, dahinter: {kind}")
         for pr in analysis.pulse_responses:
+            if pr.held and (not pr.changes_length or pr.output.name in analysis.timing):
+                continue  # a gate that only swallows short pulses is no building block; see the pulse table
             if pr.kind.startswith(("Pulsfilter", "Pulsverkürzer", "Pulsverlängerer", "fester", "Puls wird um")):
-                analysis.patterns.append(f"{pr.kind} ({pr.input.name} → {pr.output.name})")
+                analysis.patterns.append(f"{pr.kind} ({pr.label})")
     return analysis

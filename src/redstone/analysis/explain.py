@@ -103,7 +103,8 @@ def explain(a: Analysis, title: str | None = None) -> str:
         summary.append(f"- {b.output.name}: **{b.summary}**" + (f" ({b.detail})" if b.detail else ""))
     multi = [n for n in _multi_input_outputs(a) if n not in gated]
     for name in multi:
-        summary.append(f"- {name} hängt von mehreren Eingängen ab: **{a.gates[name]}**")
+        summary.append(f"- {name} hängt von mehreren Eingängen ab: **{a.gates[name]}**"
+                       + (f", dahinter ein Zeitglied: **{a.timing[name]}**" if name in a.timing else ""))
     lines += summary or ["- Keine Reaktion an den Ausgängen gefunden."]
     lines.append("")
 
@@ -148,7 +149,9 @@ def explain(a: Analysis, title: str | None = None) -> str:
         lengths = sorted({L for r in pulses for L in r.table})
         lines += ["## Pulsantwort", "",
                   "Jeder Hebel wird in einer frischen Welt für L gt eingeschaltet. Die Tabelle zeigt die Länge des "
-                  "Ausgangspulses (– = kein Puls, ∞ = bleibt an, mehrere Pulse durch / getrennt).", ""]
+                  "Ausgangspulses (– = kein Puls, ∞ = bleibt an, mehrere Pulse durch / getrennt)."
+                  + (" Bei „während … an“ waren die genannten Hebel vorher eingeschaltet, weil der Ausgang dem "
+                     "Hebel nur dann folgt (Logik davor)." if any(r.held for r in pulses) else ""), ""]
         lines.append("| Eingang → Ausgang | " + " | ".join(f"{L}" for L in lengths) + " | Einordnung |")
         lines.append("|---|" + "---|" * len(lengths) + "---|")
         for r in pulses:
@@ -157,7 +160,7 @@ def explain(a: Analysis, title: str | None = None) -> str:
                 iv = r.table.get(L, [])
                 cells.append("/".join("∞" if n is None else str(n) for _, n in iv) or "–")
             kind = r.kind + (f" ({r.detail})" if r.detail else "")
-            lines.append(f"| {r.input.name} → {r.output.name} | " + " | ".join(cells) + f" | {kind} |")
+            lines.append(f"| {r.label} | " + " | ".join(cells) + f" | {kind} |")
         lines.append("")
 
     kinds = sorted({n.kind for n in a.notes})

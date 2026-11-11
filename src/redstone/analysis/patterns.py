@@ -36,6 +36,20 @@ class PulseResponse:
     table: dict[int, list[tuple[int, int | None]]] = field(default_factory=dict)
     kind: str = ""  # classification, German
     detail: str = ""
+    held: list[Port] = field(default_factory=list)  # levers switched on before the pulses (logic in front)
+
+    @property
+    def label(self) -> str:
+        held = f", während {', '.join(p.name for p in self.held)} an" if self.held else ""
+        return f"{self.input.name} → {self.output.name}{held}"
+
+    @property
+    def changes_length(self) -> bool:
+        """The circuit changes pulse lengths (extender, shortener, monoflop), not just passes or filters them."""
+        return self.kind.removeprefix("Pulsfilter; ").startswith(TIMING_KINDS)
+
+
+TIMING_KINDS = ("Pulsverkürzer", "Pulsverlängerer", "fester", "Puls wird um", "kurze Pulse")
 
 
 @dataclass
@@ -59,15 +73,25 @@ def _intervals(rec: Recording, pos: Pos, start: int) -> list[tuple[int, int | No
 
 
 def pulse_response(circuit: Circuit, lever: Port, outputs: list[Port],
-                   lengths: tuple[int, ...] = PULSE_LENGTHS, notes: list[Note] | None = None) -> list[PulseResponse]:
+                   lengths: tuple[int, ...] = PULSE_LENGTHS, notes: list[Note] | None = None,
+                   held: list[Port] = ()) -> list[PulseResponse]:
     """Switch the lever on for L ticks (fresh world per L) and record what each output does.
 
+    The levers in `held` are switched on first (tick 1); the pulse starts once the circuit is idle again. With
+    logic in front of a timing block this makes the logic follow the lever.
     Mechanics notes of the runs (e.g. block dropping at short pulses) are appended to `notes`."""
-    responses = [PulseResponse(lever, out) for out in outputs]
+    responses = [PulseResponse(lever, out, held=list(held)) for out in outputs]
+    setup = [(1, p.pos, "use") for p in held]
+    start = 1
+    if setup:
+        rec = circuit.run(list(setup), max_ticks=1 + MAX_TICKS, quiet=QUIET)
+        if rec.settled_at is None:
+            return []
+        start = rec.ticks + 1
     for length in lengths:
-        actions = [(1, lever.pos, "use"), (1 + length, lever.pos, "use")]
+        actions = setup + [(start, lever.pos, "use"), (start + length, lever.pos, "use")]
         world = circuit.new_world()
-        rec = circuit.run(actions, max_ticks=1 + length + MAX_TICKS, quiet=QUIET, world=world)
+        rec = circuit.run(actions, max_ticks=start + length + MAX_TICKS, quiet=QUIET, world=world)
         if notes is not None:
             notes.extend(notes_of(world))
         if rec.settled_at is None:
@@ -75,8 +99,8 @@ def pulse_response(circuit: Circuit, lever: Port, outputs: list[Port],
         for r in responses:
             if r.output.pos not in rec.series:
                 continue
-            initially_on = rec.on_at(r.output.pos, 0)
-            r.table[length] = [] if initially_on else _intervals(rec, r.output.pos, 1)
+            initially_on = rec.on_at(r.output.pos, start - 1)
+            r.table[length] = [] if initially_on else _intervals(rec, r.output.pos, start)
             if initially_on:
                 r.kind = "Ausgang ist im Ruhezustand an"
     for r in responses:
