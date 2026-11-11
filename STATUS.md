@@ -11,6 +11,18 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 95 %** (gew
 | M4 Redesign | 25 % | ~85 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
+## Übergabe (aus Session 11)
+
+Session 11 sauber beendet: alles gemergt und committet, keine Worktrees, Oracle-Sperre frei, Suite grün
+(Rust ~1350 Tests; Python-Kern `tests/sim` grün). Nächste Aufgaben, parallel möglich:
+
+| Aufgabe | Modell | Hängt ab von |
+|---|---|---|
+| Sculk-Sensor fertig: Rust-Kern nachziehen (Block-Art, Block-Entity, Event-Verteilung, Wolle-Verdeckung), Import in `sim/blocks/__init__.py` aktivieren, `scenarios/pending-sculk/*` nach `scenarios/` und im Spiel aufnehmen (zuerst `sculk-sources`, `sculk-wool`), Differenztest-Soup, `knowledge/components/sculk-sensor.md` | Sonnet | – |
+| M4: mehrere gemeinsame Zwischensignale bei der Zerlegung (z. B. Carry-Lookahead) | Opus | – |
+| M4: Kompaktier-Budget besser verteilen (~70 % gehen ans Entfernen einzelner Blöcke) | Opus (Hauptsession) | nach der Zerlegung, wegen `cmp-*`-Neuaufnahmen |
+| M0: restliche belegte Aussagen prüfen, die ohne Entities gehen | Sonnet | – |
+
 ## Verlauf
 
 ### Session 11 (2026-11-11): M3 und M4 (Fable-5.2-/Opus-Hauptsession; ab „Agents parallel“: 3 Sonnet-, 1 Opus-Agent)
@@ -54,6 +66,13 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 95 %** (gew
   nachstellen: 8 Nachbauten (Abstand 1–3, Staub dazwischen, gespeicherte Ausgänge, `use`, Zufallsmixe) alle
   identisch auf beiden Kernen; drei bleiben als Regression (`diag-cmp-lanes2`, `-lanes3`, `-lanes-rnd1`,
   Generator `scripts/gen_diag_cmp_lanes.py`). Vermutlich der Effekt „erste Aufnahme nach Serverstart“ (Session 10).
+- M2 (Sonnet-Agent, unvollständig): Sculk- und kalibrierter Sculk-Sensor im **Python-Kern**
+  (`sim/blocks/sculk.py`: Frequenzen, Radius 8/16, Laufzeit, Auswahl, Phasen 30/10 gt, Stärke nach Abstand,
+  Frequenzfilter, Wolle-Verdeckung, Resonanz; `World.game_event` mit Auslösern für Hebel, Knopf, Platte,
+  Notenblock, Tür/Falltür/Zauntor, Kolben, Spender, Tageslichtsensor). Noch **nicht registriert** (Rust fehlt,
+  sonst schlägt der Differenztest fehl). `sculk-lever-distance` im Spiel aufgenommen, stimmt mit dem Python-Kern
+  (13 Sensoren, Abstand 1–9); übrige Szenarien nur entworfen, in `scenarios/pending-sculk/`, Generator
+  `scripts/gen_sculk_scenarios.py`.
 - M4 (zweiter Opus-Agent): Kompositionen halten fest, welcher Block zu welchem Teil gehört
   (`Candidate.assembly`: Labels „0“, „1/0“ …, Leitungen „~0“, `ends`), gesetzt in `connect`, `routed`,
   `place_beside`, `wire`, `rotate` und durch alle Kompaktier-Schritte mitgeführt. `compact.parts` nutzt sie, so
@@ -307,6 +326,7 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
 4. **Restliche Simulator-Lücken (M2):**
+   - Sculk-Sensor: Python fertig, Rust und Spielaufnahmen fehlen (siehe Übergabe).
    - Tageslichtsensor erledigt (Session 11, nur feste Tageszeit, Himmelslicht angenähert). Kuchen
      (Session 11, nur Comparator und Halt; Essen nicht). Druckplatten, Detektorschiene, Sculk. Truhen (Session 8) und Crafter (Session 10, wenige Rezepte) erledigt.
    - Notenblock-Instrument nur über Blocknamen (ASSUMPTION; Feld `instrument` im Block-Dump fehlt).
