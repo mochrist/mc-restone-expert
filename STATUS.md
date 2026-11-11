@@ -1,19 +1,19 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 94 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 95 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~96 % | 285 Aussagen aus dem 26.3-Code belegt, 167 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 117 Golden Traces (außer `kb-unmodeled`: Kuchen) tick-genau überein; Truhen, Crafter neu |
+| M2 Oracle + Simulator | 35 % | ~94 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 119 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen |
 | M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
 | M4 Redesign | 25 % | ~83 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
 ## Verlauf
 
-### Session 11 (2026-11-11): M3 und M4 (Fable-5.2-/Opus-Hauptsession, keine Agents)
+### Session 11 (2026-11-11): M3 und M4 (Fable-5.2-/Opus-Hauptsession; ab „Agents parallel“: 3 Sonnet-, 1 Opus-Agent)
 
 - Logik vor Zeitglied (Pulsverlängerer, Pulsverkürzer, Monoflop hinter einem Gatter): Folgt ein Ausgang einem
   Hebel laut Wahrheitstabelle nur, wenn andere Hebel an sind, wird die Pulsantwort mit diesen Hebeln gehalten
@@ -48,9 +48,14 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 94 %** (gew
   Szenarien `kb-neighbor-updates`, `kb-observer`, `kb-piston-qc`, `kb-comparator-values`, `kb-comparator-stored`,
   `kb-sources`, `kb-unmodeled` (+ Regressionen `kb-cmp-timing`, `kb-cmp-timing2`). Trick: ein Repeater
   `powered=true`, Delay 1, ohne Eingang geht bei jedem Neighbor-Update aus und macht Updates sichtbar.
-  `kb-unmodeled` ist xfail, weil Kuchen (Comparator liest 14 − 2·Bissen) nicht modelliert ist.
+  Danach in der Hauptsession: Kuchen als Comparator-Quelle in beiden Kernen ((7 − Bissen)·2, fällt ohne
+  `solid`-Block darunter; Rust liest dafür jetzt das `solid`-Flag), `kb-unmodeled` damit identisch zum Spiel.
   Unbestätigte Beobachtung: in einem größeren Aufbau (36 Spuren, Comparator-Spuren im Abstand 2 mit Staub) kamen
   drei Spuren im Spiel einen Tick später als im Simulator; isoliert alles identisch, Aufbau nicht aufbewahrt.
+- M4 (Opus-Agent): Kompaktieren setzt ganze Bausteine um und dreht sie (`compact.parts`, `relocations`, Leitungen
+  per BFS neu, höchstens 12 Staub). Nur drivable-pla wird kleiner (Volumen 660 → 540, `cmp-drivable-pla` neu
+  aufgenommen, identisch); bei den übrigen Kompositionen berühren sich die Teile, `parts` findet nur eine Gruppe.
+  Dafür müsste die Komposition festhalten, welcher Block zu welchem Teil gehört (xor4: geschätzt ~7 %).
 - M2 (Sonnet-Agent): Tageslichtsensor (normal/invertiert) in beiden Kernen (`sim/blocks/daylight.py`, Rust
   `outputs.rs`), `scenarios/daylight-detector.yaml` im Spiel identisch, `knowledge/components/daylight-detector.md`
   (DAY-001..005 verifiziert). Die Oracle-Welt hat Weltuhr 0 (Sensor liest 7 unter freiem Himmel). Die 20-gt-Phase
@@ -242,7 +247,7 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 94 %** (gew
 ## Befehle
 
 ```
-uv run pytest -q [--sim-core python|rust] [--slow] # ~1300 Tests, alle grün (Rust ~75 s, Python ~6 min)
+uv run pytest -q [--sim-core python|rust] [--slow] # ~1310 Tests, alle grün (Rust ~75 s, Python ~6 min)
 uv sync                                            # baut auch den Rust-Kern; nach Rust-Änderungen:
 uv pip install --reinstall-package rsx-core ./rust/rsx-core
 uv run rsx --sim-core python|rust <befehl>         # Kern wählen (Standard: Rust, wenn gebaut)
@@ -279,15 +284,15 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    (`design/compose.py: _route`) beschleunigen, Lauf-Schleife samt Aufzeichnung (`Circuit.run`) nach Rust.
 3. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
    - Lücken der Vorlagen: Monoflop 3 gt nur mit Knopf (Hebel unmöglich, siehe Session 8); Hebel-Comparator-Monoflop nicht für jede gerade Länge; XOR-Vorlagen groß (28–33 Blöcke).
-   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); Nicht einfach zerlegbare Funktionen über 8 Eingängen bleiben ungelöst (PLA bis 8, Session 11; nur einfache disjunkte Zerlegung). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); offen sind Bausteine drehen/umsetzen. Geteilte Teilfunktionen: nur eine gemeinsame Leitung g je Zerlegung (Session 10); mehrere gemeinsame Signale (z. B. Carry-Lookahead) nicht.
+   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); Nicht einfach zerlegbare Funktionen über 8 Eingängen bleiben ungelöst (PLA bis 8, Session 11; nur einfache disjunkte Zerlegung). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); Bausteine umsetzen/drehen geht (Session 11), aber nur bei Teilen, die sich nicht berühren (Teilzugehörigkeit aus der Komposition fehlt). Geteilte Teilfunktionen: nur eine gemeinsame Leitung g je Zerlegung (Session 10); mehrere gemeinsame Signale (z. B. Carry-Lookahead) nicht.
    - Verhalten aus Bestandsschaltungen bis 6 Eingänge (Session 11; Gatter nur aus der Analyse, über 4 Hebeln
      ohne Logik-vor-Baustein-Erkennung also nur Einzelbausteine); Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
    - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8), Set-only-Speicher (Session 10) und Zeitgliedern (Session 11).
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
 4. **Restliche Simulator-Lücken (M2):**
-   - Tageslichtsensor erledigt (Session 11, nur feste Tageszeit, Himmelslicht angenähert). Kuchen als
-     Comparator-Quelle (klein, `kb-unmodeled` hat schon die Spielaufnahme). Druckplatten, Detektorschiene, Sculk. Truhen (Session 8) und Crafter (Session 10, wenige Rezepte) erledigt.
+   - Tageslichtsensor erledigt (Session 11, nur feste Tageszeit, Himmelslicht angenähert). Kuchen
+     (Session 11, nur Comparator und Halt; Essen nicht). Druckplatten, Detektorschiene, Sculk. Truhen (Session 8) und Crafter (Session 10, wenige Rezepte) erledigt.
    - Notenblock-Instrument nur über Blocknamen (ASSUMPTION; Feld `instrument` im Block-Dump fehlt).
    - Dispenser: item-spezifisches Verhalten, zufällige Slotwahl → erster Slot (ASSUMPTIONs in `dispenser_hopper.py`).
    - Weitere ungeprüfte Aussagen per Szenario verifizieren (`knowledge/UNVERIFIED.md`).
