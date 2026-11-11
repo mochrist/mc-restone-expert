@@ -1,34 +1,37 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-10, Session 9 (abgebrochen, siehe Übergabe). Geschätzter Gesamtfortschritt: **ca. 89 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-11, Session 10. Geschätzter Gesamtfortschritt: **ca. 90 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
-| M0 Wissensbasis | 10 % | ~95 % | 272 Aussagen aus dem 26.3-Code belegt, 90 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
+| M0 Wissensbasis | 10 % | ~95 % | 279 Aussagen aus dem 26.3-Code belegt, 137 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 98 Golden Traces tick-genau überein; Truhen neu |
+| M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 105 Golden Traces tick-genau überein; Truhen, Crafter neu |
 | M3 Analyse + Erklärung | 20 % | ~85 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Logik vor T-FF/Pulsgeber, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~70 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (auch mit ansteuerbaren Eingängen), Komposition mit Router (Logik vor Speicher, Zerlegung, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
+| M4 Redesign | 25 % | ~75 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
-## Übergabe (Session 9, wegen Token-Limit beendet)
-
-**Zuerst lesen.** Zwei Agents wurden mitten in der Arbeit gestoppt; ihre Stände sind ungeprüft als WIP committet:
-- Branch `wip/crafter` (Sonnet, Worktree `.claude/worktrees/agent-abaf2f04e60a9c34c`): Crafter in Python und Rust,
-  `scenarios/crafter.yaml`, Wissensbasis. Unklar, ob das Oracle schon gelaufen ist und ob alles grün ist. Enthält
-  Müll unter `.tmp-out/` (nicht mergen).
-- Branch `wip/compact-moves` (Opus, Worktree `.claude/worktrees/agent-a3079b6433563aefe`): stärkere Züge in
-  `design/compact.py` + Kompaktieren der Kompositionen in `search.redesign`. Laut letzter Meldung beide Kerne
-  grün, Laufzeitmessung und Oracle-Aufnahme geänderter `cmp-*`-Szenarien standen noch aus.
-
-| Nr. | Aufgabe | Modell |
-|---|---|---|
-| 1 | `wip/compact-moves` prüfen (Diff lesen, Tests beide Kerne, `rsx redesign` vorher/nachher messen), geänderte `cmp-*` neu aufzeichnen, mergen | Opus |
-| 2 | `wip/crafter` prüfen, Szenario im Oracle aufzeichnen (Sperre `.cache/oracle.lock`), Golden + Differenztest, mergen, `knowledge index` | Sonnet |
-| 3 | Ganze Suite auf beiden Kernen nach den Merges; Worktrees/Branches aufräumen | Sonnet |
-| 4 | PLA: gleiche Ausgangsfunktionen teilen eine Leitung (seg7: 18 von 21 Ausgängen identisch, PLA sonst 990 Blöcke) | Opus |
-
 ## Verlauf
+
+### Session 10 (2026-11-11): Übergabe aus Session 9 abgearbeitet (Opus-Hauptsession, 1 Sonnet-Agent)
+
+- Kompaktieren mit größeren Zügen (`design/compact.py`, Branch `wip/compact-moves` geprüft, mit `master` zusammengeführt):
+  Teile eines Entwurfs verschieben (Halbräume um 1–3 Blöcke, gleiche Blöcke verschmelzen, gerade Leitungen werden
+  kürzer), Staubleitungen kürzer neu verlegen (`lines`, `rerouted`), Züge mit schon gescheiterter Umgebung
+  überspringen (`_local_key`). `redesign` kompaktiert auch die zwei besten Kompositionen (`COMPACT_COMPOSED`).
+  Volumen: and-or-shared 72 → 45, monoflop-or 48 → 30, t-flip-flop-and 84 → 72, xor4 760 → 504,
+  drivable-pla 1176 → 660; Laufzeit +0,1–1,5 s. Alle `cmp-*` im Spiel neu aufgezeichnet, identisch.
+- Crafter in beiden Kernen (Sonnet-Agent): Auslösen per Flanke, 4-gt-Tick, 6-gt-Crafting, gesperrte Slots,
+  Comparator, Trichter; `scenarios/crafter.yaml` im Spiel identisch, `knowledge/components/crafter.md`
+  (CRAFTER-001..007). Grenzen: nur wenige Rezepte (u. a. fehlt die Steindruckplatte), keine Reste/Items als Entities.
+  Beobachtung: die erste Oracle-Aufnahme nach Serverstart lag bei Comparator-/Trichter-Timing einen Tick daneben,
+  die Wiederholungen waren identisch zueinander und zum Simulator (unbestätigt; bei 1 Tick Versatz neu aufnehmen).
+- PLA: gleiche Ausgangsfunktionen teilen eine Leitung, eine Lampe pro Ausgang (`synth.pla`, `lamp_count`).
+  Lampen zwischen den Fackeln und jenseits davon auf beiden Seiten; dort fließt der Strom nur in eine Richtung,
+  also dürfen Repeater zwischen den Lampen stehen. Eine Fackel in der Leitung (Südfackel) schneidet die Seite
+  dahinter ab. Mit Verzögerungsgrenze gewinnen Layouts mit weniger Repeatern. seg7: 195 Blöcke, 10 gt (vorher
+  ~990). 80 Zufallsfälle mit bis zu 20 gleichen Ausgängen alle korrekt. Neues Beispiel
+  `examples/specs/shared-lines.yaml` (23 Ausgänge, 3 Funktionen), im Spiel identisch.
 
 ### Session 9 (2026-11-10)
 
@@ -163,7 +166,7 @@ Stand: 2026-11-10, Session 9 (abgebrochen, siehe Übergabe). Geschätzter Gesamt
 ## Befehle
 
 ```
-uv run pytest -q [--sim-core python|rust]         # ~1100 Tests, alle grün (Rust ~30 s, Python ~105 s)
+uv run pytest -q [--sim-core python|rust]         # ~1230 Tests, alle grün (Rust ~45 s, Python ~5 min)
 uv sync                                            # baut auch den Rust-Kern; nach Rust-Änderungen:
 uv pip install --reinstall-package rsx-core ./rust/rsx-core
 uv run rsx --sim-core python|rust <befehl>         # Kern wählen (Standard: Rust, wenn gebaut)
@@ -196,13 +199,13 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    (`design/compose.py: _route`) beschleunigen, Lauf-Schleife samt Aufzeichnung (`Circuit.run`) nach Rust.
 3. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
    - Lücken der Vorlagen: Monoflop 3 gt nur mit Knopf (Hebel unmöglich, siehe Session 8); Hebel-Comparator-Monoflop nicht für jede gerade Länge; XOR-Vorlagen groß (28–33 Blöcke).
-   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); 8 von 15 zufälligen 5-Eingänge-Funktionen bleiben ungelöst (Zerlegung nur g(3)+h(3); andere Aufteilungen, tiefere Ketten prüfen). Kompaktieren braucht größere Züge (Route neu legen, Bausteine zusammenschieben). Geteilte Teilfunktionen zwischen Ausgängen werden nicht genutzt (Volladdierer per `parallel` nicht gefunden; Vorlage gewinnt).
+   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); 8 von 15 zufälligen 5-Eingänge-Funktionen bleiben ungelöst (Zerlegung nur g(3)+h(3); andere Aufteilungen, tiefere Ketten prüfen). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); offen sind Bausteine drehen/umsetzen. Geteilte Teilfunktionen zwischen Ausgängen werden nicht genutzt (Volladdierer per `parallel` nicht gefunden; Vorlage gewinnt).
    - Verhalten aus Bestandsschaltungen nur bis 3 Eingänge; Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
    - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8), nicht aber vor Set-only-Speicher oder Pulsverlängerer.
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
 4. **Restliche Simulator-Lücken (M2):**
-   - Tageslichtsensor (Block-Entity alle 20 gt, Himmelslicht/Tageszeit), Druckplatten, Detektorschiene, Sculk, Crafter. Truhen erledigt (Session 8; ohne Katzen/Spieler).
+   - Tageslichtsensor (Block-Entity alle 20 gt, Himmelslicht/Tageszeit), Druckplatten, Detektorschiene, Sculk. Truhen (Session 8) und Crafter (Session 10, wenige Rezepte) erledigt.
    - Notenblock-Instrument nur über Blocknamen (ASSUMPTION; Feld `instrument` im Block-Dump fehlt).
    - Dispenser: item-spezifisches Verhalten, zufällige Slotwahl → erster Slot (ASSUMPTIONs in `dispenser_hopper.py`).
    - Weitere ungeprüfte Aussagen per Szenario verifizieren (`knowledge/UNVERIFIED.md`).
