@@ -41,6 +41,7 @@ impl World {
                 | Kind::TrappedChest
                 | Kind::Dispenser
                 | Kind::Hopper
+                | Kind::Crafter
                 | Kind::Lectern
         )
     }
@@ -49,13 +50,20 @@ impl World {
     pub fn has_analog_output_signal(&self, kind: Kind) -> bool {
         matches!(
             kind,
-            Kind::Barrel | Kind::Chest | Kind::TrappedChest | Kind::Dispenser | Kind::Hopper | Kind::CopperBulb | Kind::Lectern
+            Kind::Barrel
+                | Kind::Chest
+                | Kind::TrappedChest
+                | Kind::Dispenser
+                | Kind::Hopper
+                | Kind::Crafter
+                | Kind::CopperBulb
+                | Kind::Lectern
         )
     }
 
     pub fn get_analog_output_signal(&mut self, pos: Pos, state: StateId, _direction: Dir) -> i32 {
         match self.info(state).kind {
-            Kind::Barrel | Kind::Dispenser | Kind::Hopper => self.container_analog_output(pos),
+            Kind::Barrel | Kind::Dispenser | Kind::Hopper | Kind::Crafter => self.container_analog_output(pos),
             Kind::Chest | Kind::TrappedChest => self.chest_analog_output(pos, state),
             Kind::CopperBulb => {
                 if self.info_at(pos).lit() {
@@ -84,6 +92,15 @@ impl World {
                 size: 5,
                 items: Vec::new(),
                 kind: ContainerKind::Hopper { cooldown_time: -1, ticked_game_time: 0 },
+            })),
+            Kind::Crafter => Some(BeData::Container(Container {
+                size: 9,
+                items: Vec::new(),
+                kind: ContainerKind::Crafter {
+                    disabled_mask: 0,
+                    triggered: self.st.get_bool(state, sym::TRIGGERED), // CrafterBlock#newBlockEntity
+                    crafting_ticks_remaining: 0,
+                },
             })),
             Kind::Lectern => Some(BeData::Lectern(Lectern { has_book: false, page: 0, page_count: 0 })),
             // moving_piston: only created through newMovingBlockEntity
@@ -183,6 +200,7 @@ impl World {
             Kind::Piston => self.piston_neighbor_changed(pos, state, source),
             Kind::PistonHead => self.piston_head_neighbor_changed(pos, state, source),
             Kind::Dispenser => self.dispenser_neighbor_changed(pos, state),
+            Kind::Crafter => self.crafter_neighbor_changed(pos, state),
             Kind::Hopper => self.hopper_check_powered_state(pos, state),
             Kind::CopperBulb => self.copper_bulb_check_and_flip(pos, state),
             Kind::NoteBlock => self.note_block_neighbor_changed(pos, state),
@@ -249,7 +267,7 @@ impl World {
             Kind::Observer => self.observer_affect_neighbors_after_removal(pos, state),
             Kind::PistonHead => self.piston_head_affect_neighbors_after_removal(pos, state),
             // Containers#updateNeighboursAfterDestroy
-            Kind::Barrel | Kind::Chest | Kind::TrappedChest | Kind::Dispenser | Kind::Hopper => {
+            Kind::Barrel | Kind::Chest | Kind::TrappedChest | Kind::Dispenser | Kind::Hopper | Kind::Crafter => {
                 self.update_neighbour_for_output_signal(pos, info.block)
             }
             Kind::Rail | Kind::PoweredRail => self.rail_affect_neighbors_after_removal(pos, state, moved),
@@ -292,6 +310,7 @@ impl World {
             Kind::Torch | Kind::WallTorch => self.torch_tick(pos, state),
             Kind::Observer => self.observer_tick(pos, state),
             Kind::Dispenser => self.dispenser_tick(pos, state),
+            Kind::Crafter => self.crafter_tick(pos, state),
             Kind::Target => self.target_tick(pos, state),
             Kind::Lectern => self.lectern_tick(pos, state),
             _ => {}
@@ -332,6 +351,7 @@ impl World {
         match &self.bes[be].data {
             BeData::Piston(_) => self.piston_be_tick(be),
             BeData::Container(Container { kind: ContainerKind::Hopper { .. }, .. }) => self.hopper_be_tick(be),
+            BeData::Container(Container { kind: ContainerKind::Crafter { .. }, .. }) => self.crafter_be_tick(be),
             _ => {}
         }
     }

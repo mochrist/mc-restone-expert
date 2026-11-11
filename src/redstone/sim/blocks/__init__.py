@@ -7,3 +7,4 @@ from . import piston  # noqa: F401
 from . import dispenser_hopper  # noqa: F401
 from . import outputs  # noqa: F401
 from . import chest  # noqa: F401
+from . import crafter  # noqa: F401

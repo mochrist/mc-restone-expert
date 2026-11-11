@@ -134,6 +134,9 @@ def add_item(world: World, source: ContainerBlockEntity | None, container: Conta
 def _try_move_in_item(world: World, source: ContainerBlockEntity | None, container: ContainerBlockEntity,
                       item: str, count: int, slot: int) -> int:
     """HopperBlockEntity#tryMoveInItem (canPlaceItem is true for every modeled container)."""
+    can_place = getattr(container, "can_place_item", None)  # Container#canPlaceItem (only the crafter refuses)
+    if can_place is not None and not can_place(slot, item):
+        return count
     current = container.items.get(slot)
     was_empty = container.is_empty()
     success = False

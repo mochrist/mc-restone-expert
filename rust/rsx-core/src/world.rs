@@ -245,6 +245,8 @@ pub enum ContainerKind {
     Dispenser,
     /// HopperBlockEntity
     Hopper { cooldown_time: i32, ticked_game_time: i64 },
+    /// CrafterBlockEntity: `disabled_mask` bit i = slot i is disabled (containerData slot states)
+    Crafter { disabled_mask: u16, triggered: bool, crafting_ticks_remaining: i32 },
 }
 
 /// ContainerBlockEntity and its subclasses. `items` keeps the insertion order of the Python dict
@@ -295,7 +297,8 @@ impl BlockEntity {
     pub fn ticks(&self) -> bool {
         matches!(
             self.data,
-            BeData::Piston(_) | BeData::Container(Container { kind: ContainerKind::Hopper { .. }, .. })
+            BeData::Piston(_)
+                | BeData::Container(Container { kind: ContainerKind::Hopper { .. } | ContainerKind::Crafter { .. }, .. })
         )
     }
 }
@@ -995,6 +998,13 @@ impl World {
                 // A hopper without cooldown has found nothing to move.
                 BeData::Container(Container { kind: ContainerKind::Hopper { cooldown_time, .. }, .. }) => {
                     if *cooldown_time > 0 {
+                        return false;
+                    }
+                }
+                BeData::Container(Container {
+                    kind: ContainerKind::Crafter { crafting_ticks_remaining, .. }, ..
+                }) => {
+                    if *crafting_ticks_remaining > 0 {
                         return false;
                     }
                 }
