@@ -21,7 +21,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ..model import Direction, Grid, Pos
-from .candidate import Candidate
+from .candidate import Assembly, Candidate
 
 HORIZONTAL = (Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.NORTH)
 STONE = "stone"
@@ -120,7 +120,8 @@ def rotate(c: Candidate, turns: int) -> Candidate | None:
     for p, st in c.grid.items():
         g.set(pos(p), turn_state(st, turns))
     g.block_entities = {pos(p): be for p, be in c.grid.block_entities.items()}
-    return replace(c, grid=g, inputs=[pos(p) for p in c.inputs], outputs=[pos(p) for p in c.outputs])
+    return replace(c, grid=g, inputs=[pos(p) for p in c.inputs], outputs=[pos(p) for p in c.outputs],
+                   assembly=c.moved_assembly(pos))
 
 
 _FACES = [Pos(1, 0, 0), Pos(-1, 0, 0), Pos(0, 1, 0), Pos(0, -1, 0), Pos(0, 0, 1), Pos(0, 0, -1)]
@@ -211,13 +212,26 @@ def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layou
     merged[p] = rep if layout.input_mode == "repeater" else WIRE
     if p + DOWN not in merged:
         merged[p + DOWN] = STONE
-    return _assemble(src, out_index, dst, in_index, shift, merged, layout.describe())
+    # parts: the repeater reading the stone belongs to src, a repeater in front of the input to dst
+    asm = Assembly.of(src, "0").merged(Assembly.of(dst, "1").shifted(shift))
+    head = [c for c, _ in line[:1]] if layout.output_mode == "stone" else []
+    tail = [c for c, _ in line[-1:]] if layout.input_mode == "repeater+dust" else []
+    labels = dict(asm.labels)
+    lq, lp = labels.get(q, "0"), labels.get(p, "1")
+    side = {c: lq for c in head} | {c: lp for c in tail}
+    for c in cells:
+        labels[c] = side.get(c, side.get(c + UP, "~0"))  # a floor goes with the cell above it
+    labels.setdefault(q + DOWN, lq)
+    labels.setdefault(p + DOWN, lp)
+    asm = Assembly({x: lab for x, lab in labels.items() if x in merged},
+                   asm.ends | {"~0": (head[0] if head else q, tail[0] if tail else p)})
+    return _assemble(src, out_index, dst, in_index, shift, merged, layout.describe(), assembly=asm)
 
 
 def _assemble(src: Candidate, out_index: int, dst: Candidate, in_index: int, shift: Pos, merged: dict,
-              how: str, settle: bool = True) -> Candidate:
+              how: str, settle: bool = True, assembly: Assembly | None = None) -> Candidate:
     """Grid of all `merged` blocks (src coordinates; dst moved by `shift`) with the block entities and ports
-    of both parts, normalised."""
+    of both parts and their labels (`assembly`, src coordinates), normalised."""
     q, p_dst = src.outputs[out_index], dst.inputs[in_index]
     lo = Pos(*(min(x[i] for x in merged) for i in range(3)))
     hi = Pos(*(max(x[i] for x in merged) for i in range(3)))
@@ -237,7 +251,8 @@ def _assemble(src: Candidate, out_index: int, dst: Candidate, in_index: int, shi
     c = Candidate(
         name=f"{src.name} → {dst.name}", grid=grid, inputs=inputs, outputs=outputs,
         description=f"{src.description} Dahinter: {dst.description} ({how})",
-        origin=f"komponiert: {src.origin} → {dst.origin}", tags=set(src.tags) | set(dst.tags))
+        origin=f"komponiert: {src.origin} → {dst.origin}", tags=set(src.tags) | set(dst.tags),
+        assembly=None if assembly is None else assembly.shifted(Pos(0, 0, 0) - lo))
     return normalize(c) if settle else c
 
 
@@ -385,7 +400,24 @@ def routed(src: Candidate, out_index: int, dst: Candidate, in_index: int, side: 
         m[p + DOWN] = STONE
     how = (f"Leitung über {len(path)} Blöcke geführt, Lampe → {'Staub' if output_mode == 'dust' else 'Verstärker'}, "
            f"Eingang als {input_mode}")
-    return _assemble(src, out_index, dst, in_index, shift, m, how, settle)
+    asm = Assembly.of(src, "0").merged(Assembly.of(dst, "1").shifted(shift))
+    return _assemble(src, out_index, dst, in_index, shift, m, how, settle,
+                     assembly=_line_labels(asm, m, q, path, p, "~0"))
+
+
+def _line_labels(asm: Assembly, blocks: dict, a: Pos, path: list[Pos], b: Pos, name: str) -> Assembly:
+    """asm with the line `name` from block a over the cells `path` (a itself may be the first one) to block b:
+    the cells and the floors laid for them get the line's label; floors laid under a and b go with them."""
+    labels = dict(asm.labels)
+    la, lb = labels.get(a), labels.get(b)
+    for c in path:
+        if c != a:
+            labels[c] = name
+            labels.setdefault(c + DOWN, name)
+    for end, lab in ((a, la), (b, lb)):
+        if lab is not None:
+            labels.setdefault(end + DOWN, lab)
+    return Assembly({x: lab for x, lab in labels.items() if x in blocks}, asm.ends | {name: (a, b)})
 
 
 def place_beside(c1: Candidate, c2: Candidate, side: Direction, spacing: int = SPACING) -> tuple[Candidate, Pos]:
@@ -413,7 +445,9 @@ def place_beside(c1: Candidate, c2: Candidate, side: Direction, spacing: int = S
         inputs=[x - lo for x in c1.inputs] + [x + shift - lo for x in c2.inputs],
         outputs=[x - lo for x in c1.outputs] + [x + shift - lo for x in c2.outputs],
         description=f"{c1.description} Daneben: {c2.description}", origin=f"{c1.origin} + {c2.origin}",
-        tags=set(c1.tags) | set(c2.tags)), shift - lo
+        tags=set(c1.tags) | set(c2.tags),
+        assembly=Assembly.of(c1, "0").merged(Assembly.of(c2, "1").shifted(shift)).shifted(Pos(0, 0, 0) - lo)
+    ), shift - lo
 
 
 def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
@@ -481,11 +515,14 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
 
     from .compact import normalize
 
+    asm = None
+    if c.assembly is not None:
+        asm = _line_labels(c.assembly, m, source, path, target, c.assembly.next_line()).shifted(Pos(0, 0, 0) - lo)
     how = "abgegriffen" if not lamp else ("Lampe → Staub" if output_mode == "dust" else "Lampe → Verstärker")
     return normalize(replace(
         c, grid=grid, inputs=[x - lo for x in c.inputs if x != target],
         outputs=[x - lo for x in c.outputs if not (lamp and x == source)],
-        description=f"{c.description} (Leitung über {len(path)} Blöcke, {how})"))
+        description=f"{c.description} (Leitung über {len(path)} Blöcke, {how})", assembly=asm))
 
 
 MAX_GAP = 8
