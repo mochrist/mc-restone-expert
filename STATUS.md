@@ -8,7 +8,7 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 95 %** (gew
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
 | M2 Oracle + Simulator | 35 % | ~94 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 129 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen |
 | M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~83 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
+| M4 Redesign | 25 % | ~85 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
 ## Verlauf
@@ -54,6 +54,15 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 95 %** (gew
   nachstellen: 8 Nachbauten (Abstand 1–3, Staub dazwischen, gespeicherte Ausgänge, `use`, Zufallsmixe) alle
   identisch auf beiden Kernen; drei bleiben als Regression (`diag-cmp-lanes2`, `-lanes3`, `-lanes-rnd1`,
   Generator `scripts/gen_diag_cmp_lanes.py`). Vermutlich der Effekt „erste Aufnahme nach Serverstart“ (Session 10).
+- M4 (zweiter Opus-Agent): Kompositionen halten fest, welcher Block zu welchem Teil gehört
+  (`Candidate.assembly`: Labels „0“, „1/0“ …, Leitungen „~0“, `ends`), gesetzt in `connect`, `routed`,
+  `place_beside`, `wire`, `rotate` und durch alle Kompaktier-Schritte mitgeführt. `compact.parts` nutzt sie, so
+  lassen sich auch sich berührende Teile umsetzen; direkte Verbindungen werden neu verlegt (mit Repeater davor,
+  wenn der Eingang vorher volle Stärke bekam). Volumen: xor4 270 → 243, and5 140 → 128, drivable-pla 540 → 500,
+  adder2 624 → 560, adder3 1056 → 960 (Blockzahl teils leicht höher); die fünf `cmp-*` neu aufgenommen, identisch.
+  Tests `tests/design/test_assembly.py`. Danach in der Hauptsession: Teile-Cache `decompose._BEST` auch nach
+  Eingangsnamen geschlüsselt (Beschreibungen übernahmen sonst Namen eines anderen Teils; `cmp-adder3` hing von
+  der Testreihenfolge ab).
 - M0 (zweiter Sonnet-Agent): 31 weitere Aussagen verifiziert (jetzt 203 von 285), keine widerlegt, keine
   Simulator-Unterschiede; Szenarien `kb2-*` (7). Einschränkungen in den Hinweisen von CMP-015 (nur Compare-Modus)
   und SRCB-006 (nur Stärken). Beobachtungen: Seelensand leitet; eine per setblock mit `powered=true` gesetzte
@@ -291,7 +300,7 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    (`design/compose.py: _route`) beschleunigen, Lauf-Schleife samt Aufzeichnung (`Circuit.run`) nach Rust.
 3. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
    - Lücken der Vorlagen: Monoflop 3 gt nur mit Knopf (Hebel unmöglich, siehe Session 8); Hebel-Comparator-Monoflop nicht für jede gerade Länge; XOR-Vorlagen groß (28–33 Blöcke).
-   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); Nicht einfach zerlegbare Funktionen über 8 Eingängen bleiben ungelöst (PLA bis 8, Session 11; nur einfache disjunkte Zerlegung). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); Bausteine umsetzen/drehen geht (Session 11), aber nur bei Teilen, die sich nicht berühren (Teilzugehörigkeit aus der Komposition fehlt). Geteilte Teilfunktionen: nur eine gemeinsame Leitung g je Zerlegung (Session 10); mehrere gemeinsame Signale (z. B. Carry-Lookahead) nicht.
+   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); Nicht einfach zerlegbare Funktionen über 8 Eingängen bleiben ungelöst (PLA bis 8, Session 11; nur einfache disjunkte Zerlegung). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); Bausteine umsetzen/drehen geht (Session 11), mit Teilzugehörigkeit auch bei sich berührenden Teilen; ~70 % des Budgets von 100 Bewertungen gehen ans Entfernen einzelner Blöcke. Geteilte Teilfunktionen: nur eine gemeinsame Leitung g je Zerlegung (Session 10); mehrere gemeinsame Signale (z. B. Carry-Lookahead) nicht.
    - Verhalten aus Bestandsschaltungen bis 6 Eingänge (Session 11; Gatter nur aus der Analyse, über 4 Hebeln
      ohne Logik-vor-Baustein-Erkennung also nur Einzelbausteine); Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
    - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8), Set-only-Speicher (Session 10) und Zeitgliedern (Session 11).
