@@ -33,7 +33,7 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#getInputSignal`, `SignalGetter#getSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-sources.yaml)
 - Hinweise: Der Staub-Sonderfall ist nötig, weil Staub über `getSignal` ggf. nicht in diese Richtung liefert (Verbindungsform). Ein Repeater schaltet bei jedem Eingang > 0 (`shouldTurnOn`).
 
 ### REP-004: Die Verzögerung beträgt `delay` × 2 Game-Ticks
@@ -63,7 +63,7 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#tick`, `DiodeBlock#onPlace`, `DiodeBlock#updateNeighborsInFront`, `LevelChunk#setBlockState`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-neighbor-updates.yaml)
 - Hinweise: `onPlace` wird von `LevelChunk#setBlockState` bei jeder Zustandsänderung aufgerufen, solange Flag 512 nicht gesetzt ist. Die Reihenfolge innerhalb von `updateNeighborsAtExceptFromFacing` gehört in die Update-Reihenfolge-Dokumentation (mechanics).
 
 ### REP-008: Ein Neighbor-Update plant einen Tick nur bei Abweichung zwischen Zustand und Eingang

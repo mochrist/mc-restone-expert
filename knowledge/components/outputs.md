@@ -30,7 +30,7 @@ Leiter), reagieren also auf schwache und starke Ladung. Zeiten in Game-Ticks (gt
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneLampBlock#neighborChanged`, `RedstoneLampBlock#tick`, `Level#setBlock`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-neighbor-updates.yaml)
 
 ### OUT-004: Notenblock spielt nur bei steigender Flanke
 - Aussage: Ein Notenblock speichert den Eingang in `powered` und spielt einen Ton (Block-Event) nur, wenn `powered` von false auf true wechselt; der Wechsel wird sofort mit `setBlockAndUpdate` gesetzt.
@@ -60,7 +60,7 @@ Leiter), reagieren also auf schwache und starke Ladung. Zeiten in Game-Ticks (gt
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `CopperBulbBlock#getAnalogOutputSignal`; [SRC-WIKI-COPPER-BULB]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-comparator-values.yaml)
 - Hinweise: Die Kupferbirne selbst ist keine Signalquelle.
 
 ### OUT-008: Kupferbirne prüft beim Platzieren ihren Eingang

@@ -1,0 +1,207 @@
+{
+ "format": 1,
+ "scenario": "kb-cmp-timing",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 20,
+ "probes": {
+  "v1_cmp": [
+   1,
+   1,
+   0
+  ],
+  "v1_rep": [
+   2,
+   1,
+   0
+  ],
+  "v2_cmp": [
+   1,
+   1,
+   2
+  ],
+  "v2_rep": [
+   3,
+   1,
+   2
+  ],
+  "v3_cmp": [
+   1,
+   1,
+   4
+  ],
+  "v3_dust": [
+   2,
+   1,
+   4
+  ],
+  "v4_cmp": [
+   1,
+   1,
+   6
+  ],
+  "v4_dust": [
+   2,
+   1,
+   6
+  ],
+  "v5_cmp": [
+   2,
+   1,
+   8
+  ],
+  "v5_rep": [
+   4,
+   1,
+   8
+  ],
+  "v6_cmp": [
+   1,
+   1,
+   10
+  ],
+  "v6_dust": [
+   2,
+   1,
+   10
+  ]
+ },
+ "samples": {
+  "v1_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=7"
+   ]
+  ],
+  "v1_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "v2_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=7"
+   ]
+  ],
+  "v2_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "v3_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=true]|output=5"
+   ],
+   [
+    4,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "v3_dust": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=none,north=none,power=5,south=none,west=none]"
+   ],
+   [
+    4,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ]
+  ],
+  "v4_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=true]|output=5"
+   ],
+   [
+    4,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "v4_dust": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    5,
+    "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+   ]
+  ],
+  "v5_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    4,
+    "minecraft:comparator[facing=west,mode=compare,powered=true]|output=15"
+   ]
+  ],
+  "v5_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    6,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "v6_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    4,
+    "minecraft:comparator[facing=west,mode=compare,powered=true]|output=7"
+   ],
+   [
+    6,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "v6_dust": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+   ],
+   [
+    4,
+    "minecraft:redstone_wire[east=side,north=none,power=7,south=none,west=side]"
+   ],
+   [
+    6,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ]
+  ]
+ }
+}

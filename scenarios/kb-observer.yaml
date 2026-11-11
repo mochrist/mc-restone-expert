@@ -1,0 +1,61 @@
+name: kb-observer
+description: >
+  Observer-Verhalten. z=0 (OBS-008): Der Block vor dem Observer wird ersetzt; der Observer pulst, danach geht
+  ein Neighbor-Update an die Nachbarn des Blocks hinter ihm (Detektor-Repeater dort schaltet sich aus), aber nicht
+  an seine eigenen Seiten-Nachbarn (zweiter Detektor bleibt an). z=4 (OBS-004, BUD-006): Der Hebel powert den
+  beobachteten Stein nur per Neighbor-Update; der Observer pulst nicht; erst der Austausch des Blocks (Tick 12) löst
+  einen Puls aus. z=8 (OBS-004): Ein Observer sieht das Umschalten eines Repeaters (Flag 2). z=12 (OBS-009): Ein
+  eingeschaltet gesetzter Observer ohne geplanten Tick schaltet sich beim Setzen aus und aktualisiert vorne
+  (Detektor schaltet sich aus). z=16 (OBS-010): Ein Observer wird während des Pulses entfernt; die Lampe neben dem
+  Block hinter ihm bekommt ein Update und geht aus.
+build:
+  size: [5, 3, 20]
+  fill:
+    - [0, 0, 0, 4, 0, 19, "stone"]
+  blocks:
+    - [0, 1, 0, "stone"]
+    - [1, 1, 0, "observer[facing=west,powered=false]"]
+    - [2, 1, 0, "stone"]
+    - [3, 1, 0, "repeater[delay=1,facing=north,locked=false,powered=true]"]
+    - [1, 1, 1, "repeater[delay=1,facing=south,locked=false,powered=true]"]
+    - [0, 1, 4, "stone"]
+    - [0, 2, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 4, "observer[facing=west,powered=false]"]
+    - [2, 1, 4, "redstone_lamp[lit=false]"]
+    - [0, 1, 8, "stone"]
+    - [0, 2, 8, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 8, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [2, 1, 8, "observer[facing=west,powered=false]"]
+    - [3, 1, 8, "redstone_lamp[lit=false]"]
+    - [2, 1, 12, "stone"]
+    - [3, 1, 12, "repeater[delay=1,facing=north,locked=false,powered=true]"]
+    - [0, 1, 16, "stone"]
+    - [1, 1, 16, "observer[facing=west,powered=false]"]
+    - [2, 1, 16, "stone"]
+    - [2, 1, 17, "redstone_lamp[lit=false]"]
+ticks: 30
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: setblock, state: "cobblestone"}
+  - {tick: 2, pos: [0, 2, 4], action: use}
+  - {tick: 2, pos: [0, 2, 8], action: use}
+  - {tick: 2, pos: [1, 1, 12], action: setblock, state: "observer[facing=west,powered=true]"}
+  - {tick: 2, pos: [0, 1, 16], action: setblock, state: "cobblestone"}
+  - {tick: 5, pos: [1, 1, 16], action: setblock, state: "air"}
+  - {tick: 8, pos: [0, 2, 4], action: use}
+  - {tick: 12, pos: [0, 1, 4], action: setblock, state: "cobblestone"}
+  - {tick: 12, pos: [0, 2, 8], action: use}
+probes:
+  a_obs: [1, 1, 0]
+  a_det_front: [3, 1, 0]
+  a_det_side: [1, 1, 1]
+  b_obs: [1, 1, 4]
+  b_lamp: [2, 1, 4]
+  b_lever: [0, 2, 4]
+  b_block: [0, 1, 4]
+  c_rep: [1, 1, 8]
+  c_obs: [2, 1, 8]
+  c_lamp: [3, 1, 8]
+  d_obs: [1, 1, 12]
+  d_det_front: [3, 1, 12]
+  e_obs: [1, 1, 16]
+  e_lamp: [2, 1, 17]

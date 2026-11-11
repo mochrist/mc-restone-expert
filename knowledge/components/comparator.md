@@ -39,7 +39,7 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ComparatorBlock#checkTickOnNeighbor`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-comparator-values.yaml)
 - Hinweise: Werte werden erst beim Tick neu berechnet, nicht beim Planen; Schwankungen kürzer als 2 gt können daher verloren gehen ([SRC-WIKI-COMPARATOR]).
 
 ### CMP-005: Im Compare-Modus ist die Ausgabe der Eingang oder 0
@@ -100,14 +100,14 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `CakeBlock#getOutputSignal`; [SRC-WIKI-COMPARATOR]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-unmodeled.yaml)
 
 ### CMP-013: Die Ausgabe ist das gespeicherte `OutputSignal`, nur wenn `powered`
 - Aussage: Ein Comparator liefert an seinem Ausgang den im Block-Entity gespeicherten Wert `OutputSignal`, aber nur wenn `powered=true`, sonst 0.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ComparatorBlock#getOutputSignal`, `DiodeBlock#ownSignal`, `ComparatorBlockEntity`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-comparator-stored.yaml)
 - Hinweise: Für den Simulator muss das Block-Entity (`OutputSignal`) aus der Schematic mitgelesen werden.
 
 ### CMP-014: Der Comparator lädt den Block vor sich stark
@@ -115,7 +115,7 @@ Ein- und Ausgangsseite sind wie beim Repeater (siehe REP-001/REP-002), da beide 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#getDirectSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-comparator-stored.yaml)
 
 ### CMP-015: Beim Tick werden Ausgangswert und `powered` neu gesetzt
 - Aussage: Im Tick berechnet der Comparator die Ausgabe neu, speichert sie im Block-Entity, setzt `powered` gemäß `shouldTurnOn` (Flag 2) und ruft `updateNeighborsInFront` auf, falls sich der Wert geändert hat oder der Modus `compare` ist.

@@ -1,0 +1,147 @@
+{
+ "format": 1,
+ "scenario": "kb-sources",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 60,
+ "probes": {
+  "btn_oak": [
+   1,
+   1,
+   0
+  ],
+  "btn_bamboo": [
+   1,
+   1,
+   2
+  ],
+  "btn_crimson": [
+   1,
+   1,
+   4
+  ],
+  "btn_warped": [
+   1,
+   1,
+   6
+  ],
+  "btn_stone": [
+   1,
+   1,
+   8
+  ],
+  "rb_rep": [
+   1,
+   1,
+   10
+  ],
+  "rb_stone_rep": [
+   3,
+   1,
+   12
+  ],
+  "dust1_rep": [
+   1,
+   1,
+   14
+  ]
+ },
+ "samples": {
+  "btn_oak": [
+   [
+    0,
+    "minecraft:oak_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:oak_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    32,
+    "minecraft:oak_button[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "btn_bamboo": [
+   [
+    0,
+    "minecraft:bamboo_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:bamboo_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    32,
+    "minecraft:bamboo_button[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "btn_crimson": [
+   [
+    0,
+    "minecraft:crimson_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:crimson_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    32,
+    "minecraft:crimson_button[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "btn_warped": [
+   [
+    0,
+    "minecraft:warped_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:warped_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    32,
+    "minecraft:warped_button[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "btn_stone": [
+   [
+    0,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    22,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "rb_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "rb_stone_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ]
+  ],
+  "dust1_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ]
+ }
+}

@@ -1,0 +1,206 @@
+{
+ "format": 1,
+ "scenario": "kb-comparator-values",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 30,
+ "probes": {
+  "dust7_cmp": [
+   1,
+   1,
+   6
+  ],
+  "dust7": [
+   0,
+   1,
+   6
+  ],
+  "bulb0_cmp": [
+   1,
+   1,
+   8
+  ],
+  "bulb1_cmp": [
+   1,
+   1,
+   10
+  ],
+  "bulb2_cmp": [
+   1,
+   1,
+   12
+  ],
+  "bulb3_cmp": [
+   1,
+   1,
+   14
+  ],
+  "bulb4_cmp": [
+   1,
+   1,
+   16
+  ],
+  "bulb5_cmp": [
+   1,
+   1,
+   18
+  ],
+  "bulb6_cmp": [
+   1,
+   1,
+   20
+  ],
+  "bulb7_cmp": [
+   1,
+   1,
+   22
+  ],
+  "bulb_off_cmp": [
+   1,
+   1,
+   24
+  ],
+  "pulse1_cmp": [
+   2,
+   1,
+   26
+  ],
+  "pulse2_cmp": [
+   2,
+   1,
+   28
+  ]
+ },
+ "samples": {
+  "dust7_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=7"
+   ]
+  ],
+  "dust7": [
+   [
+    0,
+    "minecraft:redstone_wire[east=none,north=none,power=7,south=none,west=none]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=7,south=none,west=side]"
+   ]
+  ],
+  "bulb0_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "bulb1_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "bulb2_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "bulb3_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "bulb4_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "bulb5_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "bulb6_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "bulb7_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "bulb_off_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+   ]
+  ],
+  "pulse1_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "pulse2_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    4,
+    "minecraft:comparator[facing=west,mode=compare,powered=true]|output=15"
+   ],
+   [
+    6,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ]
+  ]
+ }
+}

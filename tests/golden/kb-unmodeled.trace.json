@@ -1,0 +1,90 @@
+{
+ "format": 1,
+ "scenario": "kb-unmodeled",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 30,
+ "probes": {
+  "cake0_cmp": [
+   1,
+   1,
+   0
+  ],
+  "cake3_cmp": [
+   1,
+   1,
+   2
+  ],
+  "cake6_cmp": [
+   1,
+   1,
+   4
+  ],
+  "daylight": [
+   0,
+   1,
+   6
+  ],
+  "daylight_dust": [
+   1,
+   1,
+   6
+  ]
+ },
+ "samples": {
+  "cake0_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=14"
+   ]
+  ],
+  "cake3_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=8"
+   ]
+  ],
+  "cake6_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    2,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=2"
+   ]
+  ],
+  "daylight": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=false,power=9]"
+   ],
+   [
+    20,
+    "minecraft:daylight_detector[inverted=false,power=7]"
+   ]
+  ],
+  "daylight_dust": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=none,north=none,power=9,south=none,west=none]"
+   ],
+   [
+    20,
+    "minecraft:redstone_wire[east=side,north=none,power=7,south=none,west=side]"
+   ]
+  ]
+ }
+}

@@ -1,0 +1,79 @@
+name: kb-comparator-values
+description: >
+  Comparator-Werte und -Verhalten. z=6 (SIG-004): Staub mit fester Stärke 7 liefert dem Comparator 7 (nicht 6).
+  z=8..22 (OUT-007): Kupferbirnen aller acht Oxidations-/Wachsstufen, eingeschaltet, geben 15; z=24 eine
+  ausgeschaltete 0. z=26/28 (CMP-004): Ein Hebelpuls von 1 gt geht verloren, einer von 2 gt kommt durch.
+build:
+  size: [6, 3, 30]
+  fill:
+    - [0, 0, 0, 5, 0, 29, "stone"]
+  blocks:
+    - [0, 1, 6, "redstone_wire[east=none,north=none,power=7,south=none,west=none]"]
+    - [1, 1, 6, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 8, "copper_bulb[lit=true,powered=false]"]
+    - [1, 1, 8, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 10, "exposed_copper_bulb[lit=true,powered=false]"]
+    - [1, 1, 10, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 12, "weathered_copper_bulb[lit=true,powered=false]"]
+    - [1, 1, 12, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 14, "oxidized_copper_bulb[lit=true,powered=false]"]
+    - [1, 1, 14, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 16, "waxed_copper_bulb[lit=true,powered=false]"]
+    - [1, 1, 16, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 18, "waxed_exposed_copper_bulb[lit=true,powered=false]"]
+    - [1, 1, 18, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 20, "waxed_weathered_copper_bulb[lit=true,powered=false]"]
+    - [1, 1, 20, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 22, "waxed_oxidized_copper_bulb[lit=true,powered=false]"]
+    - [1, 1, 22, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 24, "copper_bulb[lit=false,powered=false]"]
+    - [1, 1, 24, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 26, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 26, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [2, 1, 26, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 28, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 28, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [2, 1, 28, "comparator[facing=west,mode=compare,powered=false]"]
+  block_entities:
+    - [1, 1, 6, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 8, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 10, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 12, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 14, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 16, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 18, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 20, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 22, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 24, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [2, 1, 26, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [2, 1, 28, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 30
+inputs:
+  - {tick: 2, pos: [1, 1, 6], action: use}
+  - {tick: 2, pos: [1, 1, 8], action: use}
+  - {tick: 2, pos: [1, 1, 10], action: use}
+  - {tick: 2, pos: [1, 1, 12], action: use}
+  - {tick: 2, pos: [1, 1, 14], action: use}
+  - {tick: 2, pos: [1, 1, 16], action: use}
+  - {tick: 2, pos: [1, 1, 18], action: use}
+  - {tick: 2, pos: [1, 1, 20], action: use}
+  - {tick: 2, pos: [1, 1, 22], action: use}
+  - {tick: 2, pos: [1, 1, 24], action: use}
+  - {tick: 2, pos: [0, 1, 26], action: use}
+  - {tick: 2, pos: [0, 1, 28], action: use}
+  - {tick: 3, pos: [0, 1, 26], action: use}
+  - {tick: 4, pos: [0, 1, 28], action: use}
+probes:
+  dust7_cmp: [1, 1, 6]
+  dust7: [0, 1, 6]
+  bulb0_cmp: [1, 1, 8]
+  bulb1_cmp: [1, 1, 10]
+  bulb2_cmp: [1, 1, 12]
+  bulb3_cmp: [1, 1, 14]
+  bulb4_cmp: [1, 1, 16]
+  bulb5_cmp: [1, 1, 18]
+  bulb6_cmp: [1, 1, 20]
+  bulb7_cmp: [1, 1, 22]
+  bulb_off_cmp: [1, 1, 24]
+  pulse1_cmp: [2, 1, 26]
+  pulse2_cmp: [2, 1, 28]

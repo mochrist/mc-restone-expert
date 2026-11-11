@@ -54,7 +54,7 @@ experimentelle Redstone relevant.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `LevelChunk#setBlockState`, `Level#setBlock`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-neighbor-updates.yaml)
 
 ### UPD-006: Reihenfolge der Effekte in setBlock
 - Aussage: Bei einer Zustandsänderung läuft auf dem Server in dieser Reihenfolge: (1) Zustand im Chunk setzen, (2) bei Wechsel des Block-Typs und Flag 1 oder Kolbenbewegung `affectNeighborsAfterRemoval` des alten Zustands, (3) `onPlace` des neuen Zustands (außer Flag 512), (4) Client-Sync (Flag 2), (5) bei Flag 1 `updateNeighborsAt(pos, alterBlock)` und danach Komparator-Updates, falls der neue Zustand analog auslesbar ist, (6) ohne Flag 16: `updateIndirectNeighbourShapes` des alten Zustands, `updateNeighbourShapes` und `updateIndirectNeighbourShapes` des neuen Zustands.

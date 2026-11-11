@@ -1,0 +1,259 @@
+{
+ "format": 1,
+ "scenario": "kb-neighbor-updates",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 30,
+ "probes": {
+  "upd5_same_det": [
+   1,
+   1,
+   0
+  ],
+  "upd5_diff_det": [
+   3,
+   1,
+   0
+  ],
+  "lamp_obs": [
+   0,
+   1,
+   4
+  ],
+  "lamp": [
+   1,
+   1,
+   4
+  ],
+  "lamp_det_east": [
+   2,
+   1,
+   4
+  ],
+  "lamp_det_south": [
+   1,
+   1,
+   5
+  ],
+  "torch": [
+   1,
+   1,
+   8
+  ],
+  "torch_det_near": [
+   2,
+   1,
+   8
+  ],
+  "torch_det_far": [
+   3,
+   1,
+   8
+  ],
+  "lever": [
+   1,
+   1,
+   12
+  ],
+  "lever_det": [
+   2,
+   0,
+   12
+  ],
+  "button": [
+   1,
+   1,
+   14
+  ],
+  "button_det": [
+   2,
+   0,
+   14
+  ],
+  "rep": [
+   1,
+   1,
+   18
+  ],
+  "rep_det_out": [
+   2,
+   1,
+   17
+  ],
+  "rep_det_side": [
+   1,
+   1,
+   19
+  ]
+ },
+ "samples": {
+  "upd5_same_det": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ]
+  ],
+  "upd5_diff_det": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "lamp_obs": [
+   [
+    0,
+    "minecraft:observer[facing=east,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:observer[facing=east,powered=true]"
+   ],
+   [
+    6,
+    "minecraft:observer[facing=east,powered=false]"
+   ],
+   [
+    20,
+    "minecraft:observer[facing=east,powered=true]"
+   ],
+   [
+    22,
+    "minecraft:observer[facing=east,powered=false]"
+   ]
+  ],
+  "lamp": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    2,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    18,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "lamp_det_east": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=south,locked=false,powered=true]"
+   ],
+   [
+    10,
+    "minecraft:repeater[delay=1,facing=south,locked=false,powered=false]"
+   ]
+  ],
+  "lamp_det_south": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ]
+  ],
+  "torch": [
+   [
+    0,
+    "minecraft:redstone_wall_torch[facing=east,lit=true]"
+   ],
+   [
+    4,
+    "minecraft:redstone_wall_torch[facing=east,lit=false]"
+   ]
+  ],
+  "torch_det_near": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    6,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "torch_det_far": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    6,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "lever": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ]
+  ],
+  "lever_det": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    2,
+    "minecraft:air"
+   ]
+  ],
+  "button": [
+   [
+    0,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:stone_button[face=floor,facing=east,powered=true]"
+   ],
+   [
+    22,
+    "minecraft:stone_button[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "button_det": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    2,
+    "minecraft:air"
+   ]
+  ],
+  "rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "rep_det_out": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    6,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "rep_det_side": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ]
+  ]
+ }
+}

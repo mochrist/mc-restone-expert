@@ -35,7 +35,7 @@ des Blocks, auf den sein Gesicht zeigt, und gibt daraufhin hinten einen Puls von
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ObserverBlock#updateShape`; [SRC-WIKI-OBSERVER]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-observer.yaml)
 - Hinweise: Shape-Updates entstehen u. a. bei jedem `setBlock` ohne Flag 16 an den sechs Nachbarn (`Level#setBlock` → `updateNeighbourShapes`), also bei jeder Blockstate-Änderung des beobachteten Blocks, auch mit Flag 2 (z. B. Repeater-Umschalten).
 
 ### OBS-005: Nur ein unbetriebener Observer startet einen Puls
@@ -66,7 +66,7 @@ des Blocks, auf den sein Gesicht zeigt, und gibt daraufhin hinten einen Puls von
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ObserverBlock#tick`, `ObserverBlock#updateNeighborsInFront`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-observer.yaml)
 - Hinweise: Flag 2 löst trotzdem Shape-Updates an den Nachbarn aus; ein Observer, der einen anderen Observer beobachtet, sieht also dessen Zustandswechsel (Observer-Uhren).
 
 ### OBS-009: Neu platzierter eingeschalteter Observer ohne Tick wird ausgeschaltet
@@ -74,7 +74,7 @@ des Blocks, auf den sein Gesicht zeigt, und gibt daraufhin hinten einen Puls von
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ObserverBlock#onPlace`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-observer.yaml)
 - Hinweise: Relevant für per Kolben bewegte Observer. Laut Wiki erzeugt ein unbetriebener, per Kolben bewegter Observer einen Puls; der Mechanismus (Shape-Updates beim Absetzen) ist hier nicht im Code nachverfolgt.
 
 ### OBS-010: Entfernen während eines Pulses aktualisiert vorne
@@ -82,7 +82,7 @@ des Blocks, auf den sein Gesicht zeigt, und gibt daraufhin hinten einen Puls von
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ObserverBlock#affectNeighborsAfterRemoval`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-observer.yaml)
 
 ### OBS-011: Redstone-Staub verbindet sich nur mit der Rückseite
 - Aussage: `shouldRedstoneWireConnectTo` ist nur für die Richtung gleich `facing` wahr, d. h. Staub hinter dem Observer verbindet sich optisch mit dessen Ausgang.

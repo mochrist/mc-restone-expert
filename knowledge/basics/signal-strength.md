@@ -40,7 +40,7 @@ meistens das Maximum. Nur Redstone-Staub verliert pro Block eine Stufe, alle and
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#ownSignal`, `RedstoneWireBlock#createBlockStateDefinition`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-comparator-values.yaml)
 - Hinweise: Komponenten neben Staub der Stärke n sehen also n, nicht n−1.
 
 ### SIG-005: Staub verliert pro Staub-zu-Staub-Schritt genau eine Stufe
@@ -109,7 +109,8 @@ meistens das Maximum. Nur Redstone-Staub verliert pro Block eine Stufe, alle and
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `TargetBlock#ownSignal`, `DaylightDetectorBlock#ownSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-unmodeled.yaml)
+- Hinweise: Im Spiel geprüft: Zielblock (target-block.yaml: Staub daneben zeigt 12) und Tageslichtsensor (kb-unmodeled.yaml: Staub neben power=9 zeigt 9).
 
 ### SIG-014: Signalstärke eines Leiterblocks ist das Maximum seiner starken Eingänge
 - Aussage: Fragt ein Empfänger einen Leiterblock ab, ist der Wert das Maximum aus dem eigenen `getSignal` des Blocks und `getDirectSignalTo`, dem Maximum der `getDirectSignal`-Werte aller sechs Nachbarn des Leiters (Reihenfolge DOWN, UP, NORTH, SOUTH, WEST, EAST, Abbruch bei 15).

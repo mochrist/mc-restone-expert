@@ -1,0 +1,42 @@
+name: kb-sources
+description: >
+  Quellen und Eingänge. z=0..8 (SRCB-004): Holzknöpfe (Eiche, Bambus, Karmesin, Wirr) bleiben 30 gt gedrückt, ein
+  Steinknopf zum Vergleich 20 gt. z=10 (SRCB-008): Ein Redstone-Block neben einem Repeater schaltet ihn ein; z=12:
+  ein Stein zwischen Block und Repeater leitet nicht (der Block lädt nicht stark). z=14 (REP-003, DUST-012):
+  Ein Repeater liest Staub der Stärke 1 (voreingestellt) und schaltet ein.
+build:
+  size: [6, 3, 18]
+  fill:
+    - [0, 0, 0, 5, 0, 17, "stone"]
+  blocks:
+    - [1, 1, 0, "oak_button[face=floor,facing=east,powered=false]"]
+    - [1, 1, 2, "bamboo_button[face=floor,facing=east,powered=false]"]
+    - [1, 1, 4, "crimson_button[face=floor,facing=east,powered=false]"]
+    - [1, 1, 6, "warped_button[face=floor,facing=east,powered=false]"]
+    - [1, 1, 8, "stone_button[face=floor,facing=east,powered=false]"]
+    - [0, 1, 10, "redstone_block"]
+    - [1, 1, 10, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [1, 1, 12, "redstone_block"]
+    - [2, 1, 12, "stone"]
+    - [3, 1, 12, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [0, 1, 14, "redstone_wire[east=none,north=none,power=1,south=none,west=none]"]
+    - [1, 1, 14, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+ticks: 60
+inputs:
+  - {tick: 2, pos: [1, 1, 0], action: use}
+  - {tick: 2, pos: [1, 1, 2], action: use}
+  - {tick: 2, pos: [1, 1, 4], action: use}
+  - {tick: 2, pos: [1, 1, 6], action: use}
+  - {tick: 2, pos: [1, 1, 8], action: use}
+  - {tick: 2, pos: [1, 2, 10], action: setblock, state: "stone"}
+  - {tick: 2, pos: [3, 2, 12], action: setblock, state: "stone"}
+  - {tick: 2, pos: [1, 2, 14], action: setblock, state: "stone"}
+probes:
+  btn_oak: [1, 1, 0]
+  btn_bamboo: [1, 1, 2]
+  btn_crimson: [1, 1, 4]
+  btn_warped: [1, 1, 6]
+  btn_stone: [1, 1, 8]
+  rb_rep: [1, 1, 10]
+  rb_stone_rep: [3, 1, 12]
+  dust1_rep: [1, 1, 14]

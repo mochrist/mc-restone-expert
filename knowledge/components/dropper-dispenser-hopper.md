@@ -48,8 +48,8 @@ Details zur Comparator-Berechnung stehen in der Comparator-Datei. Zeitangaben in
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DispenserBlock`
 - Konfidenz: mittel
-- Status: belegt
-- Hinweise: Nicht im Spiel geprüft. Dispenser und Dropper sind nicht schiebbar (DDH-014), ein Ankunfts-Update wie bei Pistons (PIS-008) gibt es also nicht.
+- Status: im-Spiel-verifiziert (scenarios/kb-piston-qc.yaml)
+- Hinweise: Im Spiel bestätigt (kb-piston-qc: Dispenser bleibt bei Tick 2 `triggered=false`, erst ein späteres Update setzt es). Dispenser und Dropper sind nicht schiebbar (DDH-014), ein Ankunfts-Update wie bei Pistons (PIS-008) gibt es also nicht.
 
 ### DDH-006: Dropper legt Items in einen Container vor sich, sonst wirft er sie aus
 - Aussage: `DropperBlock#dispenseFrom` wählt einen zufälligen belegten Slot und überträgt genau ein Item in einen Container vor der Front (über `HopperBlockEntity#addItem`), sonst wird das Item mit dem Standardverhalten ausgeworfen.

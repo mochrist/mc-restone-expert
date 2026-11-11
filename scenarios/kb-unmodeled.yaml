@@ -1,0 +1,32 @@
+name: kb-unmodeled
+description: >
+  Bausteine, die der Simulator (noch) nicht abbildet; nur im Spiel aufgezeichnet. z=0/2/4 (CMP-012): Kuchen mit
+  bites=0/3/6 liefert dem Comparator 14/8/2. z=6 (SIG-013): Staub neben einem Tageslichtsensor (power=9) bekommt 9.
+build:
+  size: [4, 3, 8]
+  fill:
+    - [0, 0, 0, 3, 0, 7, "stone"]
+  blocks:
+    - [0, 1, 0, "cake[bites=0]"]
+    - [1, 1, 0, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 2, "cake[bites=3]"]
+    - [1, 1, 2, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 4, "cake[bites=6]"]
+    - [1, 1, 4, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 6, "daylight_detector[inverted=false,power=9]"]
+  block_entities:
+    - [1, 1, 0, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 2, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 4, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 30
+inputs:
+  - {tick: 2, pos: [1, 1, 0], action: use}
+  - {tick: 2, pos: [1, 1, 2], action: use}
+  - {tick: 2, pos: [1, 1, 4], action: use}
+  - {tick: 2, pos: [1, 1, 6], action: setblock, state: "redstone_wire[east=none,north=none,power=0,south=none,west=none]"}
+probes:
+  cake0_cmp: [1, 1, 0]
+  cake3_cmp: [1, 1, 2]
+  cake6_cmp: [1, 1, 4]
+  daylight: [0, 1, 6]
+  daylight_dust: [1, 1, 6]
