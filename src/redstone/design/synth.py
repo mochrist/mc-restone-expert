@@ -24,7 +24,8 @@ overlap in x):
          itself (saves a column; a line of only that torch lights the lamp right below it).
     deeper rows: the collector climbs onto its end block and runs on at y=3 along z (dust on blocks at
          y=2); wall torches on the sides of those blocks feed the output lines below them (y=1).
-    The output lamp is the support block of one dust of its line.
+    The output lamp is the support block of one dust of its line. Outputs with the same function share one
+    line: their lamps are the supports of neighbouring dust cells, all reached by every term of the line.
 Torches are diodes, so a term column can feed any number of output lines without connecting them.
 
 Signal strength: rails, collectors and output lines get repeaters where 15 blocks of dust are not
@@ -243,12 +244,15 @@ class _Col:
     outs: tuple[int, ...]
 
 
-def _assign_lines(cols: list[_Col], order: list[int], no_south: set[int]) -> tuple[dict, dict] | None:
+def _assign_lines(cols: list[_Col], order: list[int], no_south: set[int],
+                  width: dict[int, int] | None = None) -> tuple[dict, dict] | None:
     """Place the output lines in OR rows.
 
     A line is a list of torch cells along x: odd x = wall torch on the east/west side of a column, even x
     (first OR row only, at an end of the line) = wall torch on the south side of that column's end block,
-    standing in the line itself. Returns ({output: (row, cells)}, {(col, output): (row, cell)})."""
+    standing in the line itself. width: output -> number of lamps on its line (default 1); a line gets at
+    least that many cells without a torch in it, extended to both sides if needed.
+    Returns ({output: (row, cells, west end, east end)}, {(col, output): (row, cell)})."""
     spans: dict[int, list[tuple[int, int]]] = {}
     lines, conns = {}, {}
     for j in order:
@@ -272,12 +276,27 @@ def _assign_lines(cols: list[_Col], order: list[int], no_south: set[int]) -> tup
                 else:
                     xs = [c for _, c in cells]
                     lo, hi = min(xs), max(xs)
+                    free = hi - lo + 1 - sum(c % 2 == 0 for c in xs)  # cells that can carry a lamp
+                    lamps = (width or {}).get(j, 1)
+                    more = max(0, lamps - free)  # lamps beyond the torches, half on each side
+                    if lamps == 1 and len(xs) == 1:  # a lone torch (also a south torch) lights its own lamp
+                        more = 0
+                    # a torch standing in the line cuts it: beyond it, only that torch would power the lamps
+                    if len(xs) > 1 and lo % 2 == 0:
+                        west = 0
+                    elif len(xs) > 1 and hi % 2 == 0:
+                        west = more
+                    else:
+                        west = more // 2
+                    room = (hi - lo + 1 + more) // 14 if more else 0  # repeaters between many lamps
+                    lo -= west + (room if west else 0)
+                    hi += more - west + (room if more - west else 0)
                     if all(hi < a - 1 or b < lo - 1 for a, b in spans.get(q, [])):
                         placed = cells
                         break
             if placed is not None:
-                spans.setdefault(q, []).append((min(c for _, c in placed), max(c for _, c in placed)))
-                lines[j] = (q, sorted(c for _, c in placed))
+                spans.setdefault(q, []).append((lo, hi))
+                lines[j] = (q, sorted(c for _, c in placed), lo, hi)
                 for k, c in placed:
                     conns[(k, j)] = (q, c)
                 break
@@ -287,7 +306,7 @@ def _assign_lines(cols: list[_Col], order: list[int], no_south: set[int]) -> tup
     climbing = {k for (k, _), (q, _) in conns.items() if q > 0}
     clash = {k for (k, _), (q, c) in conns.items() if q == 0 and c % 2 == 0 and k in climbing}
     if clash:
-        return _assign_lines(cols, order, no_south | clash)
+        return _assign_lines(cols, order, no_south | clash, width)
     return lines, conns
 
 
@@ -349,12 +368,15 @@ def _crossings(rows, rail_row, imp: Implicant) -> dict[tuple[int, bool], int] | 
     return best
 
 
-def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = False, drivable: bool = False):
-    """Place everything; returns (cells, lever positions, lamp positions, delay notes) or None.
+def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = False, drivable: bool = False,
+           lamp_count: dict[int, int] | None = None):
+    """Place everything; returns (cells, lever positions, lamp positions per output) or None.
+
+    lamp_count: output -> number of lamps (outputs with the same function share a line, see `pla`).
 
     drivable: every input is a wall lever on the west face of an input block P at the west end of its rails
     (see `pla`), so that another part can replace the lever by a repeater facing P."""
-    assigned = _assign_lines(cols, order, set())
+    assigned = _assign_lines(cols, order, set(), lamp_count)
     if assigned is None:
         return None
     lines, conns = assigned
@@ -364,7 +386,7 @@ def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = Fal
         x = _crossings(rows, rail_row, c.imp)
         if x is None:
             if not trail:
-                return _build(n, m, cols, order, trail=True, drivable=drivable)
+                return _build(n, m, cols, order, trail=True, drivable=drivable, lamp_count=lamp_count)
             return None
         cross.append(x)
     z_end = len(rows)
@@ -497,7 +519,7 @@ def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = Fal
                 put(x, 1, z, _repeater("north") if idx[z] in reps else _DUST_Z)
         if qmax:
             if (x, z_end - 1) in rail_dust:  # the climbing dust would connect to the last rail
-                return _build(n, m, cols, order, trail=True, drivable=drivable) if not trail else None
+                return _build(n, m, cols, order, trail=True, drivable=drivable, lamp_count=lamp_count) if not trail else None
             put(x, 2, z_end, _DUST_Z)
             for z in range(z_end + 1, orow(qmax) + 1):
                 put(x, 2, z, _STONE)
@@ -512,42 +534,66 @@ def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = Fal
                 put(cell, 2, orow(q), _torch(facing))
 
     # output lines
-    lamps: list[tuple[int, int, int] | None] = [None] * m
-    for j, (q, tcells) in lines.items():
+    lamps: list[list[tuple[int, int, int]] | None] = [None] * m
+    for j, (q, tcells, start, end) in lines.items():
         z = orow(q)
+        k = (lamp_count or {}).get(j, 1)
         lo, hi = tcells[0], tcells[-1]
         south = {c for c in tcells if c % 2 == 0}  # torch in the line: no dust there, 15 next to it
-        if tcells == [lo] and south:  # a single south torch lights the lamp below it directly
-            lamps[j] = (lo, 0, z)
+        if k == 1 and tcells == [lo] and south:  # a single south torch lights the lamp below it directly
+            lamps[j] = [(lo, 0, z)]
             put(lo, 0, z, _LAMP)
             continue
         best = None
-        for xl in range(lo, hi + 1):
-            if xl in south:
+        for xl in range(lo, end - k + 2):  # lamps at xl .. xr; every term must reach both ends
+            xr = xl + k - 1
+            if any(x in south for x in range(xl, xr + 1)) or (hi in south and xl > hi and len(tcells) > 1):
                 continue
             plan = []
-            for d, facing in ((1, "west"), (-1, "east")):
-                xs = list(range(lo, xl + 1)) if d > 0 else list(range(hi, xl - 1, -1))
+            for xs, facing in ((list(range(lo, xr + 1)), "west"), (list(range(max(hi, xr), xl - 1, -1)), "east")):
                 srcs = {a: 16 if xx in south else 15 for a, xx in enumerate(xs) if xx in tcells}
                 reps = _plan_line(len(xs), srcs, {len(xs) - 1},
-                                  {a for a, xx in enumerate(xs) if xx not in tcells and xx != xl})
+                                  {a for a, xx in enumerate(xs) if xx not in tcells and not xl <= xx <= xr})
                 if reps is None:
                     break
                 plan.append((facing, {xs[a] for a in reps}))
             else:
-                key = (sum(len(r) for _, r in plan), abs(2 * xl - lo - hi))
+                key = (sum(len(r) for _, r in plan), max(0, xr - hi), abs(xl + xr - lo - hi))
                 if best is None or key < best[0]:
-                    best = (key, xl, plan)
+                    best = (key, list(range(xl, xr + 1)), plan)
+        if k > 1 and (start < lo or end > hi):
+            # lamps between and beyond the outer torches, nearest first. Every term reaches every cell between
+            # the torches (both flows must pass them). Beyond the torches the power flows one way only, so
+            # repeaters may stand between the lamps there (a lamp needs dust above it).
+            inner = [x for x in range(lo, hi + 1) if x not in south]
+            plan, outer = [], []
+            cut = len(tcells) > 1  # a torch in the line (at an end) cuts off the cells beyond it
+            for xs, facing, beyond in ((list(range(lo, end + 1)), "west", lambda x: x > hi and not (cut and hi in south)),
+                                       (list(range(hi, start - 1, -1)), "east", lambda x: x < lo and not (cut and lo in south))):
+                srcs = {a: 16 if xx in south else 15 for a, xx in enumerate(xs) if xx in tcells}
+                far = {a for a, xx in enumerate(xs) if beyond(xx)}
+                reps = _plan_line(len(xs), srcs, far | {a for a, xx in enumerate(xs) if xx in inner}, far)
+                if reps is None:
+                    break
+                plan.append((facing, {xs[a] for a in reps}))
+                outer += [(n + 1, xs[a]) for n, a in enumerate(sorted(far - reps))]
+            else:
+                on = sorted(x for _, x in sorted([(0, x) for x in inner] + outer)[:k])
+                if len(on) == k:
+                    plan = [(f, {x for x in r if on[0] < x < on[-1]}) for f, r in plan]
+                    key = (sum(len(r) for _, r in plan), max(0, on[-1] - hi) + max(0, lo - on[0]), 0)
+                    if best is None or key < best[0]:
+                        best = (key, on, plan)
         if best is None:
             return None
-        _, xl, plan = best
+        _, on, plan = best
         rep_at = {xx: f for f, r in plan for xx in r}
-        for xx in range(lo, hi + 1):
+        for xx in range(min(lo, on[0]), max(hi, on[-1]) + 1):
             if xx in south:
                 continue
-            put(xx, 0, z, _LAMP if xx == xl else _STONE)
+            put(xx, 0, z, _LAMP if xx in on else _STONE)
             put(xx, 1, z, _repeater(rep_at[xx]) if xx in rep_at else _DUST_X)
-        lamps[j] = (xl, 0, z)
+        lamps[j] = [(xx, 0, z) for xx in on]
     # constant-off outputs: a lone lamp beside the first OR row
     for j in range(m):
         if lamps[j] is None:
@@ -555,7 +601,7 @@ def _build(n: int, m: int, cols: list[_Col], order: list[int], trail: bool = Fal
             used = [x for (x, y, zz) in cells if zz in (z - 1, z, z + 1)] or [0]
             x = max(used) + 2
             put(x, 0, z, _LAMP)
-            lamps[j] = (x, 0, z)
+            lamps[j] = [(x, 0, z)]
     return cells, levers, lamps
 
 
@@ -572,8 +618,15 @@ def _columns(terms: list[list[Implicant]], shared: bool, order: list[int]) -> li
     return sorted(cols, key=lambda c: (min(rank[j] for j in c.outs), max(rank[j] for j in c.outs), str(c.imp)))
 
 
-def _to_candidate(name: str, built, spec: Spec, terms, shared: bool) -> Candidate:
+def _to_candidate(name: str, built, spec: Spec, terms, shared: bool,
+                  groups: list[tuple[int, int]] | None = None) -> Candidate:
+    """terms per line of the built PLA; groups: per output of the spec (line, lamp on that line), default one
+    line per output."""
     cells, levers, lamps = built
+    groups = groups or [(j, 0) for j in range(len(spec.outputs))]
+    lamps = [lamps[r][i] for r, i in groups]
+    line_terms = terms
+    terms = [line_terms[r] for r, _ in groups]
     lo = [min(p[a] for p in cells) for a in range(3)]
     hi = [max(p[a] for p in cells) for a in range(3)]
     g = Grid(tuple(h - l + 1 for h, l in zip(hi, lo)))
@@ -585,12 +638,14 @@ def _to_candidate(name: str, built, spec: Spec, terms, shared: bool) -> Candidat
 
     desc = "; ".join(f"{o} = " + (" ∨ ".join(_term_text(spec.inputs, t) for t in ts) if ts else "aus")
                      for o, ts in zip(spec.outputs, terms))
-    distinct = len({t for ts in terms for t in ts}) if shared else sum(len(ts) for ts in terms)
+    distinct = len({t for ts in line_terms for t in ts}) if shared else sum(len(ts) for ts in line_terms)
     text = (f"Fackel-PLA (Summe von Produkten): {desc}. {distinct} Termspalten mit Wandfackeln an den "
             f"Leitungen; Sammelleitung und Term-Fackel bilden das AND, Fackeln an der Sammelleitung "
             f"speisen die Ausgangsleitungen (OR)")
-    if shared and distinct < sum(len(ts) for ts in terms):
+    if shared and distinct < sum(len(ts) for ts in line_terms):
         text += "; gemeinsame Terme belegen nur eine Spalte"
+    if len(line_terms) < len(terms):
+        text += "; gleiche Ausgänge teilen eine Leitung (Lampen nebeneinander)"
     if any("repeater" in s for s in cells.values()):
         text += "; Repeater frischen lange Leitungen auf"
     return Candidate(name, g, [rel(p) for p in levers], [rel(p) for p in lamps], description=text + ".",
@@ -608,10 +663,24 @@ def pla(spec: Spec, name: str = "pla", *, share: bool | None = None, drivable: b
     if n > (MAX_PARTIAL_INPUTS if spec.partial else MAX_INPUTS):
         return None
     combos = spec.combos()
-    ones = [[c for c in combos if spec.table[c][j]] for j in range(m)]
+    # outputs with the same function share one line (one lamp each); constant-off outputs stay single
+    lines: list[int] = []  # the first output of each line
+    groups: list[tuple[int, int]] = []  # per output: (line, lamp on that line)
+    first: dict[tuple, int] = {}
+    for j in range(m):
+        col = tuple(spec.table[c][j] for c in combos)
+        r = first.get(col) if any(col) else None
+        if r is None:
+            r = len(lines)
+            lines.append(j)
+            if any(col):
+                first[col] = r
+        groups.append((r, sum(g == r for g, _ in groups)))
+    width = {r: sum(g == r for g, _ in groups) for r in range(len(lines))}
+    ones = [[c for c in combos if spec.table[c][j]] for j in lines]
     if spec.partial:
         selections = [[minimize_partial(n, o, [c for c in combos if not spec.table[c][j]])
-                       for j, o in enumerate(ones)]]
+                       for j, o in zip(lines, ones)]]
     else:
         selections = [[minimize(n, o) for o in ones]]
         multi = minimize_multi(n, ones)
@@ -620,10 +689,10 @@ def pla(spec: Spec, name: str = "pla", *, share: bool | None = None, drivable: b
     best = None
     for terms in selections:
         for shared in ((True, False) if share is None else (share,)):
-            for order in itertools.islice(itertools.permutations(range(m)), MAX_ORDERS):
+            for order in itertools.islice(itertools.permutations(range(len(lines))), MAX_ORDERS):
                 cols = _columns(terms, shared, list(order))
                 try:
-                    built = _build(n, m, cols, list(order), drivable=drivable)
+                    built = _build(n, len(lines), cols, list(order), drivable=drivable, lamp_count=width)
                 except _Conflict:
                     built = None
                 if built is None:
@@ -631,6 +700,8 @@ def pla(spec: Spec, name: str = "pla", *, share: bool | None = None, drivable: b
                 cells = built[0]
                 ext = [max(p[a] for p in cells) - min(p[a] for p in cells) + 1 for a in range(3)]
                 key = (ext[0] * ext[1] * ext[2], len(cells))
+                if spec.max_delay is not None:  # each repeater adds 2 gt on some path: fewer first
+                    key = (sum(s.startswith("repeater") for s in cells.values()),) + key
                 if best is None or key < best[0]:
                     best = (key, built, terms, shared)
     if best is None:
@@ -638,7 +709,7 @@ def pla(spec: Spec, name: str = "pla", *, share: bool | None = None, drivable: b
     _, built, terms, shared = best
     from .compact import crop, normalize
 
-    return normalize(crop(_to_candidate(name, built, spec, terms, shared)))
+    return normalize(crop(_to_candidate(name, built, spec, terms, shared, groups)))
 
 
 def _term_text(names: list[str], imp: Implicant) -> str:

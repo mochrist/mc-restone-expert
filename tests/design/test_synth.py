@@ -148,3 +148,30 @@ def test_pla_random_functions():
 def test_pla_limits():
     spec = from_functions(list("abcdefg"), {"y": "a"})  # 7 inputs, over MAX_INPUTS
     assert pla(spec) is None
+
+
+@pytest.mark.parametrize("seed", range(6))
+def test_equal_outputs_share_a_line(seed):
+    """Outputs with the same function get one line with a lamp each (seg7: 18 of 21 outputs are equal)."""
+    rng = random.Random(100 + seed)
+    n = rng.choice([2, 3])
+    funcs = [tuple(rng.random() < 0.5 for _ in range(2 ** n)) for _ in range(2)]
+    pick = [rng.randrange(2) for _ in range(rng.randint(3, 8))]
+    combos = list(itertools.product([False, True], repeat=n))
+    spec = Spec(list("abc"[:n]), [f"y{j}" for j in range(len(pick))],
+                {c: tuple(funcs[f][i] for f in pick) for i, c in enumerate(combos)})
+    c = pla(spec)
+    assert c is not None and len(set(c.outputs)) == len(pick)
+    ev = evaluate(c, spec)
+    assert ev.correct, ev.errors
+
+
+def test_many_equal_outputs_lamps_on_both_sides():
+    spec = from_functions(["a", "b"], {f"y{j}": "not a" for j in range(18)} | {"z": "a and b"})
+    c = pla(spec)
+    assert c is not None and len(set(c.outputs)) == 19
+    lamps = _ids(c, "redstone_lamp")
+    assert len(lamps) == 19
+    ev = evaluate(c, spec)
+    assert ev.ok, (ev.errors, ev.violations)
+    assert c.block_count < 150, c.block_count

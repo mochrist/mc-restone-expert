@@ -1,0 +1,27 @@
+# Gleiche Ausgänge: mehrere Lampen zeigen dieselbe Funktion (wie die Segmente einer Anzeige). Jede Funktion
+# bekommt im PLA eine Leitung mit einer Lampe pro Ausgang, auch über 15 Blöcke hinaus (Lampen auf beiden Seiten).
+inputs: [a, b, c]
+function:
+  n1: not a
+  n2: not a
+  n3: not a
+  n4: not a
+  n5: not a
+  n6: not a
+  n7: not a
+  n8: not a
+  n9: not a
+  n10: not a
+  n11: not a
+  n12: not a
+  n13: not a
+  n14: not a
+  n15: not a
+  n16: not a
+  n17: not a
+  n18: not a
+  o1: b or c
+  o2: b or c
+  o3: b or c
+  x1: a != c
+  x2: a != c
