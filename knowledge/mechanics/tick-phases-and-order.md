@@ -23,14 +23,14 @@ Block-Events → Entities → Block Entities. Der Simulator sollte genau diese P
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ServerLevel#tick`, `ServerLevel#tickTime`, `LevelAccessor#createTick`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-pistons-ticks.yaml)
 
 ### ORD-003: Reihenfolge geplanter Block-Ticks
 - Aussage: Fällige geplante Ticks werden nach Priorität (niedrigerer Wert zuerst, `EXTREMELY_HIGH = -3` bis `EXTREMELY_LOW = 3`) und bei gleicher Priorität nach `subTickOrder` (globaler Zähler in Planungsreihenfolge) ausgeführt.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ScheduledTick#INTRA_TICK_DRAIN_ORDER`, `ScheduledTick#DRAIN_ORDER`, `TickPriority`, `Level#nextSubTickCount`; [SRC-M-WIKI-TICK]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-priorities.yaml)
 - Hinweise: Welche Komponente welche Priorität nutzt, steht in den Komponenten-Dateien (Wiki: Repeater -3/-2/-1, Comparator -1/0, sonst 0).
 
 ### ORD-004: In der Tick-Phase neu geplante Ticks laufen nicht mehr im selben Tick
@@ -46,7 +46,7 @@ Block-Events → Entities → Block Entities. Der Simulator sollte genau diese P
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `LevelChunkTicks#schedule`, `ScheduledTick#UNIQUE_TICK_HASH`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-pistons-ticks.yaml)
 - Hinweise: Der verworfene Tick behält also nicht seine eigene Verzögerung oder Priorität; es gilt der bereits ausstehende.
 
 ### ORD-006: Ein geplanter Tick wird nur ausgeführt, wenn der Block noch passt
@@ -54,7 +54,7 @@ Block-Events → Entities → Block Entities. Der Simulator sollte genau diese P
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ServerLevel#tickBlock`, `ServerLevel#tickFluid`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-priorities.yaml)
 
 ### ORD-007: Fluid-Ticks laufen nach allen Block-Ticks
 - Aussage: Die Fluid-Tick-Liste (`fluidTicks`) wird erst nach vollständiger Abarbeitung der Block-Tick-Liste verarbeitet, mit demselben Ordnungsschema.

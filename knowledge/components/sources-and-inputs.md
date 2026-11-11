@@ -51,8 +51,8 @@ bekommen. Zeiten in Game-Ticks (gt).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `BasePressurePlateBlock#getDirectSignal`, `BasePressurePlateBlock#updateNeighbours`
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: Zustandsänderung mit Flag 2 plus explizite Updates (`BasePressurePlateBlock#checkPressed`).
+- Status: im-Spiel-verifiziert (scenarios/kb2-conductors-plates.yaml)
+- Hinweise: Zustandsänderung mit Flag 2 plus explizite Updates (`BasePressurePlateBlock#checkPressed`). Im Spiel geprüft sind nur die Stärken (stark nach unten, schwach seitlich und oben ohne Durchleitung); ein per setblock gesetzter Zustand aktualisiert nur die Nachbarn der Platte, nicht den Block darunter (die Updates von checkPressed sind nicht geprüft).
 
 ### SRCB-007: Nachprüfintervall der Druckplatten
 - Aussage: Solange eine Druckplatte gedrückt ist, prüft sie sich nach 20 gt (Holz/Stein) bzw. 10 gt (gewichtete Platten) erneut.

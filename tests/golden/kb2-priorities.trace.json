@@ -1,0 +1,175 @@
+{
+  "format": 1,
+  "scenario": "kb2-priorities",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 20,
+  "probes": {
+    "lamp_repeater_lock": [
+      2,
+      1,
+      0
+    ],
+    "tg_repeater_lock": [
+      1,
+      1,
+      0
+    ],
+    "lamp_comparator_first": [
+      2,
+      1,
+      4
+    ],
+    "tg_comparator_first": [
+      1,
+      1,
+      4
+    ],
+    "lamp_tg_first": [
+      2,
+      1,
+      8
+    ],
+    "tg_tg_first": [
+      1,
+      1,
+      8
+    ],
+    "rep_stale_locked": [
+      1,
+      1,
+      12
+    ],
+    "lamp_stale_locked": [
+      2,
+      1,
+      12
+    ],
+    "rep_live_locked": [
+      1,
+      1,
+      14
+    ],
+    "lamp_live_locked": [
+      2,
+      1,
+      14
+    ],
+    "replaced_lamp": [
+      1,
+      1,
+      18
+    ],
+    "control_lamp": [
+      1,
+      1,
+      20
+    ]
+  },
+  "samples": {
+    "lamp_repeater_lock": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ],
+    "tg_repeater_lock": [
+      [
+        0,
+        "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+      ],
+      [
+        4,
+        "minecraft:repeater[delay=1,facing=west,locked=true,powered=false]"
+      ]
+    ],
+    "lamp_comparator_first": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ],
+    "tg_comparator_first": [
+      [
+        0,
+        "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+      ],
+      [
+        4,
+        "minecraft:repeater[delay=1,facing=west,locked=true,powered=false]"
+      ]
+    ],
+    "lamp_tg_first": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        4,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "tg_tg_first": [
+      [
+        0,
+        "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+      ],
+      [
+        4,
+        "minecraft:repeater[delay=1,facing=west,locked=true,powered=true]"
+      ]
+    ],
+    "rep_stale_locked": [
+      [
+        0,
+        "minecraft:repeater[delay=1,facing=west,locked=true,powered=false]"
+      ],
+      [
+        4,
+        "minecraft:repeater[delay=1,facing=west,locked=true,powered=true]"
+      ]
+    ],
+    "lamp_stale_locked": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        4,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "rep_live_locked": [
+      [
+        0,
+        "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+      ]
+    ],
+    "lamp_live_locked": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ],
+    "replaced_lamp": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        3,
+        "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+      ]
+    ],
+    "control_lamp": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        6,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ]
+  }
+}

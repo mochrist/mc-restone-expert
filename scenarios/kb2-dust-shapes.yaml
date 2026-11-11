@@ -1,0 +1,49 @@
+name: kb2-dust-shapes
+description: >
+  Redstone-Staub: Verbindungsform nach Shape-Updates. Staub L liegt auf dem Boden (1,1,z), ein zweiter Staub U
+  eine Stufe höher bei (0,2,z). z=0 (DUST-003): Setzt man den Stein unter U nachträglich, bekommt L ein
+  Shape-Update von Westen und verbindet sich mit west=up (die Seitenfläche des Steins ist stabil). z=2: Mit einer
+  oberen Platte als Träger (Oberseite stabil, Seitenfläche nicht) wird daraus west=side. z=4 (DUST-025):
+  Ein Stein, den man über L setzt, löst bei L ein Shape-Update von oben aus; die Aufwärtsverbindung wird getrennt
+  (west=none). z=6 (DUST-026): Entfernt man den Träger unter U, prüft U beim Neighbor-Update seine Standfestigkeit
+  und verschwindet. z=8 und z=10 (PWR-015): Setzt man den Stein unter einen Staub bzw. einen Redstone-Block
+  diagonal über L, verbindet sich L nur mit dem Staub (east=up), die veraltete Verbindung zum Redstone-Block (east=up) wird getrennt. z=12
+  (DUST-024): Setzt man U selbst (east=side), schickt U ein Shape-Update an den Staub diagonal darunter, der sich
+  mit west=up anpasst.
+build:
+  size: [4, 4, 14]
+  fill:
+    - [0, 0, 0, 3, 0, 13, "stone"]
+  blocks:
+    - [0, 2, 0, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 0, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [0, 2, 2, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 2, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [0, 1, 4, "stone"]
+    - [0, 2, 4, "redstone_wire[east=side,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 4, "redstone_wire[east=none,north=none,power=0,south=none,west=up]"]
+    - [0, 1, 6, "stone"]
+    - [0, 2, 6, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 8, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [2, 2, 8, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 10, "redstone_wire[east=up,north=none,power=0,south=none,west=none]"]
+    - [2, 2, 10, "redstone_block"]
+    - [0, 1, 12, "stone"]
+    - [1, 1, 12, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+ticks: 10
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: setblock, state: "stone"}
+  - {tick: 2, pos: [0, 1, 2], action: setblock, state: "oak_slab[type=top,waterlogged=false]"}
+  - {tick: 2, pos: [1, 2, 4], action: setblock, state: "stone"}
+  - {tick: 2, pos: [0, 1, 6], action: setblock, state: "air"}
+  - {tick: 2, pos: [2, 1, 8], action: setblock, state: "stone"}
+  - {tick: 2, pos: [2, 1, 10], action: setblock, state: "stone"}
+  - {tick: 2, pos: [0, 2, 12], action: setblock, state: "redstone_wire[east=side,north=none,power=0,south=none,west=none]"}
+probes:
+  l_stone_support: [1, 1, 0]
+  l_slab_support: [1, 1, 2]
+  l_stone_above: [1, 1, 4]
+  u_removed_support: [0, 2, 6]
+  l_diag_dust: [1, 1, 8]
+  l_diag_block: [1, 1, 10]
+  l_after_u_placed: [1, 1, 12]

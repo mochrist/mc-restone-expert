@@ -1,0 +1,181 @@
+{
+  "format": 1,
+  "scenario": "kb2-pistons-ticks",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 40,
+  "probes": {
+    "piston_flash": [
+      1,
+      1,
+      0
+    ],
+    "piston_ctrl": [
+      1,
+      1,
+      2
+    ],
+    "head_ctrl": [
+      1,
+      2,
+      2
+    ],
+    "p_powered": [
+      2,
+      1,
+      4
+    ],
+    "p_powered_head": [
+      2,
+      2,
+      4
+    ],
+    "p_plain": [
+      2,
+      1,
+      7
+    ],
+    "p_plain_head": [
+      2,
+      2,
+      7
+    ],
+    "lamp_dup": [
+      2,
+      1,
+      9
+    ],
+    "lamp_short": [
+      2,
+      1,
+      11
+    ],
+    "lamp_two": [
+      2,
+      1,
+      13
+    ]
+  },
+  "samples": {
+    "piston_flash": [
+      [
+        0,
+        "minecraft:piston[extended=false,facing=up]"
+      ]
+    ],
+    "piston_ctrl": [
+      [
+        0,
+        "minecraft:piston[extended=false,facing=up]"
+      ],
+      [
+        3,
+        "minecraft:piston[extended=true,facing=up]"
+      ]
+    ],
+    "head_ctrl": [
+      [
+        0,
+        "minecraft:air"
+      ],
+      [
+        3,
+        "minecraft:moving_piston[facing=up,type=normal]"
+      ],
+      [
+        5,
+        "minecraft:piston_head[facing=up,short=false,type=normal]"
+      ]
+    ],
+    "p_powered": [
+      [
+        0,
+        "minecraft:air"
+      ],
+      [
+        3,
+        "minecraft:moving_piston[facing=east,type=normal]"
+      ],
+      [
+        5,
+        "minecraft:piston[extended=false,facing=up]"
+      ],
+      [
+        6,
+        "minecraft:piston[extended=true,facing=up]"
+      ]
+    ],
+    "p_powered_head": [
+      [
+        0,
+        "minecraft:air"
+      ],
+      [
+        6,
+        "minecraft:moving_piston[facing=up,type=normal]"
+      ],
+      [
+        8,
+        "minecraft:piston_head[facing=up,short=false,type=normal]"
+      ]
+    ],
+    "p_plain": [
+      [
+        0,
+        "minecraft:air"
+      ],
+      [
+        3,
+        "minecraft:moving_piston[facing=east,type=normal]"
+      ],
+      [
+        5,
+        "minecraft:piston[extended=false,facing=up]"
+      ]
+    ],
+    "p_plain_head": [
+      [
+        0,
+        "minecraft:air"
+      ]
+    ],
+    "lamp_dup": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        10,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "lamp_short": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        10,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        22,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ],
+    "lamp_two": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        10,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        22,
+        "minecraft:redstone_lamp[lit=false]"
+      ]
+    ]
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "format": 1,
+  "scenario": "kb2-comparator-updates",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 30,
+  "probes": {
+    "cmp_through_block": [
+      2,
+      1,
+      0
+    ],
+    "cmp_through_block_no_hopper": [
+      2,
+      1,
+      2
+    ],
+    "cmp_adjacent": [
+      1,
+      1,
+      4
+    ],
+    "cmp_after_barrel": [
+      2,
+      1,
+      6
+    ],
+    "cmp_after_glass": [
+      2,
+      1,
+      8
+    ],
+    "cmp_near_dust": [
+      2,
+      1,
+      10
+    ],
+    "cmp_compare": [
+      1,
+      1,
+      12
+    ],
+    "dust_compare": [
+      2,
+      1,
+      12
+    ],
+    "cmp_subtract": [
+      1,
+      1,
+      15
+    ],
+    "dust_subtract": [
+      2,
+      1,
+      15
+    ]
+  },
+  "samples": {
+    "cmp_through_block": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        3,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=1"
+      ]
+    ],
+    "cmp_through_block_no_hopper": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ]
+    ],
+    "cmp_adjacent": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        3,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=1"
+      ]
+    ],
+    "cmp_after_barrel": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=5"
+      ],
+      [
+        4,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ]
+    ],
+    "cmp_after_glass": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=5"
+      ]
+    ],
+    "cmp_near_dust": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=5"
+      ],
+      [
+        6,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ]
+    ],
+    "cmp_compare": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=2"
+      ],
+      [
+        4,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=2"
+      ]
+    ],
+    "dust_compare": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ],
+      [
+        4,
+        "minecraft:redstone_wire[east=side,north=none,power=2,south=none,west=side]"
+      ]
+    ],
+    "cmp_subtract": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=2"
+      ]
+    ],
+    "dust_subtract": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ]
+    ]
+  }
+}

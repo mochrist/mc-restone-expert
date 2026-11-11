@@ -41,14 +41,14 @@ BUDs relevant ist.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#neighborChanged`, `PistonBaseBlock#checkIfExtend`; [SRC-M-WIKI-BUD]; [SRC-M-WIKI-QC]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-qc-updates.yaml)
 
 ### BUD-005: Der Dispenser/Dropper-BUD
 - Aussage: Ein über QC bestromter Dispenser oder Dropper mit `triggered=false` löst beim nächsten `neighborChanged` aus und gibt 4 gt später aus.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DispenserBlock#neighborChanged`; [SRC-M-WIKI-DISPENSER]; [SRC-M-WIKI-BUD]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-qc-updates.yaml)
 
 ### BUD-006: Observer reagieren nicht auf Block-Updates
 - Aussage: In der Java Edition erkennt der Observer keine NC-Updates (`neighborChanged`), sondern Zustandsänderungen des beobachteten Blocks über Shape-Updates.
@@ -63,7 +63,7 @@ BUDs relevant ist.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `NeighborUpdater#updateNeighborsAtExceptFromFacing`; [SRC-M-WIKI-QC]
 - Konfidenz: mittel
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-qc-updates.yaml)
 - Hinweise: Welche Komponente welche Positionen updatet, steht in den jeweiligen Komponenten-Dateien; das Wiki fasst es als „Redstone-Änderungen innerhalb von zwei Blöcken" zusammen.
 
 ### BUD-008: Ankommende Piston-Blöcke updaten sich selbst
@@ -71,7 +71,7 @@ BUDs relevant ist.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonMovingBlockEntity#tick`, `PistonMovingBlockEntity#finalTick`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-pistons-ticks.yaml)
 
 ### BUD-009: Ein bestromt platzierter Piston prüft sofort
 - Aussage: Anders als Dispenser/Dropper prüft ein frisch platzierter Piston seine Leistung über `onPlace`/`setPlacedBy` sofort; ein BUD-Zustand entsteht beim Piston daher nur durch spätere Leistungsänderungen ohne Update.

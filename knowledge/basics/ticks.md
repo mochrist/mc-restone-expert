@@ -40,7 +40,7 @@ auslöst (siehe UPD).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ScheduledTickAccess#scheduleTick`, `LevelAccessor#createTick`, `Level#nextSubTickCount`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-pistons-ticks.yaml)
 - Hinweise: Der Zähler wird auch dann erhöht, wenn der Tick anschließend als Duplikat verworfen wird (TCK-009); das ändert nur Lücken, nicht die relative Reihenfolge.
 
 ### TCK-005: Fällige Ticks werden zu Phasenbeginn gesammelt, neue laufen frühestens im nächsten Tick
@@ -56,7 +56,7 @@ auslöst (siehe UPD).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ScheduledTick#INTRA_TICK_DRAIN_ORDER`, `LevelTicks#drainContainers`, `LevelTicks#drainFromCurrentContainer`; [SRC-WIKI-TICK]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-priorities.yaml)
 - Hinweise: Die Position spielt für die Reihenfolge keine Rolle.
 
 ### TCK-007: TickPriority hat sieben Stufen von -3 bis 3
@@ -80,7 +80,7 @@ auslöst (siehe UPD).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `LevelChunkTicks#schedule`, `ScheduledTick#UNIQUE_TICK_HASH`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-pistons-ticks.yaml)
 - Hinweise: Viele Komponenten prüfen vorher zusätzlich `hasScheduledTick`/`willTickThisTick`.
 
 ### TCK-010: Ein gesammelter Tick blockiert keine Neuplanung mehr

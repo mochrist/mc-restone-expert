@@ -22,7 +22,7 @@ deshalb Komponenten, aber keinen Staub.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `BlockBehaviour.Properties` (Feld `isRedstoneConductor`), `BlockBehaviour.BlockStateBase#isRedstoneConductor`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-conductors-plates.yaml)
 
 ### PWR-002: Bestimmte volle Blöcke sind explizit keine Leiter
 - Aussage: In 26.3 sind per `isRedstoneConductor(Blocks::never)` keine Leiter: Glas, gefärbtes Glas, getöntes Glas, Eis, Brüchiges Eis, Glowstone, Seelaterne, Redstone-Block, Observer, TNT, Leuchtfeuer, alle Laubarten, Kolben/Klebrige Kolben (alle Zustände), `moving_piston`, Gerüst, Kupfergitter, Kupferbirne, Chorusblüte, Pulverschnee, Bambus, Tropfstein (pointed dripstone) und `sulfur_spike`.
@@ -74,7 +74,7 @@ deshalb Komponenten, aber keinen Staub.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `BasePressurePlateBlock#getDirectSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-conductors-plates.yaml)
 
 ### PWR-009: Staub liefert als starkes Signal dasselbe wie als schwaches
 - Aussage: `RedstoneWireBlock#getDirectSignal` gibt (solange `shouldSignal` wahr ist) denselben Wert wie `getSignal` zurück: den Block darunter und den Block, in den der Staub zeigt.
@@ -127,4 +127,4 @@ deshalb Komponenten, aber keinen Staub.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `BlockBehaviour#shouldRedstoneWireConnectTo`, `RedstoneWireBlock#shouldRedstoneWireConnectTo`, `RedstoneWireBlock#getConnectingSide`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-dust-shapes.yaml)

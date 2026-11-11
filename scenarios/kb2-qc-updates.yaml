@@ -1,0 +1,68 @@
+name: kb2-qc-updates
+description: >
+  Quasi-Connectivity und Updates aus der Ferne. z=0 (BUD-004): Ein Kolben ist nur über QC bestromt (Redstone-Block zwei
+  Felder über ihm, im Aufbau ohne Update) und bleibt eingefahren, bis ihn ein Neighbor-Update erreicht (Stein
+  daneben bei Tick 2); z=3: ohne Update bleibt er eingefahren. z=7 (BUD-005): Ein Dropper mit triggered=false, über
+  QC bestromt, löst beim ersten Neighbor-Update aus und gibt 4 gt später aus (Truhe davor, Comparator liest sie);
+  z=10: ohne Update bleibt er untätig. z=14 (BUD-007): Ein Repeater schaltet bei Tick 4 ein und aktualisiert den
+  Block vor sich samt dessen Nachbarn, also auch einen QC-bestromten Dropper dahinter; z=17: liegt ein Feld Luft
+  dazwischen, erreicht ihn kein Update.
+build:
+  size: [8, 4, 19]
+  fill:
+    - [0, 0, 0, 7, 0, 18, "stone"]
+  blocks:
+    - [1, 1, 0, "piston[extended=false,facing=east]"]
+    - [1, 3, 0, "redstone_block"]
+    - [1, 1, 3, "piston[extended=false,facing=east]"]
+    - [1, 3, 3, "redstone_block"]
+    - [1, 1, 7, "dropper[facing=east,triggered=false]"]
+    - [1, 3, 7, "redstone_block"]
+    - [2, 1, 7, "chest[facing=north,type=single,waterlogged=false]"]
+    - [3, 1, 7, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 10, "dropper[facing=east,triggered=false]"]
+    - [1, 3, 10, "redstone_block"]
+    - [2, 1, 10, "chest[facing=north,type=single,waterlogged=false]"]
+    - [3, 1, 10, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 14, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 14, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [2, 1, 14, "stone"]
+    - [3, 1, 14, "dropper[facing=east,triggered=false]"]
+    - [3, 3, 14, "redstone_block"]
+    - [4, 1, 14, "chest[facing=north,type=single,waterlogged=false]"]
+    - [5, 1, 14, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 17, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 17, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [2, 1, 17, "stone"]
+    - [4, 1, 17, "dropper[facing=east,triggered=false]"]
+    - [4, 3, 17, "redstone_block"]
+    - [5, 1, 17, "chest[facing=north,type=single,waterlogged=false]"]
+    - [6, 1, 17, "comparator[facing=west,mode=compare,powered=false]"]
+  block_entities:
+    - [1, 1, 7, '{id:"minecraft:dropper",Items:[{Slot:0b,id:"minecraft:stone",count:1}]}']
+    - [3, 1, 7, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 10, '{id:"minecraft:dropper",Items:[{Slot:0b,id:"minecraft:stone",count:1}]}']
+    - [3, 1, 10, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [3, 1, 14, '{id:"minecraft:dropper",Items:[{Slot:0b,id:"minecraft:stone",count:1}]}']
+    - [5, 1, 14, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [4, 1, 17, '{id:"minecraft:dropper",Items:[{Slot:0b,id:"minecraft:stone",count:1}]}']
+    - [6, 1, 17, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 30
+inputs:
+  - {tick: 2, pos: [1, 1, 1], action: setblock, state: "stone"}
+  - {tick: 2, pos: [1, 1, 8], action: setblock, state: "stone"}
+  - {tick: 2, pos: [0, 1, 14], action: use}
+  - {tick: 2, pos: [0, 1, 17], action: use}
+probes:
+  piston_qc_updated: [1, 1, 0]
+  piston_qc_updated_head: [2, 1, 0]
+  piston_qc_untouched: [1, 1, 3]
+  piston_qc_untouched_head: [2, 1, 3]
+  dropper_qc_updated: [1, 1, 7]
+  dropper_qc_updated_cmp: [3, 1, 7]
+  dropper_qc_untouched: [1, 1, 10]
+  dropper_qc_untouched_cmp: [3, 1, 10]
+  dropper_via_repeater: [3, 1, 14]
+  dropper_via_repeater_cmp: [5, 1, 14]
+  dropper_via_repeater_gap: [4, 1, 17]
+  dropper_via_repeater_gap_cmp: [6, 1, 17]

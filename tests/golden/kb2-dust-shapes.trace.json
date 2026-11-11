@@ -1,0 +1,116 @@
+{
+  "format": 1,
+  "scenario": "kb2-dust-shapes",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 10,
+  "probes": {
+    "l_stone_support": [
+      1,
+      1,
+      0
+    ],
+    "l_slab_support": [
+      1,
+      1,
+      2
+    ],
+    "l_stone_above": [
+      1,
+      1,
+      4
+    ],
+    "u_removed_support": [
+      0,
+      2,
+      6
+    ],
+    "l_diag_dust": [
+      1,
+      1,
+      8
+    ],
+    "l_diag_block": [
+      1,
+      1,
+      10
+    ],
+    "l_after_u_placed": [
+      1,
+      1,
+      12
+    ]
+  },
+  "samples": {
+    "l_stone_support": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=up]"
+      ]
+    ],
+    "l_slab_support": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ]
+    ],
+    "l_stone_above": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=up]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=side,power=0,south=side,west=side]"
+      ]
+    ],
+    "u_removed_support": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ],
+      [
+        2,
+        "minecraft:air"
+      ]
+    ],
+    "l_diag_dust": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=up,north=none,power=0,south=none,west=side]"
+      ]
+    ],
+    "l_diag_block": [
+      [
+        0,
+        "minecraft:redstone_wire[east=up,north=none,power=0,south=none,west=none]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=side,power=0,south=side,west=side]"
+      ]
+    ],
+    "l_after_u_placed": [
+      [
+        0,
+        "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+      ],
+      [
+        2,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=up]"
+      ]
+    ]
+  }
+}

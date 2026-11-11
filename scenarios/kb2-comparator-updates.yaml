@@ -1,0 +1,75 @@
+name: kb2-comparator-updates
+description: >
+  Comparator-Updates durch Container und Staub. z=0 (UPD-014, UPD-015, CMP-017, CMP-018): Ein Trichter legt einen
+  Stein in eine Truhe (10 Steine, Signal bleibt 1); der Comparator mit veraltetem Ausgang 0 liegt hinter einem
+  Stein und liest durch ihn; BlockEntity#setChanged löst unabhängig von der Signaländerung ein
+  updateNeighbourForOutputSignal aus, das durch den Leiterblock den Comparator erreicht: er schaltet auf 1.
+  z=2: Kontrolle ohne Steine im Trichter, der veraltete Ausgang 0 bleibt. z=4 (CMP-017): Comparator direkt an der
+  Truhe wird ebenfalls benachrichtigt. z=6 und z=8 (CMP-018): Setzt man einen Block mit Analogsignal (Fass) hinter
+  den Stein, geht der Comparator mit veraltetem Ausgang 5 auf 0; ein Block ohne Analogsignal (Glas) löst nichts aus.
+  z=12 und z=15 (CMP-015): Ein Comparator mit passendem Ausgang 2, aber veraltetem powered=false schaltet beim
+  Neighbor-Update im Tick ein; nur im Modus compare benachrichtigt er danach den Staub vor sich (Stärke 2), im
+  Modus subtract (Wert unverändert) nicht. z=10 (DUST-017): Wechselt der Staub von z=12 seine Stärke, bekommt
+  auch der Comparator mit veraltetem Ausgang 5 zwei Felder daneben ein Update (Staub aktualisiert die Nachbarn
+  seiner Nachbarpositionen) und geht auf 0; der Comparator von z=8 (vier Felder entfernt) nicht.
+build:
+  size: [3, 3, 17]
+  fill:
+    - [0, 0, 0, 2, 0, 16, "stone"]
+  blocks:
+    - [0, 1, 0, "chest[facing=north,type=single,waterlogged=false]"]
+    - [0, 2, 0, "hopper[enabled=true,facing=down]"]
+    - [1, 1, 0, "stone"]
+    - [2, 1, 0, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 2, "chest[facing=north,type=single,waterlogged=false]"]
+    - [0, 2, 2, "hopper[enabled=true,facing=down]"]
+    - [1, 1, 2, "stone"]
+    - [2, 1, 2, "comparator[facing=west,mode=compare,powered=false]"]
+    - [0, 1, 4, "chest[facing=north,type=single,waterlogged=false]"]
+    - [0, 2, 4, "hopper[enabled=true,facing=down]"]
+    - [1, 1, 4, "comparator[facing=west,mode=compare,powered=false]"]
+    - [1, 1, 6, "stone"]
+    - [2, 1, 6, "comparator[facing=west,mode=compare,powered=true]"]
+    - [1, 1, 8, "stone"]
+    - [2, 1, 8, "comparator[facing=west,mode=compare,powered=true]"]
+    - [1, 1, 10, "stone"]
+    - [2, 1, 10, "comparator[facing=west,mode=compare,powered=true]"]
+    - [0, 1, 12, "barrel[facing=up,open=false]"]
+    - [1, 1, 12, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 12, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [0, 1, 15, "barrel[facing=up,open=false]"]
+    - [1, 1, 15, "comparator[facing=west,mode=subtract,powered=false]"]
+    - [2, 1, 15, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+  block_entities:
+    - [0, 1, 0, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:10}]}']
+    - [0, 2, 0, '{id:"minecraft:hopper",Items:[{Slot:0b,id:"minecraft:stone",count:1}]}']
+    - [2, 1, 0, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [0, 1, 2, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:10}]}']
+    - [2, 1, 2, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [0, 1, 4, '{id:"minecraft:chest",Items:[{Slot:0b,id:"minecraft:stone",count:10}]}']
+    - [0, 2, 4, '{id:"minecraft:hopper",Items:[{Slot:0b,id:"minecraft:stone",count:1}]}']
+    - [1, 1, 4, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [2, 1, 6, '{id:"minecraft:comparator",OutputSignal:5}']
+    - [2, 1, 8, '{id:"minecraft:comparator",OutputSignal:5}']
+    - [2, 1, 10, '{id:"minecraft:comparator",OutputSignal:5}']
+    - [0, 1, 12, '{id:"minecraft:barrel",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64}]}']
+    - [1, 1, 12, '{id:"minecraft:comparator",OutputSignal:2}']
+    - [0, 1, 15, '{id:"minecraft:barrel",Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:stone",count:64},{Slot:2b,id:"minecraft:stone",count:64}]}']
+    - [1, 1, 15, '{id:"minecraft:comparator",OutputSignal:2}']
+ticks: 30
+inputs:
+  - {tick: 2, pos: [0, 1, 6], action: setblock, state: "barrel[facing=up,open=false]"}
+  - {tick: 2, pos: [0, 1, 8], action: setblock, state: "glass"}
+  - {tick: 2, pos: [1, 1, 13], action: setblock, state: "stone"}
+  - {tick: 2, pos: [1, 1, 16], action: setblock, state: "stone"}
+probes:
+  cmp_through_block: [2, 1, 0]
+  cmp_through_block_no_hopper: [2, 1, 2]
+  cmp_adjacent: [1, 1, 4]
+  cmp_after_barrel: [2, 1, 6]
+  cmp_after_glass: [2, 1, 8]
+  cmp_near_dust: [2, 1, 10]
+  cmp_compare: [1, 1, 12]
+  dust_compare: [2, 1, 12]
+  cmp_subtract: [1, 1, 15]
+  dust_subtract: [2, 1, 15]

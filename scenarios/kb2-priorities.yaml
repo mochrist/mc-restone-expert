@@ -1,0 +1,70 @@
+name: kb2-priorities
+description: >
+  Tick-Prioritäten, Sperre und Tick-Typ. Ein Ziel-Repeater Tg (Delay 1) bekommt bei Tick 2 Eingang vom Hebel A,
+  daneben sperrt ein zweites Gerät (L) Tg von der Seite; beide Ticks sind für Tick 4 fällig. z=0 (REP-009): L ist
+  ein Repeater, den Hebel B nach A (also später geplant) einschaltet; L hat vor sich eine Diode, die nicht
+  zurückzeigt (EXTREMELY_HIGH) und läuft trotz späterer Planung vor Tg: Tg ist gesperrt, die Lampe bleibt aus.
+  z=4 (CMP-003, TCK-006, ORD-003): L ist ein Comparator (HIGH), B kommt vor A: gleiche Priorität wie Tg (HIGH),
+  der Comparator ist früher geplant und läuft zuerst, Lampe bleibt aus. z=8 (TCK-006, ORD-003): wie z=4, aber A
+  vor B: Tg ist früher geplant, schaltet zuerst ein, die Lampe geht bei 4 an (danach hält die Sperre Tg).
+  z=12 und z=14 (REP-015): `locked` wird beim Setzen nicht neu berechnet, die Logik nutzt die Live-Berechnung:
+  Ein Repeater mit veraltetem locked=true ohne Sperr-Diode schaltet normal ein (z=12); einer mit locked=false, den
+  ein eingeschalteter Repeater von der Seite speist, bleibt gesperrt aus (z=14). z=18 und z=20 (ORD-006): Eine
+  Lampe plant bei einem Neighbor-Update einen Tick (4 gt); wird sie vorher durch einen Repeater ersetzt, läuft der
+  Tick nicht auf dem Repeater (z=18, würde er laufen, schaltete der Repeater ein; er bleibt aus), ohne Austausch geht die Lampe bei 6 aus (z=20).
+build:
+  size: [4, 4, 22]
+  fill:
+    - [0, 0, 0, 3, 0, 21, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [2, 1, 0, "redstone_lamp[lit=false]"]
+    - [1, 1, 1, "repeater[delay=1,facing=south,locked=false,powered=false]"]
+    - [1, 1, 2, "lever[face=floor,facing=east,powered=false]"]
+    - [0, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 4, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [2, 1, 4, "redstone_lamp[lit=false]"]
+    - [1, 1, 5, "comparator[facing=south,mode=compare,powered=false]"]
+    - [1, 1, 6, "lever[face=floor,facing=east,powered=false]"]
+    - [0, 1, 8, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 8, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [2, 1, 8, "redstone_lamp[lit=false]"]
+    - [1, 1, 9, "comparator[facing=south,mode=compare,powered=false]"]
+    - [1, 1, 10, "lever[face=floor,facing=east,powered=false]"]
+    - [0, 1, 12, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 12, "repeater[delay=1,facing=west,locked=true,powered=false]"]
+    - [2, 1, 12, "redstone_lamp[lit=false]"]
+    - [0, 1, 14, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 14, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [2, 1, 14, "redstone_lamp[lit=false]"]
+    - [1, 1, 15, "repeater[delay=1,facing=south,locked=false,powered=true]"]
+    - [1, 1, 16, "lever[face=floor,facing=east,powered=true]"]
+    - [1, 1, 18, "redstone_lamp[lit=true]"]
+    - [1, 1, 20, "redstone_lamp[lit=true]"]
+ticks: 20
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 2, pos: [1, 1, 2], action: use}
+  - {tick: 2, pos: [1, 1, 6], action: use}
+  - {tick: 2, pos: [0, 1, 4], action: use}
+  - {tick: 2, pos: [0, 1, 8], action: use}
+  - {tick: 2, pos: [1, 1, 10], action: use}
+  - {tick: 2, pos: [0, 1, 12], action: use}
+  - {tick: 2, pos: [0, 1, 14], action: use}
+  - {tick: 2, pos: [0, 1, 18], action: setblock, state: "stone"}
+  - {tick: 3, pos: [1, 1, 18], action: setblock, state: "repeater[delay=1,facing=west,locked=false,powered=false]"}
+  - {tick: 2, pos: [0, 1, 20], action: setblock, state: "stone"}
+probes:
+  lamp_repeater_lock: [2, 1, 0]
+  tg_repeater_lock: [1, 1, 0]
+  lamp_comparator_first: [2, 1, 4]
+  tg_comparator_first: [1, 1, 4]
+  lamp_tg_first: [2, 1, 8]
+  tg_tg_first: [1, 1, 8]
+  rep_stale_locked: [1, 1, 12]
+  lamp_stale_locked: [2, 1, 12]
+  rep_live_locked: [1, 1, 14]
+  lamp_live_locked: [2, 1, 14]
+  replaced_lamp: [1, 1, 18]
+  control_lamp: [1, 1, 20]

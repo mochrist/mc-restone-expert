@@ -35,7 +35,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getConnectingSide`, `RedstoneSide#isConnected`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-dust-shapes.yaml)
 
 ### DUST-004: Seitliche Verbindung zu Komponenten und Staub diagonal unten
 - Aussage: Ohne Aufwärtsverbindung ist eine Seite `side`, wenn der Nachbar sich mit Staub aus dieser Richtung verbinden will (`shouldRedstoneWireConnectTo`), oder wenn der Nachbar kein Leiter ist und unter ihm Staub liegt; sonst `none`.
@@ -144,7 +144,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DefaultRedstoneWireEvaluator#updatePowerStrength`; [SRC-WIKI-BLOCK-UPDATE]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-comparator-updates.yaml)
 - Hinweise: Dadurch werden auch Komponenten zwei Blöcke entfernt (über einen Leiter) aktualisiert.
 
 ### DUST-018: Die Reihenfolge der sieben Positionen ist ortsabhängig (HashSet)
@@ -198,21 +198,21 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#updateIndirectNeighbourShapes`, `Level#setBlock`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-dust-shapes.yaml)
 
 ### DUST-025: Shape-Update von oben berechnet alle Seiten neu
 - Aussage: Ein Shape-Update von oben führt zur kompletten Neuberechnung der Form (ein Leiter darüber kann Aufwärtsverbindungen trennen); ein Shape-Update von einer Seite ändert nur diese Seite, außer der Verbunden-Status kippt oder der Staub ist ein Kreuz, dann wird die gesamte Form neu bestimmt.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#updateShape`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-dust-shapes.yaml)
 
 ### DUST-026: Staub reagiert auf jedes Neighbor-Update mit Neuberechnung
 - Aussage: Jedes Neighbor-Update an Staub prüft zuerst, ob er noch stehen kann (sonst Drop und Entfernen), und ruft dann die Stärkeberechnung auf; der übergebene Quell-Block und die Orientation spielen im Standard-Evaluator keine Rolle.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#neighborChanged`, `DefaultRedstoneWireEvaluator#updatePowerStrength`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb2-dust-shapes.yaml)
 
 ### DUST-027: Experimenteller Evaluator rechnet das ganze Netz vor den Updates
 - Aussage: Mit „Redstone Experiments" berechnet `ExperimentalRedstoneWireEvaluator` erst alle betroffenen Staubstärken (zuerst Abschalten, dann Einschalten per Warteschlange), setzt sie alle und löst erst danach Neighbor-Updates aus, nur in verbundene Richtungen und durch Leiter hindurch, in Orientation-Reihenfolge.
