@@ -1,17 +1,33 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-11, Session 10. Geschätzter Gesamtfortschritt: **ca. 92 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 93 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~95 % | 279 Aussagen aus dem 26.3-Code belegt, 137 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
 | M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 105 Golden Traces tick-genau überein; Truhen, Crafter neu |
-| M3 Analyse + Erklärung | 20 % | ~90 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar-Abhängigkeiten), Pulsantwort, RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher, Sonderfall-Notizen |
+| M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
 | M4 Redesign | 25 % | ~80 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
 ## Verlauf
+
+### Session 11 (2026-11-11): M3 (Fable-5.2-/Opus-Hauptsession, keine Agents)
+
+- Logik vor Zeitglied (Pulsverlängerer, Pulsverkürzer, Monoflop hinter einem Gatter): Folgt ein Ausgang einem
+  Hebel laut Wahrheitstabelle nur, wenn andere Hebel an sind, wird die Pulsantwort mit diesen Hebeln gehalten
+  wiederholt (`pulse_response(held=…)`, `analyze._held_pulse_responses`, höchstens 24 Gruppen). Ändern alle
+  Pulsantworten eines Ausgangs mit mehreren Hebeln die Pulslänge gleich, meldet `rsx explain`
+  „AND, dahinter ein Zeitglied: …“ (`Analysis.timing`). Bloße Gatter (Pulsfilter, „unverändert durchgereicht“)
+  werden nicht als Baustein gemeldet; 50 Vorlagen/PLA/Kompositionen ohne Falschmeldung.
+  Fixtures `tests/fixtures/analysis/gated/pulse-extender-{and,or}.yaml` (Kupferbirnen-Verlängerer hinter
+  and2-torch/or2-direct, mit `compose.chains` gebaut; nur Analyse, nicht im Spiel aufgezeichnet).
+  Nebenbefund: `rsx redesign` für einen Pulsverlängerer hinter AND findet keine Komposition (die AND-Fackel
+  schluckt 1-gt-Pulse, die Spezifikation verlangt sie); OR geht.
+- Teiltabellen: zusätzlich Einzel-Umschaltungen an zufälligen Hebelstellungen (fester Seed, ~600 Läufe,
+  `analyze._sampled_dependencies`). Ein AND aus drei in Ruhe ausgeschalteten Hebeln bekommt so eine Tabelle.
+  seg7 unverändert (die 15 Ausgänge ohne Tabelle hängen wirklich von mehr als 6 Hebeln ab), 1,7 s.
 
 ### Session 10 (2026-11-11): Übergabe aus Session 9 abgearbeitet (Opus-Hauptsession, 1 Sonnet-Agent)
 
@@ -191,7 +207,7 @@ Stand: 2026-11-11, Session 10. Geschätzter Gesamtfortschritt: **ca. 92 %** (gew
 ## Befehle
 
 ```
-uv run pytest -q [--sim-core python|rust] [--slow] # ~1250 Tests, alle grün (Rust ~75 s, Python ~6 min)
+uv run pytest -q [--sim-core python|rust] [--slow] # ~1255 Tests, alle grün (Rust ~75 s, Python ~6 min)
 uv sync                                            # baut auch den Rust-Kern; nach Rust-Änderungen:
 uv pip install --reinstall-package rsx-core ./rust/rsx-core
 uv run rsx --sim-core python|rust <befehl>         # Kern wählen (Standard: Rust, wenn gebaut)
@@ -216,13 +232,14 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
 
 1. **M3 fertigstellen:**
    - Erledigt (Session 3, Ende): Druckplatten als Eingang (Emulation „betreten und sofort verlassen“, `PressurePlateBlock` in `basic.py`, nicht gegen das Spiel validiert, weil der Oracle keine Entities hat); volle Wahrheitstabelle bis 6 Hebel, darüber Teiltabellen je Ausgangsgruppe (`seg7`: NAND über 4 Hebel); höchstens 64 Ausgänge; Gatternamen AND/OR/NAND/NOR für n Eingänge.
-   - Teiltabellen sehen Abhängigkeiten aus Einzel- und Paar-Umschaltungen (Session 10), nicht aus dreien und mehr.
+   - Teiltabellen sehen Abhängigkeiten aus Einzel- und Paar-Umschaltungen (Session 10) und aus Stichproben
+     (Session 11); seltene Kombinationen (AND über viele Hebel) können fehlen.
    - Erledigt (Session 4): Clock-Erkennung an echten Clocks. Offen: optional SVG-Timing-Diagramm. Geschwindigkeit erledigt (Rust-Kern).
    - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet). Genau ginge es nur mit der
      Position des auslösenden Blocks (in 26.3 liefert `neighborChanged` nur die Orientierung) oder mit einem
      Abfragen aller Kolben je Tick in beiden Kernen; für eine Analyse-Notiz bisher nicht lohnend.
-   - Logik vor Pulsverlängerer wird nicht erkannt: die Reaktion ist „folgt dem Eingang“ mit langer
-     Ausschaltverzögerung und von einem Gatter nur über eine Verzögerungsschwelle zu unterscheiden.
+   - Logik vor Zeitglied: erledigt (Session 11). Offen: Redesign eines Pulsverlängerers hinter AND
+     (Spezifikation verlangt, dass 1-gt-Pulse durchkommen; Fackel-AND schluckt sie; Toleranz oder anderes Gatter).
 2. **Rust-Kern: erledigt** (Session 7). Bei Änderungen am Simulator beide Kerne pflegen; der Differenztest
    `tests/sim/test_core_equivalence.py` deckt Abweichungen auf. Mögliche Folgearbeit: BFS-Router
    (`design/compose.py: _route`) beschleunigen, Lauf-Schleife samt Aufzeichnung (`Circuit.run`) nach Rust.
@@ -230,7 +247,7 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    - Lücken der Vorlagen: Monoflop 3 gt nur mit Knopf (Hebel unmöglich, siehe Session 8); Hebel-Comparator-Monoflop nicht für jede gerade Länge; XOR-Vorlagen groß (28–33 Blöcke).
    - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); Nicht einfach zerlegbare Funktionen über 6 Eingängen bleiben ungelöst (kein PLA; nur einfache disjunkte Zerlegung). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); offen sind Bausteine drehen/umsetzen. Geteilte Teilfunktionen: nur eine gemeinsame Leitung g je Zerlegung (Session 10); mehrere gemeinsame Signale (z. B. Carry-Lookahead) nicht.
    - Verhalten aus Bestandsschaltungen nur bis 3 Eingänge; Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
-   - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8) und Set-only-Speicher (Session 10), nicht vor Pulsverlängerern.
+   - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8), Set-only-Speicher (Session 10) und Zeitgliedern (Session 11).
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
 4. **Restliche Simulator-Lücken (M2):**
