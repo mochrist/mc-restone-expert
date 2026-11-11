@@ -32,7 +32,7 @@ EXTERNAL = ROOT / "tests" / "fixtures" / "external"
 
 BE_FIELDS = ("output_signal", "size", "items", "cooldown_time", "ticked_game_time", "has_book", "page",
              "page_count", "moved_state", "direction", "extending", "is_source_piston", "progress", "progress_o",
-             "last_ticked", "removed")
+             "last_ticked", "removed", "disabled_mask", "triggered", "crafting_ticks_remaining")
 _MISSING = object()
 
 
@@ -164,6 +164,34 @@ DIRS = ("north", "east", "south", "west")
 DIRS6 = DIRS + ("up", "down")
 
 
+CRAFTER_ORIENTATIONS = ("down_east", "down_north", "up_west", "up_south", "west_up", "east_up", "north_up", "south_up")
+CRAFTER_ITEMS = ("iron_ingot", "iron_ingot", "oak_planks", "birch_planks", "oak_log", "redstone", "iron_block", "stone")
+
+
+def _crafter_data(rng: random.Random) -> dict:
+    """Block entity data of a random crafter: a recipe-shaped grid or random items, some disabled slots."""
+    kind = rng.choice(("iron", "sticks", "table", "log", "random", "random"))
+    item = rng.choice(CRAFTER_ITEMS)
+    if kind == "iron":
+        slots, item = list(range(9)), rng.choice(("iron_ingot", "redstone"))
+    elif kind == "sticks":
+        col = rng.randrange(3)
+        slots, item = [col + 3 * r for r in rng.choice(((0, 1), (1, 2)))], rng.choice(("oak_planks", "birch_planks"))
+    elif kind == "table":
+        slots, item = [s + o for s in (0, 3) for o in (0, 1)], "oak_planks"
+        shift = rng.randrange(2)
+        slots = [s + shift for s in slots]
+    elif kind == "log":
+        slots, item = [rng.randrange(9)], rng.choice(("oak_log", "iron_block"))
+    else:
+        slots = list(range(9)) if rng.random() < 0.3 else rng.sample(range(9), rng.randint(0, 5))
+    stacks = [{"Slot": s, "id": f"minecraft:{item if rng.random() < 0.9 else rng.choice(CRAFTER_ITEMS)}",
+               "count": rng.randint(1, 3)} for s in slots]
+    free = [s for s in range(9) if s not in slots]
+    disabled = [s for s in free if rng.random() < 0.3]
+    return {"Items": stacks, "disabled_slots": disabled, "crafting_ticks_remaining": rng.choice((0, 0, 3))}
+
+
 def _random_state(rng: random.Random) -> str:
     f, f6 = rng.choice(DIRS), rng.choice(DIRS6)
     side = lambda: rng.choice(("none", "side", "up"))  # noqa: E731
@@ -189,6 +217,8 @@ def _random_state(rng: random.Random) -> str:
         f"trapped_chest[facing={f},type={rng.choice(('single', 'left', 'right'))},waterlogged=false]",
         f"copper_chest[facing={f},type={rng.choice(('single', 'left', 'right'))},waterlogged=false]",
         f"dropper[facing={f6},triggered=false]", f"dispenser[facing={f6},triggered=false]",
+        f"crafter[crafting=false,orientation={rng.choice(CRAFTER_ORIENTATIONS)},triggered=false]",
+        f"crafter[crafting=false,orientation={rng.choice(CRAFTER_ORIENTATIONS)},triggered=false]",
         "daylight_detector[inverted=false,power=0]",
     ])
 
@@ -205,7 +235,10 @@ def _soup(seed: int) -> tuple[Grid, dict[int, list[Step]], int]:
             grid[Pos(x, 0, z)] = BlockState.parse("minecraft:stone")
             for y in range(1, sy + 1):
                 if rng.random() < 0.55:
-                    grid[Pos(x, y, z)] = BlockState.parse(_random_state(rng))
+                    state = BlockState.parse(_random_state(rng))
+                    grid[Pos(x, y, z)] = state
+                    if state.id == "crafter":
+                        grid.block_entities[Pos(x, y, z)] = _crafter_data(rng)
     ticks = 80
     schedule: dict[int, list[Step]] = {}
     usable = [p for p, s in grid.items() if s.id in ("lever", "stone_button", "note_block", "copper_bulb",
@@ -224,6 +257,57 @@ def _soup(seed: int) -> tuple[Grid, dict[int, list[Step]], int]:
 @pytest.mark.parametrize("seed", range(150))
 def test_random_soup(seed: int):
     grid, schedule, ticks = _soup(seed)
+    assert_same(grid, schedule, ticks)
+
+
+def _crafter_soup(seed: int) -> tuple[Grid, dict[int, list[Step]], int]:
+    """Crafters next to levers, power blocks, hoppers, barrels and comparators (so that they really craft)."""
+    rng = random.Random(1000 + seed)
+    sx, sy, sz = SOUP_SIZE
+    grid = Grid((sx, sy + 1, sz))
+    palette = ["crafter", "crafter", "crafter", "barrel", "hopper", "comparator", "lever", "stone", "air", "air",
+               "redstone_block", "chest"]
+    for x in range(sx):
+        for z in range(sz):
+            grid[Pos(x, 0, z)] = BlockState.parse("minecraft:stone")
+            for y in range(1, sy + 1):
+                name = rng.choice(palette)
+                if name == "crafter":
+                    state = BlockState.parse(
+                        f"crafter[crafting=false,orientation={rng.choice(CRAFTER_ORIENTATIONS)},triggered=false]")
+                    grid.block_entities[Pos(x, y, z)] = _crafter_data(rng)
+                elif name == "hopper":
+                    state = BlockState.parse(f"hopper[enabled=true,facing={rng.choice(('down',) + DIRS)}]")
+                elif name == "comparator":
+                    state = BlockState.parse(f"comparator[facing={rng.choice(DIRS)},mode=compare,powered=false]")
+                elif name == "lever":
+                    state = BlockState.parse(f"lever[face=floor,facing={rng.choice(DIRS)},powered=false]")
+                elif name == "barrel":
+                    state = BlockState.parse("barrel[facing=up,open=false]")
+                elif name == "chest":
+                    state = BlockState.parse("chest[facing=north,type=single,waterlogged=false]")
+                elif name == "air":
+                    continue
+                else:
+                    state = BlockState.parse(name)
+                grid[Pos(x, y, z)] = state
+    ticks = 90
+    levers = [p for p, s in grid.items() if s.id in ("lever", "comparator")]
+    schedule: dict[int, list[Step]] = {}
+    for _ in range(10):
+        t = rng.randrange(ticks - 20)
+        if levers and rng.random() < 0.6:
+            schedule.setdefault(t, []).append(("use", rng.choice(levers) + ORACLE_ORIGIN, None))
+        else:
+            pos = Pos(rng.randrange(sx), rng.randrange(1, sy + 1), rng.randrange(sz))
+            state = BlockState.parse(rng.choice(["minecraft:air", "minecraft:redstone_block", "minecraft:stone"]))
+            schedule.setdefault(t, []).append(("setblock", pos + ORACLE_ORIGIN, state))
+    return grid, schedule, ticks
+
+
+@pytest.mark.parametrize("seed", range(80))
+def test_crafter_soup(seed: int):
+    grid, schedule, ticks = _crafter_soup(seed)
     assert_same(grid, schedule, ticks)
 
 

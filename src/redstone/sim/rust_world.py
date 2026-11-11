@@ -195,6 +195,7 @@ class RustBlockEntity:
         from .blocks.diode import ComparatorBlockEntity
         from .blocks.dispenser_hopper import HopperBlockEntity
         from .blocks.container import ContainerBlockEntity
+        from .blocks.crafter import CrafterBlockEntity
         from .blocks.outputs import LecternBlockEntity
         from .blocks.piston import PistonMovingBlockEntity
 
@@ -203,6 +204,8 @@ class RustBlockEntity:
             ref, fields = ComparatorBlockEntity(), ("output_signal",)
         elif kind == "hopper":
             ref, fields = HopperBlockEntity(self.pos), ("items", "cooldown_time")
+        elif kind == "crafter":
+            ref, fields = CrafterBlockEntity(self.pos), ("items", "disabled_mask", "triggered", "crafting_ticks_remaining")
         elif kind in ("container", "dispenser"):
             ref, fields = ContainerBlockEntity(self.size, self.pos), ("items",)
         elif kind == "lectern":

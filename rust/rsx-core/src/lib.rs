@@ -499,6 +499,7 @@ impl World {
                 ContainerKind::Plain => "container",
                 ContainerKind::Dispenser => "dispenser",
                 ContainerKind::Hopper { .. } => "hopper",
+                ContainerKind::Crafter { .. } => "crafter",
             },
             BeData::Lectern(_) => "lectern",
             BeData::Piston(_) => "piston",
@@ -535,6 +536,18 @@ impl World {
             },
             ("ticked_game_time", BeData::Container(c)) => match c.kind {
                 ContainerKind::Hopper { ticked_game_time, .. } => py!(ticked_game_time),
+                _ => return Err(missing()),
+            },
+            ("disabled_mask", BeData::Container(c)) => match c.kind {
+                ContainerKind::Crafter { disabled_mask, .. } => py!(disabled_mask),
+                _ => return Err(missing()),
+            },
+            ("triggered", BeData::Container(c)) => match c.kind {
+                ContainerKind::Crafter { triggered, .. } => py!(triggered),
+                _ => return Err(missing()),
+            },
+            ("crafting_ticks_remaining", BeData::Container(c)) => match c.kind {
+                ContainerKind::Crafter { crafting_ticks_remaining, .. } => py!(crafting_ticks_remaining),
                 _ => return Err(missing()),
             },
             ("has_book", BeData::Lectern(l)) => py!(l.has_book),
@@ -592,6 +605,18 @@ impl World {
             },
             ("ticked_game_time", BeData::Container(c)) => match &mut c.kind {
                 ContainerKind::Hopper { ticked_game_time, .. } => *ticked_game_time = value.extract()?,
+                _ => return Err(missing()),
+            },
+            ("disabled_mask", BeData::Container(c)) => match &mut c.kind {
+                ContainerKind::Crafter { disabled_mask, .. } => *disabled_mask = value.extract()?,
+                _ => return Err(missing()),
+            },
+            ("triggered", BeData::Container(c)) => match &mut c.kind {
+                ContainerKind::Crafter { triggered, .. } => *triggered = value.extract()?,
+                _ => return Err(missing()),
+            },
+            ("crafting_ticks_remaining", BeData::Container(c)) => match &mut c.kind {
+                ContainerKind::Crafter { crafting_ticks_remaining, .. } => *crafting_ticks_remaining = value.extract()?,
                 _ => return Err(missing()),
             },
             ("has_book", BeData::Lectern(l)) => l.has_book = value.extract()?,

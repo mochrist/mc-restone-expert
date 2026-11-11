@@ -296,6 +296,11 @@ impl World {
 
     /// ContainerBlockEntity#redstone_signal (AbstractContainerMenu#getRedstoneSignalFromContainer)
     pub fn container_redstone_signal(&self, be: BeId) -> i32 {
+        let c = self.cont(be);
+        if let ContainerKind::Crafter { disabled_mask, .. } = c.kind {
+            // CrafterBlockEntity#getRedstoneSignal: slots with an item plus disabled slots
+            return (0..9).filter(|&i| c.find(i).is_some() || disabled_mask >> i & 1 == 1).count() as i32;
+        }
         self.c_redstone_signal(CRef::single(be))
     }
 
@@ -315,6 +320,9 @@ impl World {
     /// HopperBlockEntity#tryMoveInItem
     fn try_move_in_item(&mut self, source: Option<CRef>, container: CRef, item: ItemId, count: i32, slot: usize) -> i32 {
         let mut count = count;
+        if container.b.is_none() && !self.crafter_can_place(container.a, slot) {
+            return count; // Container#canPlaceItem (only the crafter refuses)
+        }
         let current = self.c_get(container, slot);
         let was_empty = self.c_is_empty(container);
         let mut success = false;
@@ -549,5 +557,208 @@ impl World {
             }
         }
         false
+    }
+}
+
+// ---------------------------------------------------------------------- crafter
+const CRAFTER_TRIGGER_DELAY: i64 = 4; // CrafterBlock: scheduleTick(pos, this, 4)
+const CRAFTING_TICKS: i32 = 6; // CrafterBlock.MAX_CRAFTING_TICKS
+
+const PLANKS: &[&str] = &[
+    "oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "pale_oak", "bamboo", "crimson",
+    "warped",
+];
+const OAK_LOGS: &[&str] = &["oak_log", "oak_wood", "stripped_oak_log", "stripped_oak_wood"];
+
+/// ASSUMPTION (as in crafter.py): only these recipes are known; tags are reduced to the members above.
+/// `(shaped, width, height, ingredients row by row, result, count)`; shapeless recipes use any size.
+type Recipe = (bool, usize, usize, &'static [&'static str], &'static str, i32);
+const RECIPES: &[Recipe] = &[
+    (true, 2, 2, &["#planks", "#planks", "#planks", "#planks"], "crafting_table", 1),
+    (true, 1, 2, &["#planks", "#planks"], "stick", 4),
+    (true, 3, 3, &["iron_ingot"; 9], "iron_block", 1),
+    (true, 3, 3, &["redstone"; 9], "redstone_block", 1),
+    (false, 1, 1, &["#oak_logs"], "oak_planks", 4),
+    (false, 1, 1, &["iron_block"], "iron_ingot", 9),
+    (false, 1, 1, &["redstone_block"], "redstone", 9),
+];
+
+fn ingredient_matches(ingredient: &str, item: &str) -> bool {
+    let item = item.strip_prefix("minecraft:").unwrap_or(item);
+    match ingredient {
+        "#planks" => item.strip_suffix("_planks").is_some_and(|w| PLANKS.contains(&w)),
+        "#oak_logs" => OAK_LOGS.contains(&item),
+        _ => ingredient == item,
+    }
+}
+
+/// CrafterBlock#getPotentialResults for the nine slots: (result item, count).
+fn find_recipe(grid: &[Option<&str>; 9]) -> Option<(&'static str, i32)> {
+    let cells: Vec<(usize, usize, &str)> =
+        grid.iter().enumerate().filter_map(|(i, it)| it.map(|it| (i % 3, i / 3, it))).collect();
+    if cells.is_empty() {
+        return None;
+    }
+    let x0 = cells.iter().map(|c| c.0).min().unwrap();
+    let x1 = cells.iter().map(|c| c.0).max().unwrap();
+    let y0 = cells.iter().map(|c| c.1).min().unwrap();
+    let y1 = cells.iter().map(|c| c.1).max().unwrap(); // CraftingInput#of trims empty rows and columns
+    let (width, height) = (x1 - x0 + 1, y1 - y0 + 1);
+    for &(shaped, w, h, pattern, result, count) in RECIPES {
+        if !shaped {
+            if cells.len() != pattern.len() {
+                continue;
+            }
+            let mut rest: Vec<&str> = cells.iter().map(|c| c.2).collect();
+            let mut ok = true;
+            for ing in pattern {
+                match rest.iter().position(|it| ingredient_matches(ing, it)) {
+                    Some(hit) => {
+                        rest.remove(hit);
+                    }
+                    None => {
+                        ok = false;
+                        break;
+                    }
+                }
+            }
+            if ok {
+                return Some((result, count));
+            }
+        } else if w == width && h == height && cells.len() == width * height {
+            // all patterns are symmetric, so the mirrored try of ShapedRecipe#matches changes nothing
+            let all = cells.iter().all(|&(x, y, it)| ingredient_matches(pattern[(y - y0) * w + (x - x0)], it));
+            if all {
+                return Some((result, count));
+            }
+        }
+    }
+    None
+}
+
+impl World {
+    fn crafter_set_triggered(&mut self, be: BeId, value: bool) {
+        if let ContainerKind::Crafter { triggered, .. } = &mut self.cont_mut(be).kind {
+            *triggered = value;
+        }
+    }
+
+    /// CrafterBlockEntity#canPlaceItem (true for every other container)
+    fn crafter_can_place(&self, be: BeId, slot: usize) -> bool {
+        let c = self.cont(be);
+        let ContainerKind::Crafter { disabled_mask, .. } = c.kind else { return true };
+        if disabled_mask >> slot & 1 == 1 {
+            return false;
+        }
+        let Some((item, count)) = c.get_slot(slot) else { return true };
+        if count >= self.item_max(item) {
+            return false;
+        }
+        // smallerStackExist: a later enabled slot is empty or holds a smaller stack of the same item
+        for i in slot + 1..9 {
+            if disabled_mask >> i & 1 == 1 {
+                continue;
+            }
+            match c.get_slot(i) {
+                None => return false,
+                Some((other, n)) if n < count && other == item => return false,
+                _ => {}
+            }
+        }
+        true
+    }
+
+    /// CrafterBlock#neighborChanged: no quasi-connectivity.
+    pub fn crafter_neighbor_changed(&mut self, pos: Pos, state: StateId) {
+        let should_trigger = self.has_neighbor_signal(pos);
+        let is_triggered = self.st.get_bool(state, sym::TRIGGERED);
+        let be = self.get_block_entity(pos).filter(|&b| self.is_container_be(b));
+        if should_trigger && !is_triggered {
+            let block = self.info(state).block;
+            self.schedule_tick(pos, block, CRAFTER_TRIGGER_DELAY, PRIO_NORMAL);
+            let new = self.st.with_bool(state, sym::TRIGGERED, true);
+            self.set_block_f(pos, new, UPDATE_CLIENTS);
+            if let Some(be) = be {
+                self.crafter_set_triggered(be, true);
+            }
+        } else if !should_trigger && is_triggered {
+            let new = self.st.with_bool(state, sym::TRIGGERED, false);
+            let new = self.st.with_bool(new, sym::CRAFTING, false);
+            self.set_block_f(pos, new, UPDATE_CLIENTS);
+            if let Some(be) = be {
+                self.crafter_set_triggered(be, false);
+            }
+        }
+    }
+
+    /// CrafterBlock#tick / dispenseFrom: craft without re-checking power.
+    pub fn crafter_tick(&mut self, pos: Pos, state: StateId) {
+        let Some(be) = self.get_block_entity(pos) else { return };
+        if !self.is_container_be(be) || !matches!(self.cont(be).kind, ContainerKind::Crafter { .. }) {
+            return;
+        }
+        let mut grid: [Option<&str>; 9] = [None; 9];
+        for s in &self.cont(be).items {
+            if s.slot < 9 {
+                grid[s.slot] = Some(&self.item_names[s.item as usize]);
+            }
+        }
+        let Some((result, count)) = find_recipe(&grid) else { return }; // level event 1050 (fail sound)
+        if let ContainerKind::Crafter { crafting_ticks_remaining, .. } = &mut self.cont_mut(be).kind {
+            *crafting_ticks_remaining = CRAFTING_TICKS;
+        }
+        let crafting = self.st.with_bool(state, sym::CRAFTING, true);
+        self.set_block_f(pos, crafting, UPDATE_CLIENTS);
+        self.crafter_dispense_item(pos, be, result, count, state);
+        let slots: Vec<usize> = self.cont(be).items.iter().map(|s| s.slot).collect();
+        for slot in slots {
+            self.cont_mut(be).shrink(slot, 1); // getItems().forEach(shrink(1)): no setChanged per slot
+        }
+        self.container_set_changed(be);
+    }
+
+    /// CrafterBlock#dispenseItem: into the container in front; the rest would be thrown (not modeled).
+    fn crafter_dispense_item(&mut self, pos: Pos, be: BeId, result: &str, count: i32, state: StateId) {
+        let front = match self.st.get(state, sym::ORIENTATION) {
+            Some(o) => Dir::from_name(self.st.sym_str(o).split('_').next().unwrap_or("north")).unwrap_or(Dir::North),
+            None => Dir::North,
+        };
+        let Some(into) = self.get_container_at(pos.offset(front)) else { return };
+        let item = self.item_id(&format!("minecraft:{result}"));
+        let mut count = count;
+        let into_crafter = into.b.is_none() && matches!(self.cont(into.a).kind, ContainerKind::Crafter { .. });
+        if into_crafter || count > self.container_max(item) {
+            for _ in 0..count {
+                // one item at a time
+                if self.add_item(Some(CRef::single(be)), into, item, 1) != 0 {
+                    break;
+                }
+            }
+        } else {
+            while count > 0 {
+                let left = self.add_item(Some(CRef::single(be)), into, item, count);
+                if left == count {
+                    break;
+                }
+                count = left;
+            }
+        }
+    }
+
+    /// CrafterBlockEntity#serverTick
+    pub fn crafter_be_tick(&mut self, be: BeId) {
+        let ContainerKind::Crafter { crafting_ticks_remaining, .. } = self.cont(be).kind else { return };
+        let remaining = crafting_ticks_remaining - 1;
+        if remaining >= 0 {
+            if let ContainerKind::Crafter { crafting_ticks_remaining, .. } = &mut self.cont_mut(be).kind {
+                *crafting_ticks_remaining = remaining;
+            }
+            if remaining == 0 {
+                let pos = self.bes[be].pos;
+                let state = self.get(pos);
+                let new = self.st.with_bool(state, sym::CRAFTING, false);
+                self.set_block_f(pos, new, UPDATE_ALL); // setBlockAndUpdate
+            }
+        }
     }
 }
