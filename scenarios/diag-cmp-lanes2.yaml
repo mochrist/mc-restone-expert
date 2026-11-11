@@ -1,0 +1,371 @@
+name: diag-cmp-lanes2
+description: >
+  36 Lanes Abstand 2, Staub dazwischen, gespeicherte Ausgaenge, Staub bei Tick 2 gesetzt, use.
+build:
+  size: [6, 3, 72]
+  fill:
+    - [0, 0, 0, 5, 0, 71, "stone"]
+  blocks:
+    - [1, 1, 0, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 0, "stone"]
+    - [3, 1, 0, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 0, "redstone_lamp[lit=false]"]
+    - [0, 1, 1, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 2, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 2, "stone"]
+    - [3, 1, 2, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 2, "redstone_lamp[lit=false]"]
+    - [0, 1, 3, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 4, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 4, "stone"]
+    - [3, 1, 4, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 4, "redstone_lamp[lit=false]"]
+    - [0, 1, 5, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 6, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 6, "stone"]
+    - [3, 1, 6, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 6, "redstone_lamp[lit=false]"]
+    - [0, 1, 7, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 8, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 8, "stone"]
+    - [3, 1, 8, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 8, "redstone_lamp[lit=false]"]
+    - [0, 1, 9, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 10, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 10, "stone"]
+    - [3, 1, 10, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 10, "redstone_lamp[lit=false]"]
+    - [0, 1, 11, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 12, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 12, "stone"]
+    - [3, 1, 12, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 12, "redstone_lamp[lit=false]"]
+    - [0, 1, 13, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 14, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 14, "stone"]
+    - [3, 1, 14, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 14, "redstone_lamp[lit=false]"]
+    - [0, 1, 15, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 16, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 16, "stone"]
+    - [3, 1, 16, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 16, "redstone_lamp[lit=false]"]
+    - [0, 1, 17, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 18, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 18, "stone"]
+    - [3, 1, 18, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 18, "redstone_lamp[lit=false]"]
+    - [0, 1, 19, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 20, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 20, "stone"]
+    - [3, 1, 20, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 20, "redstone_lamp[lit=false]"]
+    - [0, 1, 21, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 22, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 22, "stone"]
+    - [3, 1, 22, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 22, "redstone_lamp[lit=false]"]
+    - [0, 1, 23, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 24, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 24, "stone"]
+    - [3, 1, 24, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 24, "redstone_lamp[lit=false]"]
+    - [0, 1, 25, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 26, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 26, "stone"]
+    - [3, 1, 26, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 26, "redstone_lamp[lit=false]"]
+    - [0, 1, 27, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 28, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 28, "stone"]
+    - [3, 1, 28, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 28, "redstone_lamp[lit=false]"]
+    - [0, 1, 29, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 30, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 30, "stone"]
+    - [3, 1, 30, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 30, "redstone_lamp[lit=false]"]
+    - [0, 1, 31, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 32, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 32, "stone"]
+    - [3, 1, 32, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 32, "redstone_lamp[lit=false]"]
+    - [0, 1, 33, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 34, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 34, "stone"]
+    - [3, 1, 34, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 34, "redstone_lamp[lit=false]"]
+    - [0, 1, 35, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 36, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 36, "stone"]
+    - [3, 1, 36, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 36, "redstone_lamp[lit=false]"]
+    - [0, 1, 37, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 38, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 38, "stone"]
+    - [3, 1, 38, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 38, "redstone_lamp[lit=false]"]
+    - [0, 1, 39, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 40, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 40, "stone"]
+    - [3, 1, 40, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 40, "redstone_lamp[lit=false]"]
+    - [0, 1, 41, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 42, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 42, "stone"]
+    - [3, 1, 42, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 42, "redstone_lamp[lit=false]"]
+    - [0, 1, 43, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 44, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 44, "stone"]
+    - [3, 1, 44, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 44, "redstone_lamp[lit=false]"]
+    - [0, 1, 45, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 46, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 46, "stone"]
+    - [3, 1, 46, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 46, "redstone_lamp[lit=false]"]
+    - [0, 1, 47, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 48, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 48, "stone"]
+    - [3, 1, 48, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 48, "redstone_lamp[lit=false]"]
+    - [0, 1, 49, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 50, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 50, "stone"]
+    - [3, 1, 50, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 50, "redstone_lamp[lit=false]"]
+    - [0, 1, 51, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 52, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 52, "stone"]
+    - [3, 1, 52, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 52, "redstone_lamp[lit=false]"]
+    - [0, 1, 53, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 54, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 54, "stone"]
+    - [3, 1, 54, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 54, "redstone_lamp[lit=false]"]
+    - [0, 1, 55, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 56, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 56, "stone"]
+    - [3, 1, 56, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 56, "redstone_lamp[lit=false]"]
+    - [0, 1, 57, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 58, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 58, "stone"]
+    - [3, 1, 58, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 58, "redstone_lamp[lit=false]"]
+    - [0, 1, 59, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 60, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 60, "stone"]
+    - [3, 1, 60, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 60, "redstone_lamp[lit=false]"]
+    - [0, 1, 61, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 62, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 62, "stone"]
+    - [3, 1, 62, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 62, "redstone_lamp[lit=false]"]
+    - [0, 1, 63, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 64, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 64, "stone"]
+    - [3, 1, 64, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 64, "redstone_lamp[lit=false]"]
+    - [0, 1, 65, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 66, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 66, "stone"]
+    - [3, 1, 66, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 66, "redstone_lamp[lit=false]"]
+    - [0, 1, 67, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 68, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 68, "stone"]
+    - [3, 1, 68, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 68, "redstone_lamp[lit=false]"]
+    - [0, 1, 69, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [1, 1, 70, "comparator[facing=west,mode=compare,powered=true]"]
+    - [2, 1, 70, "stone"]
+    - [3, 1, 70, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [4, 1, 70, "redstone_lamp[lit=false]"]
+  block_entities:
+    - [1, 1, 0, '{id:"minecraft:comparator",OutputSignal:1}']
+    - [1, 1, 2, '{id:"minecraft:comparator",OutputSignal:2}']
+    - [1, 1, 4, '{id:"minecraft:comparator",OutputSignal:3}']
+    - [1, 1, 6, '{id:"minecraft:comparator",OutputSignal:4}']
+    - [1, 1, 8, '{id:"minecraft:comparator",OutputSignal:5}']
+    - [1, 1, 10, '{id:"minecraft:comparator",OutputSignal:6}']
+    - [1, 1, 12, '{id:"minecraft:comparator",OutputSignal:7}']
+    - [1, 1, 14, '{id:"minecraft:comparator",OutputSignal:8}']
+    - [1, 1, 16, '{id:"minecraft:comparator",OutputSignal:9}']
+    - [1, 1, 18, '{id:"minecraft:comparator",OutputSignal:10}']
+    - [1, 1, 20, '{id:"minecraft:comparator",OutputSignal:11}']
+    - [1, 1, 22, '{id:"minecraft:comparator",OutputSignal:12}']
+    - [1, 1, 24, '{id:"minecraft:comparator",OutputSignal:13}']
+    - [1, 1, 26, '{id:"minecraft:comparator",OutputSignal:14}']
+    - [1, 1, 28, '{id:"minecraft:comparator",OutputSignal:15}']
+    - [1, 1, 30, '{id:"minecraft:comparator",OutputSignal:1}']
+    - [1, 1, 32, '{id:"minecraft:comparator",OutputSignal:2}']
+    - [1, 1, 34, '{id:"minecraft:comparator",OutputSignal:3}']
+    - [1, 1, 36, '{id:"minecraft:comparator",OutputSignal:4}']
+    - [1, 1, 38, '{id:"minecraft:comparator",OutputSignal:5}']
+    - [1, 1, 40, '{id:"minecraft:comparator",OutputSignal:6}']
+    - [1, 1, 42, '{id:"minecraft:comparator",OutputSignal:7}']
+    - [1, 1, 44, '{id:"minecraft:comparator",OutputSignal:8}']
+    - [1, 1, 46, '{id:"minecraft:comparator",OutputSignal:9}']
+    - [1, 1, 48, '{id:"minecraft:comparator",OutputSignal:10}']
+    - [1, 1, 50, '{id:"minecraft:comparator",OutputSignal:11}']
+    - [1, 1, 52, '{id:"minecraft:comparator",OutputSignal:12}']
+    - [1, 1, 54, '{id:"minecraft:comparator",OutputSignal:13}']
+    - [1, 1, 56, '{id:"minecraft:comparator",OutputSignal:14}']
+    - [1, 1, 58, '{id:"minecraft:comparator",OutputSignal:15}']
+    - [1, 1, 60, '{id:"minecraft:comparator",OutputSignal:1}']
+    - [1, 1, 62, '{id:"minecraft:comparator",OutputSignal:2}']
+    - [1, 1, 64, '{id:"minecraft:comparator",OutputSignal:3}']
+    - [1, 1, 66, '{id:"minecraft:comparator",OutputSignal:4}']
+    - [1, 1, 68, '{id:"minecraft:comparator",OutputSignal:5}']
+    - [1, 1, 70, '{id:"minecraft:comparator",OutputSignal:6}']
+ticks: 24
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 0], action: "use"}
+  - {tick: 2, pos: [0, 1, 2], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 2], action: "use"}
+  - {tick: 2, pos: [0, 1, 4], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 4], action: "use"}
+  - {tick: 2, pos: [0, 1, 6], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 6], action: "use"}
+  - {tick: 2, pos: [0, 1, 8], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 8], action: "use"}
+  - {tick: 2, pos: [0, 1, 10], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 10], action: "use"}
+  - {tick: 2, pos: [0, 1, 12], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 12], action: "use"}
+  - {tick: 2, pos: [0, 1, 14], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 14], action: "use"}
+  - {tick: 2, pos: [0, 1, 16], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 16], action: "use"}
+  - {tick: 2, pos: [0, 1, 18], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 18], action: "use"}
+  - {tick: 2, pos: [0, 1, 20], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 20], action: "use"}
+  - {tick: 2, pos: [0, 1, 22], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 22], action: "use"}
+  - {tick: 2, pos: [0, 1, 24], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 24], action: "use"}
+  - {tick: 2, pos: [0, 1, 26], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 26], action: "use"}
+  - {tick: 2, pos: [0, 1, 28], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 28], action: "use"}
+  - {tick: 2, pos: [0, 1, 30], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 30], action: "use"}
+  - {tick: 2, pos: [0, 1, 32], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 32], action: "use"}
+  - {tick: 2, pos: [0, 1, 34], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 34], action: "use"}
+  - {tick: 2, pos: [0, 1, 36], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 36], action: "use"}
+  - {tick: 2, pos: [0, 1, 38], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 38], action: "use"}
+  - {tick: 2, pos: [0, 1, 40], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 40], action: "use"}
+  - {tick: 2, pos: [0, 1, 42], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 42], action: "use"}
+  - {tick: 2, pos: [0, 1, 44], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 44], action: "use"}
+  - {tick: 2, pos: [0, 1, 46], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 46], action: "use"}
+  - {tick: 2, pos: [0, 1, 48], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 48], action: "use"}
+  - {tick: 2, pos: [0, 1, 50], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 50], action: "use"}
+  - {tick: 2, pos: [0, 1, 52], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 52], action: "use"}
+  - {tick: 2, pos: [0, 1, 54], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 54], action: "use"}
+  - {tick: 2, pos: [0, 1, 56], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 56], action: "use"}
+  - {tick: 2, pos: [0, 1, 58], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 58], action: "use"}
+  - {tick: 2, pos: [0, 1, 60], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 60], action: "use"}
+  - {tick: 2, pos: [0, 1, 62], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 62], action: "use"}
+  - {tick: 2, pos: [0, 1, 64], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 64], action: "use"}
+  - {tick: 2, pos: [0, 1, 66], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 66], action: "use"}
+  - {tick: 2, pos: [0, 1, 68], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 68], action: "use"}
+  - {tick: 2, pos: [0, 1, 70], action: "setblock", state: "redstone_wire[east=none,north=none,power=7,south=none,west=none]"}
+  - {tick: 2, pos: [1, 1, 70], action: "use"}
+probes:
+  l0_rep: [3, 1, 0]
+  l0_cmp: [1, 1, 0]
+  l1_rep: [3, 1, 2]
+  l1_cmp: [1, 1, 2]
+  l2_rep: [3, 1, 4]
+  l2_cmp: [1, 1, 4]
+  l3_rep: [3, 1, 6]
+  l3_cmp: [1, 1, 6]
+  l4_rep: [3, 1, 8]
+  l4_cmp: [1, 1, 8]
+  l5_rep: [3, 1, 10]
+  l5_cmp: [1, 1, 10]
+  l6_rep: [3, 1, 12]
+  l6_cmp: [1, 1, 12]
+  l7_rep: [3, 1, 14]
+  l7_cmp: [1, 1, 14]
+  l8_rep: [3, 1, 16]
+  l8_cmp: [1, 1, 16]
+  l9_rep: [3, 1, 18]
+  l9_cmp: [1, 1, 18]
+  l10_rep: [3, 1, 20]
+  l10_cmp: [1, 1, 20]
+  l11_rep: [3, 1, 22]
+  l11_cmp: [1, 1, 22]
+  l12_rep: [3, 1, 24]
+  l12_cmp: [1, 1, 24]
+  l13_rep: [3, 1, 26]
+  l13_cmp: [1, 1, 26]
+  l14_rep: [3, 1, 28]
+  l14_cmp: [1, 1, 28]
+  l15_rep: [3, 1, 30]
+  l15_cmp: [1, 1, 30]
+  l16_rep: [3, 1, 32]
+  l16_cmp: [1, 1, 32]
+  l17_rep: [3, 1, 34]
+  l17_cmp: [1, 1, 34]
+  l18_rep: [3, 1, 36]
+  l18_cmp: [1, 1, 36]
+  l19_rep: [3, 1, 38]
+  l19_cmp: [1, 1, 38]
+  l20_rep: [3, 1, 40]
+  l20_cmp: [1, 1, 40]
+  l21_rep: [3, 1, 42]
+  l21_cmp: [1, 1, 42]
+  l22_rep: [3, 1, 44]
+  l22_cmp: [1, 1, 44]
+  l23_rep: [3, 1, 46]
+  l23_cmp: [1, 1, 46]
+  l24_rep: [3, 1, 48]
+  l24_cmp: [1, 1, 48]
+  l25_rep: [3, 1, 50]
+  l25_cmp: [1, 1, 50]
+  l26_rep: [3, 1, 52]
+  l26_cmp: [1, 1, 52]
+  l27_rep: [3, 1, 54]
+  l27_cmp: [1, 1, 54]
+  l28_rep: [3, 1, 56]
+  l28_cmp: [1, 1, 56]
+  l29_rep: [3, 1, 58]
+  l29_cmp: [1, 1, 58]
+  l30_rep: [3, 1, 60]
+  l30_cmp: [1, 1, 60]
+  l31_rep: [3, 1, 62]
+  l31_cmp: [1, 1, 62]
+  l32_rep: [3, 1, 64]
+  l32_cmp: [1, 1, 64]
+  l33_rep: [3, 1, 66]
+  l33_cmp: [1, 1, 66]
+  l34_rep: [3, 1, 68]
+  l34_cmp: [1, 1, 68]
+  l35_rep: [3, 1, 70]
+  l35_cmp: [1, 1, 70]
