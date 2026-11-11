@@ -34,6 +34,16 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 94 %** (gew
   deshalb Grenze 8. Ganzer `rsx redesign` mit 7 Eingängen 5–25 s. Neues Beispiel `examples/specs/lock7.yaml`
   (Codeschloss, 7 Hebel, zwei komplementäre Codes, nicht einfach zerlegbar, vorher kein Entwurf; 182 Blöcke),
   `pla-lock7` im Spiel identisch (alle 128 Kombinationen, offen genau bei den zwei Codes).
+- M4: Redesign aus Bestandsschaltungen mit aufgezeichnetem Verhalten bis 6 Eingänge (`cli.MAX_RECORDED_INPUTS`,
+  vorher 3). Die Analyse liefert das Gatter vor dem Baustein (`BehaviourSpec.gate_hints` aus `analysis.gated`
+  bzw. `analysis.timing`); `search.gate_guesses` probiert diese zuerst, über 3 Hebeln nur sie. Logik vor
+  Bausteinen erkennt die Analyse jetzt bis 4 Hebel (32 Läufe). Aufgezeichnete Spezifikationen pulsen jeden Hebel
+  zusätzlich, während andere Hebel an sind (bis 4 Hebel alle Kombinationen, darüber bis 2 gehaltene): vorher
+  sah die Spezifikation ein Gatter wie (a and b) or (c and d) nur mit allen Hebeln an, und das Kompaktieren
+  durfte die halbe Logik weglassen (24 statt 48 Blöcke, falsch). Ausgänge mit Zeitglied oder Baustein hinter
+  Logik werden nicht mehr als Wahrheitstabelle neu entworfen (ein Pulsverlängerer hinter AND erfüllt die
+  Tabelle samt Übergängen; vorher kam ein bloßes AND heraus). Fixture
+  `tests/fixtures/analysis/gated/t-flip-flop-and-or4.yaml`.
 - Teiltabellen: zusätzlich Einzel-Umschaltungen an zufälligen Hebelstellungen (fester Seed, ~600 Läufe,
   `analyze._sampled_dependencies`). Ein AND aus drei in Ruhe ausgeschalteten Hebeln bekommt so eine Tabelle.
   seg7 unverändert (die 15 Ausgänge ohne Tabelle hängen wirklich von mehr als 6 Hebeln ab), 1,7 s.
@@ -254,7 +264,8 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
 3. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
    - Lücken der Vorlagen: Monoflop 3 gt nur mit Knopf (Hebel unmöglich, siehe Session 8); Hebel-Comparator-Monoflop nicht für jede gerade Länge; XOR-Vorlagen groß (28–33 Blöcke).
    - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); Nicht einfach zerlegbare Funktionen über 8 Eingängen bleiben ungelöst (PLA bis 8, Session 11; nur einfache disjunkte Zerlegung). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); offen sind Bausteine drehen/umsetzen. Geteilte Teilfunktionen: nur eine gemeinsame Leitung g je Zerlegung (Session 10); mehrere gemeinsame Signale (z. B. Carry-Lookahead) nicht.
-   - Verhalten aus Bestandsschaltungen nur bis 3 Eingänge; Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
+   - Verhalten aus Bestandsschaltungen bis 6 Eingänge (Session 11; Gatter nur aus der Analyse, über 4 Hebeln
+     ohne Logik-vor-Baustein-Erkennung also nur Einzelbausteine); Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
    - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8), Set-only-Speicher (Session 10) und Zeitgliedern (Session 11).
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
