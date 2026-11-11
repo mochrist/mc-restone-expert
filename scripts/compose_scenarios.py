@@ -5,6 +5,9 @@ scenarios/cmp-<name>.yaml.
 * examples/specs/composed/*.yaml (truth tables split into chains of gates, `design/decompose.py`); these
   scenarios walk through all lever combinations like scripts/template_scenarios.py.
 
+The designs are compacted like in `rsx redesign` (`design/compact.py`), so the real game checks the moved parts
+and rerouted lines as well.
+
 All trials run one after another in one scenario (as in seq_template_scenarios.py). Gated trials leave the
 setup levers on, so every lever that is on at the end of a trial is switched off again before the next one.
 `check_trace` compares a recorded trace with the spec, trial by trial.
@@ -25,6 +28,8 @@ from redstone.io.nbtutil import to_nbt
 
 ROOT = Path(__file__).parents[1]
 GAP = 30
+COMPACT = 100  # evaluations for compacting, as `rsx redesign` (no time limit, so the result is reproducible)
+COMPACTED = "kompaktiert aus "
 COMPOSED = ("zerlegt", "komponiert", "nebeneinander")  # origins of composed designs
 
 
@@ -39,10 +44,10 @@ def spec_of(path: Path) -> bh.BehaviourSpec:
 
 @cache
 def design(path: Path):
-    """The best working composed design (the scenarios check compositions in the game, so a plain PLA or
-    template that happens to rank higher is skipped)."""
-    for ev in redesign(spec_of(path)):
-        if ev.ok and ev.candidate.origin.startswith(COMPOSED):
+    """The best working composed design, compacted as in `rsx redesign` (the scenarios check compositions in
+    the game, so a plain PLA or template that happens to rank higher is skipped)."""
+    for ev in redesign(spec_of(path), compact_budget=COMPACT):
+        if ev.ok and ev.candidate.origin.removeprefix(COMPACTED).startswith(COMPOSED):
             return ev.candidate
     raise RuntimeError(f"{path.name}: no working composed design")
 
@@ -129,8 +134,8 @@ def table_examples() -> list[Path]:
 def table_design(path: Path):
     from redstone.design.spec import load
 
-    for ev in redesign(load(path)):  # the best decomposition, even if a plain PLA ranks higher
-        if ev.ok and ev.candidate.origin.startswith(("zerlegt", "nebeneinander")):
+    for ev in redesign(load(path), compact_budget=COMPACT):  # the best decomposition, even if a plain PLA ranks higher
+        if ev.ok and ev.candidate.origin.removeprefix(COMPACTED).startswith(("zerlegt", "nebeneinander")):
             return ev.candidate
     raise RuntimeError(f"{path.name}: no working decomposition")
 
