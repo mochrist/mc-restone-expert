@@ -6,7 +6,7 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 94 %** (gew
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~95 % | 279 Aussagen aus dem 26.3-Code belegt, 137 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 107 Golden Traces tick-genau überein; Truhen, Crafter neu |
+| M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 108 Golden Traces tick-genau überein; Truhen, Crafter neu |
 | M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
 | M4 Redesign | 25 % | ~83 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
@@ -44,6 +44,12 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 94 %** (gew
   Logik werden nicht mehr als Wahrheitstabelle neu entworfen (ein Pulsverlängerer hinter AND erfüllt die
   Tabelle samt Übergängen; vorher kam ein bloßes AND heraus). Fixture
   `tests/fixtures/analysis/gated/t-flip-flop-and-or4.yaml`.
+- M2 (Sonnet-Agent): Tageslichtsensor (normal/invertiert) in beiden Kernen (`sim/blocks/daylight.py`, Rust
+  `outputs.rs`), `scenarios/daylight-detector.yaml` im Spiel identisch, `knowledge/components/daylight-detector.md`
+  (DAY-001..005 verifiziert). Die Oracle-Welt hat Weltuhr 0 (Sensor liest 7 unter freiem Himmel). Die 20-gt-Phase
+  hängt von der absoluten Spielzeit ab: neues Szenariofeld `game_time` (nur Simulator; bei Neuaufnahme den Wert aus
+  dem Oracle-Log `built at …, game time N` nachtragen). Himmelslicht nur über Leiter angenähert (ASSUMPTION,
+  DAY-006 ungeprüft); Nacht/Wetter nicht modelliert.
 - M3 (Sonnet-Agent): SVG-Zeitdiagramme. `rsx explain <datei> --svg DIR` schreibt ein SVG pro Eingang und
   verlinkt es im Markdown (ASCII-Diagramme bleiben); `rsx sim <szenario> --svg DATEI`; Modul
   `render/svg_timing.py`. Nicht für Pulsantwort und Logik-vor-Baustein-Abschnitte.
@@ -273,7 +279,7 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
 4. **Restliche Simulator-Lücken (M2):**
-   - Tageslichtsensor (Block-Entity alle 20 gt, Himmelslicht/Tageszeit), Druckplatten, Detektorschiene, Sculk. Truhen (Session 8) und Crafter (Session 10, wenige Rezepte) erledigt.
+   - Tageslichtsensor erledigt (Session 11, nur feste Tageszeit, Himmelslicht angenähert). Druckplatten, Detektorschiene, Sculk. Truhen (Session 8) und Crafter (Session 10, wenige Rezepte) erledigt.
    - Notenblock-Instrument nur über Blocknamen (ASSUMPTION; Feld `instrument` im Block-Dump fehlt).
    - Dispenser: item-spezifisches Verhalten, zufällige Slotwahl → erster Slot (ASSUMPTIONs in `dispenser_hopper.py`).
    - Weitere ungeprüfte Aussagen per Szenario verifizieren (`knowledge/UNVERIFIED.md`).
