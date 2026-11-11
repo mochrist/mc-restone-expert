@@ -87,6 +87,14 @@ def _cmd_sim(args: argparse.Namespace) -> int:
         trace, world = sim.run(scenario)
         print(f"\n{scenario.name} (simulated)")
         print(timing_diagram(trace))
+        if args.svg:
+            from .verify.trace import trace_svg
+
+            dst = Path(args.svg)
+            if len(args.scenarios) > 1:
+                dst = dst / f"{scenario.name}.svg"
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_text(trace_svg(trace, scenario.name), encoding="utf-8")
         for w in world.warnings:
             print(f"warning: {w}")
         if args.out:
@@ -118,7 +126,19 @@ def _cmd_explain(args: argparse.Namespace) -> int:
         grid, title = load_scenario(path).grid, path.stem
     else:
         grid, title = io.load(path), path.stem
-    text = explain(analyze(grid), title)
+    svg = None
+    if args.svg:
+        import os
+
+        base = Path(args.out).resolve().parent if args.out else Path.cwd()
+        link = Path(os.path.relpath(Path(args.svg).resolve(), base)).as_posix()
+        svg = (link, {})
+    text = explain(analyze(grid), title, svg)
+    if svg:
+        Path(args.svg).mkdir(parents=True, exist_ok=True)
+        for fname, content in svg[1].items():
+            (Path(args.svg) / fname).write_text(content, encoding="utf-8")
+        print(f"wrote {len(svg[1])} SVG files to {args.svg}", file=sys.stderr)
     if args.out:
         Path(args.out).write_text(text, encoding="utf-8")
         print(f"wrote {args.out}")
@@ -378,11 +398,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--diff", action="store_true", help="compare with tests/golden/<name>.trace.json")
     p.add_argument("--limit", type=int, default=20, help="max mismatches to print")
     p.add_argument("--out", help="directory to write simulator traces to")
+    p.add_argument("--svg", metavar="FILE", help="write an SVG timing diagram (several scenarios: DIR/<name>.svg)")
     p.set_defaults(func=_cmd_sim)
 
     p = sub.add_parser("explain", help="analyse a schematic or scenario by simulation and explain it (German)")
     p.add_argument("file", help=".litematic/.schem/.nbt or scenario .yaml")
     p.add_argument("-o", "--out", help="write the Markdown report to this file")
+    p.add_argument("--svg", metavar="DIR", help="also write one SVG timing diagram per input into DIR and link it")
     p.set_defaults(func=_cmd_explain)
 
     p = sub.add_parser("redesign", help="find compact circuits for a spec or an existing circuit (German report)")
