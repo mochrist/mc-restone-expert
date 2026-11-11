@@ -219,7 +219,7 @@ def _random_state(rng: random.Random) -> str:
         f"dropper[facing={f6},triggered=false]", f"dispenser[facing={f6},triggered=false]",
         f"crafter[crafting=false,orientation={rng.choice(CRAFTER_ORIENTATIONS)},triggered=false]",
         f"crafter[crafting=false,orientation={rng.choice(CRAFTER_ORIENTATIONS)},triggered=false]",
-        "daylight_detector[inverted=false,power=0]",
+        "daylight_detector[inverted=false,power=0]", "daylight_detector[inverted=true,power=9]",
     ])
 
 
@@ -242,7 +242,8 @@ def _soup(seed: int) -> tuple[Grid, dict[int, list[Step]], int]:
     ticks = 80
     schedule: dict[int, list[Step]] = {}
     usable = [p for p, s in grid.items() if s.id in ("lever", "stone_button", "note_block", "copper_bulb",
-                                                      "oak_trapdoor", "oak_fence_gate", "comparator", "repeater")]
+                                                      "oak_trapdoor", "oak_fence_gate", "comparator", "repeater",
+                                                      "daylight_detector")]
     for _ in range(14):
         t = rng.randrange(ticks - 10)
         if usable and rng.random() < 0.6:

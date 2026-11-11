@@ -57,6 +57,20 @@ Koordinaten sind relativ zur Schematic (Min-Ecke = `(0,0,0)`).
 Ein Sample bei Tick `t` zeigt also den Zustand nach `t` ausgeführten Game-Ticks und nach den Eingaben
 von Tick `t`. Eingaben liegen damit „zwischen" zwei Game-Ticks, genau wie Spieleraktionen im echten Spiel.
 
+### Spielzeit und Tageslichtsensor
+
+- Das Oracle läuft in einer eingefrorenen Welt (`advance_time` aus, Weltuhr `minecraft:overworld` bei
+  `total_ticks = 0`, klares Wetter). Der Tageslichtsensor sieht daher immer denselben Himmel: Sonnenwinkel
+  282,37 Grad, `skyDarken` 0 (normaler Sensor unter freiem Himmel 7, invertierter 0). Der Simulator nimmt
+  genau diese Welt an (`sim/blocks/daylight.py`); andere Tageszeiten sind nicht modelliert.
+- Die Spielzeit (`gameTime`) läuft im Oracle über Szenarien hinweg weiter; beim Aufbau steht sie auf einem
+  beliebigen Wert (das Oracle-Log meldet `built at ..., game time N`). Nur der 20-gt-Takt des Sensors
+  (`gameTime % 20 == 0`) hängt davon ab. Das optionale Szenariofeld `game_time` (ganze Zahl, Standard 0) setzt
+  die Anfangs-Spielzeit **nur im Simulator**; es wird nicht ins kompilierte JSON geschrieben und das Oracle
+  ignoriert es. Für ein Szenario, dessen Ergebnis von der Takt-Phase abhängt, steht dort der im
+  aufgezeichneten Lauf gemeldete Wert; wird neu aufgezeichnet, muss er nachgetragen werden. Aktionen `use`
+  am Sensor sind phasenunabhängig (sofortige Aktualisierung).
+
 ## 3. Kompiliertes Szenario (JSON, Eingabe für das Oracle)
 
 `rsx compile <szenario.yaml>` löst Schematic-Datei bzw. Inline-Aufbau auf. Das Oracle muss nur dieses

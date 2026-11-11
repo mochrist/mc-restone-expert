@@ -45,6 +45,7 @@ ORACLE_ORIGIN = Pos(0, 200, 0)
 def run(scenario: Scenario, origin: Pos = ORACLE_ORIGIN) -> tuple[Trace, World]:
     world = World()
     world.place_grid(scenario.grid, origin)
+    world.game_time = scenario.game_time
     trace = Trace(scenario.name, "sim", scenario.ticks, dict(scenario.probes))
     for t in range(scenario.ticks + 1):
         for inp in scenario.inputs_at(t):

@@ -452,6 +452,10 @@ class World:
             if ticker is None or getattr(ticker, "removed", False):
                 continue
             is_idle = getattr(ticker, "is_idle", None)
+            if is_idle and getattr(ticker, "idle_needs_world", False):
+                if is_idle(self):
+                    continue
+                return False
             if not (is_idle and is_idle()):
                 return False
         return True

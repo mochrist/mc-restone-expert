@@ -1,0 +1,57 @@
+name: daylight-detector
+description: >
+  Tageslichtsensor, normal und invertiert, unter freiem Himmel und unter einem Stein (Himmelslicht 14).
+  Die Sensoren sind absichtlich mit veralteter Stärke gesetzt; die erste Aktualisierung kommt vom
+  20-gt-Takt (gameTime % 20 == 0), danach schalten Rechtsklicks sofort um. Ausgelesen von Staub und Lampe
+  (Zeile A, C, D) und von einem Komparator (Zeile B). Unter freiem Himmel liest ein normaler Sensor 7
+  (Sonnenwinkel 282 Grad der eingefrorenen Weltuhr bei 0, Himmelslicht 15), ein invertierter 0; unter dem
+  Stein (Himmelslicht 14) 7 bzw. 1. game_time ist die Spielzeit beim Aufbau im aufgezeichneten Lauf (das
+  Oracle kann sie nicht setzen; siehe docs/scenario-format.md); nur game_time mod 20 zählt.
+game_time: 30843
+build:
+  size: [4, 3, 7]
+  fill:
+    - [0, 0, 0, 3, 0, 6, "stone"]
+  blocks:
+    # A: normal, offener Himmel, veraltet 0 -> 7; Staub und Lampe
+    - [0, 1, 0, "daylight_detector[inverted=false,power=0]"]
+    - [1, 1, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [2, 1, 0, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [3, 1, 0, "redstone_lamp[lit=false]"]
+    # B: normal, offener Himmel, veraltet 0 -> 7; Komparator und Lampe
+    - [0, 1, 2, "daylight_detector[inverted=false,power=0]"]
+    - [1, 1, 2, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 2, "redstone_lamp[lit=false]"]
+    # C: invertiert unter einem Stein, veraltet 0 -> 1; Staub und Lampe
+    - [0, 1, 4, "daylight_detector[inverted=true,power=0]"]
+    - [0, 2, 4, "stone"]
+    - [1, 1, 4, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [2, 1, 4, "redstone_lamp[lit=false]"]
+    # D: invertiert, offener Himmel, veraltet 9 -> 0; Staub und Lampe gehen aus
+    - [0, 1, 6, "daylight_detector[inverted=true,power=9]"]
+    - [1, 1, 6, "redstone_wire[east=side,north=none,power=8,south=none,west=side]"]
+    - [2, 1, 6, "redstone_lamp[lit=true]"]
+  block_entities:
+    - [1, 1, 2, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 80
+inputs:
+  - {tick: 30, pos: [0, 1, 0], action: use}
+  - {tick: 30, pos: [0, 1, 2], action: use}
+  - {tick: 36, pos: [0, 1, 4], action: use}
+  - {tick: 36, pos: [0, 1, 6], action: use}
+  - {tick: 50, pos: [0, 1, 0], action: use}
+  - {tick: 50, pos: [0, 1, 2], action: use}
+probes:
+  a_detector: [0, 1, 0]
+  a_dust: [1, 1, 0]
+  a_dust_end: [2, 1, 0]
+  a_lamp: [3, 1, 0]
+  b_detector: [0, 1, 2]
+  b_comparator: [1, 1, 2]
+  b_lamp: [2, 1, 2]
+  c_detector: [0, 1, 4]
+  c_dust: [1, 1, 4]
+  c_lamp: [2, 1, 4]
+  d_detector: [0, 1, 6]
+  d_dust: [1, 1, 6]
+  d_lamp: [2, 1, 6]

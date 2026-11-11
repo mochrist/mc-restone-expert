@@ -1,0 +1,282 @@
+{
+  "format": 1,
+  "scenario": "daylight-detector",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 80,
+  "probes": {
+    "a_detector": [
+      0,
+      1,
+      0
+    ],
+    "a_dust": [
+      1,
+      1,
+      0
+    ],
+    "a_dust_end": [
+      2,
+      1,
+      0
+    ],
+    "a_lamp": [
+      3,
+      1,
+      0
+    ],
+    "b_detector": [
+      0,
+      1,
+      2
+    ],
+    "b_comparator": [
+      1,
+      1,
+      2
+    ],
+    "b_lamp": [
+      2,
+      1,
+      2
+    ],
+    "c_detector": [
+      0,
+      1,
+      4
+    ],
+    "c_dust": [
+      1,
+      1,
+      4
+    ],
+    "c_lamp": [
+      2,
+      1,
+      4
+    ],
+    "d_detector": [
+      0,
+      1,
+      6
+    ],
+    "d_dust": [
+      1,
+      1,
+      6
+    ],
+    "d_lamp": [
+      2,
+      1,
+      6
+    ]
+  },
+  "samples": {
+    "a_detector": [
+      [
+        0,
+        "minecraft:daylight_detector[inverted=false,power=0]"
+      ],
+      [
+        17,
+        "minecraft:daylight_detector[inverted=false,power=7]"
+      ],
+      [
+        30,
+        "minecraft:daylight_detector[inverted=true,power=0]"
+      ],
+      [
+        50,
+        "minecraft:daylight_detector[inverted=false,power=7]"
+      ]
+    ],
+    "a_dust": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        17,
+        "minecraft:redstone_wire[east=side,north=none,power=7,south=none,west=side]"
+      ],
+      [
+        30,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        50,
+        "minecraft:redstone_wire[east=side,north=none,power=7,south=none,west=side]"
+      ]
+    ],
+    "a_dust_end": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        17,
+        "minecraft:redstone_wire[east=side,north=none,power=6,south=none,west=side]"
+      ],
+      [
+        30,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        50,
+        "minecraft:redstone_wire[east=side,north=none,power=6,south=none,west=side]"
+      ]
+    ],
+    "a_lamp": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        17,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        34,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        50,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "b_detector": [
+      [
+        0,
+        "minecraft:daylight_detector[inverted=false,power=0]"
+      ],
+      [
+        17,
+        "minecraft:daylight_detector[inverted=false,power=7]"
+      ],
+      [
+        30,
+        "minecraft:daylight_detector[inverted=true,power=0]"
+      ],
+      [
+        50,
+        "minecraft:daylight_detector[inverted=false,power=7]"
+      ]
+    ],
+    "b_comparator": [
+      [
+        0,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        19,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=7"
+      ],
+      [
+        32,
+        "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+      ],
+      [
+        52,
+        "minecraft:comparator[facing=west,mode=compare,powered=true]|output=7"
+      ]
+    ],
+    "b_lamp": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        19,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        36,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        52,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "c_detector": [
+      [
+        0,
+        "minecraft:daylight_detector[inverted=true,power=0]"
+      ],
+      [
+        17,
+        "minecraft:daylight_detector[inverted=true,power=1]"
+      ],
+      [
+        36,
+        "minecraft:daylight_detector[inverted=false,power=7]"
+      ]
+    ],
+    "c_dust": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        17,
+        "minecraft:redstone_wire[east=side,north=none,power=1,south=none,west=side]"
+      ],
+      [
+        36,
+        "minecraft:redstone_wire[east=side,north=none,power=7,south=none,west=side]"
+      ]
+    ],
+    "c_lamp": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        17,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ],
+    "d_detector": [
+      [
+        0,
+        "minecraft:daylight_detector[inverted=true,power=9]"
+      ],
+      [
+        17,
+        "minecraft:daylight_detector[inverted=true,power=0]"
+      ],
+      [
+        36,
+        "minecraft:daylight_detector[inverted=false,power=7]"
+      ]
+    ],
+    "d_dust": [
+      [
+        0,
+        "minecraft:redstone_wire[east=side,north=none,power=8,south=none,west=side]"
+      ],
+      [
+        17,
+        "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+      ],
+      [
+        36,
+        "minecraft:redstone_wire[east=side,north=none,power=7,south=none,west=side]"
+      ]
+    ],
+    "d_lamp": [
+      [
+        0,
+        "minecraft:redstone_lamp[lit=true]"
+      ],
+      [
+        21,
+        "minecraft:redstone_lamp[lit=false]"
+      ],
+      [
+        36,
+        "minecraft:redstone_lamp[lit=true]"
+      ]
+    ]
+  }
+}
