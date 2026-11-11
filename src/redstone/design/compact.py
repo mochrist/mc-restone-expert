@@ -5,10 +5,13 @@ Moves (greedy, repeated until nothing helps):
 2. move one part of the design (a half-space of its blocks) by 1 to 3 blocks, so that the bounding box
    gets smaller: parts of a composition move together, or one part slides along the other (partial plane
    cut); equal blocks that land on each other are merged, which shortens straight lines (`shifts`),
-3. lay a stretch of dust anew on a shorter way (`lines`, `rerouted`),
-4. remove single blocks that are not inputs or outputs (loosely attached ones first),
-5. crop the grid to the bounding box of its blocks.
-Moves 1 and 2 shrink the box and are repeated until neither helps before 3 and 4 are tried. Edits whose
+3. move a whole building block elsewhere, turned in any of four ways, and lay its lines anew (`parts`:
+   the groups of blocks left between plain dust lines, e.g. the gates of a composition; `relocations`),
+4. lay a stretch of dust anew on a shorter way (`lines`, `rerouted`),
+5. remove single blocks that are not inputs or outputs (loosely attached ones first),
+6. crop the grid to the bounding box of its blocks.
+Moves 1 to 3 shrink the box and are repeated until none helps before 4 and 5 are tried; move 3 goes first
+when it promises a smaller box than any single shift (shifts may join the building blocks). Edits whose
 surroundings look like those of an edit that failed before are not simulated again (`_local_key`).
 
 Edits change block connections (dust shapes, attachments). Dust and other shape-dependent states are
@@ -19,7 +22,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from ..model import Grid, Pos
+from ..model import BlockState, Grid, Pos
 from ..sim import blockdata
 from ..sim.constants import UPDATE_ALL
 from ..sim.core import World
@@ -104,6 +107,10 @@ def _box_volume(lo, hi) -> int:
 
 
 def shifts(c: Candidate) -> list[tuple[str, frozenset[Pos], Pos]]:
+    return [m[1:] for m in _shift_list(c)]
+
+
+def _shift_list(c: Candidate) -> list[tuple[tuple, str, frozenset[Pos], Pos]]:
     """Moves of one part of the design: every half-space {p[axis] < t} or {p[axis] >= t} moved by 1 to
     MAX_SHIFT blocks in any of the six directions, such that the bounding box of the whole design gets
     smaller. Moving along `axis` closes the gap between two parts; moving across it slides one part along
@@ -149,7 +156,7 @@ def shifts(c: Candidate) -> list[tuple[str, frozenset[Pos], Pos]]:
                                 what += f", {merged} gleiche Blöcke zusammengelegt"
                             out.append(((d, new_volume, contacts, len(part)), what, part, v))
     out.sort(key=lambda m: m[0])
-    return [m[1:] for m in out]
+    return out
 
 
 # properties that the simulation recomputes (power, connections); blocks that differ only in these are the same
@@ -343,19 +350,24 @@ def _dust_route(states: dict, a: Pos, b: Pos, limit: int) -> list[Pos] | None:
     return None
 
 
-def rerouted(c: Candidate, a: Pos, inner: list[Pos], b: Pos) -> Candidate | None:
-    """The dust between a and b laid anew on the shortest way, if that needs fewer blocks (dust plus floors
-    that only carried this dust); None otherwise."""
-    states = dict(c.grid.items())
+def _line_floors(states: dict, a: Pos, inner: list[Pos], b: Pos) -> set[Pos]:
+    """Floors of the inner dust that carry nothing else: no torch, lever, diode, dust ... next to them."""
     cells = set(inner)
-    floors = set()  # floors that carry nothing else: no torch, lever, diode, dust ... next to them
+    floors = set()
     for w in inner:
         f = w + DOWN
         if f not in (a + DOWN, b + DOWN) and all(
                 q not in states or q in cells or blockdata.is_conductor(states[q])
                 for q in (f + u for u in UNIT if u != UP)):
             floors.add(f)
-    removed = cells | floors
+    return floors
+
+
+def rerouted(c: Candidate, a: Pos, inner: list[Pos], b: Pos) -> Candidate | None:
+    """The dust between a and b laid anew on the shortest way, if that needs fewer blocks (dust plus floors
+    that only carried this dust); None otherwise."""
+    states = dict(c.grid.items())
+    removed = set(inner) | _line_floors(states, a, inner, b)
     rest = {p: s for p, s in states.items() if p not in removed}
     path = _dust_route(rest, a, b, len(inner))
     if path is None:
@@ -366,6 +378,233 @@ def rerouted(c: Candidate, a: Pos, inner: list[Pos], b: Pos) -> Candidate | None
         return None
     rest.update(added)
     return _rebuild(c, rest, lambda p: p)
+
+
+# ---------------------------------------------------------------------- moving building blocks
+_AROUND = [(dx, dy, dz) for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1) if (dx, dy, dz) != (0, 0, 0)]
+MAX_PLACES = 4000  # placements of building blocks checked per round (no simulation, see `relocations`)
+RELOCATE_POOL = 12  # routed placements collected per round; the smallest ones are simulated first
+RELOCATE_TRIES = 3  # routed placements simulated per round
+LINE_MAX = 12  # a line laid anew may have this many dust (the signal must still reach the other end)
+LINE_SLACK = 2  # a line laid anew may be this much longer than before
+_DUST_STATE = BlockState.parse(DUST)
+_FLOOR_STATE = BlockState.parse(FLOOR)
+
+
+def parts(c: Candidate) -> tuple[list[frozenset[Pos]], list[tuple[Pos, list[Pos], Pos]], set[Pos]]:
+    """The building blocks of a design and the lines between them.
+
+    The plain dust lines (`lines`) and the floors that only carry them are taken out; the other blocks fall
+    apart into groups that touch (also diagonally), e.g. the gates of a composition. Returns the groups
+    (ordered by their lowest position), the lines and the cells taken out. Line ends belong to the groups."""
+    states = dict(c.grid.items())
+    found = lines(c)
+    removed = set()
+    for a, inner, b in found:
+        removed |= set(inner) | _line_floors(states, a, inner, b)
+    removed -= set(c.inputs) | set(c.outputs)
+    left = {p for p in states if p not in removed}
+    groups, seen = [], set()
+    for p in sorted(left):
+        if p in seen:
+            continue
+        comp, todo = {p}, [p]
+        seen.add(p)
+        while todo:
+            x, y, z = todo.pop()
+            for dx, dy, dz in _AROUND:
+                q = Pos(x + dx, y + dy, z + dz)
+                if q in left and q not in seen:
+                    seen.add(q)
+                    comp.add(q)
+                    todo.append(q)
+        groups.append(frozenset(comp))
+    return groups, found, removed
+
+
+def _dust_path(states: dict, start: Pos, goal: Pos, a: Pos, b: Pos, limit: int,
+               box: tuple[Pos, Pos]) -> list[Pos] | None:
+    """Shortest dust path from cell `start` (joined to the dust a) to cell `goal` (joined to the dust b), both
+    ends included, of at most `limit` cells inside `box` (lowest and highest corner), by breadth-first search;
+    steps as in `_dust_route`.
+
+    Every cell is free, as is the cell above it; its floor is free (stone is put there) or a plain block. The
+    inner cells only have free or plain blocks beside them, no other dust a step up or down, and a new floor
+    powers nothing (only free or plain blocks next to it). The two end cells may touch their own line end."""
+    from collections import deque
+
+    (x0, y0, z0), (x1, y1, z1) = box
+
+    def ok(c: Pos, ends: tuple[Pos, ...] = ()) -> bool:
+        if not (x0 <= c.x <= x1 and y0 <= c.y <= y1 and z0 <= c.z <= z1):
+            return False
+        if c in states or (c + UP) in states:
+            return False
+        f = c + DOWN
+        floor = states.get(f)
+        if floor is not None and not _plain(floor):
+            return False
+        for dx, _, dz in _FLAT:
+            q = Pos(c.x + dx, c.y, c.z + dz)
+            if q in ends:
+                continue
+            s = states.get(q)
+            if s is not None and not _plain(s):
+                return False
+            for dy in (1, -1):
+                r = states.get(Pos(q.x, q.y + dy, q.z))
+                if r is not None and r.id == WIRE_ID and Pos(q.x, q.y + dy, q.z) not in ends:
+                    return False
+            if not ends and floor is None:
+                s = states.get(Pos(f.x + dx, f.y, f.z + dz))
+                if s is not None and not _plain(s):
+                    return False
+        if not ends and floor is None:
+            s = states.get(f + DOWN)
+            if s is not None and not _plain(s):
+                return False
+        return True
+
+    if start == goal:
+        return [start] if ok(start, (a, b)) else None
+    if abs(start.x - goal.x) + abs(start.z - goal.z) >= limit:
+        return None
+    if not ok(start, (a,)) or not ok(goal, (b,)):
+        return None
+    prev: dict[Pos, Pos | None] = {start: None}
+    queue = deque([(start, 1)])
+    while queue:
+        c, n = queue.popleft()
+        if n >= limit:
+            continue
+        for dx, _, dz in _FLAT:
+            h = Pos(c.x + dx, c.y, c.z + dz)
+            steps = [h, h + UP]
+            if h not in states:
+                steps.append(h + DOWN)
+            for q in steps:
+                if q in prev:
+                    continue
+                if q == goal:
+                    path = [q, c]
+                    while prev[path[-1]] is not None:
+                        path.append(prev[path[-1]])
+                    return path[::-1]
+                if ok(q):
+                    prev[q] = c
+                    queue.append((q, n + 1))
+    return None
+
+
+def relocations(c: Candidate):
+    """Move one building block (`parts`) elsewhere, turned in any of the four ways, and lay the lines to the
+    other blocks anew (`_dust_path`, from the same cell next to each line end as before, so the line ends keep
+    their shapes). The block keeps one block of air to the others, also diagonally.
+
+    Yields (description, candidate): placements whose box (without lines) is smallest first, at most
+    MAX_PLACES placements are checked. Only candidates with a smaller box than `c` come out; nothing is
+    simulated here."""
+    from .compose import UNROTATABLE, _halo, turn_pos, turn_state
+
+    states = dict(c.grid.items())
+    groups, found, _ = parts(c)
+    if len(groups) < 2:
+        return
+    volume = c.volume
+    options = []
+    setups = []
+    for k, part in enumerate(groups):
+        attached = [ln for ln in found if (ln[0] in part) != (ln[2] in part)]
+        internal = [ln for ln in found if ln[0] in part and ln[2] in part]
+        moved = set(part)
+        for a, inner, b in internal:
+            moved |= set(inner) | _line_floors(states, a, inner, b)
+        dropped = set()
+        for a, inner, b in attached:
+            dropped |= set(inner) | _line_floors(states, a, inner, b)
+        dropped -= set(c.inputs) | set(c.outputs)
+        fixed = {p: s for p, s in states.items() if p not in moved and p not in dropped}
+        if not fixed:
+            continue
+        flo, fhi = Pos(*(min(p[i] for p in fixed) for i in range(3))), Pos(*(max(p[i] for p in fixed) for i in range(3)))
+        mlo, mhi = Pos(*(min(p[i] for p in moved) for i in range(3))), Pos(*(max(p[i] for p in moved) for i in range(3)))
+        msize = [h - l + 1 for h, l in zip(mhi, mlo)]
+        turnable = not any(states[p].id in UNROTATABLE for p in moved)
+        setups.append((part, attached, moved, fixed, mlo, msize))
+        for turns in range(4 if turnable else 1):
+            ts = (msize[2], msize[1], msize[0]) if turns % 2 else tuple(msize)
+            ranges = [range(flo[i] - ts[i] - 1, fhi[i] + 3) for i in range(3)]
+            for nx in ranges[0]:
+                for ny in ranges[1]:
+                    for nz in ranges[2]:
+                        if turns == 0 and (nx, ny, nz) == tuple(mlo):
+                            continue
+                        n = (nx, ny, nz)
+                        v = 1
+                        for i in range(3):
+                            v *= max(fhi[i], n[i] + ts[i] - 1) - min(flo[i], n[i]) + 1
+                        if v < volume:
+                            options.append((v, turns, len(setups) - 1, n))
+    options.sort()
+    halos: dict[int, set] = {}
+    turned: dict[tuple[int, int], list] = {}  # positions of a moved block, turned, relative to its new corner
+    pool = []
+    for _, turns, s, n in options[:MAX_PLACES]:
+        part, attached, moved, fixed, mlo, msize = setups[s]
+        lo = Pos(*n)
+
+        def place(p: Pos) -> Pos:
+            return turn_pos(p - mlo, msize[0], msize[2], turns) + lo
+
+        if s not in halos:
+            halos[s] = _halo(fixed)
+        if (s, turns) not in turned:
+            turned[s, turns] = [tuple(turn_pos(p - mlo, msize[0], msize[2], turns)) for p in moved]
+        halo, (nx, ny, nz) = halos[s], n
+        if any((x + nx, y + ny, z + nz) in halo for x, y, z in turned[s, turns]):
+            continue
+        new = {place(p): turn_state(states[p], turns) for p in moved}
+        blocks = dict(fixed)
+        blocks.update(new)
+        box = (Pos(*(min(p[i] for p in blocks) - 1 for i in range(3))),
+               Pos(*(max(p[i] for p in blocks) + 1 for i in range(3))))
+        for a, inner, b in attached:
+            ea, sa = (place(a), place(inner[0])) if a in part else (a, inner[0])
+            eb, sb = (place(b), place(inner[-1])) if b in part else (b, inner[-1])
+            path = _dust_path(blocks, sa, sb, ea, eb, max(len(inner) + LINE_SLACK, LINE_MAX), box)
+            if path is None:
+                break
+            for w in path:
+                blocks[w] = _DUST_STATE
+                if (w + DOWN) not in blocks:
+                    blocks[w + DOWN] = _FLOOR_STATE
+        else:
+            blo = Pos(*(min(p[i] for p in blocks) for i in range(3)))
+            bhi = Pos(*(max(p[i] for p in blocks) for i in range(3)))
+            if _box_volume(blo, bhi) >= volume:
+                continue
+            g = Grid(tuple(h - l + 1 for h, l in zip(bhi, blo)), c.grid.meta)
+            for p, st in blocks.items():
+                g[p - blo] = st
+            for p, be in c.grid.block_entities.items():
+                if p in moved:
+                    g.block_entities[place(p) - blo] = be
+                elif p in fixed:
+                    g.block_entities[p - blo] = be
+
+            def port(p: Pos) -> Pos:
+                return (place(p) if p in moved else p) - blo
+
+            what = (f"Baustein bei {min(part)} ({len(part)} Blöcke)"
+                    + (f" um {90 * turns}° gedreht und" if turns else "")
+                    + f" nach {lo} versetzt, {len(attached)} Leitungen neu verlegt")
+            cand = replace(c, grid=g, inputs=[port(p) for p in c.inputs], outputs=[port(p) for p in c.outputs])
+            pool.append(((cand.volume, cand.block_count, len(pool)), what, cand))
+            if len(pool) >= RELOCATE_POOL:
+                break
+    pool.sort(key=lambda x: x[0])
+    for _, what, cand in pool:
+        yield what, cand
 
 
 def normalize(c: Candidate, max_ticks: int = 200) -> Candidate:
@@ -413,7 +652,7 @@ def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
     deadline = None if time_limit is None else time.perf_counter() + time_limit
     log: list[str] = []
 
-    tried = {"Ebenen": 0, "Verschiebungen": 0, "Leitungen": 0, "Einzelblöcke": 0}
+    tried = {"Bausteine": 0, "Ebenen": 0, "Verschiebungen": 0, "Leitungen": 0, "Einzelblöcke": 0}
 
     def works(cand: Candidate, kind: str | None = None) -> bool:
         if deadline is not None and time.perf_counter() > deadline:
@@ -480,6 +719,29 @@ def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
             dead.add((part, u))
         return False
 
+    placed: list = [None, []]  # the grid that relocations were searched for, and what came out
+
+    def relocate(first: bool = False) -> bool:
+        """first: only placements smaller than any single shift of a part would give (shifts may join the
+        building blocks, so a large rearrangement goes first when it promises more)."""
+        tries = 0
+        below = None
+        if placed[0] is not current.grid:  # the same design is not searched twice
+            placed[:] = [current.grid, list(relocations(current))]
+        for what, cand in placed[1]:
+            if first and below is None:
+                below = min((m[0][1] for m in _shift_list(current)), default=current.volume + 1)
+            if budget[0] <= 0 or tries >= RELOCATE_TRIES or (first and cand.volume >= below):
+                return False
+            key = ("place", frozenset(cand.grid.items()))
+            if key in failed:
+                continue
+            tries += 1
+            if attempt("Bausteine", key, lambda: normalize(cand)):
+                log.append(what)
+                return True
+        return False
+
     def reroutes() -> bool:
         for a, inner, b in lines(current):
             if budget[0] <= 0:
@@ -512,8 +774,13 @@ def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
         improved = False
         structural = True
         while structural and budget[0] > 0:
-            structural = cuts()
+            structural = False
+            while budget[0] > 0 and relocate(first=True):
+                structural = True
+            structural |= cuts()
             while budget[0] > 0 and moves():
+                structural = True
+            while budget[0] > 0 and relocate():
                 structural = True
             improved |= structural
         while budget[0] > 0 and reroutes():

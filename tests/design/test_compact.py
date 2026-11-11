@@ -67,7 +67,7 @@ def test_compact_straightens_a_detour():
     spec = from_functions(["a"], {"y": "a"})
     small, log = compact(detour_buffer(), spec)
     assert evaluate(small, spec).ok
-    assert small.grid.size.z == 1, (small.grid.size, log)
+    assert small.volume <= 4 * 2 * 1, (small.grid.size, log)  # as small as the straight line (or a turned part)
 
 
 def two_inverters() -> Candidate:
@@ -99,3 +99,53 @@ def test_compact_moves_parts_together():
     small, log = compact(c, spec)
     assert evaluate(small, spec).ok
     assert small.volume < c.volume and any("verschoben" in s for s in log), log
+
+
+def stair_buffer() -> Candidate:
+    """Lever - dust - a staircase of dust up four blocks - dust - lamp: the lamp sits high above and far from
+    the lever. Shifting half-spaces does not help (the stair steps collide), moving the lamp part does."""
+    g = Grid((10, 6, 1))
+    g[0, 0, 0] = "stone"
+    g[0, 1, 0] = "lever[face=floor,facing=east,powered=false]"
+    dust = "redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+    for x, y in ((1, 1), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 5), (8, 5)):
+        g[x, y, 0] = dust
+        g[x, y - 1, 0] = "stone"
+    g[9, 5, 0] = "redstone_lamp[lit=false]"
+    return normalize(Candidate("stair", g, [Pos(0, 1, 0)], [Pos(9, 5, 0)]))
+
+
+def test_parts_are_split_at_plain_lines():
+    from redstone.design.compact import parts
+
+    groups, found, _ = parts(stair_buffer())
+    assert len(found) == 1 and len(found[0][1]) == 6, found
+    assert sorted(len(g) for g in groups) == [3, 4]  # lamp, dust and its floor; lever, dust and two floors
+
+
+def test_relocations_are_smaller_and_one_still_works():
+    from redstone.design.compact import relocations
+
+    spec = from_functions(["a"], {"y": "a"})
+    c = stair_buffer()
+    assert evaluate(c, spec).ok
+    found = list(relocations(c))
+    assert found and all(cand.volume < c.volume for _, cand in found)
+    assert [m for m, _ in found] == [m for m, _ in relocations(c)]  # deterministic
+    assert any(evaluate(normalize(cand), spec).ok for _, cand in found[:3])
+
+
+def test_relocations_turn_blocks():
+    """The lamp part placed beside the lever needs a turn when it ends up on another side."""
+    from redstone.design.compact import relocations
+
+    assert any("gedreht" in m for m, _ in relocations(stair_buffer()))
+
+
+def test_compact_moves_a_building_block():
+    spec = from_functions(["a"], {"y": "a"})
+    c = stair_buffer()
+    small, log = compact(c, spec)
+    assert evaluate(small, spec).ok
+    assert any("Baustein" in s for s in log), log
+    assert small.volume <= 10, (small.grid.size, log)
