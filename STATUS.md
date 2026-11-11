@@ -44,6 +44,9 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 94 %** (gew
   Logik werden nicht mehr als Wahrheitstabelle neu entworfen (ein Pulsverlängerer hinter AND erfüllt die
   Tabelle samt Übergängen; vorher kam ein bloßes AND heraus). Fixture
   `tests/fixtures/analysis/gated/t-flip-flop-and-or4.yaml`.
+- M3 (Sonnet-Agent): SVG-Zeitdiagramme. `rsx explain <datei> --svg DIR` schreibt ein SVG pro Eingang und
+  verlinkt es im Markdown (ASCII-Diagramme bleiben); `rsx sim <szenario> --svg DATEI`; Modul
+  `render/svg_timing.py`. Nicht für Pulsantwort und Logik-vor-Baustein-Abschnitte.
 - Teiltabellen: zusätzlich Einzel-Umschaltungen an zufälligen Hebelstellungen (fester Seed, ~600 Läufe,
   `analyze._sampled_dependencies`). Ein AND aus drei in Ruhe ausgeschalteten Hebeln bekommt so eine Tabelle.
   seg7 unverändert (die 15 Ausgänge ohne Tabelle hängen wirklich von mehr als 6 Hebeln ab), 1,7 s.
@@ -253,7 +256,7 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    - Erledigt (Session 3, Ende): Druckplatten als Eingang (Emulation „betreten und sofort verlassen“, `PressurePlateBlock` in `basic.py`, nicht gegen das Spiel validiert, weil der Oracle keine Entities hat); volle Wahrheitstabelle bis 6 Hebel, darüber Teiltabellen je Ausgangsgruppe (`seg7`: NAND über 4 Hebel); höchstens 64 Ausgänge; Gatternamen AND/OR/NAND/NOR für n Eingänge.
    - Teiltabellen sehen Abhängigkeiten aus Einzel- und Paar-Umschaltungen (Session 10) und aus Stichproben
      (Session 11); seltene Kombinationen (AND über viele Hebel) können fehlen.
-   - Erledigt (Session 4): Clock-Erkennung an echten Clocks. Offen: optional SVG-Timing-Diagramm. Geschwindigkeit erledigt (Rust-Kern).
+   - Erledigt (Session 4): Clock-Erkennung an echten Clocks. SVG-Timing-Diagramm erledigt (Session 11). Geschwindigkeit erledigt (Rust-Kern).
    - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet). Genau ginge es nur mit der
      Position des auslösenden Blocks (in 26.3 liefert `neighborChanged` nur die Orientierung) oder mit einem
      Abfragen aller Kolben je Tick in beiden Kernen; für eine Analyse-Notiz bisher nicht lohnend.
