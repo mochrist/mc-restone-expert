@@ -47,7 +47,10 @@ def _matches(spec: Spec, tspec: Spec) -> list[tuple[tuple[int, ...], tuple[int, 
     return found
 
 
-def template_candidates(spec: Spec, templates: list | None = None) -> list[Candidate]:
+def template_candidates(spec: Spec, templates: list | None = None, first_inputs: bool = False) -> list[Candidate]:
+    """Templates that compute the spec, one wiring each; with first_inputs one wiring per template input
+    that can take the spec's first input (a composition drives that input, and not every template input
+    can be driven)."""
     if templates is None:
         from .templates import TEMPLATES as templates
 
@@ -56,18 +59,29 @@ def template_candidates(spec: Spec, templates: list | None = None) -> list[Candi
         matches = _matches(spec, _template_table(t))
         if not matches:
             continue
-        in_perm, out_perm = matches[0]  # one wiring per template is enough; the layout is the same
-        base = t.build()
-        wiring = ", ".join(f"{s}→{t.inputs[in_perm[i]]}" for i, s in enumerate(spec.inputs))
-        out.append(replace(
-            base,
-            inputs=[base.inputs[in_perm[i]] for i in range(len(spec.inputs))],
-            outputs=[base.outputs[out_perm[j]] for j in range(len(spec.outputs))],
-            tags=set(base.tags) | set(t.tags),
-            description=base.description or t.description,
-            origin=f"template:{t.name} ({wiring})" if len(spec.inputs) > 1 else f"template:{t.name}",
-        ))
+        if first_inputs:
+            firsts = {}
+            for m in matches:
+                firsts.setdefault(m[0][0], m)
+            chosen = list(firsts.values())
+        else:
+            chosen = matches[:1]  # one wiring per template is enough; the layout is the same
+        for in_perm, out_perm in chosen:
+            out.append(_wired(t, spec, in_perm, out_perm))
     return out
+
+
+def _wired(t, spec: Spec, in_perm, out_perm) -> Candidate:
+    base = t.build()
+    wiring = ", ".join(f"{s}→{t.inputs[in_perm[i]]}" for i, s in enumerate(spec.inputs))
+    return replace(
+        base,
+        inputs=[base.inputs[in_perm[i]] for i in range(len(spec.inputs))],
+        outputs=[base.outputs[out_perm[j]] for j in range(len(spec.outputs))],
+        tags=set(base.tags) | set(t.tags),
+        description=base.description or t.description,
+        origin=f"template:{t.name} ({wiring})" if len(spec.inputs) > 1 else f"template:{t.name}",
+    )
 
 
 def seq_candidates(spec, templates: list | None = None) -> list[Candidate]:
@@ -261,9 +275,9 @@ def redesign(spec: Spec, constraints: Constraints | None = None,
         synthesized = pla(spec) if synthesize else None
         generated = template_candidates(spec, templates)
         if synthesize:
-            from .decompose import decomposed, parallel
+            from .decompose import decomposed, parallel, shared
 
-            composed = decomposed(spec, log=log) + parallel(spec, log=log)
+            composed = decomposed(spec, log=log) + shared(spec, log=log) + parallel(spec, log=log)
             generated += composed
     to_compact = ([synthesized] if synthesized is not None else []) + list(extra or [])
     candidates = generated + to_compact

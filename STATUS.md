@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-11, Session 10. Geschätzter Gesamtfortschritt: **ca. 91 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-11, Session 10. Geschätzter Gesamtfortschritt: **ca. 92 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
@@ -8,13 +8,27 @@ Stand: 2026-11-11, Session 10. Geschätzter Gesamtfortschritt: **ca. 91 %** (gew
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
 | M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 105 Golden Traces tick-genau überein; Truhen, Crafter neu |
 | M3 Analyse + Erklärung | 20 % | ~90 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar-Abhängigkeiten), Pulsantwort, RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~75 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
+| M4 Redesign | 25 % | ~80 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
 ## Verlauf
 
 ### Session 10 (2026-11-11): Übergabe aus Session 9 abgearbeitet (Opus-Hauptsession, 1 Sonnet-Agent)
 
+- M4 (dritter Teil der Session): Zerlegung mit gemeinsamem Teil mehrerer Ausgänge (`decompose.shared_splits`,
+  `shared`): G berechnet g und die Ausgänge, die nur von der gebundenen Menge abhängen, H die übrigen aus g und
+  den freien Eingängen (Mehrausgangs-Zerlegungstabelle mit höchstens zwei Spalten). Addierer: 2 Bit 151 statt
+  562 Blöcke, 3 Bit 274 statt 2438, 4 Bit (8 Eingänge, vorher unmöglich) 392 Blöcke, 36 gt, ~140 s.
+  - Angetriebene Teile (`_best(..., driven=True)`): alle Belegungen des ersten Eingangs einer Vorlage
+    (`template_candidates(first_inputs=True)`), die per `drivable_first` (Puffer `buffer-dust` davor)
+    ansteuerbaren zuerst. Teile behalten zusätzlich den Entwurf mit den wenigsten Blöcken (vorher nur Volumen).
+  - `compose.chains`: findet die normale Suche nichts, Leitungen, die die Teile nur nicht berühren
+    (`connect(tight=True)`, `_touches`); nötig für die eingeschlossenen Lampen des Volladdierers.
+  - Übergangsprüfung: Abstand zwischen Hebelwechseln mindestens doppelte Verzögerung + 12 gt (lange Ketten).
+  - Szenarien `cmp-adder2`, `cmp-adder3` (Schritt 30/40 gt je nach Verzögerung), neu aufgenommen `cmp-xor4`
+    (jetzt drei Repeater-XOR, 10×3×9) und `cmp-drivable-pla`; alle im Spiel identisch.
+  - Zufällige zerlegbare Funktionen (5–8 Eingänge, |S| = 2–4) werden alle gelöst, meist deutlich kleiner als das PLA.
+  - Test-Option `--slow` (Marker `slow`): der Neuentwurf von adder3 (~50 s) läuft nur damit.
 - M3 (zweiter Teil der Session):
   - Teiltabellen (mehr als 6 Hebel) nutzen jetzt auch Paar-Umschaltungen ab dem gespeicherten Hebelzustand
     (`analyze._pair_dependencies`, bis 20 Hebel, 1 + n + n(n-1)/2 Läufe). Ein AND aus zwei in Ruhe ausgeschalteten
@@ -177,7 +191,7 @@ Stand: 2026-11-11, Session 10. Geschätzter Gesamtfortschritt: **ca. 91 %** (gew
 ## Befehle
 
 ```
-uv run pytest -q [--sim-core python|rust]         # ~1230 Tests, alle grün (Rust ~45 s, Python ~5 min)
+uv run pytest -q [--sim-core python|rust] [--slow] # ~1250 Tests, alle grün (Rust ~75 s, Python ~6 min)
 uv sync                                            # baut auch den Rust-Kern; nach Rust-Änderungen:
 uv pip install --reinstall-package rsx-core ./rust/rsx-core
 uv run rsx --sim-core python|rust <befehl>         # Kern wählen (Standard: Rust, wenn gebaut)
@@ -214,7 +228,7 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    (`design/compose.py: _route`) beschleunigen, Lauf-Schleife samt Aufzeichnung (`Circuit.run`) nach Rust.
 3. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
    - Lücken der Vorlagen: Monoflop 3 gt nur mit Knopf (Hebel unmöglich, siehe Session 8); Hebel-Comparator-Monoflop nicht für jede gerade Länge; XOR-Vorlagen groß (28–33 Blöcke).
-   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); 8 von 15 zufälligen 5-Eingänge-Funktionen bleiben ungelöst (Zerlegung nur g(3)+h(3); andere Aufteilungen, tiefere Ketten prüfen). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); offen sind Bausteine drehen/umsetzen. Geteilte Teilfunktionen zwischen Ausgängen werden nicht genutzt (Volladdierer per `parallel` nicht gefunden; Vorlage gewinnt).
+   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); Nicht einfach zerlegbare Funktionen über 6 Eingängen bleiben ungelöst (kein PLA; nur einfache disjunkte Zerlegung). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); offen sind Bausteine drehen/umsetzen. Geteilte Teilfunktionen: nur eine gemeinsame Leitung g je Zerlegung (Session 10); mehrere gemeinsame Signale (z. B. Carry-Lookahead) nicht.
    - Verhalten aus Bestandsschaltungen nur bis 3 Eingänge; Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
    - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8) und Set-only-Speicher (Session 10), nicht vor Pulsverlängerern.
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.

@@ -36,5 +36,6 @@ rsx = "redstone.cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["oracle: needs a running Fabric oracle server", "external: needs fetched external fixtures"]
+markers = ["oracle: needs a running Fabric oracle server", "external: needs fetched external fixtures",
+           "slow: long design searches, skipped unless --slow"]
 filterwarnings = ["ignore::redstone.io.DataVersionWarning"]

@@ -109,13 +109,27 @@ def test_no_split_for_majority():
     assert splits(from_functions(list("abc"), {"y": "(a and b) or (a and c) or (b and c)"})) == []
 
 
+SLOW_TABLES = {"adder3"}  # design search of about a minute
+
+
+def _slow(paths):
+    return [pytest.param(p, marks=pytest.mark.slow) if p.stem in SLOW_TABLES else p for p in paths]
+
+
 @pytest.mark.parametrize("path", gen.table_examples(), ids=lambda p: p.stem)
-def test_decomposed_scenario_and_golden_up_to_date(path):
+def test_decomposed_golden_shows_the_truth_table(path):
+    stored = yaml.safe_load((ROOT / "scenarios" / f"cmp-{path.stem}.yaml").read_text(encoding="utf-8"))
+    ticks = [i["tick"] for i in stored["inputs"]]
+    golden = ROOT / "tests" / "golden" / f"cmp-{path.stem}.trace.json"
+    # the real game shows the truth table
+    assert gen.check_table_trace(path, Trace.load(golden), step=ticks[1] - ticks[0]) == []
+
+
+@pytest.mark.parametrize("path", _slow(gen.table_examples()), ids=lambda p: p.stem)
+def test_decomposed_scenario_up_to_date(path):
     scen = ROOT / "scenarios" / f"cmp-{path.stem}.yaml"
     stored = yaml.safe_load(scen.read_text(encoding="utf-8"))
     assert stored == yaml.safe_load(yaml.safe_dump(gen.table_scenario_for(path), allow_unicode=True))
-    golden = ROOT / "tests" / "golden" / f"cmp-{path.stem}.trace.json"
-    assert gen.check_table_trace(path, Trace.load(golden)) == []  # the real game shows the truth table
 
 
 def test_spec_of_existing_outputs_option():
@@ -149,3 +163,28 @@ def test_spec_of_existing_outputs_subset_of_truth_table():
     assert spec.outputs == [name]
     assert all(v == (full.table[c][1],) for c, v in spec.table.items())
     assert evaluate(original, spec).ok
+
+
+def test_shared_split_of_an_adder_is_the_carry():
+    """2-bit adder: g = carry of bit 0 is computed with s0 from (a0, b0); s1 and c come from (g, a1, b1)."""
+    from redstone.design.decompose import shared_splits
+    from redstone.design.spec import load
+
+    spec = load(ROOT / "examples/specs/composed/adder2.yaml")
+    sp = shared_splits(spec)[0]
+    names = spec.inputs
+    assert [names[i] for i in sp.bound] == ["a0", "b0"] and [spec.outputs[j] for j in sp.local] == ["s0"]
+    assert [spec.outputs[j] for j in sp.rest] == ["s1", "c"]
+    assert all(sp.g.table[(a, b)] == (a and b, a != b) for a in (False, True) for b in (False, True))
+
+
+def test_enclosed_output_connects_with_tight_lines():
+    """The full adder's lamps sit between its comparators: only the tight fallback of `chains` reaches them."""
+    import itertools
+
+    from redstone.design.compose import chains, connect, layouts
+    from redstone.design.templates import TEMPLATES
+
+    fa = next(t for t in TEMPLATES if t.name == "fulladder-comparator").build()
+    assert all(connect(fa, 1, fa, 0, lay) is None for lay in layouts())  # output 1: the carry
+    assert len(list(itertools.islice(chains(fa, 1, fa, 0), 3))) == 3

@@ -48,20 +48,21 @@ def pla_scenario(spec_path: Path) -> dict:
 
 
 def candidate_scenario(c, name: str, in_names: list[str], out_names: list[str], text: str,
-                       groups: list[list[int]] | None = None) -> dict:
-    """groups: levers switched together per step; default all combinations in Gray code."""
+                       groups: list[list[int]] | None = None, step: int = STEP) -> dict:
+    """groups: levers switched together per step; default all combinations in Gray code. step: ticks
+    between the steps (more than the design's delay)."""
     blocks = [[*p, str(s).removeprefix("minecraft:")] for p, s in sorted(c.grid.items())]
     tick = 2
     inputs = []
     for group in groups if groups is not None else [[i] for i in gray_sequence(len(c.inputs))]:
         inputs += [{"tick": tick, "pos": list(c.inputs[i]), "action": "use"} for i in group]
-        tick += STEP
+        tick += step
     probes = {n: list(p) for n, p in zip(in_names, c.inputs)}
     probes |= {n: list(p) for n, p in zip(out_names, c.outputs)}
     d = {
         "name": name,
         "description": f"{text} " + ("Alle Hebel-Kombinationen im Gray-Code" if groups is None else
-                                     "Jede verlangte Hebel-Kombination an und wieder aus") + f", je {STEP} gt Abstand.",
+                                     "Jede verlangte Hebel-Kombination an und wieder aus") + f", je {step} gt Abstand.",
         "build": {"size": list(c.grid.size), "blocks": blocks},
         "ticks": tick,
         "inputs": inputs,

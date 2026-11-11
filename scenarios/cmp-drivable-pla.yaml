@@ -1,6 +1,6 @@
 name: cmp-drivable-pla
 description: 'Zerlegung für examples/specs/composed/drivable-pla.yaml: pla → pla-ansteuerbar-kompakt (kompaktiert aus zerlegt:
-  g(a, b, c), h(g, d, e); komponiert: synthese:pla → synthese:pla). Alle Hebel-Kombinationen im Gray-Code, je 20 gt Abstand.'
+  g(a, b, c), h(g, d, e); komponiert: synthese:pla → synthese:pla). Alle Hebel-Kombinationen im Gray-Code, je 30 gt Abstand.'
 build:
   size: [10, 6, 11]
   blocks:
@@ -122,102 +122,102 @@ build:
   - [9, 4, 3, 'redstone_wall_torch[facing=south,lit=true]']
   - [9, 5, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
   - [9, 5, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-ticks: 642
+ticks: 962
 inputs:
 - tick: 2
   pos: [8, 5, 0]
   action: use
-- tick: 22
+- tick: 32
   pos: [6, 5, 2]
-  action: use
-- tick: 42
-  pos: [8, 5, 0]
   action: use
 - tick: 62
-  pos: [6, 5, 4]
-  action: use
-- tick: 82
   pos: [8, 5, 0]
   action: use
-- tick: 102
-  pos: [6, 5, 2]
+- tick: 92
+  pos: [6, 5, 4]
   action: use
 - tick: 122
   pos: [8, 5, 0]
   action: use
-- tick: 142
-  pos: [4, 3, 6]
-  action: use
-- tick: 162
-  pos: [8, 5, 0]
-  action: use
-- tick: 182
+- tick: 152
   pos: [6, 5, 2]
   action: use
-- tick: 202
+- tick: 182
   pos: [8, 5, 0]
   action: use
-- tick: 222
-  pos: [6, 5, 4]
+- tick: 212
+  pos: [4, 3, 6]
   action: use
 - tick: 242
   pos: [8, 5, 0]
   action: use
-- tick: 262
+- tick: 272
   pos: [6, 5, 2]
-  action: use
-- tick: 282
-  pos: [8, 5, 0]
   action: use
 - tick: 302
-  pos: [2, 3, 6]
-  action: use
-- tick: 322
   pos: [8, 5, 0]
   action: use
-- tick: 342
-  pos: [6, 5, 2]
+- tick: 332
+  pos: [6, 5, 4]
   action: use
 - tick: 362
   pos: [8, 5, 0]
   action: use
-- tick: 382
-  pos: [6, 5, 4]
-  action: use
-- tick: 402
-  pos: [8, 5, 0]
-  action: use
-- tick: 422
+- tick: 392
   pos: [6, 5, 2]
   action: use
-- tick: 442
+- tick: 422
   pos: [8, 5, 0]
   action: use
-- tick: 462
-  pos: [4, 3, 6]
+- tick: 452
+  pos: [2, 3, 6]
   action: use
 - tick: 482
   pos: [8, 5, 0]
   action: use
-- tick: 502
+- tick: 512
   pos: [6, 5, 2]
-  action: use
-- tick: 522
-  pos: [8, 5, 0]
   action: use
 - tick: 542
-  pos: [6, 5, 4]
-  action: use
-- tick: 562
   pos: [8, 5, 0]
   action: use
-- tick: 582
-  pos: [6, 5, 2]
+- tick: 572
+  pos: [6, 5, 4]
   action: use
 - tick: 602
   pos: [8, 5, 0]
   action: use
-- tick: 622
+- tick: 632
+  pos: [6, 5, 2]
+  action: use
+- tick: 662
+  pos: [8, 5, 0]
+  action: use
+- tick: 692
+  pos: [4, 3, 6]
+  action: use
+- tick: 722
+  pos: [8, 5, 0]
+  action: use
+- tick: 752
+  pos: [6, 5, 2]
+  action: use
+- tick: 782
+  pos: [8, 5, 0]
+  action: use
+- tick: 812
+  pos: [6, 5, 4]
+  action: use
+- tick: 842
+  pos: [8, 5, 0]
+  action: use
+- tick: 872
+  pos: [6, 5, 2]
+  action: use
+- tick: 902
+  pos: [8, 5, 0]
+  action: use
+- tick: 932
   pos: [2, 3, 6]
   action: use
 probes:

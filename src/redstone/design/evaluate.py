@@ -19,7 +19,7 @@ from .spec import Spec
 
 MAX_TICKS = 200
 QUIET = 12
-GAP = 40  # ticks between successive lever changes in a transition run (more than any settle time we accept)
+GAP = 40  # minimum ticks between successive lever changes in a transition run (see _check_transitions)
 
 # Blocks that form the interface of a candidate; not subject to the allowed/forbidden block lists.
 INTERFACE = {"lever", "redstone_lamp"}
@@ -178,6 +178,8 @@ def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: E
     the settled outputs after every change."""
     n = len(spec.inputs)
     stored = _stored(candidate)
+    # slow designs (long chains of parts) get more time per change: twice their delay from a fresh world
+    gap = max(GAP, 2 * max(delays, default=0) + QUIET)
     for combo in spec.combos():
         actions = [(1, p, "use") for p, on, st in zip(candidate.inputs, combo, stored) if on != st]
         phases = []  # (start tick, expected combination, label)
@@ -187,7 +189,7 @@ def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: E
             if flipped not in spec.table:
                 continue  # a combination that does not matter (partial spec)
             for want in (flipped, combo):
-                t += GAP
+                t += gap
                 actions.append((t, candidate.inputs[i], "use"))
                 phases.append((t, want, spec.inputs[i]))
         world = circuit.new_world()
@@ -204,7 +206,7 @@ def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: E
             last = _last_change(rec, candidate, start, end)
             if last is not None:
                 delays.append(last)
-                if end != rec.ticks and last > GAP - QUIET:
+                if end != rec.ticks and last > gap - QUIET:
                     ev.errors.append(f"Übergang ab {_fmt(spec.inputs, combo)}, {name} umgelegt: "
                                      f"Ausgang kommt erst nach {last} gt zur Ruhe")
                     return

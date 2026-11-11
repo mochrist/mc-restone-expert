@@ -149,18 +149,28 @@ def _template_gen():
     return mod
 
 
+@cache
+def table_step(path: Path) -> int:
+    """Ticks between lever changes: the usual step, more for slow designs (long chains of parts)."""
+    from redstone.design.evaluate import evaluate_any
+    from redstone.design.spec import load
+
+    delay = evaluate_any(table_design(path), load(path), quick=True).max_delay or 0
+    return max(_template_gen().STEP, 10 * ((delay + 19) // 10))
+
+
 def table_scenario_for(path: Path) -> dict:
     from redstone.design.spec import load
 
     spec, c = load(path), table_design(path)
     return _template_gen().candidate_scenario(
         c, f"cmp-{path.stem}", spec.inputs, spec.outputs,
-        f"Zerlegung für examples/specs/composed/{path.name}: {c.name} ({c.origin}).")
+        f"Zerlegung für examples/specs/composed/{path.name}: {c.name} ({c.origin}).", step=table_step(path))
 
 
-def check_table_trace(path: Path, trace) -> list[str]:
+def check_table_trace(path: Path, trace, step: int | None = None) -> list[str]:
     """German errors if the outputs in a trace of table_scenario_for(path) differ from the truth table
-    (read just before each next lever toggle)."""
+    (read just before each next lever toggle). step: ticks between toggles (default: `table_step`)."""
     from redstone.analysis.experiment import is_on
     from redstone.design.spec import load
 
@@ -179,7 +189,7 @@ def check_table_trace(path: Path, trace) -> list[str]:
 
     for i in tgen.gray_sequence(len(spec.inputs)):
         state[i] = not state[i]
-        tick += tgen.STEP
+        tick += step or table_step(path)
         want = spec.table[tuple(state)]
         got = tuple(value(o, tick - 1) for o in spec.outputs)
         if got != want:

@@ -1,6 +1,6 @@
 name: cmp-and5
 description: 'Zerlegung für examples/specs/composed/and5.yaml: and3-torch → and3-torch-kompakt (kompaktiert aus zerlegt: g(a,
-  b, c), h(g, d, e); komponiert: template:and3-torch (a→a, b→b, c→c) → template:and3-torch (a→a, b→b, c→c)). Alle Hebel-Kombinationen
+  b, c), h(g, d, e); komponiert: template:and3-torch (a→a, b→b, c→c) → template:and3-torch (g→a, d→b, e→c)). Alle Hebel-Kombinationen
   im Gray-Code, je 20 gt Abstand.'
 build:
   size: [7, 4, 5]

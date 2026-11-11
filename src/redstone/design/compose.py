@@ -112,8 +112,24 @@ def rotate(c: Candidate, turns: int) -> Candidate | None:
     return replace(c, grid=g, inputs=[pos(p) for p in c.inputs], outputs=[pos(p) for p in c.outputs])
 
 
-def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layout: Layout) -> Candidate | None:
+_FACES = [Pos(1, 0, 0), Pos(-1, 0, 0), Pos(0, 1, 0), Pos(0, -1, 0), Pos(0, 0, 1), Pos(0, 0, -1)]
+_STEPS = [Pos(dx, dy, dz) for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)) for dy in (1, -1)]
+
+
+def _touches(p: Pos, states: dict, skip: set) -> bool:
+    """A block beside p (six faces), or dust one step up or down next to p (route dust would join it);
+    positions in `skip` do not count. The looser test of `connect(tight=True)`."""
+    if any(p + f in states and p + f not in skip for f in _FACES):
+        return True
+    return any(p + s in states and p + s not in skip and states[p + s].id == "redstone_wire" for s in _STEPS)
+
+
+def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layout: Layout,
+            tight: bool = False) -> Candidate | None:
     """src output `out_index` drives dst input `in_index`. None if the layout does not fit.
+
+    The line keeps one block of air to both parts, also diagonally. With tight=True it only must not touch
+    them (`_touches`): that reaches outputs enclosed by their own part, e.g. the full adder's lamps.
 
     The result has the inputs of src followed by the other inputs of dst, and the outputs of dst followed by
     the other outputs of src."""
@@ -163,7 +179,12 @@ def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layou
             cells[floor] = STONE
         # route cells (not the joint next to the output) must stay clear of both parts
         joint = n == 0 and layout.output_mode == "stone"
-        if not joint and (_near(c, a_body - {floor}) or _near(c, b_body)):
+        if joint:
+            continue
+        if tight:
+            if _touches(c, a, {q, floor}) or _touches(c, b, {p, p + DOWN}):
+                return None
+        elif _near(c, a_body - {floor}) or _near(c, b_body):
             return None
     merged: dict[Pos, object] = dict(a)
     if layout.output_mode == "stone":
@@ -469,11 +490,19 @@ def chains(src: Candidate, out_index: int, dst: Candidate, in_index: int, max_ga
     """Every fitting composition (dst turned in all four ways), shortest line first. A generator, so the
     caller can stop at the first one that works."""
     turned = [t for t in (rotate(dst, k) for k in range(4)) if t is not None]
+    any_found = False
     for lay in layouts(max_gap):
         for t in turned:
             c = connect(src, out_index, t, in_index, lay)
             if c is not None:
+                any_found = True
                 yield lay, c
+    if not any_found:  # the output may be enclosed by its own part: lines that only must not touch it
+        for lay in layouts(max_gap):
+            for t in turned:
+                c = connect(src, out_index, t, in_index, lay, tight=True)
+                if c is not None:
+                    yield lay, c
     found = []
     for k, t in enumerate(turned):
         for side in HORIZONTAL:

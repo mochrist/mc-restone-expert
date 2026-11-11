@@ -83,12 +83,30 @@ def _values(spec: Spec) -> tuple:
 _BEST: dict[tuple, list[Candidate]] = {}  # parts already designed in this process (by table and depth)
 
 
-def _best(spec: Spec, depth: int) -> list[Candidate]:
-    """The best few working designs of a part: templates, PLA, or a further decomposition."""
-    key = (len(spec.inputs), _values(spec), depth)
+def _best(spec: Spec, depth: int, driven: bool = False) -> list[Candidate]:
+    """The best few working designs of a part: templates, PLA, or a further decomposition. driven: the
+    first input will take a line from another part (`drivable_first`)."""
+    key = (len(spec.inputs), _values(spec), depth, driven)
     if key not in _BEST:
-        _BEST[key] = _design_part(spec, depth)
+        _BEST[key] = _design_part(spec, depth, driven)
     return [replace(c, inputs=list(c.inputs)) for c in _BEST[key]]
+
+
+def drivable_first(c: Candidate, spec: Spec) -> bool:
+    """Whether another part can drive the first input of c: a buffer (lever, dust, lamp) in front of it,
+    connected by `compose.chains`, still computes the spec. Not every template input can be driven, e.g. the
+    lever of a full adder's b and c inputs also feeds blocks that a line would power the wrong way."""
+    from .compose import chains
+    from .evaluate import evaluate_any
+    from .templates import TEMPLATES
+
+    buffer = next(t for t in TEMPLATES if t.name == "buffer-dust").build()  # buffer-direct never connects
+    for k, (_, cand) in enumerate(chains(buffer, 0, c, 0)):
+        if k >= TRIES:
+            break
+        if evaluate_any(cand, spec, quick=True).correct:
+            return True
+    return False
 
 
 _DRIVABLE: dict[tuple, list[Candidate]] = {}
@@ -106,26 +124,36 @@ def _drivable_pla(spec: Spec) -> list[Candidate]:
     return [replace(c, inputs=list(c.inputs)) for c in _DRIVABLE[key]]
 
 
-def _design_part(spec: Spec, depth: int) -> list[Candidate]:
+def _design_part(spec: Spec, depth: int, driven: bool = False) -> list[Candidate]:
+    """The PARTS best designs by rank (volume first) plus the one with the fewest blocks; for a driven part,
+    designs whose first input can be driven first."""
     from .evaluate import Evaluation, evaluate_any
     from .search import template_candidates
     from .synth import pla
 
-    cands = template_candidates(spec)
+    cands = template_candidates(spec, first_inputs=driven)
     p = pla(spec)
     if p is not None:
         cands.append(p)
     if depth > 0:  # also when a template or the PLA works: a chain of small gates is often smaller
-        cands += decomposed(spec, depth - 1)
+        cands += decomposed(spec, depth - 1, driven=driven) + shared(spec, depth - 1, driven=driven)
     # the quick check (every combination, no transitions) is enough for a part: the whole design is
     # checked in full later
     evs = [e for e in (evaluate_any(c, spec, quick=True) for c in cands) if e.ok]
-    evs.sort(key=Evaluation.rank_key)
-    return [e.candidate for e in evs[:PARTS]]
+    # driven parts: those whose first input passed `drivable_first` come first (a failed test only moves a
+    # part back: the real composition may still work)
+    blocked = {id(e): driven and not drivable_first(e.candidate, spec) for e in evs}
+    evs.sort(key=lambda e: (blocked[id(e)], Evaluation.rank_key(e)))
+    keep = evs[:PARTS]
+    fewest = min(evs, key=lambda e: (blocked[id(e)], e.candidate.block_count), default=None)
+    if fewest is not None and fewest not in keep:
+        keep.append(fewest)
+    return [e.candidate for e in keep]
 
 
-def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None) -> list[Candidate]:
-    """Working candidates for a single-output spec built from decompositions; inputs in spec order."""
+def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None, driven: bool = False) -> list[Candidate]:
+    """Working candidates for a single-output spec built from decompositions; inputs in spec order. driven:
+    the first input will be driven by another part (g gets driven parts when it takes that input)."""
     from .compose import chains
     from .evaluate import evaluate_any
 
@@ -133,7 +161,7 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None) -> list
         return []
     out = []
     for sp in splits(spec):
-        gs, hs = _best(sp.g, depth), _best(sp.h, depth) + _drivable_pla(sp.h)
+        gs, hs = _best(sp.g, depth, driven and 0 in sp.bound), _best(sp.h, depth, True) + _drivable_pla(sp.h)
         found = None
         for gc, hc in itertools.product(gs, hs):
             tries = 0
@@ -157,6 +185,124 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None) -> list
             from .report import COMPOSE_PREFIX
 
             log.append(f"{COMPOSE_PREFIX}Zerlegung {sp.describe(spec.inputs)}: "
+                       + (f"{found.name}, {found.block_count} Blöcke" if found
+                          else "keine funktionierende Verbindung gefunden"))
+        if found is not None:
+            out.append(found)
+    return out
+
+
+# ---------------------------------------------------------------------- shared part of several outputs
+@dataclass(frozen=True)
+class SharedSplit:
+    """Several outputs through one g: G computes g and the outputs that depend on the bound set only (`local`),
+    H computes the other outputs (`rest`) from g and the free inputs. A ripple-carry adder: g is the carry."""
+    bound: tuple[int, ...]
+    free: tuple[int, ...]
+    local: tuple[int, ...]  # spec output indices computed by G
+    rest: tuple[int, ...]  # spec output indices computed by H
+    g: Spec  # inputs = the bound inputs, outputs = ["g"] + local
+    h: Spec  # inputs = ["g"] + the free inputs, outputs = rest
+
+    def describe(self, spec: Spec) -> str:
+        names, outs = spec.inputs, spec.outputs
+        local = "".join(f", {outs[j]}" for j in self.local)
+        return (f"g{local} aus ({', '.join(names[i] for i in self.bound)}), "
+                f"{', '.join(outs[j] for j in self.rest)} aus (g, {', '.join(names[i] for i in self.free)})")
+
+
+MAX_SHARED_SPLITS = 4
+
+
+def shared_splits(spec: Spec) -> list[SharedSplit]:
+    """Disjoint decompositions of a multi-output spec with one shared g: for a bound set S, the outputs that
+    depend on the free inputs must together see at most two distinct columns over the assignments of S
+    (the multi-output decomposition chart); the outputs that do not are computed next to g. Bound sets that
+    leave many outputs in G and few inputs for H come first."""
+    n, m = len(spec.inputs), len(spec.outputs)
+    if m < 2 or n < 3 or spec.partial:
+        return []
+    supports = [set(support(spec, j)) for j in range(m)]
+    found = []
+    for size in range(2, n):
+        for bound in itertools.combinations(range(n), size):
+            free = tuple(i for i in range(n) if i not in bound)
+            local = tuple(j for j in range(m) if supports[j] and supports[j] <= set(bound))
+            rest = tuple(j for j in range(m) if j not in local)
+            if not rest or any(not supports[j] for j in rest):
+                continue
+            columns: dict[tuple[bool, ...], tuple] = {}
+            for sb in itertools.product([False, True], repeat=size):
+                col = []
+                for fb in itertools.product([False, True], repeat=len(free)):
+                    x = [False] * n
+                    for i, v in zip(bound, sb):
+                        x[i] = v
+                    for i, v in zip(free, fb):
+                        x[i] = v
+                    row = spec.table[tuple(x)]
+                    col.append(tuple(row[j] for j in rest))
+                columns[sb] = tuple(col)
+            distinct = set(columns.values())
+            if len(distinct) != 2:
+                continue
+            zero = columns[(False,) * size]
+            one = next(c for c in distinct if c != zero)
+            g_table = {}
+            for sb in columns:
+                x = [False] * n
+                for i, v in zip(bound, sb):
+                    x[i] = v
+                row = spec.table[tuple(x)]
+                g_table[sb] = (columns[sb] != zero, *(row[j] for j in local))
+            h_table = {}
+            for gv in (False, True):
+                col = one if gv else zero
+                for k, fb in enumerate(itertools.product([False, True], repeat=len(free))):
+                    h_table[(gv, *fb)] = col[k]
+            g = Spec([spec.inputs[i] for i in bound], ["g"] + [spec.outputs[j] for j in local], g_table,
+                     source="Zerlegung")
+            h = Spec(["g"] + [spec.inputs[i] for i in free], [spec.outputs[j] for j in rest], h_table,
+                     source="Zerlegung")
+            found.append((-len(local), len(free), size, SharedSplit(bound, free, local, rest, g, h)))
+    found.sort(key=lambda f: f[:3])
+    return [f[3] for f in found[:MAX_SHARED_SPLITS]]
+
+
+def shared(spec: Spec, depth: int = 3, log: list[str] | None = None, driven: bool = False) -> list[Candidate]:
+    """Working candidates for a multi-output spec built from `shared_splits`: G's output g drives H's first
+    input; G's other outputs stay outputs. Inputs and outputs in spec order."""
+    from .compose import chains
+    from .evaluate import evaluate_any
+
+    out = []
+    for sp in shared_splits(spec):
+        gs, hs = _best(sp.g, depth, driven and 0 in sp.bound), _best(sp.h, depth, True) + _drivable_pla(sp.h)
+        found = None
+        for gc, hc in itertools.product(gs, hs):
+            tries = 0
+            for _, cand in chains(gc, 0, hc, 0):
+                tries += 1
+                if tries > TRIES:
+                    break
+                # composite: inputs bound (G order) + free (H order); outputs rest (H order) + local (G order)
+                ins = [None] * len(spec.inputs)
+                for pos, i in zip(cand.inputs, list(sp.bound) + list(sp.free)):
+                    ins[i] = pos
+                outs = [None] * len(spec.outputs)
+                for pos, j in zip(cand.outputs, list(sp.rest) + list(sp.local)):
+                    outs[j] = pos
+                cand = replace(cand, inputs=ins, outputs=outs, name=f"{gc.name} → {hc.name}",
+                               origin=f"zerlegt: {sp.describe(spec)}; {cand.origin}")
+                if evaluate_any(cand, spec, quick=True).correct:
+                    found = cand
+                    break
+            if found is not None:
+                break
+        if log is not None:
+            from .report import COMPOSE_PREFIX
+
+            log.append(f"{COMPOSE_PREFIX}Zerlegung mit gemeinsamem Teil {sp.describe(spec)}: "
                        + (f"{found.name}, {found.block_count} Blöcke" if found
                           else "keine funktionierende Verbindung gefunden"))
         if found is not None:
