@@ -68,12 +68,42 @@ _CW = {"north": "east", "east": "south", "south": "west", "west": "north"}
 UNROTATABLE = {"rail", "powered_rail", "detector_rail", "activator_rail"}  # shapes not handled
 
 
+def turn_state(st, turns: int):
+    """A block state turned clockwise (seen from above) by `turns` quarter turns: facing, dust sides, axis."""
+    from ..model import BlockState
+
+    turns %= 4
+    if turns == 0:
+        return st
+    props = dict(st.properties)
+    for _ in range(turns):
+        new = {}
+        for k, v in props.items():
+            if k in _CW and st.id == "redstone_wire":
+                new[_CW[k]] = v
+            elif k == "facing" and v in _CW:
+                new[k] = _CW[v]
+            elif k == "axis" and v in ("x", "z"):
+                new[k] = "z" if v == "x" else "x"
+            else:
+                new[k] = v
+        props = new
+    return BlockState.of(st.name, props)
+
+
+def turn_pos(p: Pos, sx: int, sz: int, turns: int) -> Pos:
+    """Where p of a box sx wide (x) and sz deep (z), corner at the origin, lands when the box is turned
+    clockwise by `turns` quarter turns (the turned box again starts at the origin)."""
+    x, z, w, d = p[0], p[2], sx, sz
+    for _ in range(turns % 4):
+        x, z, w, d = d - 1 - z, x, d, w
+    return Pos(x, p[1], z)
+
+
 def rotate(c: Candidate, turns: int) -> Candidate | None:
     """The candidate turned clockwise (seen from above) by `turns` quarter turns; None if a block cannot be
     turned. Directional properties (facing, dust sides, axis) are turned with it."""
     from dataclasses import replace
-
-    from ..model import BlockState
 
     turns %= 4
     if turns == 0:
@@ -83,31 +113,12 @@ def rotate(c: Candidate, turns: int) -> Candidate | None:
     sx, sy, sz = c.grid.size
 
     def pos(p: Pos) -> Pos:
-        x, z, w, d = p.x, p.z, sx, sz
-        for _ in range(turns):
-            x, z, w, d = d - 1 - z, x, d, w
-        return Pos(x, p.y, z)
-
-    def state(st: BlockState) -> BlockState:
-        props = dict(st.properties)
-        for _ in range(turns):
-            new = {}
-            for k, v in props.items():
-                if k in _CW and st.id == "redstone_wire":
-                    new[_CW[k]] = v
-                elif k == "facing" and v in _CW:
-                    new[k] = _CW[v]
-                elif k == "axis" and v in ("x", "z"):
-                    new[k] = "z" if v == "x" else "x"
-                else:
-                    new[k] = v
-            props = new
-        return BlockState.of(st.name, props)
+        return turn_pos(p, sx, sz, turns)
 
     size = (sz, sy, sx) if turns % 2 else (sx, sy, sz)
     g = Grid(size, c.grid.meta)
     for p, st in c.grid.items():
-        g.set(pos(p), state(st))
+        g.set(pos(p), turn_state(st, turns))
     g.block_entities = {pos(p): be for p, be in c.grid.block_entities.items()}
     return replace(c, grid=g, inputs=[pos(p) for p in c.inputs], outputs=[pos(p) for p in c.outputs])
 
