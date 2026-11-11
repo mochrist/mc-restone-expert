@@ -1,4 +1,4 @@
-# Multiplexer, dessen Auswahl die Mehrheit von a, b, c ist (5 Hebel, über der 4-Eingänge-Grenze der Fackel-PLA):
+# Multiplexer, dessen Auswahl die Mehrheit von a, b, c ist (5 Hebel):
 # y = h(g(a, b, c), d, e) mit g = Mehrheit(a, b, c) und h = d, wenn g aus ist, sonst e.
 # h braucht g und nicht g; der Auswahleingang der mux2-Vorlage lässt sich nicht ansteuern, also wird h als
 # PLA mit ansteuerbaren Eingängen gebaut (synth.pla(drivable=True)).

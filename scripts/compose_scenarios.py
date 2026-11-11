@@ -30,6 +30,7 @@ ROOT = Path(__file__).parents[1]
 GAP = 30
 COMPACT = 100  # evaluations for compacting, as `rsx redesign` (no time limit, so the result is reproducible)
 COMPACTED = "kompaktiert aus "
+COMPOSED = ("zerlegt", "komponiert", "nebeneinander")  # origins of composed designs
 
 
 def examples() -> list[Path]:
@@ -43,10 +44,12 @@ def spec_of(path: Path) -> bh.BehaviourSpec:
 
 @cache
 def design(path: Path):
-    best = redesign(spec_of(path), compact_budget=COMPACT)[0]
-    if not best.ok:
-        raise RuntimeError(f"{path.name}: no working design")
-    return best.candidate
+    """The best working composed design, compacted as in `rsx redesign` (the scenarios check compositions in
+    the game, so a plain PLA or template that happens to rank higher is skipped)."""
+    for ev in redesign(spec_of(path), compact_budget=COMPACT):
+        if ev.ok and ev.candidate.origin.removeprefix(COMPACTED).startswith(COMPOSED):
+            return ev.candidate
+    raise RuntimeError(f"{path.name}: no working composed design")
 
 
 def _trial_length(trial: bh.Trial) -> int:
@@ -131,10 +134,10 @@ def table_examples() -> list[Path]:
 def table_design(path: Path):
     from redstone.design.spec import load
 
-    best = redesign(load(path), compact_budget=COMPACT)[0]
-    if not best.ok or not best.candidate.origin.removeprefix(COMPACTED).startswith(("zerlegt", "nebeneinander")):
-        raise RuntimeError(f"{path.name}: no working decomposition")
-    return best.candidate
+    for ev in redesign(load(path), compact_budget=COMPACT):  # the best decomposition, even if a plain PLA ranks higher
+        if ev.ok and ev.candidate.origin.removeprefix(COMPACTED).startswith(("zerlegt", "nebeneinander")):
+            return ev.candidate
+    raise RuntimeError(f"{path.name}: no working decomposition")
 
 
 def _template_gen():

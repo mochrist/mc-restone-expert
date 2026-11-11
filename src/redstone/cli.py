@@ -134,9 +134,14 @@ def _parse_size(text: str) -> tuple[int, int, int]:
     return tuple(parts)
 
 
-def _spec_of_existing(analysis, title: str):
+def _spec_of_existing(analysis, title: str, wanted: str | None = None):
     """Truth-table spec if the circuit is combinational (it meets its own table, transitions included),
-    else the recorded pulse behaviour; clocks become clock specs."""
+    else the recorded pulse behaviour; clocks become clock specs.
+
+    wanted: comma separated output names (out1,out3) or "all"; by default all outputs count for a truth
+    table and only the lamps (if there are any) for recorded behaviour."""
+    from dataclasses import replace
+
     from .design import behaviour as bh
     from .design import spec as specmod
     from .design.candidate import Candidate
@@ -152,13 +157,31 @@ def _spec_of_existing(analysis, title: str):
         spec = bh.clock(c.period, c.on_ticks)
         spec.source = f"Analyse von {title}"
         return spec, cand
+    chosen = None
+    if wanted and wanted != "all":
+        names = [w.strip() for w in wanted.split(",") if w.strip()]
+        by_name = {o.name: o for o in analysis.outputs}
+        unknown = [n for n in names if n not in by_name]
+        if unknown:
+            raise ValueError(f"unbekannte Ausgänge {', '.join(unknown)}; vorhanden: "
+                             + ", ".join(by_name))
+        chosen = [by_name[n] for n in names]
     original = original_candidate(analysis, "Original")
     try:
         spec = specmod.from_analysis(analysis, title)
+        if chosen is not None:
+            idx = [spec.outputs.index(o.name) for o in chosen]
+            spec = specmod.Spec(spec.inputs, [spec.outputs[i] for i in idx],
+                                {c: tuple(v[i] for i in idx) for c, v in spec.table.items()},
+                                spec.max_delay, spec.source, list(spec.notes), spec.care)
+            original = replace(original, outputs=[o.pos for o in chosen])
         if evaluate(original, spec).ok:
             return spec, original
     except ValueError:
         pass
+    partial = _partial_spec(analysis, title, original, chosen)
+    if partial is not None:
+        return partial
     ports = [p for p in analysis.inputs if p.kind in ("lever", "button")]
     if not ports or not analysis.outputs:
         raise ValueError("Die Schaltung hat keine Hebel/Knöpfe als Eingänge oder keine Ausgänge")
@@ -167,15 +190,53 @@ def _spec_of_existing(analysis, title: str):
     from .analysis.experiment import Circuit
 
     # lamps are what the builder looks at; bulbs, torches etc. next to them are usually internal
-    outputs = [o for o in analysis.outputs if analysis.grid.get(o.pos).id == "redstone_lamp"] or analysis.outputs
+    if chosen is not None:
+        outputs = chosen
+    elif wanted == "all":
+        outputs = list(analysis.outputs)
+    else:
+        outputs = [o for o in analysis.outputs if analysis.grid.get(o.pos).id == "redstone_lamp"] or analysis.outputs
     spec = bh.from_recordings([p.name for p in ports], [p.kind for p in ports], [o.name for o in outputs],
                               Circuit(analysis.grid), [o.pos for o in outputs], [p.pos for p in ports], title)
     skipped = [o for o in analysis.outputs if o not in outputs]
-    if skipped:
-        spec.notes.append("Nur die Lampen gelten als Ausgänge; nicht verlangt: "
+    if skipped and chosen is None:
+        spec.notes.append("Nur die Lampen gelten als Ausgänge (andere mit --outputs wählen); nicht verlangt: "
                           + ", ".join(f"{o.name} ({analysis.grid.get(o.pos).id})" for o in skipped))
     cand = Candidate("Original", analysis.grid, [p.pos for p in ports], [o.pos for o in outputs],
                      "die analysierte Bestandsschaltung", origin="original")
+    return spec, cand
+
+
+def _partial_spec(analysis, title: str, original, chosen):
+    """For many levers (no full truth table): a partial table with the stored lever states and each lever
+    flipped on its own, measured on the original; every other combination does not matter. None if that does
+    not apply."""
+    from dataclasses import replace
+
+    from .design import spec as specmod
+    from .design.evaluate import evaluate, observe
+
+    levers = [p for p in analysis.inputs if p.kind == "lever"]
+    if analysis.truth_table or analysis.oscillates or len(levers) < 2 or len(levers) != len(analysis.inputs):
+        return None
+    outs = chosen if chosen is not None else list(analysis.outputs)
+    if not outs:
+        return None
+    cand = replace(original, outputs=[o.pos for o in outs])
+    n = len(levers)
+    rest = tuple(analysis.grid.get(p.pos).get_bool("powered") for p in levers)
+    combos = [rest] + [tuple(b != (j == i) for j, b in enumerate(rest)) for i in range(n)]
+    try:
+        table = observe(cand, combos)
+    except ValueError:
+        return None
+    delays = [d for r in analysis.responses for x in r.reactions for d in x.delays if d is not None]
+    spec = specmod.Spec([p.name for p in levers], [o.name for o in outs], table, max(delays) if delays else None,
+                        source=f"Analyse von {title}", care=frozenset(combos))
+    spec.notes.append(f"{n} Hebel: verlangt sind nur der gespeicherte Zustand der Hebel und jeder Hebel einzeln "
+                      "umgelegt; alle anderen Kombinationen sind egal.")
+    if not evaluate(cand, spec).ok:
+        return None
     return spec, cand
 
 
@@ -211,7 +272,7 @@ def _cmd_redesign(args: argparse.Namespace) -> int:
             grid = io.load(path)
         analysis = analyze(grid)
         try:
-            spec, original = _spec_of_existing(analysis, title)
+            spec, original = _spec_of_existing(analysis, title, args.outputs)
         except ValueError as e:
             print(f"Fehler: {e}")
             return 2
@@ -306,6 +367,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--compact", type=int, default=100,
                    help="max evaluations for shrinking each synthesized/original design (0 = off, default 100)")
     p.add_argument("--time", type=float, default=60, help="time limit in seconds for shrinking (default 60)")
+    p.add_argument("--outputs", default=None, metavar="NAMES",
+                   help="outputs of an existing circuit that the redesign must keep: names from `rsx explain` "
+                        "(out1,out3) or 'all' (default: all for a truth table, only the lamps for behaviour)")
     p.set_defaults(func=_cmd_redesign)
 
     args = parser.parse_args(argv)

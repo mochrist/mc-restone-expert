@@ -118,4 +118,4 @@ Details zur Comparator-Berechnung stehen in der Comparator-Datei. Zeitangaben in
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#isPushable`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-timing.yaml)

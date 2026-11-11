@@ -1,0 +1,14 @@
+# Binär-Encoder: sieben Hebel, von denen höchstens einer an ist; die Ausgänge zeigen seine Nummer binär.
+# Nur diese 8 Zeilen sind verlangt, alle anderen Kombinationen sind egal (others: dont_care).
+inputs: [h1, h2, h3, h4, h5, h6, h7]
+outputs: [b2, b1, b0]
+others: dont_care
+table:
+  "0000000": "000"
+  "1000000": "001"
+  "0100000": "010"
+  "0010000": "011"
+  "0001000": "100"
+  "0000100": "101"
+  "0000010": "110"
+  "0000001": "111"

@@ -29,29 +29,29 @@ deshalb Komponenten, aber keinen Staub.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `Blocks` (Block-Registrierungen, `leavesProperties`, `pistonProperties`)
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: Liste durch Suche nach `isRedstoneConductor` in `Blocks` erstellt; Blockarten, deren Kollisionsbox ohnehin kein voller Würfel ist (Slabs, Treppen, …), fallen über den Default heraus und sind hier nicht aufgezählt.
+- Status: im-Spiel-verifiziert (scenarios/verify-conductors.yaml)
+- Hinweise: Liste durch Suche nach `isRedstoneConductor` in `Blocks` erstellt; Blockarten, deren Kollisionsbox ohnehin kein voller Würfel ist (Slabs, Treppen, …), fallen über den Default heraus und sind hier nicht aufgezählt. Im Spiel nur stichprobenartig geprüft (Glas, getöntes Glas, Glowstone, Eis, Laub, Observer sind keine Leiter); die übrigen Blöcke der Liste sind nur aus dem Code belegt.
 
 ### PWR-003: Seelensand und Schlamm sind Leiter trotz niedrigerer Kollisionsbox
 - Aussage: Seelensand und Schlamm (`mud`) sind per `isRedstoneConductor(Blocks::always)` immer Leiter, obwohl ihre Kollisionsbox kein voller Würfel ist.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `Blocks#SOUL_SAND`, `Blocks#MUD`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-conductors.yaml)
 
 ### PWR-004: Halbe Stufen und Treppen sind keine Leiter, Doppelstufen schon
 - Aussage: Obere/untere Stufen und Treppen haben keine Vollblock-Kollisionsbox und sind daher keine Leiter; eine Doppelstufe (`type=double`) hat einen vollen Würfel und leitet.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `SlabBlock`, `StairBlock` (keine Überschreibung von `isRedstoneConductor`), Default `isCollisionShapeFullBlock`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-conductors.yaml)
 
 ### PWR-005: Ein Leiterblock gibt nur starke Eingänge weiter
 - Aussage: `SignalGetter#getSignal` liefert für einen Leiterblock das Maximum aus seinem eigenen `getSignal` und `getDirectSignalTo(pos)` (Maximum der `getDirectSignal` seiner sechs Nachbarn); für Nicht-Leiter nur das eigene `getSignal`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `SignalGetter#getSignal`, `SignalGetter#getDirectSignalTo`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-conductors.yaml)
 - Hinweise: Nicht-Leiter (z. B. Glas) können also nie gepowert werden und leiten nichts weiter.
 
 ### PWR-006: Standard-Quellen liefern kein starkes Signal
@@ -59,7 +59,7 @@ deshalb Komponenten, aber keinen Staub.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `BlockBehaviour#getDirectSignal`, `LeverBlock#getDirectSignal`, `ButtonBlock#getDirectSignal`, `RedstoneTorchBlock#getDirectSignal`, `BasePressurePlateBlock#getDirectSignal`, `DiodeBlock#getDirectSignal`, `RedstoneWireBlock#getDirectSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-conductors.yaml)
 - Hinweise: Beispiele ohne starkes Signal: Redstone-Block, Zielblock, Tageslichtsensor.
 
 ### PWR-007: Repeater und Komparatoren powern den Block vor sich stark
@@ -67,7 +67,7 @@ deshalb Komponenten, aber keinen Staub.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#getDirectSignal`, `DiodeBlock#getSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-conductors.yaml)
 
 ### PWR-008: Druckplatten powern nur den Block unter sich stark
 - Aussage: Druckplatten liefern ein starkes Signal nur bei `direction == UP`, also an den Block direkt darunter.
@@ -89,7 +89,7 @@ deshalb Komponenten, aber keinen Staub.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getBlockSignal`, `RedstoneWireBlock#getSignal`, `RedstoneWireBlock#getDirectSignal`, `RedstoneWireBlock#isSignalSource`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-dust-structure.yaml)
 - Hinweise: Das ist die eigentliche Implementierung von „schwach gepowert": Ein nur von Staub gepowerter Leiter trägt zum Blocksignal eines Staubs 0 bei, powert aber Lampen, Kolben, Repeater usw.
 
 ### PWR-011: Schwach gepowerte Blöcke aktivieren Komponenten, aber keinen Staub
@@ -97,7 +97,7 @@ deshalb Komponenten, aber keinen Staub.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getBlockSignal`, `SignalGetter#getSignal`; [SRC-WIKI-REDSTONE-DUST]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-dust-structure.yaml)
 
 ### PWR-012: hasNeighborSignal prüft sechs Nachbarn in fester Reihenfolge
 - Aussage: `SignalGetter#hasNeighborSignal` liefert true, sobald `getSignal` eines Nachbarn > 0 ist, geprüft in der Reihenfolge DOWN, UP, NORTH, SOUTH, WEST, EAST.

@@ -19,7 +19,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#canSurviveOn`, `RedstoneWireBlock#canSurvive`, `RedstoneWireBlock#updateShape`, `RedstoneWireBlock#neighborChanged`; [SRC-WIKI-REDSTONE-DUST]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-dust-structure.yaml)
 - Hinweise: Damit trägt z. B. Glas, Glowstone, obere Stufe und umgedrehte Treppe Staub, untere Stufe nicht.
 
 ### DUST-002: Aufwärtsverbindung zu Staub diagonal oben
@@ -42,7 +42,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getConnectingSide`, `BlockBehaviour#shouldRedstoneWireConnectTo`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-dust-structure.yaml)
 - Hinweise: Ob eine Komponente (Repeater nur vorne/hinten, Observer nur hinten, …) verbindet, regelt deren `shouldRedstoneWireConnectTo`.
 
 ### DUST-005: Ein Leiter über dem unteren Staub trennt die Diagonale nach oben
@@ -58,7 +58,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getConnectingSide`, `RedstoneWireEvaluator#getIncomingWireSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-dust-structure.yaml)
 
 ### DUST-007: Form aus Verbindungen: Linie wird verlängert, keine Verbindung ergibt Kreuz
 - Aussage: Nach dem Berechnen der echten Verbindungen ergänzt `getConnectionState`: Sind Nord und Süd beide frei, werden West und Ost auf `side` gesetzt; sind West und Ost beide frei, werden Nord und Süd auf `side` gesetzt; eine einzelne Verbindung wird so zur geraden Linie, null Verbindungen zum Kreuz, zwei Verbindungen über Eck bleiben ein L.
@@ -120,7 +120,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireEvaluator#getIncomingWireSignal`; [SRC-WIKI-REDSTONE-DUST]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-dust-structure.yaml)
 - Hinweise: Grundlage für Einweg-Treppen aus Glas/Stufen. Wiki: in Bedrock kann Signal durch Glas nach unten laufen (out of scope).
 
 ### DUST-015: Blocksignal wird ohne Staub-Beiträge gelesen
@@ -128,7 +128,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#getBlockSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-dust-structure.yaml)
 - Hinweise: Siehe PWR-010/PWR-011.
 
 ### DUST-016: Der Standard-Evaluator berechnet nur den aktualisierten Staub neu

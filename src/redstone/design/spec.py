@@ -10,6 +10,7 @@ A spec comes from the analysis of an existing circuit (`from_analysis`) or from 
       "00": "0"
       "10": "1"
     max_delay: 6         # optional, game ticks from the input change to the last output change
+    others: dont_care    # optional with `table`: combinations missing from the table do not matter
 
 Only combinational behaviour is described for now (outputs depend only on the current inputs).
 """
@@ -34,24 +35,42 @@ _ALLOWED_NODES = (ast.Expression, ast.BoolOp, ast.UnaryOp, ast.BinOp, ast.Compar
 class Spec:
     inputs: list[str]
     outputs: list[str]
-    table: dict[Combo, Combo]  # every input combination -> output states
+    table: dict[Combo, Combo]  # input combination -> output states (every combination, or exactly `care`)
     max_delay: int | None = None
     source: str = ""  # where the spec came from, German
     notes: list[str] = field(default_factory=list)
+    care: frozenset[Combo] | None = None  # the combinations that matter (None: all); the others are "egal"
 
     def __post_init__(self) -> None:
-        want = set(itertools.product([False, True], repeat=len(self.inputs)))
-        if set(self.table) != want:
-            raise ValueError(f"truth table must cover all {len(want)} input combinations")
+        if self.care is None:
+            want = set(itertools.product([False, True], repeat=len(self.inputs)))
+            if set(self.table) != want:
+                raise ValueError(f"truth table must cover all {len(want)} input combinations")
+        else:
+            self.care = frozenset(self.care)
+            if set(self.table) != set(self.care):
+                raise ValueError("a partial truth table must list exactly the combinations that matter")
         if any(len(v) != len(self.outputs) for v in self.table.values()):
             raise ValueError("every table row needs one value per output")
 
+    @property
+    def partial(self) -> bool:
+        return self.care is not None
+
+    def combos(self) -> list[Combo]:
+        """The combinations that matter, in itertools.product order."""
+        if self.care is None:
+            return list(itertools.product([False, True], repeat=len(self.inputs)))
+        return sorted(self.care)  # False < True: same order as itertools.product
+
     def output_column(self, i: int) -> tuple[bool, ...]:
-        """Values of output i for all combinations in itertools.product order."""
-        return tuple(self.table[c][i] for c in itertools.product([False, True], repeat=len(self.inputs)))
+        """Values of output i for all combinations that matter, in itertools.product order."""
+        return tuple(self.table[c][i] for c in self.combos())
 
     def describe(self) -> str:
         """German one-line summary per output, e.g. 'y = AND(a, b)'."""
+        if self.partial:
+            return self._describe_partial()
         lines = []
         for i, name in enumerate(self.outputs):
             ones = [c for c in itertools.product([False, True], repeat=len(self.inputs)) if self.table[c][i]]
@@ -64,9 +83,26 @@ class Spec:
                 lines.append(f"{name} = " + " ∨ ".join(f"({t})" if len(self.inputs) > 1 else t for t in terms))
         return "; ".join(lines)
 
+    def _describe_partial(self) -> str:
+        def side(names: list[str], bits: tuple[bool, ...], none: str, every: str) -> str:
+            on = [n for n, b in zip(names, bits) if b]
+            off = [n for n, b in zip(names, bits) if not b]
+            if not on:
+                return none
+            if not off:
+                return every
+            return "+".join(on) if len(on) <= len(off) else f"alle außer {'+'.join(off)}"
+
+        rows = [f"{side(self.inputs, c, 'alle aus', 'alle an')} → {side(self.outputs, self.table[c], '–', 'alle')}"
+                for c in self.combos()]
+        return (f"Teiltabelle ({len(rows)} von {2 ** len(self.inputs)} Kombinationen, die übrigen egal): "
+                + "; ".join(rows))
+
     def to_dict(self) -> dict:
         d: dict = {"inputs": self.inputs, "outputs": self.outputs,
                    "table": {_bits(c): _bits(o) for c, o in sorted(self.table.items())}}
+        if self.partial:
+            d["others"] = "dont_care"
         if self.max_delay is not None:
             d["max_delay"] = self.max_delay
         return d
@@ -111,7 +147,11 @@ def from_dict(d: dict, source: str = "") -> Spec:
         return from_functions(inputs, {str(k): str(v) for k, v in d["function"].items()}, max_delay, source)
     outputs = [str(x) for x in d["outputs"]]
     table = {_parse_bits(k, len(inputs)): _parse_bits(v, len(outputs)) for k, v in d["table"].items()}
-    return Spec(inputs, outputs, table, max_delay, source)
+    others = d.get("others")
+    if others not in (None, "dont_care"):
+        raise ValueError(f"others: {others!r} (only 'dont_care' is supported)")
+    care = frozenset(table) if others == "dont_care" else None
+    return Spec(inputs, outputs, table, max_delay, source, care=care)
 
 
 def load(path: str | Path) -> Spec:

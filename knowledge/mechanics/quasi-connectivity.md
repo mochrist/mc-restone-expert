@@ -42,7 +42,7 @@ Rails **kein** QC; Türen prüfen nur ihre eigene zweite Hälfte (siehe QC-005).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneLampBlock#neighborChanged`, `PoweredRailBlock#updateState`, `HopperBlock#checkPoweredState`, `TrapDoorBlock#neighborChanged`, `FenceGateBlock#neighborChanged`, `NoteBlock#neighborChanged`; [SRC-M-WIKI-QC]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-timing.yaml)
 - Hinweise: Widerlegt die Liste in `idea.md` (Lampen, Rails). Powered Rails hatten laut Wiki nur in Beta 1.5 QC-artiges Verhalten. Im gesamten Paket `net.minecraft.world.level.block` verwenden nur `DispenserBlock` und `DoorBlock` `hasNeighborSignal` auf einer anderen als der eigenen Position, dazu kommt `PistonBaseBlock` mit eigener Schleife.
 
 ### QC-005: Türen prüfen beide Hälften, das ist kein QC im engeren Sinn
@@ -74,7 +74,7 @@ Rails **kein** QC; Türen prüfen nur ihre eigene zweite Hälfte (siehe QC-005).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#checkIfExtend`, `PistonBaseBlock#neighborChanged`; [SRC-M-WIKI-BUD]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/verify-timing.yaml)
 - Hinweise: Grundlage für „stuck"-Zustände. Davon zu unterscheiden ist der Wiki-Fall „Redstone-Block auf nach oben zeigendem Piston: kann ausfahren, aber nicht einfahren" [SRC-M-WIKI-PISTON]: dort liegt der geschobene Redstone-Block neben der QC-Position (Kopfposition) und hält den Piston dauerhaft per QC bestromt (QC-001).
 
 ### QC-009: Kein QC beim Hopper-Sperren

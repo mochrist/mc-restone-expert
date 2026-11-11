@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-10, Session 8. Geschätzter Gesamtfortschritt: **ca. 88 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-10, Session 9 (abgebrochen, siehe Übergabe). Geschätzter Gesamtfortschritt: **ca. 89 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
@@ -11,7 +11,35 @@ Stand: 2026-11-10, Session 8. Geschätzter Gesamtfortschritt: **ca. 88 %** (gewi
 | M4 Redesign | 25 % | ~70 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (auch mit ansteuerbaren Eingängen), Komposition mit Router (Logik vor Speicher, Zerlegung, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
+## Übergabe (Session 9, wegen Token-Limit beendet)
+
+**Zuerst lesen.** Zwei Agents wurden mitten in der Arbeit gestoppt; ihre Stände sind ungeprüft als WIP committet:
+- Branch `wip/crafter` (Sonnet, Worktree `.claude/worktrees/agent-abaf2f04e60a9c34c`): Crafter in Python und Rust,
+  `scenarios/crafter.yaml`, Wissensbasis. Unklar, ob das Oracle schon gelaufen ist und ob alles grün ist. Enthält
+  Müll unter `.tmp-out/` (nicht mergen).
+- Branch `wip/compact-moves` (Opus, Worktree `.claude/worktrees/agent-a3079b6433563aefe`): stärkere Züge in
+  `design/compact.py` + Kompaktieren der Kompositionen in `search.redesign`. Laut letzter Meldung beide Kerne
+  grün, Laufzeitmessung und Oracle-Aufnahme geänderter `cmp-*`-Szenarien standen noch aus.
+
+| Nr. | Aufgabe | Modell |
+|---|---|---|
+| 1 | `wip/compact-moves` prüfen (Diff lesen, Tests beide Kerne, `rsx redesign` vorher/nachher messen), geänderte `cmp-*` neu aufzeichnen, mergen | Opus |
+| 2 | `wip/crafter` prüfen, Szenario im Oracle aufzeichnen (Sperre `.cache/oracle.lock`), Golden + Differenztest, mergen, `knowledge index` | Sonnet |
+| 3 | Ganze Suite auf beiden Kernen nach den Merges; Worktrees/Branches aufräumen | Sonnet |
+| 4 | PLA: gleiche Ausgangsfunktionen teilen eine Leitung (seg7: 18 von 21 Ausgängen identisch, PLA sonst 990 Blöcke) | Opus |
+
 ## Verlauf
+
+### Session 9 (2026-11-10)
+
+- PLA bis 6 Eingänge (vorher 4; Zufallsfunktionen mit 5–6 Eingängen, auch mehrere Ausgänge und ansteuerbar, alle korrekt).
+- Zerlegung: alle 55 zufälligen g(3)+h(3)-Funktionen gelöst (Budget pro Bausteinpaar).
+- `rsx redesign --outputs out1,out3|all`: Ausgänge einer Bestandsschaltung wählen (Kolben-Extender: Lampe war nur Anzeige).
+- Teil-Wahrheitstabellen (`others: dont_care` in YAML, `Spec.care`): Bewertung und Übergänge nur über relevante
+  Kombinationen, Minimierung per Expand (`synth.minimize_partial`), PLA bis 16 Eingänge bei Teiltabellen.
+  Bestandsschaltungen mit mehr als 6 Hebeln: gespeicherter Hebelzustand plus jeder Hebel einzeln umgelegt
+  (seg7: 9 von 10 Hebeln sind im Ruhezustand an). Beispiel `examples/specs/encoder7.yaml`, im Spiel identisch.
+- Agents: 40 weitere Aussagen im Spiel verifiziert (130/272), ZT-006 widerlegt (Repeater verlängern 0-Tick-Pulse).
 
 ### Session 8 (2026-11-10): parallel M2/M3/M4 (Opus-Hauptsession, 1 Opus- und 2 Sonnet-Agents)
 

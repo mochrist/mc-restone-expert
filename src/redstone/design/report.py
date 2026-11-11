@@ -42,7 +42,8 @@ def report(spec: Spec, constraints: Constraints, results: list[Evaluation], titl
     ok = [r for r in results if r.ok]
     lines += ["## Ergebnis", ""]
     if not results:
-        lines.append("- Keine passende Vorlage für diese Funktion gefunden. (Komposition und Suche folgen in einem späteren Schritt.)")
+        lines.append("- Kein Entwurf gefunden: keine passende Vorlage, Synthese oder Komposition, und das Original "
+                     "ließ sich nicht verkleinern.")
     elif not ok:
         lines.append("- Kein Kandidat erfüllt Spezifikation und Constraints.")
     else:

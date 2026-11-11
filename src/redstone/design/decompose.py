@@ -6,7 +6,7 @@ has at most two distinct columns; g then says which of the two columns an assign
 
 Both parts are designed on their own (templates, torch PLA, or again by decomposition), joined with the
 output of g into the first input of h, and the result is checked against the whole spec in the simulator.
-That lifts the 4-input limit of the PLA and splits wide functions (e.g. XOR of four levers) into chains of
+That goes beyond the input limit of the PLA (`synth.MAX_INPUTS`) and splits wide functions (e.g. XOR of four levers) into chains of
 small gates.
 """
 
@@ -129,7 +129,7 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None) -> list
     from .compose import chains
     from .evaluate import evaluate_any
 
-    if len(spec.outputs) != 1 or len(spec.inputs) < 3:
+    if len(spec.outputs) != 1 or len(spec.inputs) < 3 or spec.partial:
         return []
     out = []
     for sp in splits(spec):
@@ -210,7 +210,7 @@ def _parallel(spec: Spec, spacing: int, log: list[str] | None) -> list[Candidate
     from .evaluate import evaluate_any
 
     m = len(spec.outputs)
-    if m < 2:
+    if m < 2 or spec.partial:
         return []
     supports = [support(spec, j) for j in range(m)]
     if any(not s for s in supports):
