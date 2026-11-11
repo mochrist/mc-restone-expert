@@ -1,0 +1,40 @@
+name: sculk-lever-distance
+description: >
+  Sculk-Sensoren in verschiedenen Abstaenden (1 bis 9 Bloecke, auch diagonal) von einem Hebel. Der Hebel schaltet
+  bei Tick 2 ein (BLOCK_ACTIVATE, Frequenz 10) und bei Tick 70 aus (BLOCK_DEACTIVATE, Frequenz 9). Jeder Sensor
+  im Radius 8 (Abstandsquadrat <= 64) aktiviert nach floor(Abstand) Ticks (30 gt aktiv, 10 gt Abkuehlung) mit der
+  Staerke max(1, 15 - floor(15/8 * Abstand)); der Sensor bei Abstand 9 und der bei Abstandsquadrat 65 bleiben aus.
+build:
+  size: [10, 2, 6]
+  fill:
+    - [0, 0, 0, 9, 0, 5, "stone"]
+  blocks:
+    - [0, 1, 0, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 0, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [2, 1, 0, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [3, 1, 0, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [5, 1, 0, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [8, 1, 0, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [9, 1, 0, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [1, 1, 1, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [2, 1, 2, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [5, 1, 5, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [6, 1, 5, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [7, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+ticks: 130
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: use}
+  - {tick: 70, pos: [0, 1, 0], action: use}
+probes:
+  lever: [0, 1, 0]
+  d1: [1, 1, 0]
+  d2: [2, 1, 0]
+  d3: [3, 1, 0]
+  d5: [5, 1, 0]
+  d8: [8, 1, 0]
+  d9: [9, 1, 0]
+  d1_1: [1, 1, 1]
+  d2_2: [2, 1, 2]
+  d5_5: [5, 1, 5]
+  d6_5: [6, 1, 5]
+  d7_4: [7, 1, 4]

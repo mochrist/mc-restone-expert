@@ -39,6 +39,7 @@ class LeverBlock(Block):
         state = state.with_(powered=not state.get_bool("powered"))
         world.set_block(pos, state)  # setBlockAndUpdate = flags 3
         self._update_neighbours(world, pos, state)
+        world.game_event("block_activate" if state.get_bool("powered") else "block_deactivate", pos)
 
     def affect_neighbors_after_removal(self, world, pos, state, moved_by_piston):
         if not moved_by_piston and state.get_bool("powered"):
@@ -72,12 +73,14 @@ class ButtonBlock(LeverBlock):
         world.set_block(pos, state.with_(powered=True))
         self._update_neighbours(world, pos, state)
         world.schedule_tick(pos, self, self.ticks_to_stay_pressed)
+        world.game_event("block_activate", pos)
         return True
 
     def tick(self, world, pos, state):
         if state.get_bool("powered"):  # checkPressed with no arrow inside: release
             world.set_block(pos, state.with_(powered=False))
             self._update_neighbours(world, pos, state)
+            world.game_event("block_deactivate", pos)
 
 
 class PressurePlateBlock(Block):
@@ -115,9 +118,14 @@ class PressurePlateBlock(Block):
             self._check_pressed(world, pos, state, 0)  # nobody on the plate any more
 
     def _check_pressed(self, world: World, pos: Pos, state: BlockState, signal: int) -> None:
-        if self._signal(state) != signal:
+        old_signal = self._signal(state)
+        if old_signal != signal:
             world.set_block(pos, self._with_signal(state, signal), UPDATE_CLIENTS)
             self._update_neighbours(world, pos)
+        if old_signal > 0 and signal == 0:
+            world.game_event("block_deactivate", pos)
+        elif old_signal == 0 and signal > 0:
+            world.game_event("block_activate", pos)
         if signal > 0:
             world.schedule_tick(pos, self, self.pressed_time)
 

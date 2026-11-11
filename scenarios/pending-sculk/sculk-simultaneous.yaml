@@ -1,0 +1,62 @@
+name: sculk-simultaneous
+description: >
+  Mehrere Vibrationen am selben Sensor. Gruppe 0/1: Hebel in Abstand 2 und 5 im selben Tick (die naehere
+          gewinnt, egal in welcher Reihenfolge die Eingaben kommen). Gruppe 2/3: gleicher Abstand 3, Hebel aus (9) und
+          Hebel an (10) im selben Tick: die hoehere Frequenz gewinnt, egal in welcher Reihenfolge. Gruppe 4: eine
+          Vibration aus Abstand 7 ist unterwegs, die naehere bei Tick 5 wird ignoriert, ebenso die bei 12 (Sensor aktiv).
+          Komparatoren zeigen die Frequenz.
+build:
+  size: [100, 2, 12]
+  fill:
+    - [0, 0, 0, 99, 0, 11, "stone"]
+  blocks:
+    - [8, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [9, 1, 4, "comparator[facing=west,mode=compare,powered=false]"]
+    - [28, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [29, 1, 4, "comparator[facing=west,mode=compare,powered=false]"]
+    - [48, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [49, 1, 4, "comparator[facing=west,mode=compare,powered=false]"]
+    - [68, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [69, 1, 4, "comparator[facing=west,mode=compare,powered=false]"]
+    - [88, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [89, 1, 4, "comparator[facing=west,mode=compare,powered=false]"]
+    - [6, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [8, 1, 9, "lever[face=floor,facing=east,powered=false]"]
+    - [26, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [28, 1, 9, "lever[face=floor,facing=east,powered=false]"]
+    - [45, 1, 4, "lever[face=floor,facing=east,powered=true]"]
+    - [48, 1, 1, "lever[face=floor,facing=east,powered=false]"]
+    - [65, 1, 4, "lever[face=floor,facing=east,powered=true]"]
+    - [68, 1, 1, "lever[face=floor,facing=east,powered=false]"]
+    - [95, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [86, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+  block_entities:
+    - [9, 1, 4, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [29, 1, 4, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [49, 1, 4, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [69, 1, 4, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [89, 1, 4, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 80
+inputs:
+  - {tick: 2, pos: [6, 1, 4], action: use}
+  - {tick: 2, pos: [8, 1, 9], action: use}
+  - {tick: 2, pos: [28, 1, 9], action: use}
+  - {tick: 2, pos: [26, 1, 4], action: use}
+  - {tick: 2, pos: [48, 1, 1], action: use}
+  - {tick: 2, pos: [45, 1, 4], action: use}
+  - {tick: 2, pos: [65, 1, 4], action: use}
+  - {tick: 2, pos: [68, 1, 1], action: use}
+  - {tick: 2, pos: [95, 1, 4], action: use}
+  - {tick: 5, pos: [86, 1, 4], action: use}
+  - {tick: 12, pos: [86, 1, 4], action: use}
+probes:
+  g0_sensor: [8, 1, 4]
+  g0_cmp: [9, 1, 4]
+  g1_sensor: [28, 1, 4]
+  g1_cmp: [29, 1, 4]
+  g2_sensor: [48, 1, 4]
+  g2_cmp: [49, 1, 4]
+  g3_sensor: [68, 1, 4]
+  g3_cmp: [69, 1, 4]
+  g4_sensor: [88, 1, 4]
+  g4_cmp: [89, 1, 4]

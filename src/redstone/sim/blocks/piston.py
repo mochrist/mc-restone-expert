@@ -343,6 +343,7 @@ class PistonBaseBlock(Block):
             if not self.move_blocks(world, pos, direction, True):
                 return False
             world.set_block(pos, extended_state, 67)
+            world.game_event("block_activate", pos, extended_state)
         elif b0 in (TRIGGER_CONTRACT, TRIGGER_DROP):
             head_be = get_piston_be(world, pos.offset(direction))
             if head_be is not None:
@@ -378,6 +379,7 @@ class PistonBaseBlock(Block):
                         self.move_blocks(world, pos, direction, False)
             else:
                 world.remove_block(pos.offset(direction))
+            world.game_event("block_deactivate", pos, moving_state)
         return True
 
     def move_blocks(self, world: World, piston_pos: Pos, direction: Direction, extending: bool) -> bool:
@@ -402,6 +404,7 @@ class PistonBaseBlock(Block):
             st = world.get(p)
             # dropResources: items are not simulated
             world.set_block(p, AIR, 18)
+            world.game_event("block_destroy", p, st)
             to_update.append(st)
 
         for i in range(len(to_push) - 1, -1, -1):

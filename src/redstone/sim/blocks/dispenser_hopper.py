@@ -60,7 +60,10 @@ class DispenserBlock(ContainerBlock):
             return
         slot = be.get_random_slot()
         if slot < 0:
-            return  # level event 1001 (click sound) only
+            # level event 1001 (click sound); DispenserBlock also posts BLOCK_ACTIVATE, DropperBlock does not
+            if not self.dropper:
+                world.game_event("block_activate", pos, state)
+            return
         item, count = be.items[slot]
         if self.dropper:
             # DropperBlock#dispenseFrom: insert one item into a container in front, otherwise drop it (DDH-006)

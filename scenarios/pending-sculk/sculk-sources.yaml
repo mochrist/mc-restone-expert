@@ -1,0 +1,78 @@
+name: sculk-sources
+description: >
+  Ein Sculk-Sensor (8,1,8) mit Komparator (9,1,8, liest die zuletzt empfangene Frequenz, solange der Sensor aktiv
+  ist) und viele Quellen im Umkreis, nacheinander im Abstand von 60 bis 120 gt. Hebel an/aus (Frequenz 10/9),
+  Notenblock (10), Kolben aus-/einfahren per Redstone-Block (10/9), Knopf und Druckplatte (Druecken liegt im
+  aktiven Fenster eines Hebels und wird ignoriert, das Loslassen 20/30 gt spaeter kommt an: 9), leerer Spender (10),
+  Spender mit Item, Tuer, Falltuer, Zauntor (je 10 auf, 9 zu), Tageslichtsensor-Rechtsklick (BLOCK_CHANGE, 11) und
+  ein vom Untergrund geloester Hebel (BLOCK_DESTROY, 12).
+build:
+  size: [16, 4, 16]
+  fill:
+    - [0, 0, 0, 15, 0, 15, "stone"]
+  blocks:
+    - [8, 1, 8, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [9, 1, 8, "comparator[facing=west,mode=compare,powered=false]"]
+    # L1: Hebel, Abstand 2
+    - [6, 1, 8, "lever[face=floor,facing=east,powered=false]"]
+    # Notenblock, Abstand 4
+    - [8, 1, 4, "note_block[instrument=harp,note=0,powered=false]"]
+    # Kolben (zeigt nach Osten) mit Redstone-Block-Platz im Norden, Abstand 3.6
+    - [11, 1, 6, "piston[extended=false,facing=east]"]
+    # Holzknopf am Boden, Abstand 3
+    - [8, 1, 11, "oak_button[face=floor,facing=north,powered=false]"]
+    # Druckplatte aus Stein, Abstand 4.5
+    - [4, 1, 10, "stone_pressure_plate[powered=false]"]
+    # leerer Spender (nach oben), Abstand 4, Redstone-Block-Platz (13,1,8)
+    - [12, 1, 8, "dispenser[facing=up,triggered=false]"]
+    # Spender mit Item, Abstand 5, Redstone-Block-Platz (13,1,11)
+    - [12, 1, 11, "dispenser[facing=up,triggered=false]"]
+    # Tuer, Falltuer, Zauntor
+    - [3, 1, 5, "oak_door[facing=north,half=lower,hinge=left,open=false,powered=false]"]
+    - [3, 2, 5, "oak_door[facing=north,half=upper,hinge=left,open=false,powered=false]"]
+    - [4, 1, 12, "oak_trapdoor[facing=north,half=bottom,open=false,powered=false,waterlogged=false]"]
+    - [12, 1, 4, "oak_fence_gate[facing=north,in_wall=false,open=false,powered=false]"]
+    # Tageslichtsensor, Abstand 6
+    - [2, 1, 8, "daylight_detector[inverted=false,power=0]"]
+    # Hebel auf Stein (8,1,13): der Stein wird entfernt, der Hebel faellt ab. Abstand ~5.1
+    - [8, 1, 13, "stone"]
+    - [8, 2, 13, "lever[face=floor,facing=east,powered=false]"]
+  block_entities:
+    - [9, 1, 8, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [12, 1, 11, '{id:"minecraft:dispenser",Items:[{Slot:0b,id:"minecraft:stone",count:5}]}']
+ticks: 1190
+inputs:
+  # Hebel
+  - {tick: 2, pos: [6, 1, 8], action: use}
+  - {tick: 62, pos: [6, 1, 8], action: use}
+  # Notenblock
+  - {tick: 122, pos: [8, 1, 4], action: use}
+  # Kolben
+  - {tick: 182, pos: [11, 1, 5], action: setblock, state: "redstone_block"}
+  - {tick: 242, pos: [11, 1, 5], action: setblock, state: "air"}
+  # Holzknopf: Hebel an (Sensor aktiv), Knopf waehrend dessen, Loslassen danach
+  - {tick: 300, pos: [6, 1, 8], action: use}
+  - {tick: 327, pos: [8, 1, 11], action: use}
+  - {tick: 360, pos: [6, 1, 8], action: use}
+  # Druckplatte (Stein, 20 gt)
+  - {tick: 420, pos: [6, 1, 8], action: use}
+  - {tick: 447, pos: [4, 1, 10], action: use}
+  - {tick: 490, pos: [6, 1, 8], action: use}
+  # Spender
+  - {tick: 560, pos: [13, 1, 8], action: setblock, state: "redstone_block"}
+  - {tick: 620, pos: [13, 1, 11], action: setblock, state: "redstone_block"}
+  # Tuer, Falltuer, Zauntor
+  - {tick: 700, pos: [3, 1, 5], action: use}
+  - {tick: 760, pos: [3, 1, 5], action: use}
+  - {tick: 820, pos: [4, 1, 12], action: use}
+  - {tick: 880, pos: [4, 1, 12], action: use}
+  - {tick: 940, pos: [12, 1, 4], action: use}
+  - {tick: 1000, pos: [12, 1, 4], action: use}
+  # Tageslichtsensor
+  - {tick: 1060, pos: [2, 1, 8], action: use}
+  # abfallender Hebel
+  - {tick: 1130, pos: [8, 1, 13], action: setblock, state: "air"}
+probes:
+  sensor: [8, 1, 8]
+  comparator: [9, 1, 8]
+  lever_pop: [8, 2, 13]
