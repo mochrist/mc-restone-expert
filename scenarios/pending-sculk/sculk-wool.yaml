@@ -1,0 +1,53 @@
+name: sculk-wool
+description: >
+  Wolle zwischen Hebel (8,1,8) und Sculk-Sensoren (alle im Radius 8): Wollbloecke schirmen die Vibration ab
+          (Gerade, von oben), Teppich nicht, Wolle neben der Linie nicht. Diagonale Linien laufen genau durch
+          Blockecken; dort entscheidet die Verschiebung des Startpunkts um 1e-5 in die sechs Richtungen, ob die
+          Vibration abgeschirmt ist (Wolle nur auf einer der beiden Seiten, auf beiden Seiten, auf der Diagonalen).
+          Der Hebel schaltet bei 2 ein und bei 70 aus.
+build:
+  size: [17, 8, 17]
+  fill:
+    - [0, 0, 0, 16, 0, 16, "stone"]
+  blocks:
+    - [8, 1, 8, "lever[face=floor,facing=east,powered=false]"]
+    - [12, 1, 8, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [10, 1, 8, "white_wool"]
+    - [4, 1, 8, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [6, 1, 9, "white_wool"]
+    - [6, 1, 7, "white_wool"]
+    - [8, 5, 8, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [8, 3, 8, "white_wool"]
+    - [8, 1, 2, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [8, 1, 5, "white_carpet"]
+    - [8, 1, 13, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [12, 1, 12, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [10, 1, 9, "white_wool"]
+    - [4, 1, 12, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [6, 1, 9, "white_wool"]
+    - [7, 1, 10, "white_wool"]
+    - [4, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [6, 1, 7, "white_wool"]
+    - [12, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [10, 1, 7, "white_wool"]
+    - [9, 1, 6, "white_wool"]
+    - [11, 4, 8, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [10, 3, 8, "white_wool"]
+    - [5, 4, 8, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [8, 2, 8, "white_wool"]
+ticks: 130
+inputs:
+  - {tick: 2, pos: [8, 1, 8], action: use}
+  - {tick: 70, pos: [8, 1, 8], action: use}
+probes:
+  straight_blocked: [12, 1, 8]
+  straight_beside: [4, 1, 8]
+  above: [8, 5, 8]
+  carpet: [8, 1, 2]
+  free: [8, 1, 13]
+  diag_se_one: [12, 1, 12]
+  diag_sw_both: [4, 1, 12]
+  diag_nw_one: [4, 1, 4]
+  diag_ne_both: [12, 1, 4]
+  diag_xy_on_line: [11, 4, 8]
+  diag_xy_one: [5, 4, 8]

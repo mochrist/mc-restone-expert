@@ -139,6 +139,7 @@ class DaylightDetectorBlock(Block):
         """Toggle ``inverted`` (flags 2: no neighbor updates), then update the power at once."""
         new = state.with_(inverted=not state.get_bool("inverted"))
         world.set_block(pos, new, UPDATE_CLIENTS)
+        world.game_event("block_change", pos, new)
         update_signal_strength(world, pos, new)
         return True
 

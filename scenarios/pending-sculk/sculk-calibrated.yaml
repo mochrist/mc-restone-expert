@@ -1,0 +1,80 @@
+name: sculk-calibrated
+description: >
+  Kalibrierter Sculk-Sensor (Radius 16, aktiv 10 gt, Abkuehlung 10 gt). Gruppe 0: ohne Eingang hinter dem Sensor
+          nimmt er jede Vibration an, auch aus Abstand 12 (der normale Sensor daneben nicht); Lampen an drei Seiten
+          leuchten, die Lampe auf der Eingangsseite nicht. Gruppe 1: Eingang 10 (Staub mit Staerke 10): Hebel an (10)
+          wird angenommen, aus (9) nicht. Gruppe 2: Eingang 9: umgekehrt. Gruppe 3: Eingang 15 (Redstone-Block): nichts.
+          Der Hebel schaltet bei 2, 70, 140 und 210. Komparatoren zeigen die Frequenz.
+build:
+  size: [160, 2, 10]
+  fill:
+    - [0, 0, 0, 159, 0, 9, "stone"]
+  blocks:
+    - [8, 1, 4, "calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [20, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [8, 1, 3, "redstone_lamp[lit=false]"]
+    - [9, 1, 4, "redstone_lamp[lit=false]"]
+    - [8, 1, 5, "redstone_lamp[lit=false]"]
+    - [7, 1, 4, "redstone_lamp[lit=false]"]
+    - [8, 1, 7, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [48, 1, 4, "calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [48, 1, 5, "comparator[facing=north,mode=compare,powered=false]"]
+    - [51, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [41, 1, 4, "redstone_block"]
+    - [42, 1, 4, "redstone_wire[east=side,north=none,power=15,south=none,west=side]"]
+    - [43, 1, 4, "redstone_wire[east=side,north=none,power=14,south=none,west=side]"]
+    - [44, 1, 4, "redstone_wire[east=side,north=none,power=13,south=none,west=side]"]
+    - [45, 1, 4, "redstone_wire[east=side,north=none,power=12,south=none,west=side]"]
+    - [46, 1, 4, "redstone_wire[east=side,north=none,power=11,south=none,west=side]"]
+    - [47, 1, 4, "redstone_wire[east=side,north=none,power=10,south=none,west=side]"]
+    - [88, 1, 4, "calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [88, 1, 5, "comparator[facing=north,mode=compare,powered=false]"]
+    - [91, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [80, 1, 4, "redstone_block"]
+    - [81, 1, 4, "redstone_wire[east=side,north=none,power=15,south=none,west=side]"]
+    - [82, 1, 4, "redstone_wire[east=side,north=none,power=14,south=none,west=side]"]
+    - [83, 1, 4, "redstone_wire[east=side,north=none,power=13,south=none,west=side]"]
+    - [84, 1, 4, "redstone_wire[east=side,north=none,power=12,south=none,west=side]"]
+    - [85, 1, 4, "redstone_wire[east=side,north=none,power=11,south=none,west=side]"]
+    - [86, 1, 4, "redstone_wire[east=side,north=none,power=10,south=none,west=side]"]
+    - [87, 1, 4, "redstone_wire[east=side,north=none,power=9,south=none,west=side]"]
+    - [128, 1, 4, "calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [128, 1, 5, "comparator[facing=north,mode=compare,powered=false]"]
+    - [131, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [127, 1, 4, "redstone_block"]
+  block_entities:
+    - [48, 1, 5, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [88, 1, 5, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [128, 1, 5, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 280
+inputs:
+  - {tick: 2, pos: [20, 1, 4], action: use}
+  - {tick: 2, pos: [51, 1, 4], action: use}
+  - {tick: 2, pos: [91, 1, 4], action: use}
+  - {tick: 2, pos: [131, 1, 4], action: use}
+  - {tick: 70, pos: [20, 1, 4], action: use}
+  - {tick: 70, pos: [51, 1, 4], action: use}
+  - {tick: 70, pos: [91, 1, 4], action: use}
+  - {tick: 70, pos: [131, 1, 4], action: use}
+  - {tick: 140, pos: [20, 1, 4], action: use}
+  - {tick: 140, pos: [51, 1, 4], action: use}
+  - {tick: 140, pos: [91, 1, 4], action: use}
+  - {tick: 140, pos: [131, 1, 4], action: use}
+  - {tick: 210, pos: [51, 1, 4], action: use}
+  - {tick: 210, pos: [91, 1, 4], action: use}
+  - {tick: 210, pos: [131, 1, 4], action: use}
+probes:
+  g0_sensor: [8, 1, 4]
+  g0_lamp_n: [8, 1, 3]
+  g0_lamp_e: [9, 1, 4]
+  g0_lamp_s: [8, 1, 5]
+  g0_lamp_back: [7, 1, 4]
+  g0_plain: [8, 1, 7]
+  g1_sensor: [48, 1, 4]
+  g1_cmp: [48, 1, 5]
+  g1_input: [47, 1, 4]
+  g2_sensor: [88, 1, 4]
+  g2_cmp: [88, 1, 5]
+  g2_input: [87, 1, 4]
+  g3_sensor: [128, 1, 4]
+  g3_cmp: [128, 1, 5]

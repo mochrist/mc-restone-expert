@@ -121,6 +121,7 @@ class NoteBlock(Block):
     def play_note(self, world: World, pos: Pos, state: BlockState) -> None:
         if state.get("instrument") in _WORKS_ABOVE or world.get(pos.offset(D.UP)).is_air:
             world.block_event(pos, self, 0, 0)
+            world.game_event("note_block_play", pos)
 
     def use_without_item(self, world, pos, state):
         state = state.with_(note=(state.get_int("note") + 1) % 25)
@@ -162,6 +163,8 @@ class DoorBlock(Block):
         other = D.UP if state.get("half") == "lower" else D.DOWN
         signal = world.has_neighbor_signal(pos) or world.has_neighbor_signal(pos.offset(other))
         if source is not self and signal != state.get_bool("powered"):
+            if signal != state.get_bool("open"):
+                world.game_event("block_open" if signal else "block_close", pos)
             world.set_block(pos, state.with_(powered=signal, open=signal), UPDATE_CLIENTS)
 
     def update_shape(self, world, pos, state, direction, neighbor_pos, neighbor_state):
@@ -183,7 +186,9 @@ class DoorBlock(Block):
     def use_without_item(self, world, pos, state):
         if not self.open_by_hand:
             return False
-        world.set_block(pos, state.with_(open=not state.get_bool("open")), UPDATE_CLIENTS | UPDATE_IMMEDIATE)
+        state = state.with_(open=not state.get_bool("open"))
+        world.set_block(pos, state, UPDATE_CLIENTS | UPDATE_IMMEDIATE)
+        world.game_event("block_open" if state.get_bool("open") else "block_close", pos)
         return True
 
 
@@ -197,12 +202,15 @@ class TrapDoorBlock(Block):
         if signal != state.get_bool("powered"):
             if state.get_bool("open") != signal:
                 state = state.with_(open=signal)
+                world.game_event("block_open" if signal else "block_close", pos)
             world.set_block(pos, state.with_(powered=signal), UPDATE_CLIENTS)
 
     def use_without_item(self, world, pos, state):
         if not self.open_by_hand:
             return False
-        world.set_block(pos, state.with_(open=not state.get_bool("open")), UPDATE_CLIENTS)
+        state = state.with_(open=not state.get_bool("open"))
+        world.set_block(pos, state, UPDATE_CLIENTS)
+        world.game_event("block_open" if state.get_bool("open") else "block_close", pos)
         return True
 
 
@@ -220,6 +228,8 @@ class FenceGateBlock(Block):
         signal = world.has_neighbor_signal(pos)
         if state.get_bool("powered") != signal:
             world.set_block(pos, state.with_(powered=signal, open=signal), UPDATE_CLIENTS)
+            if state.get_bool("open") != signal:
+                world.game_event("block_open" if signal else "block_close", pos)
 
     def update_shape(self, world, pos, state, direction, neighbor_pos, neighbor_state):
         facing = D.from_name(state.get("facing", "north"))
@@ -236,6 +246,7 @@ class FenceGateBlock(Block):
                 state = state.with_(facing=PLAYER_DIRECTION.label)
             state = state.with_(open=True)
         world.set_block(pos, state, UPDATE_CLIENTS | UPDATE_IMMEDIATE)
+        world.game_event("block_open" if state.get_bool("open") else "block_close", pos)
         return True
 
 

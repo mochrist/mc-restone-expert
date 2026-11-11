@@ -1,0 +1,35 @@
+name: sculk-resonance
+description: >
+  Amethyst-Resonanz: Der Hebel (0,1,4) aktiviert Sensor A (2,1,4); der Amethystblock (3,1,4) neben A wiederholt
+          die Vibration als resonate_10 an seiner Position, die Sensor B (9,1,4, ausser Reichweite des Hebels, Abstand 6
+          zum Amethyst) empfaengt; B hat seinen eigenen Amethystblock (10,1,4), der Sensor C (16,1,4) erreicht.
+          Komparatoren zeigen die Frequenz.
+build:
+  size: [18, 2, 8]
+  fill:
+    - [0, 0, 0, 17, 0, 7, "stone"]
+  blocks:
+    - [0, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [2, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [2, 1, 5, "comparator[facing=north,mode=compare,powered=false]"]
+    - [9, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [9, 1, 5, "comparator[facing=north,mode=compare,powered=false]"]
+    - [16, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [16, 1, 5, "comparator[facing=north,mode=compare,powered=false]"]
+    - [3, 1, 4, "amethyst_block"]
+    - [10, 1, 4, "amethyst_block"]
+  block_entities:
+    - [2, 1, 5, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [9, 1, 5, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [16, 1, 5, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 180
+inputs:
+  - {tick: 2, pos: [0, 1, 4], action: use}
+  - {tick: 100, pos: [0, 1, 4], action: use}
+probes:
+  a_sensor: [2, 1, 4]
+  a_cmp: [2, 1, 5]
+  b_sensor: [9, 1, 4]
+  b_cmp: [9, 1, 5]
+  c_sensor: [16, 1, 4]
+  c_cmp: [16, 1, 5]

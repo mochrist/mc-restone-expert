@@ -67,6 +67,8 @@ class World:
         self.registry = registry
         self.blocks: dict[Pos, BlockState] = {}
         self.block_entities: dict[Pos, Any] = {}
+        # Game event listeners (sculk sensors): block entities with ``listens``; see sim/blocks/sculk.py.
+        self.listeners: dict[Pos, Any] = {}
         self.game_time = 0
         self.handling_tick = False
         self._sub_tick = 0
@@ -134,6 +136,10 @@ class World:
         be.removed = False
         previous = self.block_entities.get(pos)
         self.block_entities[pos] = be
+        if getattr(be, "listens", False):
+            self.listeners[pos] = be
+        else:
+            self.listeners.pop(pos, None)
         if previous is not None and previous is not be:
             previous.removed = True
         self._update_block_entity_ticker(pos, be)
@@ -164,6 +170,7 @@ class World:
         be = self.block_entities.pop(pos, None)
         if be is not None:
             be.removed = True
+        self.listeners.pop(pos, None)
         self._remove_block_entity_ticker(pos)
 
     def set_block(self, pos: Pos, state: BlockState, flags: int = UPDATE_ALL, limit: int = UPDATE_LIMIT) -> bool:
@@ -222,9 +229,24 @@ class World:
         return self.set_block(pos, AIR, UPDATE_ALL | (UPDATE_MOVE_BY_PISTON if moved_by_piston else 0))
 
     def destroy_block(self, pos: Pos, limit: int = UPDATE_LIMIT) -> bool:
-        if self.get(pos).is_air:
+        """Level#destroyBlock (drops are not simulated): setBlock, then the BLOCK_DESTROY game event."""
+        old = self.get(pos)
+        if old.is_air:
             return False
-        return self.set_block(pos, AIR, UPDATE_ALL, limit)
+        destroyed = self.set_block(pos, AIR, UPDATE_ALL, limit)
+        if destroyed:
+            self.game_event("block_destroy", pos, old)
+        return destroyed
+
+    def game_event(self, event: str, pos: Pos, affected: BlockState | None = None) -> None:
+        """LevelAccessor#gameEvent at the center of ``pos``; ``affected`` is the context's block state.
+
+        Only vibration listeners exist in the simulator (GameEventDispatcher#post). They are independent of
+        each other, so the visiting order does not matter."""
+        if self.listeners:
+            for be in list(self.listeners.values()):
+                if not be.removed:
+                    be.on_game_event(self, event, pos, affected)
 
     def update_or_destroy(self, old: BlockState, new: BlockState, pos: Pos, flags: int, limit: int) -> None:
         """Block#updateOrDestroy"""
