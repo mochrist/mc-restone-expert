@@ -105,7 +105,7 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#getInputSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-sources.yaml)
 
 ### DUST-013: Staub liest Staubsignale horizontal und diagonal
 - Aussage: Der Staub-Eingang berücksichtigt den Staub in jedem der vier horizontalen Nachbarn, zusätzlich den Staub über einem Nachbarn, wenn der Nachbar ein Leiter und der Block über dem Staub kein Leiter ist, sowie den Staub unter einem Nachbarn, wenn der Nachbar kein Leiter ist.

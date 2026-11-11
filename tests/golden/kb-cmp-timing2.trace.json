@@ -1,0 +1,131 @@
+{
+ "format": 1,
+ "scenario": "kb-cmp-timing2",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 20,
+ "probes": {
+  "z0_rep": [
+   3,
+   1,
+   0
+  ],
+  "z10_rep": [
+   3,
+   1,
+   10
+  ],
+  "z15_rep": [
+   3,
+   1,
+   15
+  ],
+  "z17_rep": [
+   3,
+   1,
+   17
+  ],
+  "z20_rep": [
+   3,
+   1,
+   20
+  ],
+  "z26_rep": [
+   3,
+   1,
+   26
+  ],
+  "z30_rep": [
+   3,
+   1,
+   30
+  ],
+  "z33_rep": [
+   3,
+   1,
+   33
+  ]
+ },
+ "samples": {
+  "z0_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "z10_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "z15_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "z17_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "z20_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "z26_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "z30_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "z33_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ]
+ }
+}

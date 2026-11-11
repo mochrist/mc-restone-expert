@@ -25,7 +25,7 @@ BUDs relevant ist.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `Level#setBlock`, `Block#UPDATE_NEIGHBORS`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-neighbor-updates.yaml)
 - Hinweise: Viele Redstone-Zustandswechsel nutzen nur Flag 2 (z. B. `triggered` beim Dispenser, `enabled` beim Hopper) und erzeugen daher keine Block-Updates.
 
 ### BUD-003: Auch Flag-2-Änderungen erzeugen Shape-Updates
@@ -33,8 +33,8 @@ BUDs relevant ist.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `Level#setBlock`, `DispenserBlock#neighborChanged`, `HopperBlock#checkPoweredState`
 - Konfidenz: mittel
-- Status: belegt
-- Hinweise: Das Observer-Verhalten selbst ist Thema der Observer-Datei. Nicht im Spiel geprüft.
+- Status: im-Spiel-verifiziert (scenarios/kb-neighbor-updates.yaml)
+- Hinweise: Das Observer-Verhalten selbst ist Thema der Observer-Datei. Im Spiel bestätigt (kb-neighbor-updates z=4: Lampe mit Flag 2, der Observer daneben pulst).
 
 ### BUD-004: Der QC-Piston-BUD
 - Aussage: Ein Piston, der nur über QC bestromt ist, aber noch kein Update erhalten hat, fährt beim nächsten `neighborChanged` an seiner Position aus (Block-Event in derselben Tick-Phase-Logik wie in PIS-019).
@@ -55,7 +55,7 @@ BUDs relevant ist.
 - Version: 26.3
 - Quelle: [SRC-M-WIKI-BUD]
 - Konfidenz: mittel
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-observer.yaml)
 - Hinweise: Details in der Observer-Datei; dort sollte der Code (`ObserverBlock#updateShape`) zitiert werden.
 
 ### BUD-007: Updates erreichen QC-Blöcke oft über Quellen mit Zwei-Block-Reichweite
@@ -78,7 +78,7 @@ BUDs relevant ist.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#onPlace`, `PistonBaseBlock#setPlacedBy`, `DispenserBlock`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-piston-qc.yaml)
 - Hinweise: `onPlace` prüft nur, wenn an der Position kein Block Entity existiert und vorher ein anderer Block stand.
 
 ### BUD-010: Updates sind auf eine Kettenlänge begrenzt

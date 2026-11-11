@@ -1,0 +1,69 @@
+name: kb-cmp-timing2
+description: >
+  Diagnose Comparator-Timing an verschiedenen z-Positionen (nur Analyse): Comparator liest Staub 7, Rechtsklick bei Tick 2,
+  Stein davor, Repeater dahinter.
+build:
+  size: [5, 3, 36]
+  fill:
+    - [0, 0, 0, 4, 0, 35, "stone"]
+  blocks:
+    - [0, 1, 0, "redstone_wire[east=none,north=none,power=7,south=none,west=none]"]
+    - [1, 1, 0, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 0, "stone"]
+    - [3, 1, 0, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [0, 1, 10, "redstone_wire[east=none,north=none,power=7,south=none,west=none]"]
+    - [1, 1, 10, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 10, "stone"]
+    - [3, 1, 10, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [0, 1, 15, "redstone_wire[east=none,north=none,power=7,south=none,west=none]"]
+    - [1, 1, 15, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 15, "stone"]
+    - [3, 1, 15, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [0, 1, 17, "redstone_wire[east=none,north=none,power=7,south=none,west=none]"]
+    - [1, 1, 17, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 17, "stone"]
+    - [3, 1, 17, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [0, 1, 20, "redstone_wire[east=none,north=none,power=7,south=none,west=none]"]
+    - [1, 1, 20, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 20, "stone"]
+    - [3, 1, 20, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [0, 1, 26, "redstone_wire[east=none,north=none,power=7,south=none,west=none]"]
+    - [1, 1, 26, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 26, "stone"]
+    - [3, 1, 26, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [0, 1, 30, "redstone_wire[east=none,north=none,power=7,south=none,west=none]"]
+    - [1, 1, 30, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 30, "stone"]
+    - [3, 1, 30, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [0, 1, 33, "redstone_wire[east=none,north=none,power=7,south=none,west=none]"]
+    - [1, 1, 33, "comparator[facing=west,mode=compare,powered=false]"]
+    - [2, 1, 33, "stone"]
+    - [3, 1, 33, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+  block_entities:
+    - [1, 1, 0, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 10, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 15, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 17, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 20, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 26, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 30, '{id:"minecraft:comparator",OutputSignal:0}']
+    - [1, 1, 33, '{id:"minecraft:comparator",OutputSignal:0}']
+ticks: 20
+inputs:
+  - {tick: 2, pos: [1, 1, 0], action: use}
+  - {tick: 2, pos: [1, 1, 10], action: use}
+  - {tick: 2, pos: [1, 1, 15], action: use}
+  - {tick: 2, pos: [1, 1, 17], action: use}
+  - {tick: 2, pos: [1, 1, 20], action: use}
+  - {tick: 2, pos: [1, 1, 26], action: use}
+  - {tick: 2, pos: [1, 1, 30], action: use}
+  - {tick: 2, pos: [1, 1, 33], action: use}
+probes:
+  z0_rep: [3, 1, 0]
+  z10_rep: [3, 1, 10]
+  z15_rep: [3, 1, 15]
+  z17_rep: [3, 1, 17]
+  z20_rep: [3, 1, 20]
+  z26_rep: [3, 1, 26]
+  z30_rep: [3, 1, 30]
+  z33_rep: [3, 1, 33]

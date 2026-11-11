@@ -18,7 +18,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#neighborChanged`, `PistonBaseBlock#onPlace`, `PistonBaseBlock#setPlacedBy`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-piston-qc.yaml)
 - Hinweise: Grundlage für BUD-Verhalten, siehe `mechanics/bud.md`.
 
 ### PIS-002: Leistungsprüfung ignoriert die Front und schließt Quasi-Connectivity ein
@@ -26,7 +26,7 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#getNeighborSignal`, `SignalGetter#hasSignal`; [SRC-M-WIKI-QC]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-piston-qc.yaml)
 - Hinweise: Für die obere Position wird auch die `facing`-Richtung geprüft; ein nach oben zeigender Piston kann also über seinen Kopf-Block QC-aktiviert werden (vgl. [SRC-M-WIKI-PISTON]). Der zusätzliche Aufruf `hasSignal(pos, DOWN)` auf die eigene Position ist praktisch wirkungslos, da Pistons laut `Blocks#pistonProperties` nie Redstone-Leiter sind und kein Signal abgeben.
 
 ### PIS-003: Ausfahren wird nur angestoßen, wenn die Struktur schiebbar ist

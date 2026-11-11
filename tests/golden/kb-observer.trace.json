@@ -1,0 +1,269 @@
+{
+ "format": 1,
+ "scenario": "kb-observer",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 30,
+ "probes": {
+  "a_obs": [
+   1,
+   1,
+   0
+  ],
+  "a_det_front": [
+   3,
+   1,
+   0
+  ],
+  "a_det_side": [
+   1,
+   1,
+   1
+  ],
+  "b_obs": [
+   1,
+   1,
+   4
+  ],
+  "b_lamp": [
+   2,
+   1,
+   4
+  ],
+  "b_lever": [
+   0,
+   2,
+   4
+  ],
+  "b_block": [
+   0,
+   1,
+   4
+  ],
+  "c_rep": [
+   1,
+   1,
+   8
+  ],
+  "c_obs": [
+   2,
+   1,
+   8
+  ],
+  "c_lamp": [
+   3,
+   1,
+   8
+  ],
+  "d_obs": [
+   1,
+   1,
+   12
+  ],
+  "d_det_front": [
+   3,
+   1,
+   12
+  ],
+  "e_obs": [
+   1,
+   1,
+   16
+  ],
+  "e_lamp": [
+   2,
+   1,
+   17
+  ]
+ },
+ "samples": {
+  "a_obs": [
+   [
+    0,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:observer[facing=west,powered=true]"
+   ],
+   [
+    6,
+    "minecraft:observer[facing=west,powered=false]"
+   ]
+  ],
+  "a_det_front": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    6,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "a_det_side": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=south,locked=false,powered=true]"
+   ]
+  ],
+  "b_obs": [
+   [
+    0,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    14,
+    "minecraft:observer[facing=west,powered=true]"
+   ],
+   [
+    16,
+    "minecraft:observer[facing=west,powered=false]"
+   ]
+  ],
+  "b_lamp": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    14,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    20,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "b_lever": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    8,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "b_block": [
+   [
+    0,
+    "minecraft:stone"
+   ],
+   [
+    12,
+    "minecraft:cobblestone"
+   ]
+  ],
+  "c_rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ],
+   [
+    14,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ]
+  ],
+  "c_obs": [
+   [
+    0,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    6,
+    "minecraft:observer[facing=west,powered=true]"
+   ],
+   [
+    8,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    16,
+    "minecraft:observer[facing=west,powered=true]"
+   ],
+   [
+    18,
+    "minecraft:observer[facing=west,powered=false]"
+   ]
+  ],
+  "c_lamp": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    6,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    12,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    16,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    22,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "d_obs": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    2,
+    "minecraft:observer[facing=west,powered=false]"
+   ]
+  ],
+  "d_det_front": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "e_obs": [
+   [
+    0,
+    "minecraft:observer[facing=west,powered=false]"
+   ],
+   [
+    4,
+    "minecraft:observer[facing=west,powered=true]"
+   ],
+   [
+    5,
+    "minecraft:air"
+   ]
+  ],
+  "e_lamp": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    4,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    9,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ]
+ }
+}

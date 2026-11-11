@@ -44,7 +44,7 @@ häufigem Schalten durchbrennen.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneTorchBlock#tick`, `RedstoneTorchBlock#onPlace`, `RedstoneTorchBlock#notifyNeighbors`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-neighbor-updates.yaml)
 - Hinweise: Also Updates bis Abstand 2 (Taxicab). Beim Entfernen ebenso (`affectNeighborsAfterRemoval`, außer durch Kolben).
 
 ### TRCH-006: Die Fackel lädt den Block darüber stark

@@ -1,0 +1,65 @@
+name: kb-neighbor-updates
+description: >
+  Neighbor-Update-Detektoren: Ein Repeater mit Delay 1, der eingeschaltet (powered=true) und ohne Eingang gesetzt
+  wird, schaltet sich bei jedem Neighbor-Update selbst aus (2 gt später); ohne Update bleibt er an. So wird sichtbar,
+  wer wann welchen Nachbarn aktualisiert. Prüft UPD-005 (z=0: setblock desselben Zustands löst nichts aus, ein
+  anderer Zustand schon), BUD-002/BUD-003/OUT-003 (z=4: die Lampe setzt lit mit Flag 2, der Observer daneben sieht
+  es, der Detektor daneben nicht; Kontrolle: Stein darüber), TRCH-005 (z=8: Fackelwechsel aktualisiert Nachbarn bis
+  Abstand 2), SRCB-002 (z=12/14: Hebel und Knopf aktualisieren auch den Befestigungsblock) und REP-007
+  (z=17: Repeater-Wechsel aktualisiert den Ausgangsblock samt Nachbarn, aber nicht die Nachbarn des Repeaters).
+build:
+  size: [8, 3, 22]
+  fill:
+    - [0, 0, 0, 7, 0, 21, "stone"]
+  blocks:
+    - [0, 1, 0, "stone"]
+    - [1, 1, 0, "repeater[delay=1,facing=north,locked=false,powered=true]"]
+    - [3, 1, 0, "repeater[delay=1,facing=north,locked=false,powered=true]"]
+    - [4, 1, 0, "stone"]
+    - [0, 1, 4, "observer[facing=east,powered=false]"]
+    - [1, 1, 4, "redstone_lamp[lit=false]"]
+    - [2, 1, 4, "repeater[delay=1,facing=south,locked=false,powered=true]"]
+    - [1, 1, 5, "repeater[delay=1,facing=north,locked=false,powered=true]"]
+    - [0, 1, 8, "stone"]
+    - [0, 2, 8, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 8, "redstone_wall_torch[facing=east,lit=true]"]
+    - [2, 1, 8, "repeater[delay=1,facing=north,locked=false,powered=true]"]
+    - [3, 1, 8, "repeater[delay=1,facing=north,locked=false,powered=true]"]
+    - [1, 1, 12, "lever[face=floor,facing=east,powered=false]"]
+    - [2, 0, 12, "repeater[delay=1,facing=north,locked=false,powered=true]"]
+    - [1, 1, 14, "stone_button[face=floor,facing=east,powered=false]"]
+    - [2, 0, 14, "repeater[delay=1,facing=north,locked=false,powered=true]"]
+    - [0, 1, 18, "stone"]
+    - [0, 2, 18, "lever[face=floor,facing=east,powered=false]"]
+    - [1, 1, 18, "repeater[delay=1,facing=west,locked=false,powered=false]"]
+    - [2, 1, 18, "stone"]
+    - [2, 1, 17, "repeater[delay=1,facing=north,locked=false,powered=true]"]
+    - [1, 1, 19, "repeater[delay=1,facing=north,locked=false,powered=true]"]
+ticks: 30
+inputs:
+  - {tick: 2, pos: [0, 1, 0], action: setblock, state: "stone"}
+  - {tick: 2, pos: [4, 1, 0], action: setblock, state: "cobblestone"}
+  - {tick: 2, pos: [1, 2, 4], action: setblock, state: "redstone_block"}
+  - {tick: 2, pos: [0, 2, 8], action: use}
+  - {tick: 2, pos: [1, 1, 12], action: use}
+  - {tick: 2, pos: [1, 1, 14], action: use}
+  - {tick: 2, pos: [0, 2, 18], action: use}
+  - {tick: 8, pos: [2, 2, 4], action: setblock, state: "stone"}
+  - {tick: 14, pos: [1, 2, 4], action: setblock, state: "air"}
+probes:
+  upd5_same_det: [1, 1, 0]
+  upd5_diff_det: [3, 1, 0]
+  lamp_obs: [0, 1, 4]
+  lamp: [1, 1, 4]
+  lamp_det_east: [2, 1, 4]
+  lamp_det_south: [1, 1, 5]
+  torch: [1, 1, 8]
+  torch_det_near: [2, 1, 8]
+  torch_det_far: [3, 1, 8]
+  lever: [1, 1, 12]
+  lever_det: [2, 0, 12]
+  button: [1, 1, 14]
+  button_det: [2, 0, 14]
+  rep: [1, 1, 18]
+  rep_det_out: [2, 1, 17]
+  rep_det_side: [1, 1, 19]

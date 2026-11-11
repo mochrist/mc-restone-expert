@@ -34,7 +34,7 @@ Rails **kein** QC; Türen prüfen nur ihre eigene zweite Hälfte (siehe QC-005).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `CrafterBlock#neighborChanged`; [SRC-M-WIKI-QC]
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-piston-qc.yaml)
 - Hinweise: Wiki: „crafters are not affected by quasi-connectivity".
 
 ### QC-004: Redstone-Lampen, Rails, Hopper, Trapdoors, Zauntore und Notenblöcke haben kein QC
@@ -50,8 +50,8 @@ Rails **kein** QC; Türen prüfen nur ihre eigene zweite Hälfte (siehe QC-005).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DoorBlock#neighborChanged`; [SRC-M-WIKI-QC]
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: Die Wiki-Seite nutzt Türen nur als Analogie für QC. Das Update einer Hälfte wird per Shape-Update an die andere weitergegeben (`DoorBlock#updateShape`), daher kein BUD-artiger Zustand wie bei Pistons zu erwarten; nicht im Spiel geprüft.
+- Status: im-Spiel-verifiziert (scenarios/doors.yaml)
+- Hinweise: Die Wiki-Seite nutzt Türen nur als Analogie für QC. Das Update einer Hälfte wird per Shape-Update an die andere weitergegeben (`DoorBlock#updateShape`), daher kein BUD-artiger Zustand wie bei Pistons zu erwarten; im Spiel bestätigt (doors.yaml: Hebel nur neben der oberen Hälfte öffnet beide Hälften sofort).
 
 ### QC-006: Die QC-Position zählt alle Signalarten wie an einer echten Blockposition
 - Aussage: Für die Position über dem QC-Block wird `SignalGetter#getSignal` je Nachbar verwendet, d. h. sowohl direkte Signale von Quellen (z. B. Redstone-Block, Hebel, Fackel, Repeater, Staub) als auch Signale durch stark bestromte Leiter neben dieser Position zählen; der Block an der Position selbst muss nicht existieren.

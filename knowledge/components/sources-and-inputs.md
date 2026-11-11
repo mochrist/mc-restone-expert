@@ -22,7 +22,7 @@ bekommen. Zeiten in Game-Ticks (gt).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `LeverBlock#updateNeighbours`, `ButtonBlock#updateNeighbours`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-neighbor-updates.yaml)
 
 ### SRCB-003: Steinknöpfe bleiben 20 gt gedrückt
 - Aussage: Stein- und Polierter-Schwarzstein-Knöpfe planen beim Drücken einen Tick nach 20 gt, nach dem sie wieder loslassen.
@@ -36,7 +36,8 @@ bekommen. Zeiten in Game-Ticks (gt).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `Blocks` (`*_BUTTON`: `ticksToStayPressed`=30), `ButtonBlock#checkPressed`, `ButtonBlock#entityInside`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-sources.yaml)
+- Hinweise: Im Spiel geprüft: Eichen-, Bambus-, Karmesin- und Wirr-Knopf 30 gt (Steinknopf 20 gt); das Verhalten mit Pfeil wurde nicht geprüft (keine Entity-Eingabe im Szenarioformat).
 
 ### SRCB-005: Knöpfe laden den Befestigungsblock stark
 - Aussage: Ein gedrückter Knopf liefert schwach 15 an alle Nachbarn und stark 15 an den Befestigungsblock.
@@ -66,8 +67,8 @@ bekommen. Zeiten in Game-Ticks (gt).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PoweredBlock`, `Blocks#REDSTONE_BLOCK` (`isRedstoneConductor(never)`)
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: Als Seiteneingang von Comparatoren zählt er dennoch mit 15 (`SignalGetter#getControlInputSignal`), für Repeater-Sperre nicht.
+- Status: im-Spiel-verifiziert (scenarios/kb-sources.yaml)
+- Hinweise: Im Spiel geprüft: 15 an den Nachbarn (Repeater schaltet), kein starkes Laden (ein Stein dazwischen leitet nicht); „kein Leiter“ nur aus dem Code. Als Seiteneingang von Comparatoren zählt er dennoch mit 15 (`SignalGetter#getControlInputSignal`), für Repeater-Sperre nicht.
 
 ### SRCB-009: Zielblock: Stärke nach Trefferposition, Dauer 20 gt (Pfeil) bzw. 8 gt
 - Aussage: Ein Zielblock setzt bei Projektiltreffer `power` auf 1–15 je nach Abstand zur Flächenmitte und fällt nach 20 gt (Pfeile) bzw. 8 gt (andere Projektile) auf 0 zurück; während ein Tick geplant ist, wird ein neuer Treffer ignoriert.
@@ -82,8 +83,8 @@ bekommen. Zeiten in Game-Ticks (gt).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DaylightDetectorBlock#tickEntity`, `DaylightDetectorBlock#updateSignalStrength`, `DaylightDetectorBlock#useWithoutItem`
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: Nur schwaches Signal (`ownSignal`=`power`). Für tick-genaue Simulation reicht meist ein fester `power`-Wert.
+- Status: im-Spiel-verifiziert (scenarios/kb-unmodeled.yaml)
+- Hinweise: Im Spiel geprüft: ein voreingestellter power=9 wird genau bei Tick 20 (gameTime % 20 == 0) auf den echten Wert (7) gesetzt; der Inverted-Fall nicht. Nur schwaches Signal (`ownSignal`=`power`). Für tick-genaue Simulation reicht meist ein fester `power`-Wert.
 
 ### SRCB-011: Lesepult gibt beim Blättern einen 2-gt-Puls und lädt den Block darunter stark
 - Aussage: Beim Seitenwechsel setzt das Lesepult `powered=true` und plant einen Tick nach 2 gt, der es wieder ausschaltet; es lädt den Block darunter stark mit 15.
