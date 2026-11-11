@@ -50,7 +50,7 @@ define_syms! {
     ASCENDING_NORTH => "ascending_north", ASCENDING_SOUTH => "ascending_south",
     SOUTH_EAST => "south_east", SOUTH_WEST => "south_west", NORTH_WEST => "north_west",
     NORTH_EAST => "north_east",
-    HARP => "harp", LEFT => "left", RIGHT => "right", SINGLE => "single",
+    HARP => "harp", LEFT => "left", RIGHT => "right", SINGLE => "single", BITES => "bites",
 }
 
 fn known_syms() -> &'static FxHashMap<&'static str, Sym> {
@@ -161,6 +161,7 @@ pub enum Kind {
     PoweredRail,
     Lectern,
     DaylightDetector,
+    Cake,
 }
 
 pub const BF_RAIL_IN_NAME: u8 = 1; // "rail" in state.name
@@ -228,6 +229,7 @@ fn kind_of(name: &str) -> (Kind, u16, u16) {
         "powered_rail" | "activator_rail" => return (Kind::PoweredRail, 0, 0),
         "lectern" => return (Kind::Lectern, 0, 0),
         "daylight_detector" => return (Kind::DaylightDetector, 0, 0),
+        "cake" => return (Kind::Cake, 0, 0),
         _ => {}
     }
     if let Some(wood) = id.strip_suffix("_button") {
@@ -266,6 +268,7 @@ pub const SF_EXTENDED: u16 = 16;
 pub const SF_DATA_BLOCK_ENTITY: u16 = 32; // blockdata.has_block_entity
 pub const SF_UNBREAKABLE: u16 = 64; // blockdata.is_unbreakable
 pub const SF_KNOWN: u16 = 128; // block is in the data table
+pub const SF_SOLID: u16 = 256; // blockdata.is_solid (deprecated BlockState#isSolid)
 
 pub const NO_FACING: u8 = 255;
 
@@ -656,6 +659,9 @@ impl States {
         }
         if d.known {
             flags |= SF_KNOWN;
+        }
+        if d.solid {
+            flags |= SF_SOLID;
         }
         let power = match find(sym::POWER) {
             Some(v) if v.0 < NUM_SYMS => v.0 as u8,

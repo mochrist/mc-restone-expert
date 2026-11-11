@@ -532,6 +532,22 @@ class PoweredRailBlock(BaseRailBlock):
 
 
 # ---------------------------------------------------------------------- lectern
+class CakeBlock(Block):
+    """CakeBlock: a comparator reads (7 - bites) * 2; the cake drops when the block below is not solid.
+    Eating (use) is not modeled: whether the oracle's player may eat is not checked (ASSUMPTION)."""
+
+    def has_analog_output_signal(self, state):
+        return True
+
+    def get_analog_output_signal(self, world, pos, state, direction):
+        return (7 - state.get_int("bites", 0)) * 2
+
+    def update_shape(self, world, pos, state, direction, neighbor_pos, neighbor_state):
+        if direction == D.DOWN and not blockdata.is_solid(world.get(pos.offset(D.DOWN))):
+            return AIR
+        return state
+
+
 class LecternBlockEntity:
     ticks = False
 
@@ -615,3 +631,4 @@ REGISTRY.register(RailBlock(), "rail")
 REGISTRY.register(PoweredRailBlock(), "powered_rail")
 REGISTRY.register(PoweredRailBlock(), "activator_rail")
 REGISTRY.register(LecternBlock(), "lectern")
+REGISTRY.register(CakeBlock(), "cake")

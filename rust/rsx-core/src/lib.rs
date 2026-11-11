@@ -718,6 +718,7 @@ impl World {
         d.set_item("block_entity", info.flags & state::SF_DATA_BLOCK_ENTITY != 0)?;
         d.set_item("unbreakable", info.flags & state::SF_UNBREAKABLE != 0)?;
         d.set_item("known", info.flags & state::SF_KNOWN != 0)?;
+        d.set_item("solid", info.flags & state::SF_SOLID != 0)?;
         d.set_item("signal_source", self.w.is_signal_source(info.kind))?;
         d.set_item("has_block_entity", self.w.has_block_entity(info.kind))?;
         d.set_item("analog_output", self.w.has_analog_output_signal(info.kind))?;

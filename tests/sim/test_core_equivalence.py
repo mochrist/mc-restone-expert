@@ -220,6 +220,7 @@ def _random_state(rng: random.Random) -> str:
         f"crafter[crafting=false,orientation={rng.choice(CRAFTER_ORIENTATIONS)},triggered=false]",
         f"crafter[crafting=false,orientation={rng.choice(CRAFTER_ORIENTATIONS)},triggered=false]",
         "daylight_detector[inverted=false,power=0]", "daylight_detector[inverted=true,power=9]",
+        f"cake[bites={rng.randrange(7)}]", f"cake[bites={rng.randrange(7)}]",
     ])
 
 
@@ -321,6 +322,7 @@ def test_static_facts_of_all_states():
 
     from redstone.model import Direction
     from redstone.sim.block import REGISTRY as PY_REGISTRY
+    from redstone.sim import blockdata
     from redstone.sim.blockdata import DATA_FILE
     from redstone.sim.rust_world import REGISTRY as RS_REGISTRY
 
@@ -342,6 +344,7 @@ def test_static_facts_of_all_states():
             "block_entity": (py.has_block_entity, rs.has_block_entity),
             "analog_output": (py.has_analog_output_signal, rs.has_analog_output_signal),
             "push": (py.get_piston_push_reaction, rs.get_piston_push_reaction),
+            "solid": (blockdata.is_solid, lambda st, rs=rs: rs._fact(st, "solid")),  # CakeBlock#canSurvive
         }
         for key, (f_py, f_rs) in checks.items():
             if f_py(state) != f_rs(state):

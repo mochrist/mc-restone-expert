@@ -36,6 +36,8 @@ pub struct BlockEntry {
     pub push: Val<u8>,
     pub block_entity: Val<bool>,
     pub unbreakable: Val<bool>,
+    /// Deprecated BlockState#isSolid (legacy "solid" flag).
+    pub solid: Val<bool>,
 }
 
 pub struct BlockData {
@@ -118,6 +120,7 @@ pub fn init(blocks_json: &str, stacks_json: &str) -> Result<(), String> {
                 push: val(v, "push", as_push).map_err(|e| format!("{name}: {e}"))?,
                 block_entity: be("block_entity")?,
                 unbreakable: be("unbreakable")?,
+                solid: be("solid")?,
             },
         );
     }
@@ -155,6 +158,7 @@ pub struct StateData {
     pub push: u8,
     pub block_entity: bool,
     pub unbreakable: bool,
+    pub solid: bool,
 }
 
 /// blockdata._lookup: state index is mixed radix over the listed properties; missing properties take the
@@ -206,6 +210,7 @@ pub fn lookup(name: &str, props: &[(&str, &str)]) -> StateData {
                 push: entry.push.at(i),
                 block_entity: entry.block_entity.at(i),
                 unbreakable: entry.unbreakable.at(i),
+                solid: entry.solid.at(i),
             }
         }
         None => {
@@ -222,6 +227,7 @@ pub fn lookup(name: &str, props: &[(&str, &str)]) -> StateData {
                 push: guess_push_reaction(name),
                 block_entity: false,
                 unbreakable: false,
+                solid: !is_air_name(name), // blockdata.is_solid default
             }
         }
     }

@@ -60,6 +60,7 @@ impl World {
                 | Kind::Crafter
                 | Kind::CopperBulb
                 | Kind::Lectern
+                | Kind::Cake
         )
     }
 
@@ -75,6 +76,8 @@ impl World {
                 }
             }
             Kind::Lectern => self.lectern_analog_output(pos, state),
+            // CakeBlock#getOutputSignal: (7 - bites) * 2
+            Kind::Cake => (7 - self.st.get_int(state, sym::BITES, 0)) * 2,
             _ => 0,
         }
     }
@@ -291,6 +294,8 @@ impl World {
             Kind::PistonHead => self.piston_head_update_shape(pos, state, direction),
             Kind::NoteBlock => self.note_block_update_shape(pos, state, direction),
             Kind::Door => self.door_update_shape(pos, state, direction, neighbor_state),
+            // CakeBlock#updateShape/canSurvive: gone when the block below is not solid
+            Kind::Cake if direction == Dir::Down && self.info_at(pos.below()).flags & SF_SOLID == 0 => AIR,
             Kind::FenceGate => self.fence_gate_update_shape(pos, state, direction, neighbor_state),
             Kind::Chest | Kind::TrappedChest => self.chest_update_shape(state, direction, neighbor_state),
             _ => state,
