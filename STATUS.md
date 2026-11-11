@@ -1,19 +1,30 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-11, Session 10. Geschätzter Gesamtfortschritt: **ca. 90 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-11, Session 10. Geschätzter Gesamtfortschritt: **ca. 91 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~95 % | 279 Aussagen aus dem 26.3-Code belegt, 137 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
 | M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 105 Golden Traces tick-genau überein; Truhen, Crafter neu |
-| M3 Analyse + Erklärung | 20 % | ~85 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle, Pulsantwort, RS-Latch, Decoder, Logik vor T-FF/Pulsgeber, Sonderfall-Notizen |
+| M3 Analyse + Erklärung | 20 % | ~90 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar-Abhängigkeiten), Pulsantwort, RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher, Sonderfall-Notizen |
 | M4 Redesign | 25 % | ~75 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
 ## Verlauf
 
 ### Session 10 (2026-11-11): Übergabe aus Session 9 abgearbeitet (Opus-Hauptsession, 1 Sonnet-Agent)
+
+- M3 (zweiter Teil der Session):
+  - Teiltabellen (mehr als 6 Hebel) nutzen jetzt auch Paar-Umschaltungen ab dem gespeicherten Hebelzustand
+    (`analyze._pair_dependencies`, bis 20 Hebel, 1 + n + n(n-1)/2 Läufe). Ein AND aus zwei in Ruhe ausgeschalteten
+    Hebeln bekommt so eine Tabelle. seg7: neue Tabelle für out13/15/17; 15 Ausgänge hängen von mehr als 6 Hebeln
+    ab und werden als „ohne Tabelle“ gemeldet (vorher fälschlich nur von in1 abhängig).
+  - Logik vor Set-only-Speicher (`patterns.memory_gate_from_edges`): der Speicher reagiert nur, wo die Logik
+    von aus auf an wechselt; Kombinationen, bei denen er schon beim Einstellen der übrigen Hebel gesetzt wird,
+    gelten als „an“ und werden gemeldet (OR und XOR sind so nicht unterscheidbar). Fixtures
+    `tests/fixtures/analysis/gated/memory-{and,or}.yaml` (RS-Latch ohne Reset hinter AND/OR).
+  - Analysegeschwindigkeit ist mit dem Rust-Kern kein Thema mehr: `rsx explain` seg7/mux3-8 je ~0,6 s.
 
 - Kompaktieren mit größeren Zügen (`design/compact.py`, Branch `wip/compact-moves` geprüft, mit `master` zusammengeführt):
   Teile eines Entwurfs verschieben (Halbräume um 1–3 Blöcke, gleiche Blöcke verschmelzen, gerade Leitungen werden
@@ -191,9 +202,13 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
 
 1. **M3 fertigstellen:**
    - Erledigt (Session 3, Ende): Druckplatten als Eingang (Emulation „betreten und sofort verlassen“, `PressurePlateBlock` in `basic.py`, nicht gegen das Spiel validiert, weil der Oracle keine Entities hat); volle Wahrheitstabelle bis 6 Hebel, darüber Teiltabellen je Ausgangsgruppe (`seg7`: NAND über 4 Hebel); höchstens 64 Ausgänge; Gatternamen AND/OR/NAND/NOR für n Eingänge.
-   - Teiltabellen sehen nur Abhängigkeiten, die beim einzelnen Umschalten sichtbar sind.
-   - Erledigt (Session 4): Clock-Erkennung an echten Clocks. Offen: optional SVG-Timing-Diagramm; Analyse großer Schaltungen beschleunigen (`_run_steps` spielt jede Eingabe-Sequenz von vorn ab).
-   - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet).
+   - Teiltabellen sehen Abhängigkeiten aus Einzel- und Paar-Umschaltungen (Session 10), nicht aus dreien und mehr.
+   - Erledigt (Session 4): Clock-Erkennung an echten Clocks. Offen: optional SVG-Timing-Diagramm. Geschwindigkeit erledigt (Rust-Kern).
+   - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet). Genau ginge es nur mit der
+     Position des auslösenden Blocks (in 26.3 liefert `neighborChanged` nur die Orientierung) oder mit einem
+     Abfragen aller Kolben je Tick in beiden Kernen; für eine Analyse-Notiz bisher nicht lohnend.
+   - Logik vor Pulsverlängerer wird nicht erkannt: die Reaktion ist „folgt dem Eingang“ mit langer
+     Ausschaltverzögerung und von einem Gatter nur über eine Verzögerungsschwelle zu unterscheiden.
 2. **Rust-Kern: erledigt** (Session 7). Bei Änderungen am Simulator beide Kerne pflegen; der Differenztest
    `tests/sim/test_core_equivalence.py` deckt Abweichungen auf. Mögliche Folgearbeit: BFS-Router
    (`design/compose.py: _route`) beschleunigen, Lauf-Schleife samt Aufzeichnung (`Circuit.run`) nach Rust.
@@ -201,7 +216,7 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    - Lücken der Vorlagen: Monoflop 3 gt nur mit Knopf (Hebel unmöglich, siehe Session 8); Hebel-Comparator-Monoflop nicht für jede gerade Länge; XOR-Vorlagen groß (28–33 Blöcke).
    - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); 8 von 15 zufälligen 5-Eingänge-Funktionen bleiben ungelöst (Zerlegung nur g(3)+h(3); andere Aufteilungen, tiefere Ketten prüfen). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); offen sind Bausteine drehen/umsetzen. Geteilte Teilfunktionen zwischen Ausgängen werden nicht genutzt (Volladdierer per `parallel` nicht gefunden; Vorlage gewinnt).
    - Verhalten aus Bestandsschaltungen nur bis 3 Eingänge; Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
-   - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8), nicht aber vor Set-only-Speicher oder Pulsverlängerer.
+   - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8) und Set-only-Speicher (Session 10), nicht vor Pulsverlängerern.
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
 4. **Restliche Simulator-Lücken (M2):**
