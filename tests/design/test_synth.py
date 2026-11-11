@@ -146,8 +146,37 @@ def test_pla_random_functions():
 
 
 def test_pla_limits():
-    spec = from_functions(list("abcdefg"), {"y": "a"})  # 7 inputs, over MAX_INPUTS
+    spec = from_functions(list("abcdefghi"), {"y": "a"})  # 9 inputs, over MAX_INPUTS
     assert pla(spec) is None
+
+
+def test_pla_with_eight_inputs():
+    """Not simply decomposable (`decompose.splits` finds nothing), so only the PLA builds it."""
+    from redstone.design.decompose import splits
+
+    names = [f"i{k}" for k in range(8)]
+    spec = from_functions(names, {"y": "(i0 and i3 and not i5) or (i1 and i2 and i6) or (not i0 and i4 and i7) "
+                                       "or (i2 and not i3 and i4) or (i1 and i5 and not i7) or (i3 and i6 and not i4)"})
+    assert splits(spec) == []
+    ev = evaluate(pla(spec), spec, full=False)
+    assert ev.correct, ev.errors
+
+
+def _primes_reference(n, ones):
+    """Prime implicants by definition: implicants (all covered combinations are ones) that no larger one contains."""
+    ones = set(ones)
+    imps = [p for p in itertools.product([False, True, None], repeat=n)
+            if all(c in ones for c in itertools.product([False, True], repeat=n) if _covers(p, c))
+            and any(_covers(p, c) for c in ones)]
+    return {p for p in imps if not any(q != p and all(x is None or x == y for x, y in zip(q, p)) for q in imps)}
+
+
+def test_primes_match_definition():
+    rng = random.Random(9)
+    for _ in range(150):
+        n = rng.choice([1, 2, 3, 4, 5])
+        ones = [c for c in itertools.product([False, True], repeat=n) if rng.random() < 0.5]
+        assert synth._primes(ones) == _primes_reference(n, ones)
 
 
 @pytest.mark.parametrize("seed", range(6))

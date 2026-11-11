@@ -47,33 +47,30 @@ from .spec import Spec
 
 Implicant = tuple[bool | None, ...]  # per input: True = literal x, False = literal not x, None = unused
 
-MAX_INPUTS = 6  # same limit as the full truth table of the analysis; 5-6 inputs give large PLAs (400-2500 blocks)
+MAX_INPUTS = 8  # wider than the full truth table of the analysis (6); 7-8 inputs give large PLAs and slow checks
 MAX_PARTIAL_INPUTS = 16  # partial specs (most combinations "egal") have few, short terms
 MAX_ORDERS = 24  # output orders tried per term selection (all of them for up to 4 outputs)
 
 
 # ---------------------------------------------------------------------- logic minimisation
-def _combine(a: Implicant, b: Implicant) -> Implicant | None:
-    diff = [i for i, (x, y) in enumerate(zip(a, b)) if x != y]
-    if len(diff) != 1 or a[diff[0]] is None or b[diff[0]] is None:
-        return None
-    return tuple(None if i == diff[0] else x for i, x in enumerate(a))
-
-
 def _covers(imp: Implicant, combo: tuple[bool, ...]) -> bool:
     return all(v is None or v == c for v, c in zip(imp, combo))
 
 
 def _primes(ones) -> set[Implicant]:
+    """All prime implicants. Two implicants combine iff they differ in one fixed literal, so each one is
+    only compared with its partners at every position (hash lookup) instead of with all others."""
     current = {tuple(c) for c in ones}
     primes: set[Implicant] = set()
     while current:
         nxt, used = set(), set()
-        for a, b in itertools.combinations(sorted(current, key=str), 2):
-            c = _combine(a, b)
-            if c is not None:
-                nxt.add(c)
-                used |= {a, b}
+        for a in current:
+            for i, v in enumerate(a):
+                if v is True:
+                    b = a[:i] + (False,) + a[i + 1:]
+                    if b in current:
+                        nxt.add(a[:i] + (None,) + a[i + 1:])
+                        used |= {a, b}
         primes |= current - used
         current = nxt
     return primes

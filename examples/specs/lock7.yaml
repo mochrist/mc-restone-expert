@@ -1,0 +1,8 @@
+# Codeschloss mit sieben Hebeln und zwei gültigen Codes: die Tür öffnet bei 1011001 oder beim Gegencode 0100110
+# (h1 … h7). Die Codes unterscheiden sich in jedem Hebel, also bleiben für jede Teilmenge der Hebel drei
+# verschiedene Restfunktionen übrig: nicht einfach zerlegbar, ein PLA mit 7 Eingängen.
+inputs: [h1, h2, h3, h4, h5, h6, h7]
+function:
+  offen: >-
+    (h1 and not h2 and h3 and h4 and not h5 and not h6 and h7)
+    or (not h1 and h2 and not h3 and not h4 and h5 and h6 and not h7)
