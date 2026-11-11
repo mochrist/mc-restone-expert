@@ -17,6 +17,7 @@ Experiments (all in the simulator, which is validated against the real game):
 from __future__ import annotations
 
 import itertools
+import random
 from dataclasses import dataclass, field
 
 from ..model import Grid, Pos
@@ -357,11 +358,48 @@ def _pair_dependencies(circuit: Circuit, levers: list[Port], outputs: list[Port]
 
 
 MAX_PAIR_LEVERS = 20  # 1 + n + n(n-1)/2 runs: 211 for 20 levers
+SAMPLE_RUNS = 600  # budget for `_sampled_dependencies`
+SAMPLE_DENSITIES = (0.5, 0.75, 0.25, 0.9, 0.1)  # share of flipped levers; many on finds ANDs, few on finds NORs
+
+
+def _sampled_dependencies(circuit: Circuit, levers: list[Port],
+                          outputs: list[Port]) -> tuple[dict[str, set[str]], int] | None:
+    """Levers each output depends on, seen from random lever positions: lever i counts if flipping it alone
+    changes the steady output at one of them. Finds what needs three or more levers away from their stored
+    states (an AND of three levers that are off at rest). The positions are pseudo-random with a fixed seed, so
+    the result is reproducible. Returns the dependencies and the number of positions; None if a run never
+    settles."""
+    n = len(levers)
+    rng = random.Random(0)
+    samples = max(len(SAMPLE_DENSITIES), SAMPLE_RUNS // (n + 1))
+    cache: dict[frozenset[int], tuple[bool, ...] | None] = {}
+
+    def steady(flipped: frozenset[int]):
+        if flipped not in cache:
+            rec = circuit.run([(1, levers[i].pos, "use") for i in sorted(flipped)], max_ticks=MAX_TICKS, quiet=QUIET)
+            cache[flipped] = None if rec.settled_at is None else tuple(rec.on_at(o.pos, rec.ticks) for o in outputs)
+        return cache[flipped]
+
+    deps: dict[str, set[str]] = {o.name: set() for o in outputs}
+    for k in range(samples):
+        density = SAMPLE_DENSITIES[k % len(SAMPLE_DENSITIES)]
+        base = frozenset(i for i in range(n) if rng.random() < density)
+        before = steady(base)
+        if before is None:
+            return None
+        for i in range(n):
+            after = steady(base ^ {i})
+            if after is None:
+                return None
+            for j, o in enumerate(outputs):
+                if before[j] != after[j]:
+                    deps[o.name].add(levers[i].name)
+    return deps, samples
 
 
 def _partial_tables(analysis: Analysis, circuit: Circuit, levers: list[Port], outputs: list[Port]) -> None:
-    """Group outputs by the levers they depend on (single toggles and pairs from the stored states) and
-    tabulate each group on its own."""
+    """Group outputs by the levers they depend on (single toggles and pairs from the stored states, single
+    toggles at random lever positions) and tabulate each group on its own."""
     deps: dict[str, set[str]] = {o.name: set() for o in outputs}
     for r in analysis.responses:
         if r.input.kind == "lever":
@@ -371,6 +409,10 @@ def _partial_tables(analysis: Analysis, circuit: Circuit, levers: list[Port], ou
     pairs = _pair_dependencies(circuit, levers, outputs) if len(levers) <= MAX_PAIR_LEVERS else None
     if pairs is not None:
         for name, more in pairs.items():
+            deps[name] |= more
+    sampled = _sampled_dependencies(circuit, levers, outputs) if pairs is not None else None
+    if sampled is not None:
+        for name, more in sampled[0].items():
             deps[name] |= more
     groups: dict[frozenset[str], list[Port]] = {}
     for o in outputs:
@@ -393,8 +435,11 @@ def _partial_tables(analysis: Analysis, circuit: Circuit, levers: list[Port], ou
             analysis.gates[out.name] = _gate_name([(c, o[i]) for c, o in table])
     analysis.warnings.append(
         f"{len(levers)} Hebel sind zu viele für eine volle Wahrheitstabelle (höchstens {MAX_TRUTH_TABLE_LEVERS}); "
-        + ("Teiltabellen über die Hebel, auf die ein Ausgang einzeln oder paarweise umgelegt reagiert. "
-           "Abhängigkeiten, die erst bei drei oder mehr gleichzeitig umgelegten Hebeln sichtbar werden, fehlen darin"
+        + ((f"Teiltabellen über die Hebel, auf die ein Ausgang einzeln oder paarweise umgelegt oder in einer von "
+            f"{sampled[1]} zufälligen Hebelstellungen reagiert. Abhängigkeiten, die nur in seltenen Kombinationen "
+            "sichtbar werden (z. B. ein AND über viele Hebel), können fehlen" if sampled is not None else
+            "Teiltabellen über die Hebel, auf die ein Ausgang einzeln oder paarweise umgelegt reagiert. "
+            "Abhängigkeiten, die erst bei drei oder mehr gleichzeitig umgelegten Hebeln sichtbar werden, fehlen darin")
            if pairs is not None else
            "Teiltabellen über die Hebel, auf die ein Ausgang einzeln reagiert. Abhängigkeiten, die nur bei "
            "mehreren gleichzeitig betätigten Hebeln sichtbar werden, fehlen darin")
