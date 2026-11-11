@@ -12,7 +12,7 @@ GOLDEN = sorted((ROOT / "tests" / "golden").glob("*.trace.json"))
 
 # Scenarios whose components are not modeled yet (one per line; remove a name once it passes).
 NOT_YET_MODELED: set[str] = {
-    "kb-unmodeled",  # cake and daylight_detector are not modeled in the simulator
+    "kb-unmodeled",  # cake (comparator reads 14 - 2 * bites) is not modeled; the daylight detector part matches
 }
 
 

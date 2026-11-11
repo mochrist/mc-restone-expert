@@ -4,9 +4,9 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 94 %** (gew
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
-| M0 Wissensbasis | 10 % | ~95 % | 279 Aussagen aus dem 26.3-Code belegt, 137 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
+| M0 Wissensbasis | 10 % | ~96 % | 285 Aussagen aus dem 26.3-Code belegt, 167 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 108 Golden Traces tick-genau überein; Truhen, Crafter neu |
+| M2 Oracle + Simulator | 35 % | ~93 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 117 Golden Traces (außer `kb-unmodeled`: Kuchen) tick-genau überein; Truhen, Crafter neu |
 | M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
 | M4 Redesign | 25 % | ~83 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
@@ -44,6 +44,13 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 94 %** (gew
   Logik werden nicht mehr als Wahrheitstabelle neu entworfen (ein Pulsverlängerer hinter AND erfüllt die
   Tabelle samt Übergängen; vorher kam ein bloßes AND heraus). Fixture
   `tests/fixtures/analysis/gated/t-flip-flop-and-or4.yaml`.
+- M0 (Sonnet-Agent): 30 weitere Aussagen im Spiel verifiziert (167 von 285 inkl. DAY-*), keine widerlegt.
+  Szenarien `kb-neighbor-updates`, `kb-observer`, `kb-piston-qc`, `kb-comparator-values`, `kb-comparator-stored`,
+  `kb-sources`, `kb-unmodeled` (+ Regressionen `kb-cmp-timing`, `kb-cmp-timing2`). Trick: ein Repeater
+  `powered=true`, Delay 1, ohne Eingang geht bei jedem Neighbor-Update aus und macht Updates sichtbar.
+  `kb-unmodeled` ist xfail, weil Kuchen (Comparator liest 14 − 2·Bissen) nicht modelliert ist.
+  Unbestätigte Beobachtung: in einem größeren Aufbau (36 Spuren, Comparator-Spuren im Abstand 2 mit Staub) kamen
+  drei Spuren im Spiel einen Tick später als im Simulator; isoliert alles identisch, Aufbau nicht aufbewahrt.
 - M2 (Sonnet-Agent): Tageslichtsensor (normal/invertiert) in beiden Kernen (`sim/blocks/daylight.py`, Rust
   `outputs.rs`), `scenarios/daylight-detector.yaml` im Spiel identisch, `knowledge/components/daylight-detector.md`
   (DAY-001..005 verifiziert). Die Oracle-Welt hat Weltuhr 0 (Sensor liest 7 unter freiem Himmel). Die 20-gt-Phase
@@ -235,7 +242,7 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 94 %** (gew
 ## Befehle
 
 ```
-uv run pytest -q [--sim-core python|rust] [--slow] # ~1265 Tests, alle grün (Rust ~75 s, Python ~6 min)
+uv run pytest -q [--sim-core python|rust] [--slow] # ~1300 Tests, alle grün (Rust ~75 s, Python ~6 min)
 uv sync                                            # baut auch den Rust-Kern; nach Rust-Änderungen:
 uv pip install --reinstall-package rsx-core ./rust/rsx-core
 uv run rsx --sim-core python|rust <befehl>         # Kern wählen (Standard: Rust, wenn gebaut)
@@ -279,7 +286,8 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
 4. **Restliche Simulator-Lücken (M2):**
-   - Tageslichtsensor erledigt (Session 11, nur feste Tageszeit, Himmelslicht angenähert). Druckplatten, Detektorschiene, Sculk. Truhen (Session 8) und Crafter (Session 10, wenige Rezepte) erledigt.
+   - Tageslichtsensor erledigt (Session 11, nur feste Tageszeit, Himmelslicht angenähert). Kuchen als
+     Comparator-Quelle (klein, `kb-unmodeled` hat schon die Spielaufnahme). Druckplatten, Detektorschiene, Sculk. Truhen (Session 8) und Crafter (Session 10, wenige Rezepte) erledigt.
    - Notenblock-Instrument nur über Blocknamen (ASSUMPTION; Feld `instrument` im Block-Dump fehlt).
    - Dispenser: item-spezifisches Verhalten, zufällige Slotwahl → erster Slot (ASSUMPTIONs in `dispenser_hopper.py`).
    - Weitere ungeprüfte Aussagen per Szenario verifizieren (`knowledge/UNVERIFIED.md`).
