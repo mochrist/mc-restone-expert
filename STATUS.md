@@ -6,7 +6,7 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 95 %** (gew
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~96 % | 285 Aussagen aus dem 26.3-Code belegt, 167 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~94 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 119 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen |
+| M2 Oracle + Simulator | 35 % | ~94 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 122 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen |
 | M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
 | M4 Redesign | 25 % | ~83 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
@@ -50,8 +50,10 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 95 %** (gew
   `powered=true`, Delay 1, ohne Eingang geht bei jedem Neighbor-Update aus und macht Updates sichtbar.
   Danach in der Hauptsession: Kuchen als Comparator-Quelle in beiden Kernen ((7 − Bissen)·2, fällt ohne
   `solid`-Block darunter; Rust liest dafür jetzt das `solid`-Flag), `kb-unmodeled` damit identisch zum Spiel.
-  Unbestätigte Beobachtung: in einem größeren Aufbau (36 Spuren, Comparator-Spuren im Abstand 2 mit Staub) kamen
-  drei Spuren im Spiel einen Tick später als im Simulator; isoliert alles identisch, Aufbau nicht aufbewahrt.
+  Beobachtung eines Agents (drei von 36 Comparator-Spuren im Spiel einen Tick später) ließ sich nicht
+  nachstellen: 8 Nachbauten (Abstand 1–3, Staub dazwischen, gespeicherte Ausgänge, `use`, Zufallsmixe) alle
+  identisch auf beiden Kernen; drei bleiben als Regression (`diag-cmp-lanes2`, `-lanes3`, `-lanes-rnd1`,
+  Generator `scripts/gen_diag_cmp_lanes.py`). Vermutlich der Effekt „erste Aufnahme nach Serverstart“ (Session 10).
 - M4 (Opus-Agent): Kompaktieren setzt ganze Bausteine um und dreht sie (`compact.parts`, `relocations`, Leitungen
   per BFS neu, höchstens 12 Staub). Nur drivable-pla wird kleiner (Volumen 660 → 540, `cmp-drivable-pla` neu
   aufgenommen, identisch); bei den übrigen Kompositionen berühren sich die Teile, `parts` findet nur eine Gruppe.
@@ -247,7 +249,7 @@ Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 95 %** (gew
 ## Befehle
 
 ```
-uv run pytest -q [--sim-core python|rust] [--slow] # ~1310 Tests, alle grün (Rust ~75 s, Python ~6 min)
+uv run pytest -q [--sim-core python|rust] [--slow] # ~1310 Tests, alle grün (Rust ~70 s, Python ~9 min)
 uv sync                                            # baut auch den Rust-Kern; nach Rust-Änderungen:
 uv pip install --reinstall-package rsx-core ./rust/rsx-core
 uv run rsx --sim-core python|rust <befehl>         # Kern wählen (Standard: Rust, wenn gebaut)
