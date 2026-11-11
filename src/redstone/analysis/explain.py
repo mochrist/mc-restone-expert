@@ -182,7 +182,8 @@ def _gated_section(a: Analysis) -> list[str]:
     lines = ["## Logik vor Speicher / Pulsgeber", "",
              "Jeder Hebel wurde viermal umgeschaltet (an, aus, an, aus), während die übrigen Hebel jede "
              "Kombination hielten. Die folgenden Ausgänge reagieren genau dann, wenn die genannte Logikfunktion "
-             "der Hebel sich ändert; dahinter sitzt ein flankengesteuerter Baustein. Die Wahrheitstabelle "
+             "der Hebel sich ändert (ein Speicher nur, wenn sie von aus auf an wechselt); dahinter sitzt ein "
+             "flankengesteuerter Baustein oder ein Speicher. Die Wahrheitstabelle "
              "(alle Hebel gleichzeitig in einer frischen Welt) zeigt für sie nur den Zustand nach dem ersten "
              "Einschalten und ist keine Gatterfunktion.", ""]
     for b in a.gated:

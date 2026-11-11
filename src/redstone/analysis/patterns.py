@@ -242,7 +242,8 @@ class GatedBlock:
 
     @property
     def summary(self) -> str:
-        verb = "getaktet durch" if self.kind.startswith("T-Flip-Flop") else "ausgelöst durch"
+        verb = ("getaktet durch" if self.kind.startswith("T-Flip-Flop") else
+                "gesetzt durch" if self.kind == MEMORY else "ausgelöst durch")
         return f"{self.kind}, {verb} {self.gate}"
 
 
@@ -276,6 +277,46 @@ def gate_from_edges(n: int, edges: dict[tuple[int, Combo], str]) -> tuple[dict[C
     return g, kind
 
 
+MEMORY = "Speicher (wird gesetzt und bleibt)"
+
+
+def memory_gate_from_edges(n: int, edges: dict[tuple[int, Combo], str]) -> tuple[dict[Combo, bool], int] | None:
+    """Logic function g in front of a set-only memory, from the reactions on the lever cube (as
+    `gate_from_edges`). Each experiment starts in a fresh world, so the memory is set while the other levers
+    take their places iff g is on there; afterwards nothing changes it. A toggle of lever i from c (c[i] off)
+    therefore sets the memory iff g(c) is off and g(c + i) on, and shows no reaction otherwise.
+
+    g is determined where some lower neighbour is off; a combination whose lower neighbours are all on is not
+    observable and taken as on (the memory cannot tell OR from XOR). Returns g and the number of such
+    assumed combinations, or None if the reactions do not fit."""
+    combos = list(itertools.product([False, True], repeat=n))
+    if len(edges) != n * 2 ** (n - 1) or any(k not in (NO_REACTION, MEMORY) for k in edges.values()):
+        return None
+    if MEMORY not in edges.values():
+        return None
+    g: dict[Combo, bool] = {combos[0]: False}
+    assumed = 0
+    for c in sorted(combos[1:], key=sum):
+        seen = set()
+        for i in range(n):
+            if c[i]:
+                low = c[:i] + (False,) + c[i + 1:]
+                if not g[low]:
+                    seen.add(edges[(i, low)] == MEMORY)
+        if len(seen) > 1:
+            return None
+        if seen:
+            g[c] = seen.pop()
+        else:
+            g[c] = True
+            assumed += 1
+    for (i, low), kind in edges.items():
+        high = low[:i] + (True,) + low[i + 1:]
+        if (kind == MEMORY) != (not g[low] and g[high]):
+            return None
+    return g, assumed
+
+
 def gate_label(names: list[str], ones: list[Combo]) -> str:
     """Readable gate: AND/OR/XOR chains for the symmetric functions, else a minimal sum of products."""
     from ..design.search import gate_expression
@@ -295,9 +336,19 @@ def gated_block(output: Port, levers: list[Port], edges: dict[tuple[int, Combo],
     depends on and must depend on at least two (a block behind one lever is reported per input)."""
     from ..design.search import depends_on_all, gate_expression
 
-    found = gate_from_edges(len(levers), {k: v[0] for k, v in edges.items()})
+    kinds = {k: v[0] for k, v in edges.items()}
+    found = gate_from_edges(len(levers), kinds)
+    note = ""
     if found is None:
-        return None
+        memory = memory_gate_from_edges(len(levers), kinds)
+        if memory is None:
+            return None
+        g, assumed = memory
+        found = g, MEMORY
+        if assumed:
+            note = (f"; {assumed} Kombination(en) nicht beobachtbar, weil der Speicher dort schon beim Einstellen "
+                    "der übrigen Hebel gesetzt wird; als „an“ angenommen (z. B. OR und XOR sind so nicht "
+                    "unterscheidbar)")
     g, kind = found
     n = len(levers)
     used = [i for i in range(n) if any(g[c] != g[c[:i] + (not c[i],) + c[i + 1:]] for c in g)]
@@ -310,4 +361,4 @@ def gated_block(output: Port, levers: list[Port], edges: dict[tuple[int, Combo],
     detail = next(d for (i, low), (k, d) in sorted(edges.items())
                   if k == kind and not g[low] and g[low[:i] + (True,) + low[i + 1:]])
     return GatedBlock(output, [levers[i] for i in used], gate_label(names, ones), gate_expression(names, ones),
-                      table, kind, f"{detail} ab dem auslösenden Hebel" if detail else "")
+                      table, kind, (f"{detail} ab dem auslösenden Hebel" if detail else "") + note)

@@ -8,8 +8,8 @@ import pytest
 
 from redstone.analysis.analyze import analyze
 from redstone.analysis.explain import explain
-from redstone.analysis.patterns import (NO_REACTION, PULSE_BOTH, PULSE_RISING, TFF_FALLING, TFF_RISING,
-                                        gate_from_edges)
+from redstone.analysis.patterns import (MEMORY, NO_REACTION, PULSE_BOTH, PULSE_RISING, TFF_FALLING, TFF_RISING,
+                                        gate_from_edges, memory_gate_from_edges)
 from redstone.verify import load_scenario
 
 ROOT = Path(__file__).parents[2]
@@ -113,3 +113,41 @@ def test_no_gated_block_elsewhere(path):
     a = _analysis(ROOT / path)
     assert a.gated == []
     assert not any("getaktet durch" in p or "ausgelöst durch" in p for p in a.patterns)
+
+
+# ---------------------------------------------------------------------- set-only memory behind a gate
+def _memory_edges(n: int, gate) -> dict:
+    """Reactions of an ideal set-only memory behind `gate`, each experiment in a fresh world."""
+    import itertools
+
+    out = {}
+    for low in itertools.product([False, True], repeat=n):
+        for i in range(n):
+            if not low[i]:
+                high = low[:i] + (True,) + low[i + 1:]
+                out[(i, low)] = MEMORY if not gate(low) and gate(high) else NO_REACTION
+    return out
+
+
+@pytest.mark.parametrize("gate, n, assumed", [
+    (lambda c: c[0] and c[1], 2, 0), (lambda c: c[0] and not c[1], 2, 0), (lambda c: c[0] or c[1], 2, 1),
+    (lambda c: c[0] and (c[1] or c[2]), 3, 0), (lambda c: c[0] or c[1] or c[2], 3, 4)])
+def test_memory_gate_from_edges(gate, n, assumed):
+    g, k = memory_gate_from_edges(n, _memory_edges(n, gate))
+    assert g == {c: bool(gate(c)) for c in g} and k == assumed
+
+
+def test_memory_cannot_tell_or_from_xor():
+    g, assumed = memory_gate_from_edges(2, _memory_edges(2, lambda c: c[0] != c[1]))
+    assert g[(True, True)] and assumed == 1
+
+
+@pytest.mark.parametrize("name, gate", [("memory-and", "in1 AND in2"), ("memory-or", "in1 OR in2")])
+def test_memory_behind_gate(name, gate):
+    a = _analysis(GATED / f"{name}.yaml")
+    blocks = {b.output.name: b for b in a.gated}
+    assert "out1" in blocks
+    b = blocks["out1"]
+    assert (b.kind, b.gate) == (MEMORY, gate)
+    assert b.summary == f"{MEMORY}, gesetzt durch {gate}"
+    assert ("nicht beobachtbar" in b.detail) == (gate == "in1 OR in2")
