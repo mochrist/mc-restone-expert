@@ -6,7 +6,8 @@ Moves (greedy, repeated until nothing helps):
    gets smaller: parts of a composition move together, or one part slides along the other (partial plane
    cut); equal blocks that land on each other are merged, which shortens straight lines (`shifts`),
 3. move a whole building block elsewhere, turned in any of four ways, and lay its lines anew (`parts`:
-   the groups of blocks left between plain dust lines, e.g. the gates of a composition; `relocations`),
+   the parts a composition recorded (`candidate.Assembly`), also where they touch, or else the groups of
+   blocks left between plain dust lines; `relocations`),
 4. lay a stretch of dust anew on a shorter way (`lines`, `rerouted`),
 5. remove single blocks that are not inputs or outputs (loosely attached ones first),
 6. crop the grid to the bounding box of its blocks.
@@ -27,7 +28,7 @@ from ..sim import blockdata
 from ..sim.constants import UPDATE_ALL
 from ..sim.core import World
 from ..sim.runner import ORACLE_ORIGIN
-from .candidate import Candidate
+from .candidate import Assembly, Candidate, is_line, under
 from .evaluate import Constraints, evaluate_any
 from .spec import Spec
 
@@ -50,7 +51,8 @@ def crop(c: Candidate) -> Candidate:
         g[p - lo] = s
     for p, be in c.grid.block_entities.items():
         g.block_entities[p - lo] = be
-    return replace(c, grid=g, inputs=[p - lo for p in c.inputs], outputs=[p - lo for p in c.outputs])
+    return replace(c, grid=g, inputs=[p - lo for p in c.inputs], outputs=[p - lo for p in c.outputs],
+                   assembly=c.moved_assembly(lambda p: p - lo))
 
 
 def _cut(c: Candidate, axis: int, k: int) -> Candidate | None:
@@ -76,7 +78,8 @@ def _cut(c: Candidate, axis: int, k: int) -> Candidate | None:
     for p, be in c.grid.block_entities.items():
         if p[axis] != k:
             g.block_entities[move(p)] = be
-    return replace(c, grid=g, inputs=[move(p) for p in c.inputs], outputs=[move(p) for p in c.outputs])
+    return replace(c, grid=g, inputs=[move(p) for p in c.inputs], outputs=[move(p) for p in c.outputs],
+                   assembly=c.moved_assembly(lambda p: None if p[axis] == k else move(p)))
 
 
 def _rebuild(c: Candidate, blocks: dict, move) -> Candidate:
@@ -91,7 +94,8 @@ def _rebuild(c: Candidate, blocks: dict, move) -> Candidate:
     for p, be in c.grid.block_entities.items():
         if p in blocks:
             g.block_entities[move(p) - lo] = be
-    return replace(c, grid=g, inputs=[move(p) - lo for p in c.inputs], outputs=[move(p) - lo for p in c.outputs])
+    return replace(c, grid=g, inputs=[move(p) - lo for p in c.inputs], outputs=[move(p) - lo for p in c.outputs],
+                   assembly=c.moved_assembly(lambda p: move(p) - lo if p in blocks else None))
 
 
 AXES = "xyz"
@@ -221,7 +225,7 @@ def _without(c: Candidate, pos: Pos) -> Candidate:
         if p != pos:
             g[p] = s
     g.block_entities = {p: be for p, be in c.grid.block_entities.items() if p != pos}
-    return replace(c, grid=g)
+    return replace(c, grid=g, assembly=c.moved_assembly(lambda p: None if p == pos else p))
 
 
 # ---------------------------------------------------------------------- shorter dust lines
@@ -377,7 +381,17 @@ def rerouted(c: Candidate, a: Pos, inner: list[Pos], b: Pos) -> Candidate | None
     if len(added) >= len(removed):
         return None
     rest.update(added)
-    return _rebuild(c, rest, lambda p: p)
+    out = _rebuild(c, rest, lambda p: p)
+    if c.assembly is not None:  # the new dust takes the label of the old one, if that had a single one
+        old = {c.assembly.labels.get(p) for p in inner}
+        if len(old) == 1 and None not in old:
+            lo = Pos(*(min(p[i] for p in rest) for i in range(3)))
+            lab = old.pop()
+            labels = dict(out.assembly.labels)
+            for p in added:
+                labels[p - lo] = lab
+            out = replace(out, assembly=Assembly(labels, out.assembly.ends))
+    return out
 
 
 # ---------------------------------------------------------------------- moving building blocks
@@ -392,34 +406,165 @@ _FLOOR_STATE = BlockState.parse(FLOOR)
 
 
 def parts(c: Candidate) -> tuple[list[frozenset[Pos]], list[tuple[Pos, list[Pos], Pos]], set[Pos]]:
-    """The building blocks of a design and the lines between them.
-
-    The plain dust lines (`lines`) and the floors that only carry them are taken out; the other blocks fall
-    apart into groups that touch (also diagonally), e.g. the gates of a composition. Returns the groups
-    (ordered by their lowest position), the lines and the cells taken out. Line ends belong to the groups."""
-    states = dict(c.grid.items())
-    found = lines(c)
+    """The building blocks of a design and the lines between them: (groups, lines, cells of the lines and
+    their floors). See `_parts`."""
+    groups, found, floors, _ = _parts(c)
     removed = set()
-    for a, inner, b in found:
-        removed |= set(inner) | _line_floors(states, a, inner, b)
-    removed -= set(c.inputs) | set(c.outputs)
-    left = {p for p in states if p not in removed}
-    groups, seen = [], set()
-    for p in sorted(left):
+    for (_, inner, _), fl in zip(found, floors):
+        removed |= set(inner) | fl
+    return groups, found, removed - set(c.inputs) - set(c.outputs)
+
+
+def _components(cells: set, around=_AROUND) -> list[set]:
+    """Groups of `cells` that touch (also diagonally), in the order of their lowest cell."""
+    out, seen = [], set()
+    for p in sorted(cells):
         if p in seen:
             continue
         comp, todo = {p}, [p]
         seen.add(p)
         while todo:
             x, y, z = todo.pop()
-            for dx, dy, dz in _AROUND:
+            for dx, dy, dz in around:
                 q = Pos(x + dx, y + dy, z + dz)
-                if q in left and q not in seen:
+                if q in cells and q not in seen:
                     seen.add(q)
                     comp.add(q)
                     todo.append(q)
-        groups.append(frozenset(comp))
-    return groups, found, removed
+        out.append(comp)
+    return out
+
+
+def _parts(c: Candidate):
+    """The building blocks of a design and the lines between them: (groups, lines, floors, names).
+
+    With an assembly (the labels a composition left, `candidate.Assembly`) the groups are its parts: one per
+    label and per enclosing label (a nested composition can move as a whole or part by part), even where
+    parts touch. Its lines lead from block a over the cells `inner` to block b; floors[k] are the floors that
+    only carry line k, names[k] its label. Parts joined directly (no line cell between them) and blocks
+    without a valid label stick to what they touch. Without an assembly, or when it gives fewer than two
+    groups, the plain dust lines (`lines`) and their floors are taken out and the other blocks fall apart into
+    groups that touch (also diagonally). Groups are ordered by their lowest position; line ends belong to
+    the groups."""
+    states = dict(c.grid.items())
+    if c.assembly is not None:
+        found = _labelled_parts(c, states)
+        if found is not None and len(found[0]) >= 2:
+            return found
+    found = lines(c)
+    floors = [_line_floors(states, a, inner, b) for a, inner, b in found]
+    removed = set()
+    for (_, inner, _), fl in zip(found, floors):
+        removed |= set(inner) | fl
+    removed -= set(c.inputs) | set(c.outputs)
+    groups = [frozenset(g) for g in _components({p for p in states if p not in removed})]
+    return groups, found, floors, [None] * len(found)
+
+
+_LINE_IDS = {WIRE_ID, "repeater"}
+
+
+def _joined(c: Pos, d: Pos) -> bool:
+    """Neighbours on a line: beside each other, at most one block higher or lower."""
+    return abs(c[0] - d[0]) + abs(c[2] - d[2]) == 1 and abs(c[1] - d[1]) <= 1
+
+
+def _line_path(cells: set, a: Pos, b: Pos) -> list[Pos] | None:
+    """The cells in order, from the one next to a to the one next to b, if they form such a simple path."""
+    if not cells:
+        return []
+    for s in sorted(p for p in cells if _joined(p, a)):
+        path, seen = [s], {s}
+        while True:
+            nxt = [q for q in cells if q not in seen and _joined(path[-1], q)]
+            if len(nxt) != 1:
+                break
+            path.append(nxt[0])
+            seen.add(nxt[0])
+        if len(path) == len(cells) and _joined(path[-1], b):
+            return path
+    return None
+
+
+def _labelled_parts(c: Candidate, states: dict):
+    asm = c.assembly
+    labels = {p: lab for p, lab in asm.labels.items() if p in states}
+    ports = set(c.inputs) | set(c.outputs)
+    found, floors, names = [], [], []
+    glue = {p for p in states if p not in labels}  # blocks that stick to what they touch
+    parent: dict[str, str] = {}
+
+    def root(x: str) -> str:
+        while parent.get(x, x) != x:
+            x = parent[x]
+        return x
+
+    def join(x: str, y: str) -> None:
+        x, y = root(x), root(y)
+        if x != y:
+            parent[max(x, y)] = min(x, y)
+
+    by_label: dict[str, set] = {}
+    for p, lab in labels.items():
+        by_label.setdefault(lab, set()).add(p)
+    for name in sorted(asm.ends):
+        a, b = asm.ends[name]
+        mine = by_label.get(name, set())
+        cells = {p for p in mine if states[p].id in _LINE_IDS}
+        path = None
+        if (a in labels and b in labels and not is_line(labels[a]) and not is_line(labels[b])
+                and not cells & ports):
+            path = _line_path(cells, a, b)
+        if path == [] and not _joined(a, b):
+            path = None
+        if path is None:  # a broken line: the parts it joins move together
+            glue |= mine
+            if a in labels and b in labels:
+                join(labels[a], labels[b])
+            continue
+        fl = _line_floors(states, a, path, b) & mine
+        glue |= mine - cells - fl
+        found.append((a, path, b))
+        floors.append(fl)
+        names.append(name)
+    for lab in by_label:
+        if is_line(lab) and lab not in asm.ends:
+            glue |= by_label[lab]  # cells of a line that lost an end
+    removed = set()
+    for (_, inner, _), fl in zip(found, floors):
+        removed |= set(inner) | fl
+    owner = {p: lab for p, lab in labels.items() if p not in glue and p not in removed}
+    sticky: dict[str, set] = {}  # root label -> glue blocks that go with it
+    loose = []
+    for comp in _components(glue - removed):
+        touched = sorted({owner[q] for x, y, z in comp for dx, dy, dz in _AROUND
+                          if (q := Pos(x + dx, y + dy, z + dz)) in owner})
+        if not touched:
+            loose.append(frozenset(comp))
+            continue
+        for t in touched[1:]:
+            join(touched[0], t)
+        sticky.setdefault(touched[0], set()).update(comp)
+    leaves: dict[str, set] = {}
+    for p, lab in owner.items():
+        leaves.setdefault(lab, set()).add(p)
+    classes: dict[str, set] = {}  # root -> blocks of all labels joined to it
+    for lab, blocks in leaves.items():
+        classes.setdefault(root(lab), set()).update(blocks)
+    for lab, blocks in sticky.items():
+        classes.setdefault(root(lab), set()).update(blocks)
+    prefixes = set()
+    for lab in leaves:
+        bits = lab.split("/")
+        prefixes.update("/".join(bits[:k]) for k in range(1, len(bits) + 1))
+    everything = set(owner) | (glue - removed)
+    groups = set(loose)
+    for pre in sorted(prefixes):
+        roots = {root(lab) for lab in leaves if under(lab, pre)}
+        g = frozenset().union(*(classes[r] for r in roots))
+        if g and g != everything:
+            groups.add(g)
+    return sorted(groups, key=lambda g: (min(g), len(g))), found, floors, names
 
 
 def _dust_path(states: dict, start: Pos, goal: Pos, a: Pos, b: Pos, limit: int,
@@ -496,6 +641,30 @@ def _dust_path(states: dict, start: Pos, goal: Pos, a: Pos, b: Pos, limit: int,
     return None
 
 
+def _repeater_before(blocks: dict, r: Pos, b: Pos, laid: dict, name) -> Pos | None:
+    """Put a repeater at r that feeds b (beside it, same height), with a floor; returns the cell behind it
+    where the dust has to arrive, None if r does not fit (taken, unsuitable floor, something beside it)."""
+    from ..model import Direction
+
+    d = b - r
+    if d.y != 0 or abs(d.x) + abs(d.z) != 1 or r in blocks or (r - d) in blocks:
+        return None
+    floor = blocks.get(r + DOWN)
+    if floor is not None and not _plain(floor):
+        return None
+    for dx, _, dz in _FLAT:
+        q = Pos(r.x + dx, r.y, r.z + dz)
+        if q != b and q != r - d and q in blocks and not _plain(blocks[q]):
+            return None
+    back = next(x for x in Direction if x.vec == (-d.x, 0, -d.z))
+    blocks[r] = BlockState.parse(f"repeater[delay=1,facing={back.label},locked=false,powered=false]")
+    laid[r] = name
+    if floor is None:
+        blocks[r + DOWN] = _FLOOR_STATE
+        laid[r + DOWN] = name
+    return r - d
+
+
 def relocations(c: Candidate):
     """Move one building block (`parts`) elsewhere, turned in any of the four ways, and lay the lines to the
     other blocks anew (`_dust_path`, from the same cell next to each line end as before, so the line ends keep
@@ -507,22 +676,24 @@ def relocations(c: Candidate):
     from .compose import UNROTATABLE, _halo, turn_pos, turn_state
 
     states = dict(c.grid.items())
-    groups, found, _ = parts(c)
+    groups, found, floors, names = _parts(c)
     if len(groups) < 2:
         return
     volume = c.volume
     options = []
     setups = []
     for k, part in enumerate(groups):
-        attached = [ln for ln in found if (ln[0] in part) != (ln[2] in part)]
-        internal = [ln for ln in found if ln[0] in part and ln[2] in part]
+        attached = [k for k, ln in enumerate(found) if (ln[0] in part) != (ln[2] in part)]
+        internal = [k for k, ln in enumerate(found) if ln[0] in part and ln[2] in part]
         moved = set(part)
-        for a, inner, b in internal:
-            moved |= set(inner) | _line_floors(states, a, inner, b)
+        for k in internal:
+            moved |= set(found[k][1]) | floors[k]
         dropped = set()
-        for a, inner, b in attached:
-            dropped |= set(inner) | _line_floors(states, a, inner, b)
+        for k in attached:
+            dropped |= set(found[k][1]) | floors[k]
         dropped -= set(c.inputs) | set(c.outputs)
+        if moved & dropped:
+            continue
         fixed = {p: s for p, s in states.items() if p not in moved and p not in dropped}
         if not fixed:
             continue
@@ -568,16 +739,38 @@ def relocations(c: Candidate):
         blocks.update(new)
         box = (Pos(*(min(p[i] for p in blocks) - 1 for i in range(3))),
                Pos(*(max(p[i] for p in blocks) + 1 for i in range(3))))
-        for a, inner, b in attached:
-            ea, sa = (place(a), place(inner[0])) if a in part else (a, inner[0])
-            eb, sb = (place(b), place(inner[-1])) if b in part else (b, inner[-1])
-            path = _dust_path(blocks, sa, sb, ea, eb, max(len(inner) + LINE_SLACK, LINE_MAX), box)
+        laid = {}  # new line cells and floors -> label of the line
+        weak = 0  # lines that should end in a repeater but do not
+        for k in attached:
+            a, inner, b = found[k]
+            # a joint without line cells (a feeds b directly) starts where b was, seen from a, and ends
+            # where a was, seen from b
+            first, last = (inner[0], inner[-1]) if inner else (b, a)
+            ea, sa = (place(a), place(first)) if a in part else (a, first)
+            eb, sb = (place(b), place(last)) if b in part else (b, last)
+            limit = max(len(inner) + LINE_SLACK, LINE_MAX)
+            path = None
+            if states[last].id != WIRE_ID:  # b took a full signal: a repeater in front of it again if it fits
+                extra: dict = {}
+                goal = _repeater_before(blocks, sb, eb, extra, names[k])
+                if goal is not None:
+                    path = _dust_path(blocks, sa, goal, ea, sb, limit, box)
+                    if path is None:
+                        for w in extra:
+                            del blocks[w]
+                    else:
+                        laid.update(extra)
+            if path is None:
+                weak += states[last].id != WIRE_ID
+                path = _dust_path(blocks, sa, sb, ea, eb, limit, box)
             if path is None:
                 break
             for w in path:
                 blocks[w] = _DUST_STATE
+                laid[w] = names[k]
                 if (w + DOWN) not in blocks:
                     blocks[w + DOWN] = _FLOOR_STATE
+                    laid[w + DOWN] = names[k]
         else:
             blo = Pos(*(min(p[i] for p in blocks) for i in range(3)))
             bhi = Pos(*(max(p[i] for p in blocks) for i in range(3)))
@@ -598,9 +791,16 @@ def relocations(c: Candidate):
             what = (f"Baustein bei {min(part)} ({len(part)} Blöcke)"
                     + (f" um {90 * turns}° gedreht und" if turns else "")
                     + f" nach {lo} versetzt, {len(attached)} Leitungen neu verlegt")
-            cand = replace(c, grid=g, inputs=[port(p) for p in c.inputs], outputs=[port(p) for p in c.outputs])
-            pool.append(((cand.volume, cand.block_count, len(pool)), what, cand))
-            if len(pool) >= RELOCATE_POOL:
+            asm = None
+            if c.assembly is not None:
+                asm = c.assembly.mapped(lambda p: port(p) if p in moved or p in fixed else None)
+                asm.labels.update({w - blo: name for w, name in laid.items() if name is not None})
+            cand = replace(c, grid=g, inputs=[port(p) for p in c.inputs], outputs=[port(p) for p in c.outputs],
+                           assembly=asm)
+            if weak and sum(1 for x in pool if x[0][0]) >= RELOCATE_POOL:
+                continue
+            pool.append(((weak, cand.volume, cand.block_count, len(pool)), what, cand))
+            if sum(1 for x in pool if not x[0][0]) >= RELOCATE_POOL:
                 break
     pool.sort(key=lambda x: x[0])
     for _, what, cand in pool:
@@ -637,7 +837,7 @@ def normalize(c: Candidate, max_ticks: int = 200) -> Candidate:
         if not st.is_air:
             g[p] = st
     g.block_entities = {p: be for p, be in c.grid.block_entities.items() if not g.get(p).is_air}
-    return replace(c, grid=g)
+    return replace(c, grid=g, assembly=None if c.assembly is None else c.assembly.kept(g))
 
 
 def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
