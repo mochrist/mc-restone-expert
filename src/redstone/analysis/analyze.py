@@ -279,14 +279,51 @@ def _truth_table(circuit: Circuit, levers: list[Port], outputs: list[Port]):
     return table
 
 
+def _pair_dependencies(circuit: Circuit, levers: list[Port], outputs: list[Port]) -> dict[str, set[str]] | None:
+    """Levers each output depends on, seen from the stored lever states: lever j counts if flipping it changes
+    the steady output, either alone or together with one other lever (an AND of two levers that are both off
+    at rest only shows up in the pair). Fresh world per run, as `_truth_table`; None if a run never settles."""
+    def steady(flipped: tuple[int, ...]):
+        rec = circuit.run([(1, levers[i].pos, "use") for i in flipped], max_ticks=MAX_TICKS, quiet=QUIET)
+        if rec.settled_at is None:
+            return None
+        return tuple(rec.on_at(o.pos, rec.ticks) for o in outputs)
+
+    n = len(levers)
+    runs = {(): steady(())}
+    for i in range(n):
+        runs[(i,)] = steady((i,))
+    for i, j in itertools.combinations(range(n), 2):
+        runs[(i, j)] = steady((i, j))
+    if any(v is None for v in runs.values()):
+        return None
+    deps: dict[str, set[str]] = {o.name: set() for o in outputs}
+    for (i, j) in itertools.combinations(range(n), 2):
+        for base, flip, both in ((runs[()], (i,), (i,)), (runs[()], (j,), (j,)),
+                                 (runs[(i,)], (j,), (i, j)), (runs[(j,)], (i,), (i, j))):
+            after = runs[both]
+            for k, o in enumerate(outputs):
+                if base[k] != after[k]:
+                    deps[o.name].add(levers[flip[0]].name)
+    return deps
+
+
+MAX_PAIR_LEVERS = 20  # 1 + n + n(n-1)/2 runs: 211 for 20 levers
+
+
 def _partial_tables(analysis: Analysis, circuit: Circuit, levers: list[Port], outputs: list[Port]) -> None:
-    """Group outputs by the levers they react to (single toggles) and tabulate each group on its own."""
+    """Group outputs by the levers they depend on (single toggles and pairs from the stored states) and
+    tabulate each group on its own."""
     deps: dict[str, set[str]] = {o.name: set() for o in outputs}
     for r in analysis.responses:
         if r.input.kind == "lever":
             for x in r.reactions:
                 if x.kind != "keine Reaktion":
                     deps[x.output.name].add(r.input.name)
+    pairs = _pair_dependencies(circuit, levers, outputs) if len(levers) <= MAX_PAIR_LEVERS else None
+    if pairs is not None:
+        for name, more in pairs.items():
+            deps[name] |= more
     groups: dict[frozenset[str], list[Port]] = {}
     for o in outputs:
         groups.setdefault(frozenset(deps[o.name]), []).append(o)
@@ -308,8 +345,11 @@ def _partial_tables(analysis: Analysis, circuit: Circuit, levers: list[Port], ou
             analysis.gates[out.name] = _gate_name([(c, o[i]) for c, o in table])
     analysis.warnings.append(
         f"{len(levers)} Hebel sind zu viele für eine volle Wahrheitstabelle (höchstens {MAX_TRUTH_TABLE_LEVERS}); "
-        "Teiltabellen über die Hebel, auf die ein Ausgang einzeln reagiert. Abhängigkeiten, die nur bei "
-        "mehreren gleichzeitig betätigten Hebeln sichtbar werden, fehlen darin"
+        + ("Teiltabellen über die Hebel, auf die ein Ausgang einzeln oder paarweise umgelegt reagiert. "
+           "Abhängigkeiten, die erst bei drei oder mehr gleichzeitig umgelegten Hebeln sichtbar werden, fehlen darin"
+           if pairs is not None else
+           "Teiltabellen über die Hebel, auf die ein Ausgang einzeln reagiert. Abhängigkeiten, die nur bei "
+           "mehreren gleichzeitig betätigten Hebeln sichtbar werden, fehlen darin")
         + (f"; ohne Tabelle: {', '.join(skipped)}" if skipped else ""))
 
 
