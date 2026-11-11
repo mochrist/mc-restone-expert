@@ -35,6 +35,7 @@ macro_rules! define_syms {
 
 define_syms! {
     TRUE => "true", FALSE => "false",
+    INVERTED => "inverted",
     POWERED => "powered", POWER => "power", LIT => "lit", FACING => "facing", FACE => "face",
     NORTH => "north", EAST => "east", SOUTH => "south", WEST => "west", UP => "up", DOWN => "down",
     NONE => "none", SIDE => "side",
@@ -159,6 +160,7 @@ pub enum Kind {
     Rail,
     PoweredRail,
     Lectern,
+    DaylightDetector,
 }
 
 pub const BF_RAIL_IN_NAME: u8 = 1; // "rail" in state.name
@@ -225,6 +227,7 @@ fn kind_of(name: &str) -> (Kind, u16, u16) {
         "rail" => return (Kind::Rail, 0, 0),
         "powered_rail" | "activator_rail" => return (Kind::PoweredRail, 0, 0),
         "lectern" => return (Kind::Lectern, 0, 0),
+        "daylight_detector" => return (Kind::DaylightDetector, 0, 0),
         _ => {}
     }
     if let Some(wood) = id.strip_suffix("_button") {

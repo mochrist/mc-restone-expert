@@ -282,6 +282,8 @@ pub enum BeData {
     Comparator { output_signal: i32 },
     Container(Container),
     Lectern(Lectern),
+    /// DaylightDetectorBlockEntity (no data)
+    Daylight,
     Piston(PistonBe),
 }
 
@@ -298,6 +300,7 @@ impl BlockEntity {
         matches!(
             self.data,
             BeData::Piston(_)
+                | BeData::Daylight
                 | BeData::Container(Container { kind: ContainerKind::Hopper { .. } | ContainerKind::Crafter { .. }, .. })
         )
     }
@@ -995,6 +998,16 @@ impl World {
                 continue;
             }
             match &be.data {
+                // A detector whose next update would not change the power.
+                BeData::Daylight => {
+                    let pos = be.pos;
+                    let state = self.get(pos);
+                    if self.info(state).kind == Kind::DaylightDetector
+                        && self.info(state).power as i32 != self.daylight_target(pos, state)
+                    {
+                        return false;
+                    }
+                }
                 // A hopper without cooldown has found nothing to move.
                 BeData::Container(Container { kind: ContainerKind::Hopper { cooldown_time, .. }, .. }) => {
                     if *cooldown_time > 0 {

@@ -502,6 +502,7 @@ impl World {
                 ContainerKind::Crafter { .. } => "crafter",
             },
             BeData::Lectern(_) => "lectern",
+            BeData::Daylight => "daylight",
             BeData::Piston(_) => "piston",
         })
     }

@@ -42,6 +42,8 @@ class Scenario:
     inputs: list[Input] = field(default_factory=list)
     probes: dict[str, Pos] = field(default_factory=dict)
     description: str = ""
+    # Simulator only: game time at the start (the oracle cannot set it; see docs/scenario-format.md, "Game time")
+    game_time: int = 0
 
     def __post_init__(self) -> None:
         if not _NAME.match(self.name):
@@ -115,7 +117,8 @@ def from_dict(data: dict, base_dir: Path | None = None) -> Scenario:
         for i in data.get("inputs", [])
     ]
     probes = {str(k): _pos(v) for k, v in (data.get("probes") or {}).items()}
-    return Scenario(data["name"], grid, int(data["ticks"]), inputs, probes, data.get("description", ""))
+    return Scenario(data["name"], grid, int(data["ticks"]), inputs, probes, data.get("description", ""),
+                    int(data.get("game_time", 0)))
 
 
 def load(path: str | Path) -> Scenario:

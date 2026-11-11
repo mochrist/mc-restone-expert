@@ -5,6 +5,7 @@ use crate::common::*;
 use crate::data;
 use crate::state::*;
 use crate::world::*;
+use rustc_hash::{FxHashMap, FxHashSet};
 
 /// `_MOB_HEADS`: head name prefix -> instrument.
 const MOB_HEADS: &[(&str, &str)] = &[
@@ -724,6 +725,93 @@ impl World {
         let info = self.info(state);
         if info.powered() {
             self.update_neighbors_at(pos.below(), info.block, None);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------------- daylight detector
+/// Sun angle in degrees at overworld clock time 0 (docs: redstone/sim/blocks/daylight.py).
+const DAYLIGHT_SUN_ANGLE: f64 = 282.3711;
+/// Level#skyDarken at that time (clear weather).
+const DAYLIGHT_SKY_DARKEN: i32 = 0;
+const DAYLIGHT_MAX_Y: i32 = 319;
+
+impl World {
+    /// Sky light at `pos` (ASSUMPTION, see redstone/sim/blocks/daylight.py): 15 minus the distance through
+    /// cells without a redstone conductor to the nearest cell with open sky above.
+    fn daylight_sky_light(&self, pos: Pos) -> i32 {
+        let low = pos.y - 15;
+        let mut tops: FxHashMap<(i32, i32), i32> = FxHashMap::default();
+        let mut is_open = |p: Pos| {
+            let top = *tops.entry((p.x, p.z)).or_insert_with(|| {
+                (low..=DAYLIGHT_MAX_Y).rev().find(|&y| self.is_conductor(Pos { x: p.x, y, z: p.z })).unwrap_or(low - 1)
+            });
+            p.y > top
+        };
+        let mut seen: FxHashSet<Pos> = FxHashSet::default();
+        seen.insert(pos);
+        let mut level = vec![pos];
+        for dist in 0..16 {
+            if level.iter().any(|&p| is_open(p)) {
+                return 15 - dist;
+            }
+            if dist == 15 {
+                break;
+            }
+            let mut next = Vec::new();
+            for &p in &level {
+                for d in [Dir::Down, Dir::Up, Dir::North, Dir::South, Dir::West, Dir::East] {
+                    let q = p.offset(d);
+                    if seen.insert(q) && !self.is_conductor(q) {
+                        next.push(q);
+                    }
+                }
+            }
+            level = next;
+        }
+        0
+    }
+
+    /// The strength DaylightDetectorBlock#updateSignalStrength would set.
+    pub fn daylight_target(&self, pos: Pos, state: StateId) -> i32 {
+        let mut target = (self.daylight_sky_light(pos) - DAYLIGHT_SKY_DARKEN).max(0);
+        if self.st.get(state, sym::INVERTED) == Some(sym::TRUE) {
+            target = 15 - target;
+        } else if target > 0 {
+            let mut sun = DAYLIGHT_SUN_ANGLE * (std::f64::consts::PI / 180.0);
+            let offset = if sun < std::f64::consts::PI { 0.0 } else { std::f64::consts::PI * 2.0 };
+            sun += (offset - sun) * 0.2;
+            target = (target as f64 * sun.cos() + 0.5).floor() as i32;
+        }
+        target.clamp(0, 15)
+    }
+
+    fn daylight_update_signal_strength(&mut self, pos: Pos, state: StateId) {
+        let target = self.daylight_target(pos, state);
+        if self.info(state).power as i32 != target {
+            let new = self.st.with_int(state, sym::POWER, target);
+            self.set_block_f(pos, new, UPDATE_ALL);
+        }
+    }
+
+    /// DaylightDetectorBlock#useWithoutItem: flags 2 (no neighbor updates), then update at once.
+    pub fn daylight_use(&mut self, pos: Pos, state: StateId) -> bool {
+        let inverted = self.st.get(state, sym::INVERTED) == Some(sym::TRUE);
+        let new = self.st.with_bool(state, sym::INVERTED, !inverted);
+        self.set_block_f(pos, new, UPDATE_CLIENTS);
+        self.daylight_update_signal_strength(pos, new);
+        true
+    }
+
+    /// DaylightDetectorBlock#tickEntity
+    pub fn daylight_be_tick(&mut self, be: BeId) {
+        let pos = self.bes[be].pos;
+        let state = self.get(pos);
+        if self.info(state).kind != Kind::DaylightDetector {
+            return;
+        }
+        if self.game_time % 20 == 0 {
+            self.daylight_update_signal_strength(pos, state);
         }
     }
 }

@@ -24,6 +24,7 @@ impl World {
             | Kind::Observer
             | Kind::Target
             | Kind::Lectern
+            | Kind::DaylightDetector
             | Kind::TrappedChest => true,
             Kind::Wire => self.wire_should_signal,
             _ => false,
@@ -43,6 +44,7 @@ impl World {
                 | Kind::Hopper
                 | Kind::Crafter
                 | Kind::Lectern
+                | Kind::DaylightDetector
         )
     }
 
@@ -103,6 +105,7 @@ impl World {
                 },
             })),
             Kind::Lectern => Some(BeData::Lectern(Lectern { has_book: false, page: 0, page_count: 0 })),
+            Kind::DaylightDetector => Some(BeData::Daylight),
             // moving_piston: only created through newMovingBlockEntity
             _ => None,
         }
@@ -151,7 +154,7 @@ impl World {
             Kind::Torch => 15 * (direction != Dir::Up && info.lit()) as i32,
             Kind::WallTorch => 15 * (info.facing() != direction && info.lit()) as i32,
             Kind::Observer => 15 * (info.facing_or(Dir::South) == direction && info.powered()) as i32,
-            Kind::Target => info.power as i32,
+            Kind::Target | Kind::DaylightDetector => info.power as i32,
             _ => 0,
         }
     }
@@ -342,6 +345,7 @@ impl World {
             Kind::Door => self.door_use(pos, state),
             Kind::TrapDoor => self.trapdoor_use(pos, state),
             Kind::FenceGate => self.fence_gate_use(pos, state),
+            Kind::DaylightDetector => self.daylight_use(pos, state),
             _ => false,
         }
     }
@@ -350,6 +354,7 @@ impl World {
     pub fn tick_block_entity(&mut self, be: BeId) {
         match &self.bes[be].data {
             BeData::Piston(_) => self.piston_be_tick(be),
+            BeData::Daylight => self.daylight_be_tick(be),
             BeData::Container(Container { kind: ContainerKind::Hopper { .. }, .. }) => self.hopper_be_tick(be),
             BeData::Container(Container { kind: ContainerKind::Crafter { .. }, .. }) => self.crafter_be_tick(be),
             _ => {}
