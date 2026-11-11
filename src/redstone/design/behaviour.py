@@ -266,6 +266,15 @@ CONSTRUCTORS = {
 
 SETUP = 20  # gated trials: the other levers are set at START, the trial itself starts SETUP gt later
 GATE_SLACK = 4  # gated trials without a given delay: the gate may add this many gt
+# gated trials with other levers held on: shorter lever pulses are left out, because the gate between the levers
+# (e.g. a torch AND) swallows them; a building block behind it could never see them
+MIN_HELD_PULSE = 2
+
+
+def _pulse_lengths(actions: list[tuple[int, int]]) -> list[int]:
+    """On-times of input 0 in a trial (lever toggles in pairs)."""
+    ticks = sorted(t for t, i in actions if i == 0)
+    return [b - a for a, b in zip(ticks[::2], ticks[1::2])]
 
 
 def _sensitizing(inputs: list[str], gate: str, i: int, blocked: bool) -> dict[str, bool] | None:
@@ -288,8 +297,9 @@ def gated(inputs: list[str], gate: str, inner: BehaviourSpec, delay_given: bool 
     toggles when `a and b` rises.
 
     For every lever there is a trial set in which the other levers make the gate follow that lever (they
-    are switched on at START, the block's own trials run SETUP gt later), and one pulse under which the gate
-    stays off (no output). Without a given delay the gate may add GATE_SLACK gt."""
+    are switched on at START, the block's own trials run SETUP gt later; pulses under MIN_HELD_PULSE gt are
+    left out then), and one pulse under which the gate stays off (no output).
+    Without a given delay the gate may add GATE_SLACK gt."""
     from .spec import evaluate_expression
 
     if len(inner.inputs) != 1 or inner.input_kinds != ["lever"] or any(t.periodic for t in inner.trials):
@@ -306,6 +316,8 @@ def gated(inputs: list[str], gate: str, inner: BehaviourSpec, delay_given: bool 
         label = ", ".join(f"{n}=1" for n, v in (follow or {}).items() if v)
         if follow is not None:
             for t in inner.trials:
+                if setup and any(p < MIN_HELD_PULSE for p in _pulse_lengths(t.actions)):
+                    continue
                 trials.append(Trial(
                     f"{name}: {t.name}" + (f" ({label})" if label else ""),
                     setup + [(at + SETUP, i) for at, _ in t.actions],

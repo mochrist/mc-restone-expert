@@ -52,6 +52,14 @@ def test_gated_spec_trials():
     assert t.expected[0][0][0] == bh.t_flip_flop().trials[0].expected[0][0][0] + bh.SETUP + bh.GATE_SLACK
 
 
+def test_gated_spec_leaves_out_pulses_a_held_gate_swallows():
+    # AND: the other lever is held on, so 1-gt pulses are left out; OR: nothing held, all pulses stay
+    and_names = [t.name for t in bh.gated(["a", "b"], "a and b", bh.pulse_extender(12)).trials]
+    or_names = [t.name for t in bh.gated(["a", "b"], "a or b", bh.pulse_extender(12)).trials]
+    assert "a: Hebel 1 gt an (b=1)" not in and_names and "a: Hebel 2 gt an (b=1)" in and_names
+    assert "a: Hebel 1 gt an" in or_names
+
+
 def test_gated_rejects_gate_on_at_rest():
     with pytest.raises(ValueError):
         bh.gated(["a", "b"], "not a", bh.monostable(8))

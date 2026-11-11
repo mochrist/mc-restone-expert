@@ -1,0 +1,5 @@
+# Pulsverlängerer hinter a UND b: der Ausgang bleibt mindestens 12 gt an, wenn (a and b) einschaltet (M4-Komposition)
+behaviour: pulse-extender
+length: 12
+inputs: [a, b]
+gate: a and b
