@@ -30,6 +30,13 @@ def apply_input(world: World, action: str, pos: Pos, state: BlockState | None) -
             return
         current = world.get(pos)
         world.block(current).use_without_item(world, pos, current)
+    elif action == "step":
+        step_at = getattr(world, "step_at", None)  # Rust core
+        if step_at is not None:
+            step_at(pos)
+            return
+        current = world.get(pos)
+        world.block(current).step_on(world, pos, current)
     elif action == "setblock":
         assert state is not None
         world.set_block(pos, state, UPDATE_ALL)

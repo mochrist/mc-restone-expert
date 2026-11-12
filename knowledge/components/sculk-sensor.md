@@ -12,8 +12,8 @@ Zeitangaben in Game-Ticks (gt). Der Simulator (`sim/blocks/sculk.py`, `sculk.rs`
 die Blöcke auslösen (Hebel, Knöpfe, Platten, Notenblöcke, Türen, Falltüren, Zauntore, Kolben, Spender, Tageslicht-
 sensor, abfallende Blöcke); Entities (Schritte, Items, Projektile), Geräusche, Wasser, der Shrieker und der Warden
 fehlen. Bekannte Stolperfalle im Oracle: Item-Entities, die ein Szenario erzeugt (z. B. ein Spender mit Item, ein
-abfallender Hebel), landen später als `hit_ground` (Frequenz 2) und bleiben bis ins nächste Szenario desselben
-Serverlaufs bestehen; solche Szenarien gehören in einen eigenen Lauf.
+abfallender Hebel), landen später als `hit_ground` (Frequenz 2) und blieben früher bis ins nächste Szenario desselben
+Serverlaufs bestehen; der Oracle entfernt seit Session 13 beim Aufbau jedes Szenarios alle Entities (außer Spielern) im Szenariobereich samt Rand (`ScenarioRun#build`).
 
 ### SCULK-001: Jedes Spielereignis hat eine feste Frequenz 1–15; Ereignisse ohne Frequenz werden ignoriert
 - Aussage: `VibrationSystem#VIBRATION_FREQUENCY_FOR_EVENT` ordnet Ereignissen eine Frequenz zu. Für Blöcke wichtig: `block_close`, `block_deactivate`, `block_detach` = 9; `block_open`, `block_activate`, `block_attach`, `note_block_play`, `container_open` = 10; `block_change` = 11; `block_destroy` = 12; `block_place` = 13; die 15 Resonanzereignisse `resonate_N` = N. Ein Ereignis ohne Eintrag (Frequenz 0) wird nicht empfangen (`canReceiveVibration`), auch `sculk_sensor_tendrils_clicking`, das ein Sensor bei der eigenen Aktivierung auslöst.
@@ -45,7 +45,7 @@ Serverlaufs bestehen; solche Szenarien gehören in einen eigenen Lauf.
 - Quelle: [SRC-MC-CODE] `SculkSensorBlock#activate`, `SculkSensorBlock#deactivate`, `SculkSensorBlock#tick`, `SculkSensorBlock#getActiveTicks`, `CalibratedSculkSensorBlock#getActiveTicks`, `SculkSensorBlock#canActivate`
 - Konfidenz: hoch
 - Status: im-Spiel-verifiziert (scenarios/sculk-lever-distance.yaml)
-- Hinweise: Beim Platzieren (`onPlace`) setzt ein Sensor mit `power > 0` und ohne geplanten Tick die Stärke mit Flags 18 auf 0 zurück; beim Entfernen im aktiven Zustand folgen Nachbar-Updates (`affectNeighborsAfterRemoval`). Die 10 gt Aktivzeit des kalibrierten Sensors zeigt scenarios/sculk-calibrated.yaml. Das Zurücksetzen beim Platzieren und das Entfernen im aktiven Zustand sind nur im Differenztest geprüft (Python- und Rust-Kern identisch), nicht im Spiel.
+- Hinweise: Beim Platzieren (`onPlace`) setzt ein Sensor mit `power > 0` und ohne geplanten Tick die Stärke mit Flags 18 auf 0 zurück; beim Entfernen im aktiven Zustand folgen Nachbar-Updates (`affectNeighborsAfterRemoval`). Die 10 gt Aktivzeit des kalibrierten Sensors zeigt scenarios/sculk-calibrated.yaml. Im Spiel geprüft (scenarios/sculk-placement.yaml): Ein per setblock (mit onPlace) gesetzter Sensor mit `power=7`, Phase `active` und ohne geplanten Tick hat sofort `power=0`, bleibt aber in der Phase `active` (nimmt danach nichts mehr an). Im Aufbau (ohne onPlace) behält er `power=7`. Wird ein aktiver Sensor durch Luft ersetzt, gehen angrenzender Staub und (nach 4 gt) die Lampe aus. Ein per setblock gesetzter kalibrierter Sensor mit `power=0`, Phase `cooldown` und ohne Tick bleibt für immer in der Abkühlung; ein aktiver Sensor, der durch einen inaktiven ersetzt wird, nimmt den nächsten Hebel wieder an.
 
 ### SCULK-005: Eine Vibration unterwegs oder ein aktiver Sensor schluckt weitere; im selben Tick gewinnt die nächste, bei Gleichstand die höhere Frequenz
 - Aussage: Solange `currentVibration` gesetzt ist, ignoriert der Listener neue Ereignisse. In der Phase `inactive` sammelt der `VibrationSelector` die Kandidaten desselben Game-Ticks und behält den mit dem kleineren Abstand, bei gleichem Abstand den mit der höheren Frequenz; ein Kandidat aus einem früheren Tick wird nicht mehr ersetzt und im nächsten Tick als Vibration eingeplant (`chosenCandidate`). Die Reihenfolge der Ereignisse im Tick spielt keine Rolle.
@@ -69,7 +69,7 @@ Serverlaufs bestehen; solche Szenarien gehören in einen eigenen Lauf.
 - Quelle: [SRC-MC-CODE] `VibrationSystem.User#isValidVibration`, `BlockTags#DAMPENS_VIBRATIONS`
 - Konfidenz: mittel
 - Status: belegt
-- Hinweise: Im Simulator abgebildet, aber ohne Szenario: die Quellen im Szenarien-Satz tragen keinen betroffenen Blockzustand aus Wolle (Spender, Kolben und Tageslichtsensor setzen ihn, sind aber nie Wolle). Nur Blöcke, die ein Kolben zerstört, hätten Wolle als betroffenen Zustand (`block_destroy`).
+- Hinweise: Im Simulator abgebildet, im Spiel nicht prüfbar: alle Ereignisse, die ein Block ohne Entity auslöst, tragen den eigenen Blockzustand (Spender, Kolben-Aus-/Einfahren mit Kolben- bzw. Bewegungszustand, Hebel, Tür usw.), nie Wolle; `block_destroy` des Kolbens betrifft nur zerstörbare Blöcke, Wolle wird geschoben, nicht zerstört. Wolle als betroffener Block kommt nur bei Spielern und Entities vor (Platzieren, Abbauen, Schritte auf Wolle). Die Aussage bleibt aus dem Code belegt.
 
 ### SCULK-008: Das Signal ist schwach, der Komparator liest die zuletzt empfangene Frequenz, solange der Sensor aktiv ist
 - Aussage: `isSignalSource` ist wahr, `ownSignal` liefert `power`, `getDirectSignal` nur nach oben (`Direction.UP`). `hasAnalogOutputSignal` ist wahr: `getAnalogOutputSignal` liefert `lastVibrationFrequency` in der Phase `active`, sonst 0. Ein Komparator hinter dem Sensor zeigt so die Frequenz (nicht die Stärke).
@@ -77,7 +77,7 @@ Serverlaufs bestehen; solche Szenarien gehören in einen eigenen Lauf.
 - Quelle: [SRC-MC-CODE] `SculkSensorBlock#isSignalSource`, `SculkSensorBlock#ownSignal`, `SculkSensorBlock#getDirectSignal`, `SculkSensorBlock#getAnalogOutputSignal`
 - Konfidenz: hoch
 - Status: im-Spiel-verifiziert (scenarios/sculk-sources.yaml)
-- Hinweise: Der Komparator im Szenario zeigt 10 für Hebel an, 9 für Hebel aus usw. (SCULK-001); die Frequenz bleibt nur in der Phase `active` sichtbar. Redstone-Staub und Lampen am Sensor sind in sculk-calibrated.yaml geprüft; das Hochleiten über einen Leiterblock (direktes Signal nach oben) ist nur im Differenztest abgedeckt.
+- Hinweise: Der Komparator im Szenario zeigt 10 für Hebel an, 9 für Hebel aus usw. (SCULK-001); die Frequenz bleibt nur in der Phase `active` sichtbar. Redstone-Staub und Lampen am Sensor sind in sculk-calibrated.yaml geprüft; das direkte Signal ist im Spiel geprüft (scenarios/sculk-signal-up.yaml): `getDirectSignal` gilt für `Direction.UP`, also für den Block UNTER dem Sensor, nicht darüber. Ein Stein unter dem aktiven Sensor ist stark gespeist (Staub und Lampe daneben bekommen Stärke 14, 11 bzw. 4 bei Hebel-Abstand 1, 3, 6), ein Stein darüber bekommt nichts, Glas unter dem Sensor leitet nichts; Staub direkt neben dem Sensor bekommt das schwache Signal mit derselben Stärke.
 
 ### SCULK-009: Kalibrierter Sensor: kein Ausgang zur Eingangsseite, Frequenzfilter vom Eingang
 - Aussage: `getSignal` des kalibrierten Sensors liefert `power` in jede Richtung außer der, in die `facing` zeigt. Der Eingang liegt hinter dem Sensor (`facing` entgegengesetzt): `getSignal` an dieser Position. Ist es 0, nimmt der Sensor jede Vibration an; sonst nur Vibrationen genau dieser Frequenz (`comparisonType != 0 && Frequenz != comparisonType` lehnt ab).

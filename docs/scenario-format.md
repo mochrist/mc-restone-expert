@@ -38,6 +38,7 @@ Koordinaten sind relativ zur Schematic (Min-Ecke = `(0,0,0)`).
 | `action` | Bedeutung | Oracle-Implementierung |
 |---|---|---|
 | `use` | Rechtsklick eines Spielers ohne Item auf den Block (Hebel umlegen, Knopf drücken, Repeater-Delay weiterschalten, Comparator-Modus wechseln) | `BlockState#useWithoutItem` mit einem Fake-Player, Trefferpunkt Blockmitte, Seite `up` |
+| `step` | **nur Simulator** (kein Oracle: dort fehlen Entities): ein Entity betritt eine Druckplatte und verlässt sie sofort wieder (löst die Platte aus, der geplante Tick löst sie wieder). `use` auf einer Druckplatte tut wie im Spiel nichts. Die Analyse (`Experiment.run`) setzt für Platten automatisch `step` statt `use` ein | – |
 | `setblock` | wie `/setblock <pos> <state>` (ersetzt den Block, Flags `UPDATE_ALL` = 3) | `ServerLevel#setBlock(pos, state, 3)` |
 
 ## 2. Ablauf (für Simulator und Oracle identisch)

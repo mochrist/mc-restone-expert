@@ -16,6 +16,8 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -25,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -182,6 +185,11 @@ final class ScenarioRun {
 			level.setBlock(pos, air, PLACE_FLAGS);
 		}
 		clearScheduledTicks();
+		// Entities (dropped items, falling blocks, ...) of the previous scenario would trigger sculk sensors etc.
+		AABB box = new AABB(area.minX(), area.minY(), area.minZ(), area.maxX() + 1, area.maxY() + 1, area.maxZ() + 1);
+		for (Entity entity : level.getEntities((Entity) null, box, e -> !(e instanceof Player))) {
+			entity.discard();
+		}
 		for (Scenario.Block b : scenario.blocks()) {
 			level.setBlock(at(b.pos()), parseState(blocks, b.state()), PLACE_FLAGS);
 		}

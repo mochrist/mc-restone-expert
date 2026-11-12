@@ -303,6 +303,12 @@ impl World {
         self.w.use_without_item(pos(p), s)
     }
 
+    /// Runner input "step": an entity steps on the plate at `pos` and leaves again.
+    fn step_at(&mut self, p: P3) -> bool {
+        let s = self.w.get(pos(p));
+        self.w.step_on(pos(p), s)
+    }
+
     // ------------------------------------------------------------------ neighbor updates
     #[pyo3(signature = (p, source, skip=None))]
     fn update_neighbors_at(&mut self, p: P3, source: &str, skip: Option<usize>) -> PyResult<()> {

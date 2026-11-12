@@ -1,0 +1,56 @@
+name: sculk-placement
+description: >
+  Platzieren und Entfernen von Sculk-Sensoren per setblock (Flags 3, mit onPlace). Gruppe 0: ein Sensor mit
+          power=7, phase=active ohne geplanten Tick wird bei Tick 2 gesetzt; onPlace setzt die Staerke auf 0 zurueck
+          (die Phase bleibt active, der Sensor nimmt danach nichts an). Gruppe 1: ein Hebel aktiviert einen Sensor mit
+          Staub und Lampe daneben, der aktive Sensor wird bei Tick 12 durch Luft ersetzt (Nachbar-Updates). Gruppe 2:
+          ein inaktiver Sensor wird bei Tick 2 durch einen kalibrierten Sensor mit power=0 und phase=cooldown ersetzt
+          (bleibt ohne Tick fuer immer in der Abkuehlung). Gruppe 3: der aktive Sensor wird durch einen inaktiven
+          ersetzt, der den naechsten Hebel annimmt. Gruppe 4: im Aufbau gesetzt (ohne onPlace) behaelt der aktive
+          Sensor die Staerke 7.
+build:
+  size: [100, 4, 10]
+  fill:
+    - [0, 0, 0, 99, 0, 9, "stone"]
+  blocks:
+    - [5, 1, 4, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [6, 1, 4, "redstone_lamp[lit=false]"]
+    - [2, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [24, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [25, 1, 4, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [26, 1, 4, "redstone_lamp[lit=false]"]
+    - [22, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [44, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [42, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [64, 1, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [65, 1, 4, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [66, 1, 4, "redstone_lamp[lit=false]"]
+    - [62, 1, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [84, 1, 4, "sculk_sensor[power=7,sculk_sensor_phase=active,waterlogged=false]"]
+    - [85, 1, 4, "redstone_wire[east=side,north=none,power=0,south=none,west=side]"]
+    - [86, 1, 4, "redstone_lamp[lit=false]"]
+ticks: 40
+inputs:
+  - {tick: 2, pos: [4, 1, 4], action: setblock, state: "sculk_sensor[power=7,sculk_sensor_phase=active,waterlogged=false]"}
+  - {tick: 2, pos: [22, 1, 4], action: use}
+  - {tick: 2, pos: [44, 1, 4], action: setblock, state: "calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=cooldown,waterlogged=false]"}
+  - {tick: 2, pos: [62, 1, 4], action: use}
+  - {tick: 10, pos: [42, 1, 4], action: use}
+  - {tick: 12, pos: [24, 1, 4], action: setblock, state: "air"}
+  - {tick: 12, pos: [64, 1, 4], action: setblock, state: "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"}
+  - {tick: 20, pos: [2, 1, 4], action: use}
+  - {tick: 20, pos: [62, 1, 4], action: use}
+probes:
+  g0_sensor: [4, 1, 4]
+  g0_dust: [5, 1, 4]
+  g0_lamp: [6, 1, 4]
+  g1_sensor: [24, 1, 4]
+  g1_dust: [25, 1, 4]
+  g1_lamp: [26, 1, 4]
+  g2_sensor: [44, 1, 4]
+  g3_sensor: [64, 1, 4]
+  g3_dust: [65, 1, 4]
+  g3_lamp: [66, 1, 4]
+  g4_sensor: [84, 1, 4]
+  g4_dust: [85, 1, 4]
+  g4_lamp: [86, 1, 4]

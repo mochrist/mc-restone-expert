@@ -1,0 +1,234 @@
+{
+ "format": 1,
+ "scenario": "sculk-placement",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 40,
+ "probes": {
+  "g0_sensor": [
+   4,
+   1,
+   4
+  ],
+  "g0_dust": [
+   5,
+   1,
+   4
+  ],
+  "g0_lamp": [
+   6,
+   1,
+   4
+  ],
+  "g1_sensor": [
+   24,
+   1,
+   4
+  ],
+  "g1_dust": [
+   25,
+   1,
+   4
+  ],
+  "g1_lamp": [
+   26,
+   1,
+   4
+  ],
+  "g2_sensor": [
+   44,
+   1,
+   4
+  ],
+  "g3_sensor": [
+   64,
+   1,
+   4
+  ],
+  "g3_dust": [
+   65,
+   1,
+   4
+  ],
+  "g3_lamp": [
+   66,
+   1,
+   4
+  ],
+  "g4_sensor": [
+   84,
+   1,
+   4
+  ],
+  "g4_dust": [
+   85,
+   1,
+   4
+  ],
+  "g4_lamp": [
+   86,
+   1,
+   4
+  ]
+ },
+ "samples": {
+  "g0_sensor": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    2,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=active,waterlogged=false]"
+   ]
+  ],
+  "g0_dust": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ]
+  ],
+  "g0_lamp": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "g1_sensor": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    4,
+    "minecraft:sculk_sensor[power=12,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    12,
+    "minecraft:air"
+   ]
+  ],
+  "g1_dust": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    4,
+    "minecraft:redstone_wire[east=side,north=none,power=12,south=none,west=side]"
+   ],
+   [
+    12,
+    "minecraft:redstone_wire[east=side,north=side,power=0,south=side,west=side]"
+   ]
+  ],
+  "g1_lamp": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    4,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    16,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "g2_sensor": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    2,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ]
+  ],
+  "g3_sensor": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    4,
+    "minecraft:sculk_sensor[power=12,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    12,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    22,
+    "minecraft:sculk_sensor[power=12,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    34,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ]
+  ],
+  "g3_dust": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    4,
+    "minecraft:redstone_wire[east=side,north=none,power=12,south=none,west=side]"
+   ],
+   [
+    12,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    22,
+    "minecraft:redstone_wire[east=side,north=none,power=12,south=none,west=side]"
+   ],
+   [
+    34,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ]
+  ],
+  "g3_lamp": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    4,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    16,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    22,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    38,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "g4_sensor": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=7,sculk_sensor_phase=active,waterlogged=false]"
+   ]
+  ],
+  "g4_dust": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ]
+  ],
+  "g4_lamp": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ]
+ }
+}

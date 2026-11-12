@@ -232,8 +232,107 @@ def resonance() -> None:
     s.write(180)
 
 
+def placement() -> None:
+    s = Scenario(
+        "sculk-placement",
+        """
+        Platzieren und Entfernen von Sculk-Sensoren per setblock (Flags 3, mit onPlace). Gruppe 0: ein Sensor mit
+        power=7, phase=active ohne geplanten Tick wird bei Tick 2 gesetzt; onPlace setzt die Staerke auf 0 zurueck
+        (die Phase bleibt active, der Sensor nimmt danach nichts an). Gruppe 1: ein Hebel aktiviert einen Sensor mit
+        Staub und Lampe daneben, der aktive Sensor wird bei Tick 12 durch Luft ersetzt (Nachbar-Updates). Gruppe 2:
+        ein inaktiver Sensor wird bei Tick 2 durch einen kalibrierten Sensor mit power=0 und phase=cooldown ersetzt
+        (bleibt ohne Tick fuer immer in der Abkuehlung). Gruppe 3: der aktive Sensor wird durch einen inaktiven
+        ersetzt, der den naechsten Hebel annimmt. Gruppe 4: im Aufbau gesetzt (ohne onPlace) behaelt der aktive
+        Sensor die Staerke 7.
+        """,
+        (100, 4, 10),
+    )
+    s.fills.append((0, 0, 0, 99, 0, 9, "stone"))
+    active = "sculk_sensor[power=7,sculk_sensor_phase=active,waterlogged=false]"
+    # group 0: placed active with power 7
+    ox = 0
+    s.block(ox + 5, 1, 4, wire(0, east="side", west="side"))
+    s.block(ox + 6, 1, 4, "redstone_lamp[lit=false]")
+    s.block(ox + 2, 1, 4, LEVER_OFF)
+    s.setblock(2, ox + 4, 1, 4, active)
+    s.use(20, ox + 2, 1, 4)
+    s.probes.update({"g0_sensor": (ox + 4, 1, 4), "g0_dust": (ox + 5, 1, 4), "g0_lamp": (ox + 6, 1, 4)})
+    # group 1: active sensor removed
+    ox = 20
+    s.block(ox + 4, 1, 4, SENSOR)
+    s.block(ox + 5, 1, 4, wire(0, east="side", west="side"))
+    s.block(ox + 6, 1, 4, "redstone_lamp[lit=false]")
+    s.block(ox + 2, 1, 4, LEVER_OFF)
+    s.use(2, ox + 2, 1, 4)
+    s.setblock(12, ox + 4, 1, 4, "air")
+    s.probes.update({"g1_sensor": (ox + 4, 1, 4), "g1_dust": (ox + 5, 1, 4), "g1_lamp": (ox + 6, 1, 4)})
+    # group 2: replaced by a calibrated sensor in cooldown
+    ox = 40
+    s.block(ox + 4, 1, 4, SENSOR)
+    s.block(ox + 2, 1, 4, LEVER_OFF)
+    s.setblock(2, ox + 4, 1, 4,
+               "calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=cooldown,waterlogged=false]")
+    s.use(10, ox + 2, 1, 4)
+    s.probes.update({"g2_sensor": (ox + 4, 1, 4)})
+    # group 3: active sensor replaced by an inactive one
+    ox = 60
+    s.block(ox + 4, 1, 4, SENSOR)
+    s.block(ox + 5, 1, 4, wire(0, east="side", west="side"))
+    s.block(ox + 6, 1, 4, "redstone_lamp[lit=false]")
+    s.block(ox + 2, 1, 4, LEVER_OFF)
+    s.use(2, ox + 2, 1, 4)
+    s.setblock(12, ox + 4, 1, 4, SENSOR)
+    s.use(20, ox + 2, 1, 4)
+    s.probes.update({"g3_sensor": (ox + 4, 1, 4), "g3_dust": (ox + 5, 1, 4), "g3_lamp": (ox + 6, 1, 4)})
+    # group 4: built (no onPlace) active with power 7, no scheduled tick
+    ox = 80
+    s.block(ox + 4, 1, 4, active)
+    s.block(ox + 5, 1, 4, wire(0, east="side", west="side"))
+    s.block(ox + 6, 1, 4, "redstone_lamp[lit=false]")
+    s.probes.update({"g4_sensor": (ox + 4, 1, 4), "g4_dust": (ox + 5, 1, 4), "g4_lamp": (ox + 6, 1, 4)})
+    s.write(40)
+
+
+def signal_up() -> None:
+    s = Scenario(
+        "sculk-signal-up",
+        """
+        Direktes Signal: getDirectSignal des Sensors gilt nur fuer Direction.UP, also fuer den Block UNTER dem Sensor
+        (der Block fragt seinen oberen Nachbarn). Gruppen 0-2: Stein unter dem Sensor, Hebel in Abstand 1, 3 und 6
+        (Staerke 14, 11 und 4 bei Radius 8); Staub auf dem Boden neben dem Stein und eine Lampe daneben zeigen das
+        Signal. Gleichzeitig steht ein Stein ueber dem Sensor mit Staub und Lampe: der bekommt nichts.
+        Gruppe 3: Glas unter dem Sensor leitet nichts. Gruppe 4: Staub direkt neben dem Sensor bekommt das schwache
+        Signal (alle Gruppen, Probe dust_side).
+        """,
+        (100, 6, 10),
+    )
+    s.fills.append((0, 0, 0, 99, 0, 9, "stone"))
+    for g, dist, below in ((0, 1, "stone"), (1, 3, "stone"), (2, 6, "stone"), (3, 1, "glass")):
+        ox = 20 * g
+        sx = ox + 8
+        s.block(sx, 2, 4, SENSOR)
+        s.block(sx - dist, 1, 4, "stone")
+        s.block(sx - dist, 2, 4, LEVER_OFF)
+        s.block(sx, 1, 4, below)
+        s.block(sx + 1, 1, 4, wire(0, east="none", west="side"))
+        s.block(sx, 1, 3, "redstone_lamp[lit=false]")
+        s.block(sx, 3, 4, "stone")  # above the sensor: gets nothing
+        s.block(sx + 1, 2, 4, "stone")
+        s.block(sx + 1, 3, 4, wire(0, east="none", west="side"))
+        s.block(sx, 3, 3, "redstone_lamp[lit=false]")
+        s.block(sx, 2, 5, wire(0, east="none", west="none"))  # dust beside the sensor (weak signal)
+        s.block(sx, 1, 5, "stone")
+        s.use(2, sx - dist, 2, 4)
+        s.probes.update({f"g{g}_sensor": (sx, 2, 4), f"g{g}_dust_below": (sx + 1, 1, 4),
+                         f"g{g}_lamp_below": (sx, 1, 3), f"g{g}_dust_above": (sx + 1, 3, 4),
+                         f"g{g}_lamp_above": (sx, 3, 3), f"g{g}_dust_side": (sx, 2, 5)})
+    s.write(60)
+
+
 if __name__ == "__main__":
     wool()
     simultaneous()
     calibrated()
     resonance()
+    placement()
+    signal_up()

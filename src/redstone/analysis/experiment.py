@@ -110,6 +110,8 @@ class Circuit:
         while True:
             for at, pos, action in actions:
                 if at == t:
+                    if action == "use" and world.get(pos + self.origin).id.endswith("_pressure_plate"):
+                        action = "step"  # a right click does nothing on a plate; emulate an entity stepping on it
                     apply_input(world, action, pos + self.origin, None)
             # Only blocks that changed (plus comparators, whose output lives in the block entity) are probed.
             for p, v in self._snapshot_changed(world).items():

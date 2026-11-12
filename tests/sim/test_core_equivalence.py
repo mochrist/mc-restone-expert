@@ -257,7 +257,9 @@ def _soup(seed: int) -> tuple[Grid, dict[int, list[Step]], int]:
     for _ in range(14):
         t = rng.randrange(ticks - 10)
         if usable and rng.random() < 0.6:
-            schedule.setdefault(t, []).append(("use", rng.choice(usable) + ORACLE_ORIGIN, None))
+            target = rng.choice(usable)
+            action = "step" if grid[target].id.endswith("_pressure_plate") and rng.random() < 0.8 else "use"
+            schedule.setdefault(t, []).append((action, target + ORACLE_ORIGIN, None))
         else:
             pos = Pos(rng.randrange(sx), rng.randrange(1, sy + 1), rng.randrange(sz))
             state = BlockState.parse(rng.choice(["minecraft:air", "minecraft:redstone_block", _random_state(rng)]))
@@ -357,7 +359,9 @@ def _sculk_soup(seed: int) -> tuple[Grid, dict[int, list[Step]], int]:
     for _ in range(12):
         t = rng.randrange(ticks - 40)
         if usable and rng.random() < 0.6:
-            schedule.setdefault(t, []).append(("use", rng.choice(usable) + ORACLE_ORIGIN, None))
+            target = rng.choice(usable)
+            action = "step" if grid[target].id.endswith("_pressure_plate") and rng.random() < 0.8 else "use"
+            schedule.setdefault(t, []).append((action, target + ORACLE_ORIGIN, None))
         else:
             pos = Pos(rng.randrange(sx), rng.randrange(1, sy + 1), rng.randrange(sz))
             state = BlockState.parse(rng.choice(

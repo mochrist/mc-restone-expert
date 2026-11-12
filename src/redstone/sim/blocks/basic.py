@@ -84,8 +84,8 @@ class ButtonBlock(LeverBlock):
 
 
 class PressurePlateBlock(Block):
-    """BasePressurePlateBlock. Entities are not simulated: action "use" emulates one entity stepping on the
-    plate and leaving again right away (entityInside -> checkPressed); the scheduled tick then releases it.
+    """BasePressurePlateBlock. Entities are not simulated: action "step" emulates one entity stepping on the
+    plate and leaving again right away (a right click, action "use", does nothing, as in the game) (entityInside -> checkPressed); the scheduled tick then releases it.
     ASSUMPTION: a weighted plate sees exactly one entity (light: ceil(1/15*15) = 1, heavy: ceil(1/150*15) = 1)."""
 
     def __init__(self, pressed_time: int, weighted: bool) -> None:
@@ -108,7 +108,7 @@ class PressurePlateBlock(Block):
     def get_direct_signal(self, world, pos, state, direction):
         return self._signal(state) if direction is Direction.UP else 0
 
-    def use_without_item(self, world, pos, state):
+    def step_on(self, world, pos, state):
         if self._signal(state) == 0:
             self._check_pressed(world, pos, state, 1 if self.weighted else 15)
         return True

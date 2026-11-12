@@ -90,6 +90,10 @@ class Block:
         """Player right click without an item. Returns True if the block reacted."""
         return False
 
+    def step_on(self, world: World, pos: Pos, state: BlockState) -> bool:
+        """Simulator-only action "step": an entity enters the block and leaves again (pressure plates)."""
+        return False
+
     def can_survive(self, world: World, pos: Pos, state: BlockState) -> bool:
         return True
 

@@ -16,7 +16,7 @@ from ..io.nbtutil import to_nbt
 from ..model import BlockState, Grid, Pos
 
 FORMAT = 1
-Action = Literal["use", "setblock"]
+Action = Literal["use", "setblock", "step"]
 _NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 
@@ -57,7 +57,7 @@ class Scenario:
                 raise ValueError(f"input position {inp.pos} outside the circuit")
             if inp.action == "setblock" and inp.state is None:
                 raise ValueError("setblock needs a state")
-            if inp.action not in ("use", "setblock"):
+            if inp.action not in ("use", "setblock", "step"):
                 raise ValueError(f"unknown action {inp.action!r}")
         for name, pos in self.probes.items():
             if not self.grid.in_bounds(pos):

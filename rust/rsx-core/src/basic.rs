@@ -95,7 +95,7 @@ impl World {
         }
     }
 
-    pub fn plate_use(&mut self, pos: Pos, state: StateId) -> bool {
+    pub fn plate_step(&mut self, pos: Pos, state: StateId) -> bool {
         if self.plate_signal(state) == 0 {
             let signal = if self.info(state).param2 != 0 { 1 } else { 15 };
             self.plate_check_pressed(pos, state, signal);

@@ -1,0 +1,92 @@
+name: sculk-signal-up
+description: >
+  Direktes Signal: getDirectSignal des Sensors gilt nur fuer Direction.UP, also fuer den Block UNTER dem Sensor
+          (der Block fragt seinen oberen Nachbarn). Gruppen 0-2: Stein unter dem Sensor, Hebel in Abstand 1, 3 und 6
+          (Staerke 14, 11 und 4 bei Radius 8); Staub auf dem Boden neben dem Stein und eine Lampe daneben zeigen das
+          Signal. Gleichzeitig steht ein Stein ueber dem Sensor mit Staub und Lampe: der bekommt nichts.
+          Gruppe 3: Glas unter dem Sensor leitet nichts. Gruppe 4: Staub direkt neben dem Sensor bekommt das schwache
+          Signal (alle Gruppen, Probe dust_side).
+build:
+  size: [100, 6, 10]
+  fill:
+    - [0, 0, 0, 99, 0, 9, "stone"]
+  blocks:
+    - [8, 2, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [7, 1, 4, "stone"]
+    - [7, 2, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [8, 1, 4, "stone"]
+    - [9, 1, 4, "redstone_wire[east=none,north=none,power=0,south=none,west=side]"]
+    - [8, 1, 3, "redstone_lamp[lit=false]"]
+    - [8, 3, 4, "stone"]
+    - [9, 2, 4, "stone"]
+    - [9, 3, 4, "redstone_wire[east=none,north=none,power=0,south=none,west=side]"]
+    - [8, 3, 3, "redstone_lamp[lit=false]"]
+    - [8, 2, 5, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [8, 1, 5, "stone"]
+    - [28, 2, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [25, 1, 4, "stone"]
+    - [25, 2, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [28, 1, 4, "stone"]
+    - [29, 1, 4, "redstone_wire[east=none,north=none,power=0,south=none,west=side]"]
+    - [28, 1, 3, "redstone_lamp[lit=false]"]
+    - [28, 3, 4, "stone"]
+    - [29, 2, 4, "stone"]
+    - [29, 3, 4, "redstone_wire[east=none,north=none,power=0,south=none,west=side]"]
+    - [28, 3, 3, "redstone_lamp[lit=false]"]
+    - [28, 2, 5, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [28, 1, 5, "stone"]
+    - [48, 2, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [42, 1, 4, "stone"]
+    - [42, 2, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [48, 1, 4, "stone"]
+    - [49, 1, 4, "redstone_wire[east=none,north=none,power=0,south=none,west=side]"]
+    - [48, 1, 3, "redstone_lamp[lit=false]"]
+    - [48, 3, 4, "stone"]
+    - [49, 2, 4, "stone"]
+    - [49, 3, 4, "redstone_wire[east=none,north=none,power=0,south=none,west=side]"]
+    - [48, 3, 3, "redstone_lamp[lit=false]"]
+    - [48, 2, 5, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [48, 1, 5, "stone"]
+    - [68, 2, 4, "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"]
+    - [67, 1, 4, "stone"]
+    - [67, 2, 4, "lever[face=floor,facing=east,powered=false]"]
+    - [68, 1, 4, "glass"]
+    - [69, 1, 4, "redstone_wire[east=none,north=none,power=0,south=none,west=side]"]
+    - [68, 1, 3, "redstone_lamp[lit=false]"]
+    - [68, 3, 4, "stone"]
+    - [69, 2, 4, "stone"]
+    - [69, 3, 4, "redstone_wire[east=none,north=none,power=0,south=none,west=side]"]
+    - [68, 3, 3, "redstone_lamp[lit=false]"]
+    - [68, 2, 5, "redstone_wire[east=none,north=none,power=0,south=none,west=none]"]
+    - [68, 1, 5, "stone"]
+ticks: 60
+inputs:
+  - {tick: 2, pos: [7, 2, 4], action: use}
+  - {tick: 2, pos: [25, 2, 4], action: use}
+  - {tick: 2, pos: [42, 2, 4], action: use}
+  - {tick: 2, pos: [67, 2, 4], action: use}
+probes:
+  g0_sensor: [8, 2, 4]
+  g0_dust_below: [9, 1, 4]
+  g0_lamp_below: [8, 1, 3]
+  g0_dust_above: [9, 3, 4]
+  g0_lamp_above: [8, 3, 3]
+  g0_dust_side: [8, 2, 5]
+  g1_sensor: [28, 2, 4]
+  g1_dust_below: [29, 1, 4]
+  g1_lamp_below: [28, 1, 3]
+  g1_dust_above: [29, 3, 4]
+  g1_lamp_above: [28, 3, 3]
+  g1_dust_side: [28, 2, 5]
+  g2_sensor: [48, 2, 4]
+  g2_dust_below: [49, 1, 4]
+  g2_lamp_below: [48, 1, 3]
+  g2_dust_above: [49, 3, 4]
+  g2_lamp_above: [48, 3, 3]
+  g2_dust_side: [48, 2, 5]
+  g3_sensor: [68, 2, 4]
+  g3_dust_below: [69, 1, 4]
+  g3_lamp_below: [68, 1, 3]
+  g3_dust_above: [69, 3, 4]
+  g3_lamp_above: [68, 3, 3]
+  g3_dust_side: [68, 2, 5]

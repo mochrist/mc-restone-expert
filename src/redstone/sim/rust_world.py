@@ -513,6 +513,10 @@ class RustWorld:
         """Right click on the block at ``pos`` (runner input "use")."""
         return self._c.use_at(pos)
 
+    def step_at(self, pos: Pos) -> bool:
+        """Runner input "step": an entity steps on the plate at ``pos`` and leaves again."""
+        return self._c.step_at(pos)
+
     # ------------------------------------------------------------------ mechanics notes
     def collect_notes(self) -> list[Note]:
         """redstone.sim.notes.notes_of: run the state checks, then list all notes."""

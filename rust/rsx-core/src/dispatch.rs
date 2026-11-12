@@ -359,6 +359,14 @@ impl World {
         }
     }
 
+    /// Simulator-only action "step": an entity enters a pressure plate and leaves again.
+    pub fn step_on(&mut self, pos: Pos, state: StateId) -> bool {
+        match self.info(state).kind {
+            Kind::PressurePlate => self.plate_step(pos, state),
+            _ => false,
+        }
+    }
+
     /// Player right click without an item. Returns true if the block reacted.
     pub fn use_without_item(&mut self, pos: Pos, state: StateId) -> bool {
         match self.info(state).kind {
@@ -367,7 +375,6 @@ impl World {
                 true
             }
             Kind::Button => self.button_use(pos, state),
-            Kind::PressurePlate => self.plate_use(pos, state),
             Kind::Wire => self.wire_use(pos, state),
             Kind::Repeater => self.repeater_use(pos, state),
             Kind::Comparator => self.comparator_use(pos, state),
