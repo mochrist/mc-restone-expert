@@ -1,29 +1,46 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-12, Session 12. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-12, Session 13. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~98 % | 295 Aussagen aus dem 26.3-Code belegt, 224 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~96 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 145 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen, Sculk-Sensoren |
+| M2 Oracle + Simulator | 35 % | ~96 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 149 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen, Sculk-Sensoren |
 | M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~87 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
+| M4 Redesign | 25 % | ~87 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
-## Übergabe (aus Session 12)
+## Übergabe (aus Session 13)
 
-Session 12 sauber beendet: alles gemergt und committet, keine Worktrees, Oracle-Sperre frei, Suite grün
-(1518 Tests mit Rust-Kern), `knowledge/UNVERIFIED.md` neu erzeugt. Nächste Aufgaben, parallel möglich:
+Session 13 sauber beendet: alles gemergt und committet, keine Worktrees, Oracle-Sperre frei, Suite grün
+(1540 Tests mit Rust-Kern, 149 Golden Traces), `knowledge/UNVERIFIED.md` neu erzeugt. Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| M4: Zerlegung hierarchisch/kleiner: partielle H-Teile (zwei Signale, unbenutzter Code) dürfen nicht weiter zerlegt werden; Kaskaden (Komparator aus 2-Bit-Stufen) ergeben sich deshalb nicht, Kompositionen bleiben groß (cmp3 511 Blöcke gegen PLA) | Opus | – |
-| M4: Kompaktieren größerer Züge (Budget ist kein Engpass mehr: mit 400 statt 100 Bewertungen schrumpft fast nichts weiter; `scripts/bench_compact.py`) | Opus | – |
-| M2: Sculk-Reste im Spiel prüfen (SCULK-007, Platzieren/Entfernen im aktiven Zustand, Signal nach oben); Oracle-Entities zwischen Läufen löschen (siehe unten) | Sonnet | – |
-| M0: verbleibende 71 belegte Aussagen sind fast alle nur mit Entities oder interner Reihenfolge prüfbar; nur bei Bedarf | Sonnet | – |
+| M4: Komparator-Stufe v2 mit günstiger Anschlusslage, damit sich Stufen verketten lassen (gi/li auf einer Seite, go/lo gegenüber auf gleicher Höhe wie gi/li; Idee: ODER über zusammengeführten Staub am Rückeingang, go = (gi ∨ a∧¬b)∧¬li – bei gi=li=1 egal). Danach cmp3/cmp4 als reine Kaskade prüfen | Opus | – |
+| M4: Kompaktieren größerer Züge (Budget ist kein Engpass mehr; `scripts/bench_compact.py`) | Opus | – |
+| Oracle: `kb3-bud-reach` weicht in einem frischen Lauf vom Golden ab (Simulator = Golden); vermutlich „erste Aufnahme nach Serverstart“, klären | Sonnet | – |
 
 ## Verlauf
+
+### Session 13 (2026-11-12): Übergabe aus Session 12 (Opus-Hauptsession, 1 Sonnet-Agent)
+
+- M4: Vorlagen `cmp1-comparator` (1-Bit-Vergleich gt/lt, zwei Subtraktions-Komparatoren, 14 Blöcke) und
+  `cmp-stage-comparator` (Kaskadenstufe gi, li, a, b → go, lo; 58 Blöcke), beide im Spiel identisch
+  (`tpl-cmp1-comparator`, `tpl-cmp-stage-comparator`). 2-Bit-Komparator jetzt cmp1 → Stufe: 118 Blöcke,
+  Volumen 264 (PLA 276/748). 3-Bit: PLA → Stufe, kompaktiert Volumen 1750 (PLA allein 2700), `cmp-cmp3` neu
+  aufgenommen und identisch. Eine reine Kaskade (cmp1 → Stufe → Stufe) entsteht nicht: in der Stufe liegen
+  go/lo auf entgegengesetzten Seiten und gi/li in entgegengesetzten Ecken, beim Verketten umschließt die zweite
+  Leitung einen Ausgang (beide Verbindungsreihenfolgen geprobt, verworfen). `compose.wire` hat eine
+  tight-Rückfallstufe (Leitungen dürfen nur nicht berühren), `_route(tight=True)`.
+- Verworfen: unbenutzten Code der Zwei-Signal-Zerlegung auffüllen, damit H weiter zerlegbar wird – 15× langsamer,
+  keine kleineren Entwürfe (Kaskaden aus Fackel-PLAs sind nicht kleiner als ein PLA).
+- M2 (Sonnet-Agent): `sculk-placement` (SCULK-004) und `sculk-signal-up` (SCULK-008) im Spiel; Befund: das starke
+  Signal eines aktiven Sensors geht in den Block **darunter**. SCULK-007 ohne Entities nicht prüfbar. Druckplatte:
+  `use` tut jetzt nichts (wie im Spiel), neue Simulator-Aktion `step` (betreten und verlassen, nur Simulator,
+  `docs/scenario-format.md`); `Experiment.run` nimmt für Platten automatisch `step`. Oracle-Mod entfernt vor jedem
+  Szenario Nicht-Spieler-Entities im Szenariobereich (`ScenarioRun.build`).
 
 ### Session 12 (2026-11-12): Übergabe aus Session 11 (Opus-Hauptsession, 2 Sonnet-Agents)
 
