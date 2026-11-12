@@ -1,29 +1,56 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-11, Session 11. Geschätzter Gesamtfortschritt: **ca. 95 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-12, Session 12. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
-| M0 Wissensbasis | 10 % | ~97 % | 285 Aussagen aus dem 26.3-Code belegt, 203 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
+| M0 Wissensbasis | 10 % | ~98 % | 295 Aussagen aus dem 26.3-Code belegt, 224 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~94 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 129 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen |
+| M2 Oracle + Simulator | 35 % | ~96 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 145 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen, Sculk-Sensoren |
 | M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~85 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit gemeinsamem Teil mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
+| M4 Redesign | 25 % | ~87 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
-## Übergabe (aus Session 11)
+## Übergabe (aus Session 12)
 
-Session 11 sauber beendet: alles gemergt und committet, keine Worktrees, Oracle-Sperre frei, Suite grün
-(Rust ~1350 Tests; Python-Kern `tests/sim` grün). Nächste Aufgaben, parallel möglich:
+Session 12 sauber beendet: alles gemergt und committet, keine Worktrees, Oracle-Sperre frei, Suite grün
+(1518 Tests mit Rust-Kern), `knowledge/UNVERIFIED.md` neu erzeugt. Nächste Aufgaben, parallel möglich:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| Sculk-Sensor fertig: Rust-Kern nachziehen (Block-Art, Block-Entity, Event-Verteilung, Wolle-Verdeckung), Import in `sim/blocks/__init__.py` aktivieren, `scenarios/pending-sculk/*` nach `scenarios/` und im Spiel aufnehmen (zuerst `sculk-sources`, `sculk-wool`), Differenztest-Soup, `knowledge/components/sculk-sensor.md` | Sonnet | – |
-| M4: mehrere gemeinsame Zwischensignale bei der Zerlegung (z. B. Carry-Lookahead) | Opus | – |
-| M4: Kompaktier-Budget besser verteilen (~70 % gehen ans Entfernen einzelner Blöcke) | Opus (Hauptsession) | nach der Zerlegung, wegen `cmp-*`-Neuaufnahmen |
-| M0: restliche belegte Aussagen prüfen, die ohne Entities gehen | Sonnet | – |
+| M4: Zerlegung hierarchisch/kleiner: partielle H-Teile (zwei Signale, unbenutzter Code) dürfen nicht weiter zerlegt werden; Kaskaden (Komparator aus 2-Bit-Stufen) ergeben sich deshalb nicht, Kompositionen bleiben groß (cmp3 511 Blöcke gegen PLA) | Opus | – |
+| M4: Kompaktieren größerer Züge (Budget ist kein Engpass mehr: mit 400 statt 100 Bewertungen schrumpft fast nichts weiter; `scripts/bench_compact.py`) | Opus | – |
+| M2: Sculk-Reste im Spiel prüfen (SCULK-007, Platzieren/Entfernen im aktiven Zustand, Signal nach oben); Oracle-Entities zwischen Läufen löschen (siehe unten) | Sonnet | – |
+| M0: verbleibende 71 belegte Aussagen sind fast alle nur mit Entities oder interner Reihenfolge prüfbar; nur bei Bedarf | Sonnet | – |
 
 ## Verlauf
+
+### Session 12 (2026-11-12): Übergabe aus Session 11 (Opus-Hauptsession, 2 Sonnet-Agents)
+
+- M4: Zerlegung mit zwei gemeinsamen Signalen (`decompose.shared_splits(width=2)`): Sehen die Ausgänge über
+  einer gebundenen Menge 3–4 verschiedene Spalten, liefert G zwei Signale g0, g1 (Code mit den wenigsten Termen
+  für G und H; bei drei Spalten ist der vierte Code für H egal, H wird eine partielle Spezifikation). Schnitte,
+  bei denen G nur seine Hebel weiterreicht, entfallen. Nur versucht, wenn kein Schnitt mit einem Signal geht
+  (`MAX_WIDE_SPLITS = 2`). Verbindung: g0 über `chains`, g1 über `compose.wire` in der fertigen Komposition.
+  `wire` dazu erweitert: Ausgangsmodus „stone“, Staub-Modus darf neben eng stehenden Lampen beginnen (PLA-Lampen
+  werden von der Fackel darüber gespeist: Verstärker und Stein lesen das nicht), Wandhebel (ansteuerbarer PLA)
+  werden geradeaus angefahren; `_route` läuft nie unter seinem Startfeld durch. Neues Beispiel
+  `examples/specs/composed/cmp3.yaml` (3-Bit-Komparator gt/lt), `cmp-cmp3` im Spiel identisch. 5-Bit-Komparator
+  (10 Eingänge, über dem PLA-Limit) jetzt entwerfbar (~2000 Blöcke, ~80 s); bei 6 Eingängen bleibt der PLA kleiner.
+- M4: Kompaktier-Budget: Messung (`scripts/bench_compact.py`) zeigt, dass fast alle Beispiele schon mit 100
+  Bewertungen konvergieren (400 bringen nichts); die Einzelblöcke bekamen nur den Rest. Großen Entwürfen fehlte
+  das Neuverlegen von Leitungen, das erst nach Schnitten/Verschiebungen kam: jetzt im Strukturdurchgang, nur
+  angenommen, wenn kleiner. Ebenen mit wenig Blöcken zuerst, höchstens `CUT_SHARE` = 20 % je Durchgang.
+  cmp3-Komposition 6032 → 3480 (vorher 4704), Rest unverändert.
+- M0 (Sonnet-Agent): 12 weitere Aussagen im Spiel verifiziert, keine widerlegt (`scenarios/kb3-*`, Generator
+  `scripts/gen_kb3_scenarios.py`). TRCH-012 praktisch nur beim Burnout selbst erreichbar (aus dem Code).
+- M2 (Sonnet-Agent): Sculk- und kalibrierter Sculk-Sensor im Rust-Kern (`rust/rsx-core/src/sculk.rs`, Auslöser
+  in basic/outputs/piston/container/world), registriert, Differenztest mit Sculk-Soup (120 Seeds); sechs
+  Szenarien `sculk-*` im Spiel identisch; `knowledge/components/sculk-sensor.md` (SCULK-001…010). Befunde:
+  `use` auf einer Druckplatte tut im Spiel nichts (Simulator löst aus; Platte aus dem Szenario entfernt);
+  **der Oracle löscht Entities zwischen Läufen nicht** – ein geworfenes Item löste im nächsten Szenario Sensoren
+  aus. Abhilfe: `oracle/run/rsx-world/dimensions/minecraft/overworld/entities/*.mca` unter der Sperre löschen,
+  Szenarien mit Item-Entities einzeln laufen lassen. Teppich ist inert (Warnung „not modeled“ harmlos).
 
 ### Session 11 (2026-11-11): M3 und M4 (Fable-5.2-/Opus-Hauptsession; ab „Agents parallel“: 3 Sonnet-, 1 Opus-Agent)
 
@@ -282,7 +309,7 @@ Session 11 sauber beendet: alles gemergt und committet, keine Worktrees, Oracle-
 ## Befehle
 
 ```
-uv run pytest -q [--sim-core python|rust] [--slow] # ~1310 Tests, alle grün (Rust ~70 s, Python ~9 min)
+uv run pytest -q [--sim-core python|rust] [--slow] # ~1520 Tests, alle grün (Rust ~70 s, Python ~9 min)
 uv sync                                            # baut auch den Rust-Kern; nach Rust-Änderungen:
 uv pip install --reinstall-package rsx-core ./rust/rsx-core
 uv run rsx --sim-core python|rust <befehl>         # Kern wählen (Standard: Rust, wenn gebaut)
@@ -319,14 +346,14 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
    (`design/compose.py: _route`) beschleunigen, Lauf-Schleife samt Aufzeichnung (`Circuit.run`) nach Rust.
 3. **M4 weiter:** Leitlinie bleibt `docs/m4-search-and-performance.md`.
    - Lücken der Vorlagen: Monoflop 3 gt nur mit Knopf (Hebel unmöglich, siehe Session 8); Hebel-Comparator-Monoflop nicht für jede gerade Länge; XOR-Vorlagen groß (28–33 Blöcke).
-   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); Nicht einfach zerlegbare Funktionen über 8 Eingängen bleiben ungelöst (PLA bis 8, Session 11; nur einfache disjunkte Zerlegung). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); Bausteine umsetzen/drehen geht (Session 11), mit Teilzugehörigkeit auch bei sich berührenden Teilen; ~70 % des Budgets von 100 Bewertungen gehen ans Entfernen einzelner Blöcke. Geteilte Teilfunktionen: nur eine gemeinsame Leitung g je Zerlegung (Session 10); mehrere gemeinsame Signale (z. B. Carry-Lookahead) nicht.
+   - Komposition: nicht ansteuerbare Vorlagen-Eingänge siehe Session 8 (`mux2 s`, Addierer b/c …); Nicht einfach zerlegbare Funktionen über 8 Eingängen bleiben ungelöst (PLA bis 8, Session 11; nur einfache disjunkte Zerlegung). Kompaktieren: Teile verschieben und Leitungen neu verlegen geht (Session 10); Bausteine umsetzen/drehen geht (Session 11), mit Teilzugehörigkeit auch bei sich berührenden Teilen; Budget ist kein Engpass mehr (Session 12), es fehlen größere Züge. Geteilte Teilfunktionen: eine oder zwei gemeinsame Leitungen je Zerlegung (Session 10/12); Signale aus verschiedenen gebundenen Mengen (nicht-disjunkt, z. B. Carry-Lookahead) nicht.
    - Verhalten aus Bestandsschaltungen bis 6 Eingänge (Session 11; Gatter nur aus der Analyse, über 4 Hebeln
      ohne Logik-vor-Baustein-Erkennung also nur Einzelbausteine); Ausgänge, die schneller schwingen als die Lampe, werden falsch gelesen.
    - M3-Analyse erkennt Logik vor T-FF/Pulsgeber (Session 8), Set-only-Speicher (Session 10) und Zeitgliedern (Session 11).
    - Danach: Topologie per SAT/SMT, gezielte Suche (Mutation, Kompaktieren) – der schnellere Kern ist jetzt da.
    - Achtung: Ergebnisse gelten zunächst nur an der Oracle-Position (DUST-018).
 4. **Restliche Simulator-Lücken (M2):**
-   - Sculk-Sensor: Python fertig, Rust und Spielaufnahmen fehlen (siehe Übergabe).
+   - Sculk-Sensor erledigt (Session 12; Entities, Shrieker, Warden nicht modelliert).
    - Tageslichtsensor erledigt (Session 11, nur feste Tageszeit, Himmelslicht angenähert). Kuchen
      (Session 11, nur Comparator und Halt; Essen nicht). Druckplatten, Detektorschiene, Sculk. Truhen (Session 8) und Crafter (Session 10, wenige Rezepte) erledigt.
    - Notenblock-Instrument nur über Blocknamen (ASSUMPTION; Feld `instrument` im Block-Dump fehlt).
