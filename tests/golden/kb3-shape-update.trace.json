@@ -1,0 +1,82 @@
+{
+ "format": 1,
+ "scenario": "kb3-shape-update",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 8,
+ "probes": {
+  "rep": [
+   1,
+   1,
+   1
+  ],
+  "rep-neighbor-det": [
+   2,
+   1,
+   1
+  ],
+  "dust1": [
+   1,
+   1,
+   5
+  ],
+  "dust2": [
+   2,
+   1,
+   5
+  ],
+  "control-det": [
+   4,
+   1,
+   8
+  ]
+ },
+ "samples": {
+  "rep": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:air"
+   ]
+  ],
+  "rep-neighbor-det": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "dust1": [
+   [
+    0,
+    "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ]
+  ],
+  "dust2": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ]
+  ],
+  "control-det": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ]
+  ]
+ }
+}

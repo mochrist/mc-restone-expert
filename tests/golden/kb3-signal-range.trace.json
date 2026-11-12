@@ -1,0 +1,258 @@
+{
+ "format": 1,
+ "scenario": "kb3-signal-range",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 6,
+ "probes": {
+  "dust0": [
+   1,
+   1,
+   0
+  ],
+  "dust1": [
+   2,
+   1,
+   0
+  ],
+  "dust2": [
+   3,
+   1,
+   0
+  ],
+  "dust3": [
+   4,
+   1,
+   0
+  ],
+  "dust4": [
+   5,
+   1,
+   0
+  ],
+  "dust5": [
+   6,
+   1,
+   0
+  ],
+  "dust6": [
+   7,
+   1,
+   0
+  ],
+  "dust7": [
+   8,
+   1,
+   0
+  ],
+  "dust8": [
+   9,
+   1,
+   0
+  ],
+  "dust9": [
+   10,
+   1,
+   0
+  ],
+  "dust10": [
+   11,
+   1,
+   0
+  ],
+  "dust11": [
+   12,
+   1,
+   0
+  ],
+  "dust12": [
+   13,
+   1,
+   0
+  ],
+  "dust13": [
+   14,
+   1,
+   0
+  ],
+  "dust14": [
+   15,
+   1,
+   0
+  ],
+  "dust15": [
+   16,
+   1,
+   0
+  ],
+  "dust16": [
+   17,
+   1,
+   0
+  ]
+ },
+ "samples": {
+  "dust0": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=15,south=none,west=side]"
+   ]
+  ],
+  "dust1": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=14,south=none,west=side]"
+   ]
+  ],
+  "dust2": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=13,south=none,west=side]"
+   ]
+  ],
+  "dust3": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=12,south=none,west=side]"
+   ]
+  ],
+  "dust4": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=11,south=none,west=side]"
+   ]
+  ],
+  "dust5": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=10,south=none,west=side]"
+   ]
+  ],
+  "dust6": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=9,south=none,west=side]"
+   ]
+  ],
+  "dust7": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=8,south=none,west=side]"
+   ]
+  ],
+  "dust8": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=7,south=none,west=side]"
+   ]
+  ],
+  "dust9": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=6,south=none,west=side]"
+   ]
+  ],
+  "dust10": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=5,south=none,west=side]"
+   ]
+  ],
+  "dust11": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=4,south=none,west=side]"
+   ]
+  ],
+  "dust12": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=3,south=none,west=side]"
+   ]
+  ],
+  "dust13": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=2,south=none,west=side]"
+   ]
+  ],
+  "dust14": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ],
+   [
+    2,
+    "minecraft:redstone_wire[east=side,north=none,power=1,south=none,west=side]"
+   ]
+  ],
+  "dust15": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ]
+  ],
+  "dust16": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]"
+   ]
+  ]
+ }
+}

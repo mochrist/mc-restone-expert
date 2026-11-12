@@ -71,8 +71,8 @@ Konvention zur Signalrichtung im Code: `SignalGetter#getSignal(pos, dir)` fragt 
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DiodeBlock#checkTickOnNeighbor`, `LevelTicks#willTickThisTick`
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: Zusätzlich ignoriert `LevelChunkTicks#schedule` einen neuen Tick, wenn für dieselbe Position und denselben Block schon einer geplant ist (Deduplizierung nur nach Position+Blocktyp, nicht nach Zeitpunkt).
+- Status: im-Spiel-verifiziert (scenarios/kb3-diode-tick.yaml)
+- Hinweise: Zusätzlich ignoriert `LevelChunkTicks#schedule` einen neuen Tick, wenn für dieselbe Position und denselben Block schon einer geplant ist (Deduplizierung nur nach Position+Blocktyp, nicht nach Zeitpunkt). Im Spiel geprüft (kb3-diode-tick): bei übereinstimmendem Zustand und Eingang (auch gesperrt, aus) bleibt der Repeater unverändert, bei Abweichung schaltet er nach der Verzögerung. `willTickThisTick` ist nicht getrennt geprüft.
 
 ### REP-009: Tick-Priorität EXTREMELY_HIGH, wenn vor dem Repeater eine nicht zurückzeigende Diode steht
 - Aussage: Steht am Ausgang eine Diode (Repeater/Comparator), deren `facing` nicht gleich der Ausgangsrichtung des Repeaters ist (d. h. die nicht frontal zurück in ihn ausgibt), plant `checkTickOnNeighbor` mit `TickPriority.EXTREMELY_HIGH` (-3).

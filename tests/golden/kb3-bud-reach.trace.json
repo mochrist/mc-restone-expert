@@ -1,0 +1,130 @@
+{
+ "format": 1,
+ "scenario": "kb3-bud-reach",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 8,
+ "probes": {
+  "east": [
+   4,
+   1,
+   2
+  ],
+  "west": [
+   2,
+   1,
+   8
+  ],
+  "north": [
+   3,
+   1,
+   13
+  ],
+  "south": [
+   3,
+   1,
+   21
+  ],
+  "up": [
+   3,
+   2,
+   26
+  ],
+  "diag": [
+   4,
+   1,
+   33
+  ],
+  "diag-up": [
+   4,
+   2,
+   38
+  ],
+  "far-east": [
+   5,
+   1,
+   44
+  ],
+  "far-south": [
+   3,
+   1,
+   53
+  ]
+ },
+ "samples": {
+  "east": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "west": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "north": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "south": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "up": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ],
+   [
+    4,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=false]"
+   ]
+  ],
+  "diag": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ]
+  ],
+  "diag-up": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ]
+  ],
+  "far-east": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ]
+  ],
+  "far-south": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ]
+  ]
+ }
+}

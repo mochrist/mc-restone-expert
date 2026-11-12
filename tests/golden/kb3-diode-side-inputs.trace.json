@@ -1,0 +1,160 @@
+{
+ "format": 1,
+ "scenario": "kb3-diode-side-inputs",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 14,
+ "probes": {
+  "r-rb": [
+   1,
+   1,
+   3
+  ],
+  "r-lev": [
+   1,
+   1,
+   9
+  ],
+  "r-dust": [
+   1,
+   1,
+   15
+  ],
+  "r-diode": [
+   1,
+   1,
+   21
+  ],
+  "r-stone": [
+   1,
+   1,
+   27
+  ],
+  "c-rb": [
+   1,
+   1,
+   33
+  ],
+  "c-lev": [
+   1,
+   1,
+   39
+  ],
+  "c-dust": [
+   1,
+   1,
+   45
+  ],
+  "c-diode": [
+   1,
+   1,
+   51
+  ],
+  "c-stone": [
+   1,
+   1,
+   57
+  ],
+  "c-none": [
+   1,
+   1,
+   63
+  ]
+ },
+ "samples": {
+  "r-rb": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    8,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "r-lev": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    8,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "r-dust": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    8,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "r-diode": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ]
+  ],
+  "r-stone": [
+   [
+    0,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=false]"
+   ],
+   [
+    8,
+    "minecraft:repeater[delay=1,facing=west,locked=false,powered=true]"
+   ]
+  ],
+  "c-rb": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+   ]
+  ],
+  "c-lev": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+   ],
+   [
+    8,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "c-dust": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+   ]
+  ],
+  "c-diode": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+   ]
+  ],
+  "c-stone": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+   ],
+   [
+    8,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ],
+  "c-none": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=subtract,powered=false]|output=0"
+   ],
+   [
+    8,
+    "minecraft:comparator[facing=west,mode=subtract,powered=true]|output=15"
+   ]
+  ]
+ }
+}

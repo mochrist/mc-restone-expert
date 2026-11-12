@@ -143,7 +143,8 @@ ausgeführt wird. Phasenreihenfolge siehe `mechanics/tick-phases-and-order.md`.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `PistonBaseBlock#triggerEvent`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb3-piston-retract.yaml)
+- Hinweise: Im Spiel geprüft (kb3-piston-retract): ein Detektor neben der Basis geht 2 gt nach dem Einfahr-Event aus, nicht erst nach dem Ende des beweglichen Kolbens (2 gt später).
 
 ### PIS-018: Normale Pistons lassen keine Blöcke fallen, schieben aber zu Ende
 - Aussage: Ein normaler Piston entfernt beim Einfahren nur die Kopfposition; ein noch ausfahrender geschobener Block läuft als `moving_piston` weiter und kommt regulär an.

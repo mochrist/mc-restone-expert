@@ -104,7 +104,7 @@ deshalb Komponenten, aber keinen Staub.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `SignalGetter#hasNeighborSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb3-signal-dirs.yaml)
 - Hinweise: Wird z. B. von Lampen, Kolben und Türen benutzt (Quasi-Connectivity prüft zusätzlich die Position darüber, siehe Mechanik-Dateien).
 
 ### PWR-013: getBestOwnOrNeighbourSignal berücksichtigt das Eigensignal einer Quelle
@@ -119,8 +119,8 @@ deshalb Komponenten, aber keinen Staub.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `SignalGetter#getControlInputSignal`
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: Repeater (Locking) nutzen `onlyDiodes=true`, Komparator-Seiteneingänge `false`; Details in den Komponenten-Dateien.
+- Status: im-Spiel-verifiziert (scenarios/kb3-diode-side-inputs.yaml)
+- Hinweise: Repeater (Locking) nutzen `onlyDiodes=true`, Komparator-Seiteneingänge `false`; Details in den Komponenten-Dateien. Im Spiel geprüft (kb3-diode-side-inputs): Repeater sperren nur ein gespeister Repeater, nicht Redstone-Block, Staub, Hebel oder angetriebener Stein; Comparatoren ziehen Redstone-Block, Staub und Diode ab, nicht einen angetriebenen Stein und nicht einen Bodenhebel (dessen starkes Signal geht nur in den Block darunter, `getDirectSignal` mit anderer Richtung ist 0). Ein Hebel mit passender Richtung am Comparator ist nicht gebaut.
 
 ### PWR-015: Standard-Signalquellen verbinden sich mit Staub nur bei bekannter Richtung
 - Aussage: Der Default von `shouldRedstoneWireConnectTo` ist `isSignalSource() && direction != null`; bei Abfragen ohne Richtung (diagonal hoch/runter) verbindet sich Staub daher nur mit Blöcken, die die Methode überschreiben (vor allem Staub selbst).
