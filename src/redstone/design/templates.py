@@ -348,32 +348,32 @@ _register(
 
 def _cmp_stage() -> _Layout:
     blocks = {
-        # a minus b minus li -> go, b minus a minus gi -> lo (two comparators in a row each)
-        (0, 0, 0): LEVER(), (1, 0, 0): COMPARATOR("west"), (2, 0, 0): COMPARATOR("west"), (3, 0, 0): LAMP,
-        (1, 0, 2): LEVER(), (0, 0, 2): COMPARATOR("east"), (-1, 0, 2): COMPARATOR("east"), (-2, 0, 2): LAMP,
+        # go: (a minus b, joined with gi on the dust D1) minus li; lo: (b minus a, joined with li on D2) minus gi.
+        # Only the last comparator of each row lights its lamp, so the lamp is powered strongly.
+        (0, 0, 0): LEVER(), (1, 0, 0): COMPARATOR("west"), (2, 0, 0): WIRE, (3, 0, 0): COMPARATOR("west"),
+        (4, 0, 0): LAMP,
+        (1, 0, 2): LEVER(), (0, 0, 2): COMPARATOR("east"), (-1, 0, 2): WIRE, (-2, 0, 2): COMPARATOR("east"),
+        (-3, 0, 2): LAMP,
         (0, 0, 1): REPEATER("north"), (1, 0, 1): REPEATER("south"),
-        # li: over a repeater into the side of the go comparator, and down to the lo lamp
-        (-3, 0, -2): LEVER(), (2, 0, -1): REPEATER("north"),
-        # gi: over a repeater into the side of the lo comparator, and up to the go lamp
-        (4, 0, 4): LEVER(), (-1, 0, 3): REPEATER("south"),
+        # li: row z=-2, over a repeater into the side of the go comparator, and down onto D2
+        (-3, 0, -2): LEVER(), (3, 0, -1): REPEATER("north"), (-1, 0, -1): WIRE, (-1, 0, 0): REPEATER("north"),
+        (-1, 0, 1): WIRE,
+        # gi: row z=4, over a repeater into the side of the lo comparator, and up onto D1
+        (4, 0, 4): LEVER(), (-2, 0, 3): REPEATER("south"), (2, 0, 3): WIRE, (2, 0, 2): REPEATER("south"),
+        (2, 0, 1): WIRE,
     }
-    for x in range(-2, 3):
+    for x in range(-2, 4):
         blocks[(x, 0, -2)] = WIRE
-    for z in (-1, 0, 1):
-        blocks[(-2, 0, z)] = WIRE
-    for x in range(-1, 4):
         blocks[(x, 0, 4)] = WIRE
-    for z in (1, 2, 3):
-        blocks[(3, 0, z)] = WIRE
-    return _Layout(_supported(blocks), ((4, 0, 4), (-3, 0, -2), (0, 0, 0), (1, 0, 2)), ((3, 0, 0), (-2, 0, 2)))
+    return _Layout(_supported(blocks), ((4, 0, 4), (-3, 0, -2), (0, 0, 0), (1, 0, 2)), ((4, 0, 0), (-3, 0, 2)))
 
 
 _register(
     "cmp-stage-comparator", "gi li a b", "go lo",
-    {"go": "gi or (a and not b and not li)", "lo": "li or (b and not a and not gi)"},
-    "Stufe eines Größenvergleichs (Kaskade, höhere Stelle zuerst): gi/li sagen „schon größer/kleiner“. Zwei "
-    "Komparatorpaare rechnen a minus b minus li und b minus a minus gi; gi und li speisen außerdem direkt die "
-    "eigene Lampe. Verzögerung bis 6 gt.",
+    {"go": "(gi or (a and not b)) and not li", "lo": "(li or (b and not a)) and not gi"},
+    "Stufe eines Größenvergleichs (Kaskade, höhere Stelle zuerst): gi/li sagen „schon größer/kleiner“ (nie beide). "
+    "a minus b und gi laufen auf einem Staub zusammen in einen Komparator, der li abzieht; ebenso b minus a, li "
+    "und gi. Nur diese Komparatoren speisen die Lampen. Verzögerung bis 6 gt.",
     _cmp_stage)
 
 

@@ -287,13 +287,18 @@ def _route(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], l
     def inside(c: Pos) -> bool:
         return x0 <= c[0] <= x1 and y0 <= c[1] <= y1 and z0 <= c[2] <= z1
 
-    # tight: the line only must not touch (faces, dust one step up or down) instead of one block of air
-    near = {k + f for k in keep_clear for f in _FACES + _STEPS} if tight else _halo(keep_clear)
+    # tight: the line only must not touch (faces, dust one step up or down) instead of one block of air, and
+    # its floor may rest on top of other blocks (a bridge over a line of another part)
+    if tight:
+        near = {k + f for k in keep_clear for f in _FACES + _STEPS}
+        near_floor = {k + f for k in keep_clear for f in _FACES if f != UP}
+    else:
+        near = near_floor = _halo(keep_clear)
 
     def ok(c: Pos) -> bool:
         if not inside(c) or c in solid or c + DOWN in solid:
             return False
-        return c in goals or not (c in near or c + DOWN in near)
+        return c in goals or not (c in near or c + DOWN in near_floor)
 
     prev: dict[Pos, Pos | None] = {start: None}
     queue = deque([start])
@@ -307,7 +312,7 @@ def _route(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], l
         for d in HORIZONTAL:
             h = c + Pos(*d.vec)
             steps = [h]
-            if c != start:
+            if c != start or tight:
                 if c + UP not in solid:
                     steps.append(h + UP)
                 if h not in solid:
@@ -479,7 +484,9 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
     solid = set(a) - ({source} if lamp else set())
     keep = {x for x in a if x not in (source, source + DOWN, target, target + DOWN)}
     lo, hi = Pos(0, 0, 0) - Pos(MARGIN, 1, MARGIN), Pos(*c.grid.size) + Pos(MARGIN - 1, MARGIN, MARGIN - 1)
-    if lamp and output_mode == "dust":  # from the lamp's cell, or (crowded lamps) from next to it
+    if lamp and output_mode == "top":  # stone instead of the lamp, the line starts on top of it
+        starts = [(source + UP, None)] if source + UP not in a else []
+    elif lamp and output_mode == "dust":  # from the lamp's cell, or (crowded lamps) from next to it
         starts = [(source, None)] + [(source + Pos(*d.vec), d) for d in HORIZONTAL]
     elif lamp and output_mode == "stone":  # the repeater stands next to the stone, the line starts after it
         starts = []
@@ -492,7 +499,8 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
     best = None
     for tight in (False, True):  # tight: a lamp enclosed by its own part (lines that only must not touch)
         for st, d_out in starts:
-            if st != source and (st in a or (st + DOWN in a and a[st + DOWN].id not in SUPPORTS)):
+            if st != source and (st in a or (st + DOWN in a and st + DOWN != source
+                                             and a[st + DOWN].id not in SUPPORTS)):
                 continue
             stone = lamp and output_mode == "stone"
             rep = st - Pos(*d_out.vec) if stone else None
@@ -515,7 +523,7 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
         return None
     m: dict[Pos, object] = dict(a)
     if lamp:
-        if stone:
+        if stone or output_mode == "top":
             m[source] = STONE
         elif output_mode == "dust":
             m[source] = WIRE
@@ -549,7 +557,7 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
     asm = None
     if c.assembly is not None:
         asm = _line_labels(c.assembly, m, source, path, target, c.assembly.next_line()).shifted(Pos(0, 0, 0) - lo)
-    how = "abgegriffen" if not lamp else {"dust": "Lampe → Staub", "stone": "Lampe → Stein mit Verstärker"}.get(
+    how = "abgegriffen" if not lamp else {"dust": "Lampe → Staub", "stone": "Lampe → Stein mit Verstärker", "top": "Lampe → Stein, Staub darauf"}.get(
         output_mode, "Lampe → Verstärker")
     return normalize(replace(
         c, grid=grid, inputs=[x - lo for x in c.inputs if x != target],

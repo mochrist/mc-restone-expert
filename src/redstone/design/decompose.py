@@ -219,6 +219,7 @@ class SharedSplit:
 
 MAX_SHARED_SPLITS = 4
 MAX_WIDE_SPLITS = 2  # splits with two signals, tried only when none with one works
+MAX_CASCADE_INPUTS = 6  # splits with a small H first only up to this many inputs (G is designed again, deeper)
 
 
 def shared_splits(spec: Spec, width: int = 1) -> list[SharedSplit]:
@@ -252,7 +253,17 @@ def shared_splits(spec: Spec, width: int = 1) -> list[SharedSplit]:
             sp, cost = _shared_split(spec, bound, free, local, rest, columns, width)
             found.append(((-len(local), len(free), size) if width == 1 else (cost, -len(local), size), sp))
     found.sort(key=lambda f: f[0])
-    return [f[1] for f in found[:MAX_SHARED_SPLITS if width == 1 else MAX_WIDE_SPLITS]]
+    if width == 1:
+        return [f[1] for f in found[:MAX_SHARED_SPLITS]]
+    # two signals: the splits with the smallest H (at least two free inputs) first, a stage of a cascade that
+    # a template may cover; then the cheapest ones
+    small = sorted(found if n <= MAX_CASCADE_INPUTS else [],
+                   key=lambda f: (len(f[1].free) < 2, len(f[1].free), f[0]))
+    out: list[SharedSplit] = []
+    for f in small[:MAX_WIDE_SPLITS] + found[:MAX_WIDE_SPLITS]:
+        if f[1] not in out:
+            out.append(f[1])
+    return out
 
 
 def _combo(n: int, bound, sb, free, fb) -> tuple[bool, ...]:
@@ -316,7 +327,7 @@ def shared(spec: Spec, depth: int = 3, log: list[str] | None = None, driven: boo
     return out
 
 
-WIRE_MODES = [(o, i) for o in ("stone", "repeater", "dust") for i in ("repeater", "dust")]
+WIRE_MODES = [(o, i) for o in ("stone", "repeater", "dust", "top") for i in ("repeater", "dust")]
 
 
 def _second_lines(cand: Candidate, source, target):

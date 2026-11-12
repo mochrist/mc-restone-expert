@@ -6,44 +6,44 @@
  "ticks": 1922,
  "probes": {
   "a2": [
-   8,
-   4,
-   0
+   11,
+   3,
+   13
   ],
   "b2": [
-   8,
-   4,
-   4
+   11,
+   3,
+   17
   ],
   "a1": [
-   8,
-   4,
-   8
+   2,
+   3,
+   10
   ],
   "b1": [
-   8,
-   4,
+   3,
+   3,
    12
   ],
   "a0": [
-   2,
-   1,
-   20
+   9,
+   3,
+   6
   ],
   "b0": [
-   4,
-   1,
-   19
+   7,
+   3,
+   7
   ],
   "gt": [
-   2,
-   1,
-   17
+   7,
+   0,
+   21
   ],
   "lt": [
-   4,
-   1,
-   22
+   13,
+   0,
+   21
   ]
  },
  "samples": {
@@ -254,89 +254,89 @@
   "a1": [
    [
     0,
-    "minecraft:lever[face=floor,facing=east,powered=false]"
+    "minecraft:lever[face=floor,facing=north,powered=false]"
    ],
    [
     92,
-    "minecraft:lever[face=floor,facing=east,powered=true]"
+    "minecraft:lever[face=floor,facing=north,powered=true]"
    ],
    [
     332,
-    "minecraft:lever[face=floor,facing=east,powered=false]"
+    "minecraft:lever[face=floor,facing=north,powered=false]"
    ],
    [
     572,
-    "minecraft:lever[face=floor,facing=east,powered=true]"
+    "minecraft:lever[face=floor,facing=north,powered=true]"
    ],
    [
     812,
-    "minecraft:lever[face=floor,facing=east,powered=false]"
+    "minecraft:lever[face=floor,facing=north,powered=false]"
    ],
    [
     1052,
-    "minecraft:lever[face=floor,facing=east,powered=true]"
+    "minecraft:lever[face=floor,facing=north,powered=true]"
    ],
    [
     1292,
-    "minecraft:lever[face=floor,facing=east,powered=false]"
+    "minecraft:lever[face=floor,facing=north,powered=false]"
    ],
    [
     1532,
-    "minecraft:lever[face=floor,facing=east,powered=true]"
+    "minecraft:lever[face=floor,facing=north,powered=true]"
    ],
    [
     1772,
-    "minecraft:lever[face=floor,facing=east,powered=false]"
+    "minecraft:lever[face=floor,facing=north,powered=false]"
    ]
   ],
   "b1": [
    [
     0,
-    "minecraft:lever[face=floor,facing=east,powered=false]"
+    "minecraft:lever[face=floor,facing=north,powered=false]"
    ],
    [
     212,
-    "minecraft:lever[face=floor,facing=east,powered=true]"
+    "minecraft:lever[face=floor,facing=north,powered=true]"
    ],
    [
     692,
-    "minecraft:lever[face=floor,facing=east,powered=false]"
+    "minecraft:lever[face=floor,facing=north,powered=false]"
    ],
    [
     1172,
-    "minecraft:lever[face=floor,facing=east,powered=true]"
+    "minecraft:lever[face=floor,facing=north,powered=true]"
    ],
    [
     1652,
-    "minecraft:lever[face=floor,facing=east,powered=false]"
+    "minecraft:lever[face=floor,facing=north,powered=false]"
    ]
   ],
   "a0": [
    [
     0,
-    "minecraft:lever[face=floor,facing=west,powered=false]"
+    "minecraft:lever[face=floor,facing=east,powered=false]"
    ],
    [
     452,
-    "minecraft:lever[face=floor,facing=west,powered=true]"
+    "minecraft:lever[face=floor,facing=east,powered=true]"
    ],
    [
     1412,
-    "minecraft:lever[face=floor,facing=west,powered=false]"
+    "minecraft:lever[face=floor,facing=east,powered=false]"
    ]
   ],
   "b0": [
    [
     0,
-    "minecraft:lever[face=floor,facing=west,powered=false]"
+    "minecraft:lever[face=floor,facing=east,powered=false]"
    ],
    [
     932,
-    "minecraft:lever[face=floor,facing=west,powered=true]"
+    "minecraft:lever[face=floor,facing=east,powered=true]"
    ],
    [
     1892,
-    "minecraft:lever[face=floor,facing=west,powered=false]"
+    "minecraft:lever[face=floor,facing=east,powered=false]"
    ]
   ],
   "gt": [
@@ -357,7 +357,7 @@
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    222,
+    232,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
@@ -381,23 +381,23 @@
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    528,
+    522,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    616,
+    606,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    800,
+    790,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    856,
+    846,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    942,
+    948,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
@@ -413,7 +413,7 @@
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    1182,
+    1192,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
@@ -449,7 +449,7 @@
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    1658,
+    1668,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
@@ -471,99 +471,99 @@
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    72,
+    68,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    136,
+    132,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    312,
+    308,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    404,
+    400,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    432,
+    428,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    496,
+    492,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    520,
+    516,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    616,
+    612,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    792,
+    788,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    856,
+    852,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    1032,
+    1028,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    1096,
+    1092,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    1272,
+    1268,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    1364,
+    1360,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    1392,
+    1388,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    1456,
+    1452,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    1480,
+    1476,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    1606,
+    1600,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    1630,
+    1628,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    1666,
+    1674,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    1750,
+    1748,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    1846,
+    1840,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    1870,
+    1868,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    1900,
+    1908,
     "minecraft:redstone_lamp[lit=false]"
    ]
   ]

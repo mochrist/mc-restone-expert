@@ -26,12 +26,12 @@
    4
   ],
   "go": [
-   6,
+   7,
    1,
    2
   ],
   "lo": [
-   1,
+   0,
    1,
    4
   ]
@@ -131,15 +131,15 @@
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    2,
+    6,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    46,
+    30,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    82,
+    106,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
@@ -147,19 +147,19 @@
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    162,
+    166,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    206,
+    190,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    242,
+    266,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    286,
+    290,
     "minecraft:redstone_lamp[lit=false]"
    ]
   ],
@@ -169,19 +169,19 @@
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    22,
+    46,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    106,
+    90,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [
-    182,
+    206,
     "minecraft:redstone_lamp[lit=true]"
    ],
    [
-    266,
+    250,
     "minecraft:redstone_lamp[lit=false]"
    ],
    [

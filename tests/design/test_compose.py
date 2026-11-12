@@ -207,6 +207,18 @@ def test_two_shared_signals_of_a_comparator():
     assert evaluate_any(found[0], spec).ok
 
 
+@pytest.mark.slow
+def test_comparator_cascade_of_templates():
+    """3-bit comparator: the high bits as a 2-bit cascade (cmp1 → stage), then one more stage; the second
+    signal leaves the enclosed lamp of the inner stage on top of it (`wire` mode "top", a bridge)."""
+    from redstone.design.decompose import shared
+    from redstone.design.spec import load
+
+    spec = load(ROOT / "examples/specs/composed/cmp3.yaml")
+    names = [c.name for c in shared(spec)]
+    assert "cmp1-comparator → cmp-stage-comparator → cmp-stage-comparator" in names
+
+
 def test_wire_from_a_lamp_lit_from_above():
     """A PLA lamp lit by the torch above it: a repeater on its cell reads nothing, stone is not powered by
     the torch; dust on the lamp's cell (the line starting beside it) works."""
