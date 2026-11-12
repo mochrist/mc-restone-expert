@@ -1,0 +1,221 @@
+{
+ "format": 1,
+ "scenario": "sculk-simultaneous",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 80,
+ "probes": {
+  "g0_sensor": [
+   8,
+   1,
+   4
+  ],
+  "g0_cmp": [
+   9,
+   1,
+   4
+  ],
+  "g1_sensor": [
+   28,
+   1,
+   4
+  ],
+  "g1_cmp": [
+   29,
+   1,
+   4
+  ],
+  "g2_sensor": [
+   48,
+   1,
+   4
+  ],
+  "g2_cmp": [
+   49,
+   1,
+   4
+  ],
+  "g3_sensor": [
+   68,
+   1,
+   4
+  ],
+  "g3_cmp": [
+   69,
+   1,
+   4
+  ],
+  "g4_sensor": [
+   88,
+   1,
+   4
+  ],
+  "g4_cmp": [
+   89,
+   1,
+   4
+  ]
+ },
+ "samples": {
+  "g0_sensor": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    4,
+    "minecraft:sculk_sensor[power=12,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    34,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    44,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "g0_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    6,
+    "minecraft:comparator[facing=west,mode=compare,powered=true]|output=10"
+   ],
+   [
+    36,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "g1_sensor": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    4,
+    "minecraft:sculk_sensor[power=12,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    34,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    44,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "g1_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    6,
+    "minecraft:comparator[facing=west,mode=compare,powered=true]|output=10"
+   ],
+   [
+    36,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "g2_sensor": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    5,
+    "minecraft:sculk_sensor[power=10,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    35,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    45,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "g2_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    7,
+    "minecraft:comparator[facing=west,mode=compare,powered=true]|output=10"
+   ],
+   [
+    37,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "g3_sensor": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    5,
+    "minecraft:sculk_sensor[power=10,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    35,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    45,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "g3_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    7,
+    "minecraft:comparator[facing=west,mode=compare,powered=true]|output=10"
+   ],
+   [
+    37,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "g4_sensor": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    9,
+    "minecraft:sculk_sensor[power=2,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    39,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    49,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "g4_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ],
+   [
+    11,
+    "minecraft:comparator[facing=west,mode=compare,powered=true]|output=10"
+   ],
+   [
+    41,
+    "minecraft:comparator[facing=west,mode=compare,powered=false]|output=0"
+   ]
+  ]
+ }
+}

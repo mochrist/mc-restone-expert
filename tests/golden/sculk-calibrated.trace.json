@@ -1,0 +1,353 @@
+{
+ "format": 1,
+ "scenario": "sculk-calibrated",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 280,
+ "probes": {
+  "g0_sensor": [
+   8,
+   1,
+   4
+  ],
+  "g0_lamp_n": [
+   8,
+   1,
+   3
+  ],
+  "g0_lamp_e": [
+   9,
+   1,
+   4
+  ],
+  "g0_lamp_s": [
+   8,
+   1,
+   5
+  ],
+  "g0_lamp_back": [
+   7,
+   1,
+   4
+  ],
+  "g0_plain": [
+   8,
+   1,
+   7
+  ],
+  "g1_sensor": [
+   48,
+   1,
+   4
+  ],
+  "g1_cmp": [
+   48,
+   1,
+   5
+  ],
+  "g1_input": [
+   47,
+   1,
+   4
+  ],
+  "g2_sensor": [
+   88,
+   1,
+   4
+  ],
+  "g2_cmp": [
+   88,
+   1,
+   5
+  ],
+  "g2_input": [
+   87,
+   1,
+   4
+  ],
+  "g3_sensor": [
+   128,
+   1,
+   4
+  ],
+  "g3_cmp": [
+   128,
+   1,
+   5
+  ]
+ },
+ "samples": {
+  "g0_sensor": [
+   [
+    0,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    14,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=4,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    24,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    34,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    82,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=4,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    92,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    102,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    152,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=4,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    162,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    172,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "g0_lamp_n": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    14,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    28,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    82,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    96,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    152,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    166,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "g0_lamp_e": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    14,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    28,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    82,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    96,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    152,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    166,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "g0_lamp_s": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    14,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    28,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    82,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    96,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    152,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    166,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "g0_lamp_back": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "g0_plain": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "g1_sensor": [
+   [
+    0,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    5,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=13,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    15,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    25,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    143,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=13,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    153,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    163,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "g1_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    7,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=10"
+   ],
+   [
+    17,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    145,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=10"
+   ],
+   [
+    155,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "g1_input": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=10,south=none,west=side]"
+   ]
+  ],
+  "g2_sensor": [
+   [
+    0,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    73,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=13,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    83,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    93,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    213,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=13,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    223,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    233,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "g2_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    75,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=9"
+   ],
+   [
+    85,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ],
+   [
+    215,
+    "minecraft:comparator[facing=north,mode=compare,powered=true]|output=9"
+   ],
+   [
+    225,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ]
+  ],
+  "g2_input": [
+   [
+    0,
+    "minecraft:redstone_wire[east=side,north=none,power=9,south=none,west=side]"
+   ]
+  ],
+  "g3_sensor": [
+   [
+    0,
+    "minecraft:calibrated_sculk_sensor[facing=east,power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "g3_cmp": [
+   [
+    0,
+    "minecraft:comparator[facing=north,mode=compare,powered=false]|output=0"
+   ]
+  ]
+ }
+}

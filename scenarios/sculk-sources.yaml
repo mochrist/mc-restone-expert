@@ -2,10 +2,12 @@ name: sculk-sources
 description: >
   Ein Sculk-Sensor (8,1,8) mit Komparator (9,1,8, liest die zuletzt empfangene Frequenz, solange der Sensor aktiv
   ist) und viele Quellen im Umkreis, nacheinander im Abstand von 60 bis 120 gt. Hebel an/aus (Frequenz 10/9),
-  Notenblock (10), Kolben aus-/einfahren per Redstone-Block (10/9), Knopf und Druckplatte (Druecken liegt im
-  aktiven Fenster eines Hebels und wird ignoriert, das Loslassen 20/30 gt spaeter kommt an: 9), leerer Spender (10),
-  Spender mit Item, Tuer, Falltuer, Zauntor (je 10 auf, 9 zu), Tageslichtsensor-Rechtsklick (BLOCK_CHANGE, 11) und
-  ein vom Untergrund geloester Hebel (BLOCK_DESTROY, 12).
+  Notenblock (10), Kolben aus-/einfahren per Redstone-Block (10/9), Holzknopf (Druecken liegt im aktiven Fenster
+  eines Hebels und wird ignoriert, das Loslassen 30 gt spaeter kommt an: 9), leerer Spender (10), Tuer, Falltuer,
+  Zauntor (je 10 auf, 9 zu), Tageslichtsensor-Rechtsklick (BLOCK_CHANGE, 11) und ein vom Untergrund geloester
+  Hebel (BLOCK_DESTROY, 12). Nicht dabei, weil sie Item-Entities erzeugen oder im Spiel nicht per Rechtsklick
+  gehen: Druckplatten (Rechtsklick tut dort nichts) und Spender mit Item (das geworfene Item loest spaeter
+  HIT_GROUND aus und bleibt bis in das naechste Szenario des Laufs bestehen).
 build:
   size: [16, 4, 16]
   fill:
@@ -21,12 +23,8 @@ build:
     - [11, 1, 6, "piston[extended=false,facing=east]"]
     # Holzknopf am Boden, Abstand 3
     - [8, 1, 11, "oak_button[face=floor,facing=north,powered=false]"]
-    # Druckplatte aus Stein, Abstand 4.5
-    - [4, 1, 10, "stone_pressure_plate[powered=false]"]
     # leerer Spender (nach oben), Abstand 4, Redstone-Block-Platz (13,1,8)
     - [12, 1, 8, "dispenser[facing=up,triggered=false]"]
-    # Spender mit Item, Abstand 5, Redstone-Block-Platz (13,1,11)
-    - [12, 1, 11, "dispenser[facing=up,triggered=false]"]
     # Tuer, Falltuer, Zauntor
     - [3, 1, 5, "oak_door[facing=north,half=lower,hinge=left,open=false,powered=false]"]
     - [3, 2, 5, "oak_door[facing=north,half=upper,hinge=left,open=false,powered=false]"]
@@ -39,7 +37,6 @@ build:
     - [8, 2, 13, "lever[face=floor,facing=east,powered=false]"]
   block_entities:
     - [9, 1, 8, '{id:"minecraft:comparator",OutputSignal:0}']
-    - [12, 1, 11, '{id:"minecraft:dispenser",Items:[{Slot:0b,id:"minecraft:stone",count:5}]}']
 ticks: 1190
 inputs:
   # Hebel
@@ -54,13 +51,8 @@ inputs:
   - {tick: 300, pos: [6, 1, 8], action: use}
   - {tick: 327, pos: [8, 1, 11], action: use}
   - {tick: 360, pos: [6, 1, 8], action: use}
-  # Druckplatte (Stein, 20 gt)
-  - {tick: 420, pos: [6, 1, 8], action: use}
-  - {tick: 447, pos: [4, 1, 10], action: use}
-  - {tick: 490, pos: [6, 1, 8], action: use}
-  # Spender
+  # Spender (leer)
   - {tick: 560, pos: [13, 1, 8], action: setblock, state: "redstone_block"}
-  - {tick: 620, pos: [13, 1, 11], action: setblock, state: "redstone_block"}
   # Tuer, Falltuer, Zauntor
   - {tick: 700, pos: [3, 1, 5], action: use}
   - {tick: 760, pos: [3, 1, 5], action: use}
