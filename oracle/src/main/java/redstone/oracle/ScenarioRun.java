@@ -66,6 +66,8 @@ final class ScenarioRun {
 	static final int PLACE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS
 			| Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS | Block.UPDATE_SKIP_ON_PLACE;
 	private static final int MAX_WAIT_TICKS = 200;
+	/** Server ticks the chunks must stay block-ticking before the scenario is built. */
+	private static final int SETTLE_TICKS = 5;
 
 	private enum Phase { LOADING_CHUNKS, STEPPING, DONE }
 
@@ -80,6 +82,7 @@ final class ScenarioRun {
 	private int t;
 	private long stepFrom;
 	private int waited;
+	private int settled;
 
 	ScenarioRun(MinecraftServer server, ServerLevel level, Scenario scenario, Path out) {
 		this.server = server;
@@ -110,7 +113,12 @@ final class ScenarioRun {
 		switch (phase) {
 			case LOADING_CHUNKS -> {
 				if (!chunksReady()) {
+					settled = 0;
 					waitOrFail("chunks to load");
+					return;
+				}
+				// Let the chunk tickets settle for a few server ticks (cold start of the server) before building.
+				if (++settled < SETTLE_TICKS) {
 					return;
 				}
 				build();
@@ -123,6 +131,10 @@ final class ScenarioRun {
 				if (now == stepFrom) {
 					waitOrFail("the tick step to run");
 					return;
+				}
+				if (!chunksReady()) {
+					// A scheduled tick in a chunk that is not block-ticking is silently postponed by the game.
+					throw new IllegalStateException("tick " + t + ": scenario chunks stopped ticking");
 				}
 				long delta = now - stepFrom;
 				deltas.add(delta);
