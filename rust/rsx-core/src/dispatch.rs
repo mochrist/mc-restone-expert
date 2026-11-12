@@ -25,6 +25,8 @@ impl World {
             | Kind::Target
             | Kind::Lectern
             | Kind::DaylightDetector
+            | Kind::SculkSensor
+            | Kind::CalibratedSculkSensor
             | Kind::TrappedChest => true,
             Kind::Wire => self.wire_should_signal,
             _ => false,
@@ -45,6 +47,8 @@ impl World {
                 | Kind::Crafter
                 | Kind::Lectern
                 | Kind::DaylightDetector
+                | Kind::SculkSensor
+                | Kind::CalibratedSculkSensor
         )
     }
 
@@ -61,6 +65,8 @@ impl World {
                 | Kind::CopperBulb
                 | Kind::Lectern
                 | Kind::Cake
+                | Kind::SculkSensor
+                | Kind::CalibratedSculkSensor
         )
     }
 
@@ -78,6 +84,7 @@ impl World {
             Kind::Lectern => self.lectern_analog_output(pos, state),
             // CakeBlock#getOutputSignal: (7 - bites) * 2
             Kind::Cake => (7 - self.st.get_int(state, sym::BITES, 0)) * 2,
+            Kind::SculkSensor | Kind::CalibratedSculkSensor => self.sculk_analog_output(pos, state),
             _ => 0,
         }
     }
@@ -109,6 +116,7 @@ impl World {
             })),
             Kind::Lectern => Some(BeData::Lectern(Lectern { has_book: false, page: 0, page_count: 0 })),
             Kind::DaylightDetector => Some(BeData::Daylight),
+            Kind::SculkSensor | Kind::CalibratedSculkSensor => Some(BeData::Sculk(Self::sculk_new_be(info.kind))),
             // moving_piston: only created through newMovingBlockEntity
             _ => None,
         }
@@ -157,7 +165,15 @@ impl World {
             Kind::Torch => 15 * (direction != Dir::Up && info.lit()) as i32,
             Kind::WallTorch => 15 * (info.facing() != direction && info.lit()) as i32,
             Kind::Observer => 15 * (info.facing_or(Dir::South) == direction && info.powered()) as i32,
-            Kind::Target | Kind::DaylightDetector => info.power as i32,
+            Kind::Target | Kind::DaylightDetector | Kind::SculkSensor => info.power as i32,
+            // CalibratedSculkSensorBlock#getSignal: no output towards the input side
+            Kind::CalibratedSculkSensor => {
+                if info.facing_or(Dir::North) == direction {
+                    0
+                } else {
+                    info.power as i32
+                }
+            }
             _ => 0,
         }
     }
@@ -191,6 +207,13 @@ impl World {
                 }
             }
             Kind::Lectern => 15 * (direction == Dir::Up && info.powered()) as i32,
+            Kind::SculkSensor | Kind::CalibratedSculkSensor => {
+                if direction == Dir::Up {
+                    self.block_get_signal(pos, state, direction)
+                } else {
+                    0
+                }
+            }
             _ => 0,
         }
     }
@@ -237,6 +260,7 @@ impl World {
                 }
             }
             Kind::Target => self.target_on_place(pos, state, old),
+            Kind::SculkSensor | Kind::CalibratedSculkSensor => self.sculk_on_place(pos, state, block_changed),
             Kind::Rail | Kind::PoweredRail => {
                 if block_changed {
                     self.rail_update_state_on_place(pos, state, moved)
@@ -278,6 +302,7 @@ impl World {
             }
             Kind::Rail | Kind::PoweredRail => self.rail_affect_neighbors_after_removal(pos, state, moved),
             Kind::Lectern => self.lectern_affect_neighbors_after_removal(pos, state),
+            Kind::SculkSensor | Kind::CalibratedSculkSensor => self.sculk_affect_neighbors_after_removal(pos, state),
             _ => {}
         }
     }
@@ -321,6 +346,7 @@ impl World {
             Kind::Crafter => self.crafter_tick(pos, state),
             Kind::Target => self.target_tick(pos, state),
             Kind::Lectern => self.lectern_tick(pos, state),
+            Kind::SculkSensor | Kind::CalibratedSculkSensor => self.sculk_tick(pos, state),
             _ => {}
         }
     }
@@ -360,6 +386,7 @@ impl World {
         match &self.bes[be].data {
             BeData::Piston(_) => self.piston_be_tick(be),
             BeData::Daylight => self.daylight_be_tick(be),
+            BeData::Sculk(_) => self.sculk_be_tick(be),
             BeData::Container(Container { kind: ContainerKind::Hopper { .. }, .. }) => self.hopper_be_tick(be),
             BeData::Container(Container { kind: ContainerKind::Crafter { .. }, .. }) => self.crafter_be_tick(be),
             _ => {}

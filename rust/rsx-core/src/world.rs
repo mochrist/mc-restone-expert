@@ -285,6 +285,8 @@ pub enum BeData {
     /// DaylightDetectorBlockEntity (no data)
     Daylight,
     Piston(PistonBe),
+    /// SculkSensorBlockEntity (calibrated or not)
+    Sculk(crate::sculk::SculkBe),
 }
 
 #[derive(Clone, Debug)]
@@ -301,6 +303,7 @@ impl BlockEntity {
             self.data,
             BeData::Piston(_)
                 | BeData::Daylight
+                | BeData::Sculk(_)
                 | BeData::Container(Container { kind: ContainerKind::Hopper { .. } | ContainerKind::Crafter { .. }, .. })
         )
     }
@@ -646,7 +649,12 @@ impl World {
         if self.info_at(pos).is_air() {
             return false;
         }
-        self.set_block(pos, AIR, UPDATE_ALL, limit)
+        let old = self.get(pos);
+        let destroyed = self.set_block(pos, AIR, UPDATE_ALL, limit);
+        if destroyed {
+            self.game_event("block_destroy", pos, Some(old));
+        }
+        destroyed
     }
 
     /// Block#updateOrDestroy
@@ -1005,6 +1013,12 @@ impl World {
                     if self.info(state).kind == Kind::DaylightDetector
                         && self.info(state).power as i32 != self.daylight_target(pos, state)
                     {
+                        return false;
+                    }
+                }
+                // No vibration on its way and none waiting to be selected.
+                BeData::Sculk(s) => {
+                    if !(s.current.is_none() && s.candidate.is_none()) {
                         return false;
                     }
                 }

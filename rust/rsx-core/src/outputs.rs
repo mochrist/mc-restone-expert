@@ -195,6 +195,7 @@ impl World {
         if head || self.info_at(pos.above()).is_air() {
             let block = self.info(state).block;
             self.block_event(pos, block, 0, 0);
+            self.game_event("note_block_play", pos, None);
         }
     }
 
@@ -228,6 +229,9 @@ impl World {
         let other = if self.st.get(state, sym::HALF) == Some(sym::LOWER) { Dir::Up } else { Dir::Down };
         let signal = self.has_neighbor_signal(pos) || self.has_neighbor_signal(pos.offset(other));
         if source != info.block && signal != info.powered() {
+            if signal != self.st.get_bool(state, sym::OPEN) {
+                self.game_event(if signal { "block_open" } else { "block_close" }, pos, None);
+            }
             let new = self.st.with_bool(state, sym::POWERED, signal);
             let new = self.st.with_bool(new, sym::OPEN, signal);
             self.set_block_f(pos, new, UPDATE_CLIENTS);
@@ -268,6 +272,7 @@ impl World {
         let open = self.st.get_bool(state, sym::OPEN);
         let new = self.st.with_bool(state, sym::OPEN, !open);
         self.set_block_f(pos, new, UPDATE_CLIENTS | UPDATE_IMMEDIATE);
+        self.game_event(if !open { "block_open" } else { "block_close" }, pos, None);
         true
     }
 
@@ -277,6 +282,7 @@ impl World {
             let mut state = state;
             if self.st.get_bool(state, sym::OPEN) != signal {
                 state = self.st.with_bool(state, sym::OPEN, signal);
+                self.game_event(if signal { "block_open" } else { "block_close" }, pos, None);
             }
             let new = self.st.with_bool(state, sym::POWERED, signal);
             self.set_block_f(pos, new, UPDATE_CLIENTS);
@@ -290,6 +296,7 @@ impl World {
         let open = self.st.get_bool(state, sym::OPEN);
         let new = self.st.with_bool(state, sym::OPEN, !open);
         self.set_block_f(pos, new, UPDATE_CLIENTS);
+        self.game_event(if !open { "block_open" } else { "block_close" }, pos, None);
         true
     }
 
@@ -299,6 +306,9 @@ impl World {
             let new = self.st.with_bool(state, sym::POWERED, signal);
             let new = self.st.with_bool(new, sym::OPEN, signal);
             self.set_block_f(pos, new, UPDATE_CLIENTS);
+            if self.st.get_bool(state, sym::OPEN) != signal {
+                self.game_event(if signal { "block_open" } else { "block_close" }, pos, None);
+            }
         }
     }
 
@@ -326,6 +336,8 @@ impl World {
             state = self.st.with_bool(state, sym::OPEN, true);
         }
         self.set_block_f(pos, state, UPDATE_CLIENTS | UPDATE_IMMEDIATE);
+        let open = self.st.get_bool(state, sym::OPEN);
+        self.game_event(if open { "block_open" } else { "block_close" }, pos, None);
         true
     }
 
@@ -799,6 +811,7 @@ impl World {
         let inverted = self.st.get(state, sym::INVERTED) == Some(sym::TRUE);
         let new = self.st.with_bool(state, sym::INVERTED, !inverted);
         self.set_block_f(pos, new, UPDATE_CLIENTS);
+        self.game_event("block_change", pos, Some(new));
         self.daylight_update_signal_strength(pos, new);
         true
     }

@@ -32,6 +32,7 @@ impl World {
         let new = self.st.with_bool(state, sym::POWERED, !powered);
         self.set_block3(pos, new); // setBlockAndUpdate = flags 3
         self.lever_update_neighbours(pos, new);
+        self.game_event(if !powered { "block_activate" } else { "block_deactivate" }, pos, None);
     }
 
     pub fn lever_update_neighbours(&mut self, pos: Pos, state: StateId) {
@@ -62,6 +63,7 @@ impl World {
         self.set_block3(pos, new);
         self.lever_update_neighbours(pos, state);
         self.schedule_tick(pos, info.block, info.param as i64, PRIO_NORMAL);
+        self.game_event("block_activate", pos, None);
         true
     }
 
@@ -71,6 +73,7 @@ impl World {
             let new = self.st.with_bool(state, sym::POWERED, false);
             self.set_block3(pos, new);
             self.lever_update_neighbours(pos, state);
+            self.game_event("block_deactivate", pos, None);
         }
     }
 
@@ -107,10 +110,16 @@ impl World {
     }
 
     fn plate_check_pressed(&mut self, pos: Pos, state: StateId, signal: i32) {
-        if self.plate_signal(state) != signal {
+        let old_signal = self.plate_signal(state);
+        if old_signal != signal {
             let new = self.plate_with_signal(state, signal);
             self.set_block_f(pos, new, UPDATE_CLIENTS);
             self.plate_update_neighbours(pos, state);
+        }
+        if old_signal > 0 && signal == 0 {
+            self.game_event("block_deactivate", pos, None);
+        } else if old_signal == 0 && signal > 0 {
+            self.game_event("block_activate", pos, None);
         }
         if signal > 0 {
             let info = self.info(state);

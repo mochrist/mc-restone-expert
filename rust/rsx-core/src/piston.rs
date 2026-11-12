@@ -494,6 +494,7 @@ impl World {
                 return false;
             }
             self.set_block(pos, extended_state, 67, UPDATE_LIMIT);
+            self.game_event("block_activate", pos, Some(extended_state));
         } else if contract_or_drop {
             if let Some(head_be) = self.get_piston_be(pos.offset(direction)) {
                 let b = self.pbe(head_be).unwrap();
@@ -545,6 +546,7 @@ impl World {
             } else {
                 self.remove_block(pos.offset(direction), false);
             }
+            self.game_event("block_deactivate", pos, Some(moving_state));
         }
         true
     }
@@ -574,6 +576,7 @@ impl World {
             let st = self.get(p);
             // dropResources: items are not simulated
             self.set_block(p, AIR, 18, UPDATE_LIMIT);
+            self.game_event("block_destroy", p, Some(st));
             to_update.push(st);
         }
 

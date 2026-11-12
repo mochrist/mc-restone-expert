@@ -397,7 +397,13 @@ impl World {
             return;
         }
         // ASSUMPTION (as in Python): the first non-empty slot instead of a random one.
-        let Some(slot) = self.cont(be).items.iter().map(|s| s.slot).min() else { return };
+        let Some(slot) = self.cont(be).items.iter().map(|s| s.slot).min() else {
+            // level event 1001 (click sound); DispenserBlock also posts BLOCK_ACTIVATE, DropperBlock does not
+            if !dropper {
+                self.game_event("block_activate", pos, Some(state));
+            }
+            return;
+        };
         let (item, mut count) = self.cont(be).get_slot(slot).unwrap();
         if dropper {
             // DropperBlock#dispenseFrom: insert one item into a container in front, otherwise drop it (DDH-006)
