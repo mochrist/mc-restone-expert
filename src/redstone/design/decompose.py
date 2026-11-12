@@ -133,15 +133,19 @@ def _design_part(spec: Spec, depth: int, driven: bool = False) -> list[Candidate
     from .search import template_candidates
     from .synth import pla
 
-    cands = template_candidates(spec, first_inputs=driven)
+    # the quick check (every combination, no transitions) is enough for a part: the whole design is
+    # checked in full later
+    evs = [e for e in (evaluate_any(c, spec, quick=True) for c in template_candidates(spec, first_inputs=driven))
+           if e.ok]
+    cands = []
     p = pla(spec)
     if p is not None:
         cands.append(p)
-    if depth > 0:  # also when a template or the PLA works: a chain of small gates is often smaller
+    # also when a template or the PLA works: a chain of small gates is often smaller; but not for a partial
+    # spec (the stage of a cascade) that a template covers
+    if depth > 0 and not (spec.partial and evs):
         cands += decomposed(spec, depth - 1, driven=driven) + shared(spec, depth - 1, driven=driven)
-    # the quick check (every combination, no transitions) is enough for a part: the whole design is
-    # checked in full later
-    evs = [e for e in (evaluate_any(c, spec, quick=True) for c in cands) if e.ok]
+    evs += [e for e in (evaluate_any(c, spec, quick=True) for c in cands) if e.ok]
     # driven parts: those whose first input passed `drivable_first` come first (a failed test only moves a
     # part back: the real composition may still work)
     blocked = {id(e): driven and not drivable_first(e.candidate, spec) for e in evs}
@@ -232,7 +236,7 @@ def shared_splits(spec: Spec, width: int = 1) -> list[SharedSplit]:
     the fewest terms, and the cheapest splits come first (otherwise G takes almost every input and is hardly
     smaller than the spec); with three columns the unused code does not matter for H (a partial spec)."""
     n, m = len(spec.inputs), len(spec.outputs)
-    if m < 2 or n < 3 or spec.partial:
+    if m < 2 or n < 3:
         return []
     supports = [set(support(spec, j)) for j in range(m)]
     found = []
@@ -245,10 +249,14 @@ def shared_splits(spec: Spec, width: int = 1) -> list[SharedSplit]:
                 continue
             columns: dict[tuple[bool, ...], tuple] = {}
             for sb in itertools.product([False, True], repeat=size):
-                columns[sb] = tuple(tuple(spec.table[_combo(n, bound, sb, free, fb)][j] for j in rest)
-                                    for fb in itertools.product([False, True], repeat=len(free)))
+                col = tuple(_entry(spec, _combo(n, bound, sb, free, fb), rest)
+                            for fb in itertools.product([False, True], repeat=len(free)))
+                if any(e is not None for e in col):
+                    columns[sb] = col
+            columns = _merged(columns)
             count = len(set(columns.values()))
-            if not 2 ** (width - 1) < count <= 2 ** width or count == 2 ** size:
+            # as many classes as assignments that matter: G would only pass its inputs on
+            if not 2 ** (width - 1) < count <= 2 ** width or count == len(columns):
                 continue
             sp, cost = _shared_split(spec, bound, free, local, rest, columns, width)
             found.append(((-len(local), len(free), size) if width == 1 else (cost, -len(local), size), sp))
@@ -260,10 +268,35 @@ def shared_splits(spec: Spec, width: int = 1) -> list[SharedSplit]:
     small = sorted(found if n <= MAX_CASCADE_INPUTS else [],
                    key=lambda f: (len(f[1].free) < 2, len(f[1].free), f[0]))
     out: list[SharedSplit] = []
-    for f in small[:MAX_WIDE_SPLITS] + found[:MAX_WIDE_SPLITS]:
+    for f in small[:MAX_WIDE_SPLITS] + ([] if spec.partial else found[:MAX_WIDE_SPLITS]):
         if f[1] not in out:
             out.append(f[1])
     return out
+
+
+def _entry(spec: Spec, combo, outs) -> tuple[bool, ...] | None:
+    """The outputs `outs` of a combination, None when it does not matter (partial spec)."""
+    row = spec.table.get(combo)
+    return None if row is None else tuple(row[j] for j in outs)
+
+
+def _merged(columns: dict) -> dict:
+    """Columns of a partial spec (None: does not matter) grouped into compatible classes (greedy, the most
+    specified columns first); every assignment maps to its class's merged column. A full spec's columns
+    stay as they are."""
+    classes: list[list] = []
+    owner = {}
+    for sb in sorted(columns, key=lambda sb: (-sum(e is not None for e in columns[sb]), sb)):
+        col = columns[sb]
+        for k, cls in enumerate(classes):
+            if all(a is None or b is None or a == b for a, b in zip(col, cls)):
+                classes[k] = [a if a is not None else b for a, b in zip(cls, col)]
+                owner[sb] = k
+                break
+        else:
+            owner[sb] = len(classes)
+            classes.append(list(col))
+    return {sb: tuple(classes[k]) for sb, k in owner.items()}
 
 
 def _combo(n: int, bound, sb, free, fb) -> tuple[bool, ...]:
@@ -282,7 +315,8 @@ def _shared_split(spec: Spec, bound, free, local, rest, columns, width: int) -> 
     from .synth import minimize_multi, minimize_partial
 
     n = len(spec.inputs)
-    zero = columns[(False,) * len(bound)]
+    # bound assignments without any combination that matters are missing from `columns` (G does not care)
+    zero = columns.get((False,) * len(bound), min(columns.values()))
     others = sorted(set(columns.values()) - {zero})
     codes = list(itertools.product([False, True], repeat=width))
     names = ["g"] if width == 1 else [f"g{k}" for k in range(width)]
@@ -293,21 +327,27 @@ def _shared_split(spec: Spec, bound, free, local, rest, columns, width: int) -> 
         code = {zero: codes[0]} | dict(zip(others, perm))
         g_table = {}
         for sb, col in columns.items():
-            row = spec.table[_combo(n, bound, sb, (), ())]
+            row = next(r for fb in itertools.product([False, True], repeat=len(free))
+                       if (r := spec.table.get(_combo(n, bound, sb, free, fb))) is not None)
             g_table[sb] = (*code[col], *(row[j] for j in local))
         h_table = {}
         for col, c in code.items():
             for k, fb in enumerate(itertools.product([False, True], repeat=len(free))):
-                h_table[(*c, *fb)] = col[k]
+                if col[k] is not None:
+                    h_table[(*c, *fb)] = col[k]
         full = len(h_table) == 2 ** (width + len(free))
         g = Spec([spec.inputs[i] for i in bound], names + [spec.outputs[j] for j in local], g_table,
-                 source="Zerlegung")
+                 source="Zerlegung", care=None if len(g_table) == 2 ** len(bound) else set(g_table))
         h = Spec(names + [spec.inputs[i] for i in free], [spec.outputs[j] for j in rest], h_table,
                  source="Zerlegung", care=None if full else set(h_table))
         if width == 1:
             return SharedSplit(bound, free, local, rest, g, h, width), 0
         g_ones = [[c for c, v in g.table.items() if v[j]] for j in range(len(g.outputs))]
-        cost = sum(len(t) for t in minimize_multi(len(g.inputs), g_ones))
+        if g.partial:
+            cost = sum(len(minimize_partial(len(g.inputs), g_ones[j], [c for c, v in g.table.items() if not v[j]]))
+                       for j in range(len(g.outputs)))
+        else:
+            cost = sum(len(t) for t in minimize_multi(len(g.inputs), g_ones))
         for j in range(len(h.outputs)):
             ones = [c for c, v in h.table.items() if v[j]]
             cost += len(minimize_partial(len(h.inputs), ones, [c for c, v in h.table.items() if not v[j]]))
@@ -321,7 +361,9 @@ def shared(spec: Spec, depth: int = 3, log: list[str] | None = None, driven: boo
     inputs (the first over `compose.chains`, a second over a line inside the result, `compose.wire`); G's
     other outputs stay outputs. Inputs and outputs in spec order. Splits with two signals only when none with
     one works."""
-    out = _shared(spec, shared_splits(spec), depth, log, driven)
+    # a partial spec is the H of a split with two signals (a stage of a cascade): only two signals again,
+    # one signal there merges G's signals and the free inputs into a PLA that is never smaller
+    out = [] if spec.partial else _shared(spec, shared_splits(spec), depth, log, driven)
     if not out:
         out = _shared(spec, shared_splits(spec, width=2), depth, log, driven)
     return out
@@ -410,7 +452,7 @@ def support(spec: Spec, out: int) -> list[int]:
     for i in range(len(spec.inputs)):
         for combo, row in spec.table.items():
             flipped = combo[:i] + (not combo[i],) + combo[i + 1:]
-            if row[out] != spec.table[flipped][out]:
+            if flipped in spec.table and row[out] != spec.table[flipped][out]:
                 dep.append(i)
                 break
     return dep
