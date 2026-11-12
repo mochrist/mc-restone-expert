@@ -33,6 +33,8 @@ from .evaluate import Constraints, evaluate_any
 from .spec import Spec
 
 MAX_EVALUATIONS = 400
+CUT_SHARE = 0.2  # share of the evaluations one pass of plane cuts may use (sparse planes first)
+MIN_CUTS = 12
 DOWN = Pos(0, -1, 0)
 UP = Pos(0, 1, 0)
 
@@ -888,21 +890,34 @@ def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
             failed.add(key)
         return False
 
+    # planes tried per pass: in a large design most planes hold blocks of every part and cannot go
+    cut_limit = max(MIN_CUTS, int(CUT_SHARE * max_evaluations))
+
     def cuts() -> bool:
-        found = False
-        for axis in (1, 0, 2):
-            k = current.grid.size[axis] - 1
-            while k >= 0 and budget[0] > 0:
-                if any(p[axis] == k for p in current.inputs + current.outputs):
-                    k -= 1
-                    continue
+        """Planes with the fewest blocks first (an empty or nearly empty plane is the likely one to go); after
+        a cut the planes are counted again."""
+        found = True
+        any_found = False
+        while found and budget[0] > 0:
+            found = False
+            ports = current.inputs + current.outputs
+            count: dict[tuple[int, int], int] = {}
+            for p, _ in current.grid.items():
+                for axis in range(3):
+                    count[(axis, p[axis])] = count.get((axis, p[axis]), 0) + 1
+            planes = [(count.get((axis, k), 0), (1, 0, 2).index(axis), -k, axis, k)
+                      for axis in (1, 0, 2) for k in range(current.grid.size[axis])
+                      if not any(p[axis] == k for p in ports)]
+            for n, (*_, axis, k) in enumerate(sorted(planes)):
+                if budget[0] <= 0 or n >= cut_limit:
+                    break
                 plane = [p for p, _ in current.grid.items() if k - 1 <= p[axis] <= k + 1] or [Pos(0, 0, 0)]
                 key = ("cut", axis, k == 0, k == current.grid.size[axis] - 1, _local_key(current, plane, 0))
                 if attempt("Ebenen", key, lambda: _normalized(_cut(current, axis, k))):
                     log.append(f"Ebene {AXES[axis]}={k} entfernt")
-                    found = True
-                k -= 1
-        return found
+                    found = any_found = True
+                    break
+        return any_found
 
     def moves() -> bool:
         dead = set()  # (part, direction) that failed at a shorter distance
@@ -947,7 +962,14 @@ def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
             if budget[0] <= 0:
                 break
             key = ("line", _local_key(current, inner + [a, b], 1))
-            if attempt("Leitungen", key, lambda: _normalized(rerouted(current, a, inner, b))):
+
+            def shorter():  # only a line that does not make the design larger (box, then blocks)
+                cand = _normalized(rerouted(current, a, inner, b))
+                if cand is None or (crop(cand).volume, cand.block_count) >= (current.volume, current.block_count):
+                    return None
+                return cand
+
+            if attempt("Leitungen", key, shorter):
                 log.append(f"Leitung von {a} nach {b} kürzer verlegt ({len(inner)} Staub vorher)")
                 return True
         return False
@@ -978,13 +1000,14 @@ def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
             while budget[0] > 0 and relocate(first=True):
                 structural = True
             structural |= cuts()
+            # lines laid anew are few and cheap to try, and a shorter line often frees a whole plane
+            while budget[0] > 0 and reroutes():
+                structural = True
             while budget[0] > 0 and moves():
                 structural = True
             while budget[0] > 0 and relocate():
                 structural = True
             improved |= structural
-        while budget[0] > 0 and reroutes():
-            improved = True
         improved |= removals()
         current = crop(current)
     if budget[0] <= 0:
