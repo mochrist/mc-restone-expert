@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.entity.ComparatorBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -221,6 +222,15 @@ final class ScenarioRun {
 			entity.setChanged();
 		}
 		clearScheduledTicks();
+		// Deterministic phase: the game time carries over between scenarios and the daylight detector samples at
+		// gameTime % 20 == 0, so move the clock forward to the scenario's phase. Jumping forward (never back) by
+		// more than the torch burnout window keeps recent-toggle bookkeeping of earlier scenarios expired.
+		// The world clock is frozen (advance_time off); the weather is cleared.
+		long phase = Math.floorMod(scenario.gameTime(), 20L);
+		long target = level.getGameTime() + 100;
+		target += Math.floorMod(phase - target, 20L);
+		((ServerLevelData) level.getLevelData()).setGameTime(target);
+		server.setWeatherParameters(0, 0, false, false);
 		LOG.info(P + "{}: built at {}, game time {}", scenario.name(), ORIGIN.toShortString(), level.getGameTime());
 	}
 

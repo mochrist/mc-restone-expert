@@ -64,13 +64,13 @@ von Tick `t`. Eingaben liegen damit „zwischen" zwei Game-Ticks, genau wie Spie
   `total_ticks = 0`, klares Wetter). Der Tageslichtsensor sieht daher immer denselben Himmel: Sonnenwinkel
   282,37 Grad, `skyDarken` 0 (normaler Sensor unter freiem Himmel 7, invertierter 0). Der Simulator nimmt
   genau diese Welt an (`sim/blocks/daylight.py`); andere Tageszeiten sind nicht modelliert.
-- Die Spielzeit (`gameTime`) läuft im Oracle über Szenarien hinweg weiter; beim Aufbau steht sie auf einem
-  beliebigen Wert (das Oracle-Log meldet `built at ..., game time N`). Nur der 20-gt-Takt des Sensors
-  (`gameTime % 20 == 0`) hängt davon ab. Das optionale Szenariofeld `game_time` (ganze Zahl, Standard 0) setzt
-  die Anfangs-Spielzeit **nur im Simulator**; es wird nicht ins kompilierte JSON geschrieben und das Oracle
-  ignoriert es. Für ein Szenario, dessen Ergebnis von der Takt-Phase abhängt, steht dort der im
-  aufgezeichneten Lauf gemeldete Wert; wird neu aufgezeichnet, muss er nachgetragen werden. Aktionen `use`
-  am Sensor sind phasenunabhängig (sofortige Aktualisierung).
+- Die Spielzeit (`gameTime`) läuft im Oracle über Szenarien hinweg weiter. Das Oracle setzt sie beim Aufbau
+  deterministisch: nur die Phase `gameTime % 20` des Szenarios zählt (der 20-gt-Takt des Sensors), die Uhr springt
+  dafür um mindestens 100 Ticks **vorwärts** (nie zurück, damit Fackel-Ausbrenn-Buchführung früherer Szenarien
+  abgelaufen ist) auf die nächste Zeit mit dieser Phase. Das optionale Szenariofeld `game_time` (ganze Zahl,
+  Standard 0) gibt die Anfangs-Spielzeit des Simulators vor und wird als `game_time` ins kompilierte JSON
+  geschrieben; das Oracle nutzt davon `game_time mod 20`. Wetter wird beim Aufbau auf klar gesetzt (zusätzlich
+  zu `advance_weather` aus). Aktionen `use` am Sensor sind phasenunabhängig (sofortige Aktualisierung).
 
 ## 3. Kompiliertes Szenario (JSON, Eingabe für das Oracle)
 

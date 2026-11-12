@@ -20,7 +20,6 @@ Session 14 sauber beendet: alles gemergt und committet, keine Worktrees, Oracle-
 |---|---|---|
 | M4: 4-/5-Bit-Komparator als Kaskade: G (cmp3) wird rekursiv nicht als reine Kaskade gewählt bzw. die zweite Leitung kommt an PLA-Teilen nicht an; außerdem kosten aussichtslose Verbindungen jetzt mehr Zeit (alle `WIRE_MODES` × tight; 4 Bit 74 s, 5 Bit 214 s, vorher 33/82 s) – Abbruch früher oder Leitungsarten nach Lampen-Speisung wählen | Opus | – |
 | M4: Kompaktieren größerer Züge (Budget ist kein Engpass mehr; `scripts/bench_compact.py`) | Opus | – |
-| Oracle: Weltuhr läuft zwischen Läufen weiter (`daylight-detector`, `kb-unmodeled` weichen in frischen Läufen ab); Zeit vor jedem Szenario festsetzen | Sonnet | – |
 
 ## Verlauf
 
@@ -40,7 +39,8 @@ Session 14 sauber beendet: alles gemergt und committet, keine Worktrees, Oracle-
   neue Welt, CPU-Last), Golden unverändert. Einziger gefundener Mechanismus für „ein Tick daneben“:
   `LevelTicks` überspringt Chunks außerhalb der Block-Tick-Reichweite. Der Oracle wartet jetzt 5 Ticks nach
   „Chunks bereit“ (`SETTLE_TICKS`) und bricht mit `<name>.error.txt` ab, wenn die Szenario-Chunks nicht mehr
-  block-ticken. Nebenbefund: `daylight-detector`/`kb-unmodeled` hängen an der weiterlaufenden Weltuhr.
+  block-ticken. Die Spielzeit-Phase (`gameTime % 20`) und das Wetter setzt das Oracle jetzt beim Aufbau fest
+  (`game_time` im kompilierten JSON, Uhr nur vorwärts); alle 149 Goldens identisch.
 
 ### Session 13 (2026-11-12): Übergabe aus Session 12 (Opus-Hauptsession, 1 Sonnet-Agent)
 

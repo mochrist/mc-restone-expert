@@ -20,7 +20,8 @@ public record Scenario(
 		List<BlockEntity> blockEntities,
 		int ticks,
 		List<Input> inputs,
-		List<Probe> probes) {
+		List<Probe> probes,
+		long gameTime) {
 
 	public static final int FORMAT = 1;
 
@@ -67,7 +68,7 @@ public record Scenario(
 			probes.add(new Probe(p.get("name").getAsString(), pos(p.get("pos"))));
 		}
 		return new Scenario(o.get("name").getAsString(), pos(o.get("size")), blocks, blockEntities,
-				o.get("ticks").getAsInt(), inputs, probes);
+				o.get("ticks").getAsInt(), inputs, probes, o.has("game_time") ? o.get("game_time").getAsLong() : 0L);
 	}
 
 	private static JsonArray array(JsonObject o, String key) {

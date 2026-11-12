@@ -42,7 +42,7 @@ class Scenario:
     inputs: list[Input] = field(default_factory=list)
     probes: dict[str, Pos] = field(default_factory=dict)
     description: str = ""
-    # Simulator only: game time at the start (the oracle cannot set it; see docs/scenario-format.md, "Game time")
+    # Game time at the start (simulator and oracle; see docs/scenario-format.md, "Game time")
     game_time: int = 0
 
     def __post_init__(self) -> None:
@@ -79,6 +79,7 @@ class Scenario:
             "ticks": self.ticks,
             "inputs": [i.to_json() for i in self.inputs],
             "probes": [{"name": n, "pos": list(p)} for n, p in self.probes.items()],
+            "game_time": self.game_time,
         }
 
 

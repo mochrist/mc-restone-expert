@@ -5,8 +5,8 @@ description: >
   20-gt-Takt (gameTime % 20 == 0), danach schalten Rechtsklicks sofort um. Ausgelesen von Staub und Lampe
   (Zeile A, C, D) und von einem Komparator (Zeile B). Unter freiem Himmel liest ein normaler Sensor 7
   (Sonnenwinkel 282 Grad der eingefrorenen Weltuhr bei 0, Himmelslicht 15), ein invertierter 0; unter dem
-  Stein (Himmelslicht 14) 7 bzw. 1. game_time ist die Spielzeit beim Aufbau im aufgezeichneten Lauf (das
-  Oracle kann sie nicht setzen; siehe docs/scenario-format.md); nur game_time mod 20 zählt.
+  Stein (Himmelslicht 14) 7 bzw. 1. game_time gibt die Phase vor (das Oracle setzt sie beim Aufbau, siehe
+  docs/scenario-format.md); nur game_time mod 20 zählt.
 game_time: 30843
 build:
   size: [4, 3, 7]
