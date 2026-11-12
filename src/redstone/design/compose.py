@@ -270,7 +270,8 @@ def _box(blocks) -> tuple[Pos, Pos]:
             Pos(*(max(x[i] for x in blocks) for i in range(3))))
 
 
-def _route(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], lo: Pos, hi: Pos) -> list[Pos] | None:
+def _route(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], lo: Pos, hi: Pos,
+           tight: bool = False) -> list[Pos] | None:
     """Shortest dust path (the cells the dust stands in) from `start` to one of `goals`, by breadth-first search.
 
     Moves: flat; one up (the block in front becomes the new floor, the cell above the current dust stays
@@ -286,7 +287,8 @@ def _route(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], l
     def inside(c: Pos) -> bool:
         return x0 <= c[0] <= x1 and y0 <= c[1] <= y1 and z0 <= c[2] <= z1
 
-    near = _halo(keep_clear)
+    # tight: the line only must not touch (faces, dust one step up or down) instead of one block of air
+    near = {k + f for k in keep_clear for f in _FACES + _STEPS} if tight else _halo(keep_clear)
 
     def ok(c: Pos) -> bool:
         if not inside(c) or c in solid or c + DOWN in solid:
@@ -488,15 +490,18 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
     else:  # a repeater on the lamp (reading from the side opposite to d), or a tap next to the lever
         starts = [(source + Pos(*d.vec), d) for d in HORIZONTAL]
     best = None
-    for st, d_out in starts:
-        if st != source and (st in a or (st + DOWN in a and a[st + DOWN].id not in SUPPORTS)):
-            continue
-        stone = lamp and output_mode == "stone"
-        rep = st - Pos(*d_out.vec) if stone else None
-        blocked = solid | ({source} if st != source else set()) | ({rep, rep + DOWN} if stone else set())
-        path = _route(st, goals, blocked, keep, lo, hi)
-        if path is not None and (best is None or len(path) < len(best[0])):
-            best = (path, d_out)
+    for tight in (False, True):  # tight: a lamp enclosed by its own part (lines that only must not touch)
+        for st, d_out in starts:
+            if st != source and (st in a or (st + DOWN in a and a[st + DOWN].id not in SUPPORTS)):
+                continue
+            stone = lamp and output_mode == "stone"
+            rep = st - Pos(*d_out.vec) if stone else None
+            blocked = solid | ({source} if st != source else set()) | ({rep, rep + DOWN} if stone else set())
+            path = _route(st, goals, blocked, keep, lo, hi, tight)
+            if path is not None and (best is None or len(path) < len(best[0])):
+                best = (path, d_out)
+        if best is not None:
+            break
     if best is None:
         return None
     path, d_out = best

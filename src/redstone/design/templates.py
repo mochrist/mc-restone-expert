@@ -330,6 +330,53 @@ _register(
     _mux2)
 
 
+# --- magnitude comparison ---------------------------------------------------------------------------------------
+def _cmp1() -> _Layout:
+    return _Layout(_supported({
+        (0, 0, 0): LEVER(), (1, 0, 0): COMPARATOR("west"), (2, 0, 0): LAMP,  # a minus b -> gt
+        (1, 0, 2): LEVER(), (0, 0, 2): COMPARATOR("east"), (-1, 0, 2): LAMP,  # b minus a -> lt
+        (0, 0, 1): REPEATER("north"), (1, 0, 1): REPEATER("south"),  # each lever into the other's side
+    }), ((0, 0, 0), (1, 0, 2)), ((2, 0, 0), (-1, 0, 2)))
+
+
+_register(
+    "cmp1-comparator", "a b", "gt lt", {"gt": "a and not b", "lt": "b and not a"},
+    "1-Bit-Größenvergleich: zwei Komparatoren im Subtraktionsmodus (a minus b, b minus a), jeder Hebel am "
+    "eigenen Rückeingang und über einen Verstärker am Seiteneingang des anderen. Verzögerung bis 4 gt.",
+    _cmp1)
+
+
+def _cmp_stage() -> _Layout:
+    blocks = {
+        # a minus b minus li -> go, b minus a minus gi -> lo (two comparators in a row each)
+        (0, 0, 0): LEVER(), (1, 0, 0): COMPARATOR("west"), (2, 0, 0): COMPARATOR("west"), (3, 0, 0): LAMP,
+        (1, 0, 2): LEVER(), (0, 0, 2): COMPARATOR("east"), (-1, 0, 2): COMPARATOR("east"), (-2, 0, 2): LAMP,
+        (0, 0, 1): REPEATER("north"), (1, 0, 1): REPEATER("south"),
+        # li: over a repeater into the side of the go comparator, and down to the lo lamp
+        (-3, 0, -2): LEVER(), (2, 0, -1): REPEATER("north"),
+        # gi: over a repeater into the side of the lo comparator, and up to the go lamp
+        (4, 0, 4): LEVER(), (-1, 0, 3): REPEATER("south"),
+    }
+    for x in range(-2, 3):
+        blocks[(x, 0, -2)] = WIRE
+    for z in (-1, 0, 1):
+        blocks[(-2, 0, z)] = WIRE
+    for x in range(-1, 4):
+        blocks[(x, 0, 4)] = WIRE
+    for z in (1, 2, 3):
+        blocks[(3, 0, z)] = WIRE
+    return _Layout(_supported(blocks), ((4, 0, 4), (-3, 0, -2), (0, 0, 0), (1, 0, 2)), ((3, 0, 0), (-2, 0, 2)))
+
+
+_register(
+    "cmp-stage-comparator", "gi li a b", "go lo",
+    {"go": "gi or (a and not b and not li)", "lo": "li or (b and not a and not gi)"},
+    "Stufe eines Größenvergleichs (Kaskade, höhere Stelle zuerst): gi/li sagen „schon größer/kleiner“. Zwei "
+    "Komparatorpaare rechnen a minus b minus li und b minus a minus gi; gi und li speisen außerdem direkt die "
+    "eigene Lampe. Verzögerung bis 6 gt.",
+    _cmp_stage)
+
+
 # --- xor / xnor -----------------------------------------------------------------------------------------------
 def _xor2() -> _Layout:
     return _Layout(_supported({

@@ -1,0 +1,87 @@
+{
+ "format": 1,
+ "scenario": "tpl-cmp1-comparator",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 82,
+ "probes": {
+  "a": [
+   1,
+   1,
+   0
+  ],
+  "b": [
+   2,
+   1,
+   2
+  ],
+  "gt": [
+   3,
+   1,
+   0
+  ],
+  "lt": [
+   0,
+   1,
+   2
+  ]
+ },
+ "samples": {
+  "a": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=floor,facing=north,powered=true]"
+   ],
+   [
+    42,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ]
+  ],
+  "b": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ],
+   [
+    22,
+    "minecraft:lever[face=floor,facing=north,powered=true]"
+   ],
+   [
+    62,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ]
+  ],
+  "gt": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    4,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    30,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ],
+  "lt": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    46,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    68,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ]
+ }
+}
