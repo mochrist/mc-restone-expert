@@ -32,7 +32,8 @@ EXTERNAL = ROOT / "tests" / "fixtures" / "external"
 
 BE_FIELDS = ("output_signal", "size", "items", "cooldown_time", "ticked_game_time", "has_book", "page",
              "page_count", "moved_state", "direction", "extending", "is_source_piston", "progress", "progress_o",
-             "last_ticked", "removed", "disabled_mask", "triggered", "crafting_ticks_remaining")
+             "last_ticked", "removed", "disabled_mask", "triggered", "crafting_ticks_remaining", "radius",
+             "last_vibration_frequency", "current", "travel_time", "candidate", "candidate_tick")
 _MISSING = object()
 
 
@@ -221,7 +222,15 @@ def _random_state(rng: random.Random) -> str:
         f"crafter[crafting=false,orientation={rng.choice(CRAFTER_ORIENTATIONS)},triggered=false]",
         "daylight_detector[inverted=false,power=0]", "daylight_detector[inverted=true,power=9]",
         f"cake[bites={rng.randrange(7)}]", f"cake[bites={rng.randrange(7)}]",
+        _SENSOR, _calibrated(f),
     ])
+
+
+_SENSOR = "sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+
+
+def _calibrated(facing: str) -> str:
+    return f"calibrated_sculk_sensor[facing={facing},power=0,sculk_sensor_phase=inactive,waterlogged=false]"
 
 
 SOUP_SIZE = (6, 3, 6)
@@ -310,6 +319,57 @@ def _crafter_soup(seed: int) -> tuple[Grid, dict[int, list[Step]], int]:
 @pytest.mark.parametrize("seed", range(80))
 def test_crafter_soup(seed: int):
     grid, schedule, ticks = _crafter_soup(seed)
+    assert_same(grid, schedule, ticks)
+
+
+def _sculk_soup(seed: int) -> tuple[Grid, dict[int, list[Step]], int]:
+    """Sculk sensors (also calibrated) among vibration sources, wool, carpets, amethyst, comparators and wire."""
+    rng = random.Random(5000 + seed)
+    sx, sy, sz = 8, 2, 8
+    grid = Grid((sx, sy + 1, sz))
+    palette = [
+        _SENSOR, _SENSOR, _calibrated("north"), _calibrated("east"), _calibrated("south"), _calibrated("west"),
+        "lever[face=floor,facing=north,powered=false]", "lever[face=floor,facing=east,powered=false]",
+        "stone_button[face=floor,facing=north,powered=false]", "stone_pressure_plate[powered=false]",
+        "note_block[instrument=harp,note=0,powered=false]", "daylight_detector[inverted=false,power=0]",
+        "oak_trapdoor[facing=north,half=bottom,open=false,powered=false,waterlogged=false]",
+        "oak_fence_gate[facing=north,in_wall=false,open=false,powered=false]",
+        "dispenser[facing=up,triggered=false]", "dropper[facing=up,triggered=false]",
+        "piston[extended=false,facing=up]", "sticky_piston[extended=false,facing=east]",
+        "white_wool", "red_wool", "blue_carpet", "amethyst_block", "amethyst_block", "stone", "glass",
+        "redstone_block", "air", "air", "air", "air", "air",
+        f"comparator[facing={rng.choice(DIRS)},mode=compare,powered=false]",
+        f"repeater[delay=1,facing={rng.choice(DIRS)},locked=false,powered=false]",
+        "redstone_wire[east=none,north=none,power=0,south=none,west=none]",
+    ]
+    for x in range(sx):
+        for z in range(sz):
+            grid[Pos(x, 0, z)] = BlockState.parse("minecraft:stone")
+            for y in range(1, sy + 1):
+                name = rng.choice(palette)
+                if name != "air":
+                    grid[Pos(x, y, z)] = BlockState.parse(name)
+    ticks = 120
+    ids = ("lever", "stone_button", "note_block", "stone_pressure_plate", "oak_trapdoor", "oak_fence_gate",
+           "daylight_detector", "comparator", "repeater")
+    usable = [p for p, s in grid.items() if s.id in ids]
+    schedule: dict[int, list[Step]] = {}
+    for _ in range(12):
+        t = rng.randrange(ticks - 40)
+        if usable and rng.random() < 0.6:
+            schedule.setdefault(t, []).append(("use", rng.choice(usable) + ORACLE_ORIGIN, None))
+        else:
+            pos = Pos(rng.randrange(sx), rng.randrange(1, sy + 1), rng.randrange(sz))
+            state = BlockState.parse(rng.choice(
+                ["minecraft:air", "minecraft:redstone_block", "minecraft:white_wool", "minecraft:amethyst_block",
+                 _SENSOR, _calibrated("north"), "minecraft:stone"]))
+            schedule.setdefault(t, []).append(("setblock", pos + ORACLE_ORIGIN, state))
+    return grid, schedule, ticks
+
+
+@pytest.mark.parametrize("seed", range(120))
+def test_sculk_soup(seed: int):
+    grid, schedule, ticks = _sculk_soup(seed)
     assert_same(grid, schedule, ticks)
 
 

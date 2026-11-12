@@ -9,3 +9,4 @@ from . import outputs  # noqa: F401
 from . import chest  # noqa: F401
 from . import crafter  # noqa: F401
 from . import daylight  # noqa: F401
+from . import sculk  # noqa: F401

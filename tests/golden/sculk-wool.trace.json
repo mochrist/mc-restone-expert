@@ -1,0 +1,276 @@
+{
+ "format": 1,
+ "scenario": "sculk-wool",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 130,
+ "probes": {
+  "straight_blocked": [
+   12,
+   1,
+   8
+  ],
+  "straight_beside": [
+   4,
+   1,
+   8
+  ],
+  "above": [
+   8,
+   5,
+   8
+  ],
+  "carpet": [
+   8,
+   1,
+   2
+  ],
+  "free": [
+   8,
+   1,
+   13
+  ],
+  "diag_se_one": [
+   12,
+   1,
+   12
+  ],
+  "diag_sw_both": [
+   4,
+   1,
+   12
+  ],
+  "diag_nw_one": [
+   4,
+   1,
+   4
+  ],
+  "diag_ne_both": [
+   12,
+   1,
+   4
+  ],
+  "diag_xy_on_line": [
+   11,
+   4,
+   8
+  ],
+  "diag_xy_one": [
+   5,
+   4,
+   8
+  ]
+ },
+ "samples": {
+  "straight_blocked": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "straight_beside": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    6,
+    "minecraft:sculk_sensor[power=8,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    36,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    46,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    74,
+    "minecraft:sculk_sensor[power=8,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    104,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    114,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "above": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "carpet": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    8,
+    "minecraft:sculk_sensor[power=4,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    38,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    48,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    76,
+    "minecraft:sculk_sensor[power=4,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    106,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    116,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "free": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    7,
+    "minecraft:sculk_sensor[power=6,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    37,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    47,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    75,
+    "minecraft:sculk_sensor[power=6,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    105,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    115,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "diag_se_one": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    7,
+    "minecraft:sculk_sensor[power=5,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    37,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    47,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    75,
+    "minecraft:sculk_sensor[power=5,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    105,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    115,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "diag_sw_both": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "diag_nw_one": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    7,
+    "minecraft:sculk_sensor[power=5,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    37,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    47,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    75,
+    "minecraft:sculk_sensor[power=5,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    105,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    115,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "diag_ne_both": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "diag_xy_on_line": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ],
+  "diag_xy_one": [
+   [
+    0,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    6,
+    "minecraft:sculk_sensor[power=8,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    36,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    46,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ],
+   [
+    74,
+    "minecraft:sculk_sensor[power=8,sculk_sensor_phase=active,waterlogged=false]"
+   ],
+   [
+    104,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=cooldown,waterlogged=false]"
+   ],
+   [
+    114,
+    "minecraft:sculk_sensor[power=0,sculk_sensor_phase=inactive,waterlogged=false]"
+   ]
+  ]
+ }
+}

@@ -50,6 +50,8 @@ define_syms! {
     ASCENDING_NORTH => "ascending_north", ASCENDING_SOUTH => "ascending_south",
     SOUTH_EAST => "south_east", SOUTH_WEST => "south_west", NORTH_WEST => "north_west",
     NORTH_EAST => "north_east",
+    SCULK_SENSOR_PHASE => "sculk_sensor_phase", INACTIVE => "inactive", ACTIVE => "active",
+    COOLDOWN => "cooldown",
     HARP => "harp", LEFT => "left", RIGHT => "right", SINGLE => "single", BITES => "bites",
 }
 
@@ -162,12 +164,17 @@ pub enum Kind {
     Lectern,
     DaylightDetector,
     Cake,
+    SculkSensor,
+    CalibratedSculkSensor,
 }
 
 pub const BF_RAIL_IN_NAME: u8 = 1; // "rail" in state.name
 pub const BF_TRAPDOOR_IN_ID: u8 = 2; // "trapdoor" in state.id
 pub const BF_WALL: u8 = 4; // outputs._is_wall
 pub const BF_IN_TABLE: u8 = 8;
+pub const BF_WOOL: u8 = 16; // #wool
+pub const BF_CARPET: u8 = 32; // wool carpets (dampen vibrations)
+pub const BF_AMETHYST: u8 = 64; // #vibration_resonators
 
 pub struct BlockInfo {
     pub name: Box<str>,
@@ -230,6 +237,8 @@ fn kind_of(name: &str) -> (Kind, u16, u16) {
         "lectern" => return (Kind::Lectern, 0, 0),
         "daylight_detector" => return (Kind::DaylightDetector, 0, 0),
         "cake" => return (Kind::Cake, 0, 0),
+        "sculk_sensor" => return (Kind::SculkSensor, 0, 0),
+        "calibrated_sculk_sensor" => return (Kind::CalibratedSculkSensor, 0, 0),
         _ => {}
     }
     if let Some(wood) = id.strip_suffix("_button") {
@@ -431,6 +440,19 @@ impl States {
         }
         if data::data().blocks.contains_key(name) {
             flags |= BF_IN_TABLE;
+        }
+        if name.starts_with("minecraft:") {
+            const COLORS: [&str; 16] = [
+                "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan",
+                "purple", "blue", "brown", "green", "red", "black",
+            ];
+            if short.strip_suffix("_wool").is_some_and(|c| COLORS.contains(&c)) {
+                flags |= BF_WOOL;
+            } else if short.strip_suffix("_carpet").is_some_and(|c| COLORS.contains(&c)) {
+                flags |= BF_CARPET;
+            } else if short == "amethyst_block" {
+                flags |= BF_AMETHYST;
+            }
         }
         self.blocks.push(BlockInfo { name: name.into(), kind, param, param2, flags, behaviour: id });
         self.block_by_name.insert(name.into(), id);

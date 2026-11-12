@@ -9,6 +9,7 @@ pub mod diode;
 pub mod dispatch;
 pub mod outputs;
 pub mod piston;
+pub mod sculk;
 pub mod state;
 pub mod torch;
 pub mod wire;
@@ -503,6 +504,7 @@ impl World {
             },
             BeData::Lectern(_) => "lectern",
             BeData::Daylight => "daylight",
+            BeData::Sculk(_) => "sculk",
             BeData::Piston(_) => "piston",
         })
     }
@@ -551,6 +553,20 @@ impl World {
                 ContainerKind::Crafter { crafting_ticks_remaining, .. } => py!(crafting_ticks_remaining),
                 _ => return Err(missing()),
             },
+            ("radius", BeData::Sculk(s)) => py!(s.radius),
+            ("last_vibration_frequency", BeData::Sculk(s)) => py!(s.last_vibration_frequency),
+            ("travel_time", BeData::Sculk(s)) => py!(s.travel_time),
+            ("candidate_tick", BeData::Sculk(s)) => py!(s.candidate_tick),
+            ("current", BeData::Sculk(s)) | ("candidate", BeData::Sculk(s)) => {
+                let v = if field == "current" { s.current } else { s.candidate };
+                match v {
+                    None => py.None(),
+                    Some(v) => {
+                        let origin = self.pos_out(py, v.origin)?;
+                        (v.frequency, v.distance as f64, origin).into_pyobject(py)?.into_any().unbind()
+                    }
+                }
+            }
             ("has_book", BeData::Lectern(l)) => py!(l.has_book),
             ("page", BeData::Lectern(l)) => py!(l.page),
             ("page_count", BeData::Lectern(l)) => py!(l.page_count),

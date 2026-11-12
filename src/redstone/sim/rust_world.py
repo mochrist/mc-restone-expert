@@ -154,7 +154,7 @@ def _scratch_world() -> RustWorld:
 class RustBlockEntity:
     """A block entity of the Rust core. Attributes are named like in the Python classes (``output_signal``,
     ``items``, ``cooldown_time``, ``removed`` ...); ``kind`` is comparator, container, dispenser, hopper,
-    lectern, daylight or piston. ``items`` is a copy; assign a whole dict to change it."""
+    lectern, daylight, sculk or piston. ``items`` is a copy; assign a whole dict to change it."""
 
     __slots__ = ("_world", "_id")
 
@@ -210,7 +210,7 @@ class RustBlockEntity:
             ref, fields = ContainerBlockEntity(self.size, self.pos), ("items",)
         elif kind == "lectern":
             ref, fields = LecternBlockEntity(), ("has_book", "page", "page_count")
-        elif kind == "daylight":
+        elif kind in ("daylight", "sculk"):
             return  # no data
         else:
             ref = PistonMovingBlockEntity(self.pos)
