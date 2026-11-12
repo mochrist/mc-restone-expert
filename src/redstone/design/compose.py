@@ -276,10 +276,12 @@ def _route(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], l
     Moves: flat; one up (the block in front becomes the new floor, the cell above the current dust stays
     empty); one down (the cell in front stays empty). Goals are entered flat. Every cell and its floor keep
     one block of air (also diagonally) to `keep_clear`, except the goal cells; `solid` is never entered.
-    The start cell is not checked (it is the joint at the output)."""
+    The start cell is not checked (it is the joint at the output), but the line never passes under it (that
+    would take its floor)."""
     from collections import deque
 
     (x0, y0, z0), (x1, y1, z1) = lo, hi
+    solid = solid | {start + DOWN}
 
     def inside(c: Pos) -> bool:
         return x0 <= c[0] <= x1 and y0 <= c[1] <= y1 and z0 <= c[2] <= z1
@@ -454,7 +456,8 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
          input_mode: str = "dust") -> Candidate | None:
     """Route a signal inside one candidate from `source` to the input lever at `target`.
 
-    source is an output lamp (it is replaced: output_mode "repeater" or "dust", the output disappears) or an
+    source is an output lamp (it is replaced: output_mode "repeater" or "dust"; "stone": stone, with a
+    repeater reading from it, for lamps powered from above; the output disappears) or an
     input lever (it stays; dust next to it is tapped, so one lever drives two parts). The target lever is
     replaced by dust or a repeater (`input_mode`) and is no longer an input. None if there is no route."""
     a = dict(c.grid.items())
@@ -466,31 +469,52 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
         return None
     if lamp and source + DOWN in a and a[source + DOWN].id not in SUPPORTS:
         return None
-    goals = {target - Pos(*d.vec) for d in HORIZONTAL}
+    if tgt_state.get("face") == "wall":  # a wall lever (drivable PLA): the line must point into its block
+        goals = {target + Pos(*Direction.from_name(tgt_state.get("facing")).vec)}
+    else:
+        goals = {target - Pos(*d.vec) for d in HORIZONTAL}
     goals = {g for g in goals if g not in a and (g + DOWN not in a or a[g + DOWN].id in SUPPORTS)}
     solid = set(a) - ({source} if lamp else set())
     keep = {x for x in a if x not in (source, source + DOWN, target, target + DOWN)}
     lo, hi = Pos(0, 0, 0) - Pos(MARGIN, 1, MARGIN), Pos(*c.grid.size) + Pos(MARGIN - 1, MARGIN, MARGIN - 1)
-    if lamp and output_mode == "dust":
-        starts = [(source, None)]
+    if lamp and output_mode == "dust":  # from the lamp's cell, or (crowded lamps) from next to it
+        starts = [(source, None)] + [(source + Pos(*d.vec), d) for d in HORIZONTAL]
+    elif lamp and output_mode == "stone":  # the repeater stands next to the stone, the line starts after it
+        starts = []
+        for d in HORIZONTAL:
+            r = source + Pos(*d.vec)
+            if r not in a and (r + DOWN not in a or a[r + DOWN].id in SUPPORTS):
+                starts.append((r + Pos(*d.vec), d))
     else:  # a repeater on the lamp (reading from the side opposite to d), or a tap next to the lever
         starts = [(source + Pos(*d.vec), d) for d in HORIZONTAL]
     best = None
     for st, d_out in starts:
         if st != source and (st in a or (st + DOWN in a and a[st + DOWN].id not in SUPPORTS)):
             continue
-        path = _route(st, goals, solid | ({source} if st != source else set()), keep, lo, hi)
+        stone = lamp and output_mode == "stone"
+        rep = st - Pos(*d_out.vec) if stone else None
+        blocked = solid | ({source} if st != source else set()) | ({rep, rep + DOWN} if stone else set())
+        path = _route(st, goals, blocked, keep, lo, hi)
         if path is not None and (best is None or len(path) < len(best[0])):
             best = (path, d_out)
     if best is None:
         return None
     path, d_out = best
+    stone = lamp and output_mode == "stone"
+    if stone:
+        path = [path[0] - Pos(*d_out.vec)] + path  # the repeater cell (the line starts at the stone)
+    elif lamp and output_mode == "dust" and d_out is not None:
+        path = [source] + path
     line = _line_blocks(path)
     if line is None:
         return None
     m: dict[Pos, object] = dict(a)
     if lamp:
-        if d_out is not None:
+        if stone:
+            m[source] = STONE
+        elif output_mode == "dust":
+            m[source] = WIRE
+        elif d_out is not None:
             m[source] = _repeater(d_out.opposite)
         if source + DOWN not in m:
             m[source + DOWN] = STONE
@@ -499,6 +523,8 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
             m[x] = blk
         if x + DOWN not in m:
             m[x + DOWN] = STONE
+    if stone:
+        m[path[0]] = _repeater(d_out.opposite)
     d_in = _direction(path[-1], target)
     m[target] = _repeater(d_in.opposite) if input_mode == "repeater" else WIRE
     if target + DOWN not in m:
@@ -518,7 +544,8 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
     asm = None
     if c.assembly is not None:
         asm = _line_labels(c.assembly, m, source, path, target, c.assembly.next_line()).shifted(Pos(0, 0, 0) - lo)
-    how = "abgegriffen" if not lamp else ("Lampe → Staub" if output_mode == "dust" else "Lampe → Verstärker")
+    how = "abgegriffen" if not lamp else {"dust": "Lampe → Staub", "stone": "Lampe → Stein mit Verstärker"}.get(
+        output_mode, "Lampe → Verstärker")
     return normalize(replace(
         c, grid=grid, inputs=[x - lo for x in c.inputs if x != target],
         outputs=[x - lo for x in c.outputs if not (lamp and x == source)],

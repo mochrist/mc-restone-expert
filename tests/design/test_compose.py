@@ -117,7 +117,7 @@ def test_no_split_for_majority():
     assert splits(from_functions(list("abc"), {"y": "(a and b) or (a and c) or (b and c)"})) == []
 
 
-SLOW_TABLES = {"adder3"}  # design search of about a minute
+SLOW_TABLES = {"adder3", "cmp3"}  # design search of about a minute
 
 
 def _slow(paths):
@@ -184,6 +184,48 @@ def test_shared_split_of_an_adder_is_the_carry():
     assert [names[i] for i in sp.bound] == ["a0", "b0"] and [spec.outputs[j] for j in sp.local] == ["s0"]
     assert [spec.outputs[j] for j in sp.rest] == ["s1", "c"]
     assert all(sp.g.table[(a, b)] == (a and b, a != b) for a in (False, True) for b in (False, True))
+
+
+def test_two_shared_signals_of_a_comparator():
+    """2-bit comparator: the high bits give "greater" and "less" (three columns, so two signals and a partial
+    H); splits that only pass two levers on are not offered."""
+    from redstone.design.decompose import shared, shared_splits
+
+    spec = from_functions(["a1", "b1", "a0", "b0"],
+                          {"gt": "(a1 + a1 + a0) > (b1 + b1 + b0)", "lt": "(a1 + a1 + a0) < (b1 + b1 + b0)"})
+    assert shared_splits(spec) == []
+    sp = shared_splits(spec, width=2)
+    assert all(s.width == 2 and len(s.bound) < len(spec.inputs) for s in sp)
+    names = spec.inputs
+    assert [names[i] for i in sp[0].bound] == ["a1", "b1"] and sp[0].h.partial
+    assert {sp[0].g.table[(a, b)] for a in (False, True) for b in (False, True)} == {
+        (False, False), (True, False), (False, True)}
+    assert all(sp[0].g.table[(a, b)] in ((a and not b, b and not a), (b and not a, a and not b))
+               for a in (False, True) for b in (False, True))
+    found = shared(spec)
+    assert found and found[0].origin.startswith("zerlegt: g0, g1 aus (a1, b1)")
+    assert evaluate_any(found[0], spec).ok
+
+
+def test_wire_from_a_lamp_lit_from_above():
+    """A PLA lamp lit by the torch above it: a repeater on its cell reads nothing, stone is not powered by
+    the torch; dust on the lamp's cell (the line starting beside it) works."""
+    from redstone.design.compose import place_beside, wire
+    from redstone.design.synth import pla
+    from redstone.design.templates import TEMPLATES
+    from redstone.model import Direction, Pos
+
+    two = from_functions(["a", "b"], {"x": "a and not b", "y": "b and not a"})
+    g = pla(two)
+    lamp = g.outputs[1]
+    assert g.grid.get(lamp + Pos(0, 1, 0)).id == "redstone_wall_torch"
+    buffer = next(t for t in TEMPLATES if t.name == "buffer-dust").build()
+    both, _ = place_beside(g, buffer, Direction.EAST)
+    ok = {}
+    for mode in ("stone", "repeater", "dust"):
+        c = wire(both, both.outputs[1], both.inputs[2], mode, "dust")
+        ok[mode] = c is not None and evaluate_any(c, two, quick=True).correct
+    assert ok == {"stone": False, "repeater": False, "dust": True}
 
 
 def test_enclosed_output_connects_with_tight_lines():

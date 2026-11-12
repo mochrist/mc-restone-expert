@@ -197,30 +197,39 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None, driven:
 # ---------------------------------------------------------------------- shared part of several outputs
 @dataclass(frozen=True)
 class SharedSplit:
-    """Several outputs through one g: G computes g and the outputs that depend on the bound set only (`local`),
-    H computes the other outputs (`rest`) from g and the free inputs. A ripple-carry adder: g is the carry."""
+    """Several outputs through shared signals: G computes the signals (`width` of them) and the outputs that
+    depend on the bound set only (`local`), H computes the other outputs (`rest`) from the signals and the free
+    inputs. A ripple-carry adder: one signal, the carry. A comparator from its high bits: two signals
+    ("greater", "less"), because the low bits decide only when the high bits are equal."""
     bound: tuple[int, ...]
     free: tuple[int, ...]
     local: tuple[int, ...]  # spec output indices computed by G
     rest: tuple[int, ...]  # spec output indices computed by H
-    g: Spec  # inputs = the bound inputs, outputs = ["g"] + local
-    h: Spec  # inputs = ["g"] + the free inputs, outputs = rest
+    g: Spec  # inputs = the bound inputs, outputs = the signals + local
+    h: Spec  # inputs = the signals + the free inputs, outputs = rest
+    width: int = 1  # number of signals from G to H
 
     def describe(self, spec: Spec) -> str:
         names, outs = spec.inputs, spec.outputs
+        sig = ", ".join(self.g.outputs[:self.width])
         local = "".join(f", {outs[j]}" for j in self.local)
-        return (f"g{local} aus ({', '.join(names[i] for i in self.bound)}), "
-                f"{', '.join(outs[j] for j in self.rest)} aus (g, {', '.join(names[i] for i in self.free)})")
+        return (f"{sig}{local} aus ({', '.join(names[i] for i in self.bound)}), "
+                f"{', '.join(outs[j] for j in self.rest)} aus ({sig}, {', '.join(names[i] for i in self.free)})")
 
 
 MAX_SHARED_SPLITS = 4
+MAX_WIDE_SPLITS = 2  # splits with two signals, tried only when none with one works
 
 
-def shared_splits(spec: Spec) -> list[SharedSplit]:
-    """Disjoint decompositions of a multi-output spec with one shared g: for a bound set S, the outputs that
-    depend on the free inputs must together see at most two distinct columns over the assignments of S
-    (the multi-output decomposition chart); the outputs that do not are computed next to g. Bound sets that
-    leave many outputs in G and few inputs for H come first."""
+def shared_splits(spec: Spec, width: int = 1) -> list[SharedSplit]:
+    """Disjoint decompositions of a multi-output spec with `width` shared signals (1 or 2): for a bound set S,
+    the outputs that depend on the free inputs must together see more than 2^(width-1) and at most 2^width
+    distinct columns over the assignments of S (the multi-output decomposition chart), and fewer than S has
+    assignments (otherwise G would only pass its inputs on); the outputs that do not depend on the free inputs
+    are computed next to the signals. One signal: bound sets that leave many outputs in G and few inputs for H
+    first (a ripple-carry adder's carry). Two signals: the code of each column is chosen so that G and H need
+    the fewest terms, and the cheapest splits come first (otherwise G takes almost every input and is hardly
+    smaller than the spec); with three columns the unused code does not matter for H (a partial spec)."""
     n, m = len(spec.inputs), len(spec.outputs)
     if m < 2 or n < 3 or spec.partial:
         return []
@@ -235,76 +244,132 @@ def shared_splits(spec: Spec) -> list[SharedSplit]:
                 continue
             columns: dict[tuple[bool, ...], tuple] = {}
             for sb in itertools.product([False, True], repeat=size):
-                col = []
-                for fb in itertools.product([False, True], repeat=len(free)):
-                    x = [False] * n
-                    for i, v in zip(bound, sb):
-                        x[i] = v
-                    for i, v in zip(free, fb):
-                        x[i] = v
-                    row = spec.table[tuple(x)]
-                    col.append(tuple(row[j] for j in rest))
-                columns[sb] = tuple(col)
-            distinct = set(columns.values())
-            if len(distinct) != 2:
+                columns[sb] = tuple(tuple(spec.table[_combo(n, bound, sb, free, fb)][j] for j in rest)
+                                    for fb in itertools.product([False, True], repeat=len(free)))
+            count = len(set(columns.values()))
+            if not 2 ** (width - 1) < count <= 2 ** width or count == 2 ** size:
                 continue
-            zero = columns[(False,) * size]
-            one = next(c for c in distinct if c != zero)
-            g_table = {}
-            for sb in columns:
-                x = [False] * n
-                for i, v in zip(bound, sb):
-                    x[i] = v
-                row = spec.table[tuple(x)]
-                g_table[sb] = (columns[sb] != zero, *(row[j] for j in local))
-            h_table = {}
-            for gv in (False, True):
-                col = one if gv else zero
-                for k, fb in enumerate(itertools.product([False, True], repeat=len(free))):
-                    h_table[(gv, *fb)] = col[k]
-            g = Spec([spec.inputs[i] for i in bound], ["g"] + [spec.outputs[j] for j in local], g_table,
-                     source="Zerlegung")
-            h = Spec(["g"] + [spec.inputs[i] for i in free], [spec.outputs[j] for j in rest], h_table,
-                     source="Zerlegung")
-            found.append((-len(local), len(free), size, SharedSplit(bound, free, local, rest, g, h)))
-    found.sort(key=lambda f: f[:3])
-    return [f[3] for f in found[:MAX_SHARED_SPLITS]]
+            sp, cost = _shared_split(spec, bound, free, local, rest, columns, width)
+            found.append(((-len(local), len(free), size) if width == 1 else (cost, -len(local), size), sp))
+    found.sort(key=lambda f: f[0])
+    return [f[1] for f in found[:MAX_SHARED_SPLITS if width == 1 else MAX_WIDE_SPLITS]]
+
+
+def _combo(n: int, bound, sb, free, fb) -> tuple[bool, ...]:
+    x = [False] * n
+    for i, v in zip(bound, sb):
+        x[i] = v
+    for i, v in zip(free, fb):
+        x[i] = v
+    return tuple(x)
+
+
+def _shared_split(spec: Spec, bound, free, local, rest, columns, width: int) -> tuple[SharedSplit, int]:
+    """The split for one bound set and its cost (terms of G and H; 0 for one signal, nothing to choose) with
+    the cheapest code for the columns (the column of the all-off assignment gets code 0, so the signals rest
+    off when all levers are off)."""
+    from .synth import minimize_multi, minimize_partial
+
+    n = len(spec.inputs)
+    zero = columns[(False,) * len(bound)]
+    others = sorted(set(columns.values()) - {zero})
+    codes = list(itertools.product([False, True], repeat=width))
+    names = ["g"] if width == 1 else [f"g{k}" for k in range(width)]
+    best = None
+    for perm in itertools.permutations(codes[1:], len(others)):
+        if width == 2 and len(others) == 3 and perm[0] > perm[1]:
+            continue  # all four codes used: swapping g0 and g1 gives the same parts
+        code = {zero: codes[0]} | dict(zip(others, perm))
+        g_table = {}
+        for sb, col in columns.items():
+            row = spec.table[_combo(n, bound, sb, (), ())]
+            g_table[sb] = (*code[col], *(row[j] for j in local))
+        h_table = {}
+        for col, c in code.items():
+            for k, fb in enumerate(itertools.product([False, True], repeat=len(free))):
+                h_table[(*c, *fb)] = col[k]
+        full = len(h_table) == 2 ** (width + len(free))
+        g = Spec([spec.inputs[i] for i in bound], names + [spec.outputs[j] for j in local], g_table,
+                 source="Zerlegung")
+        h = Spec(names + [spec.inputs[i] for i in free], [spec.outputs[j] for j in rest], h_table,
+                 source="Zerlegung", care=None if full else set(h_table))
+        if width == 1:
+            return SharedSplit(bound, free, local, rest, g, h, width), 0
+        g_ones = [[c for c, v in g.table.items() if v[j]] for j in range(len(g.outputs))]
+        cost = sum(len(t) for t in minimize_multi(len(g.inputs), g_ones))
+        for j in range(len(h.outputs)):
+            ones = [c for c, v in h.table.items() if v[j]]
+            cost += len(minimize_partial(len(h.inputs), ones, [c for c, v in h.table.items() if not v[j]]))
+        if best is None or cost < best[0]:
+            best = (cost, g, h)
+    return SharedSplit(bound, free, local, rest, best[1], best[2], width), best[0]
 
 
 def shared(spec: Spec, depth: int = 3, log: list[str] | None = None, driven: bool = False) -> list[Candidate]:
-    """Working candidates for a multi-output spec built from `shared_splits`: G's output g drives H's first
-    input; G's other outputs stay outputs. Inputs and outputs in spec order."""
+    """Working candidates for a multi-output spec built from `shared_splits`: G's signals drive H's first
+    inputs (the first over `compose.chains`, a second over a line inside the result, `compose.wire`); G's
+    other outputs stay outputs. Inputs and outputs in spec order. Splits with two signals only when none with
+    one works."""
+    out = _shared(spec, shared_splits(spec), depth, log, driven)
+    if not out:
+        out = _shared(spec, shared_splits(spec, width=2), depth, log, driven)
+    return out
+
+
+WIRE_MODES = [(o, i) for o in ("stone", "repeater", "dust") for i in ("repeater", "dust")]
+
+
+def _second_lines(cand: Candidate, source, target):
+    """Every way to lay a line from the lamp `source` to the lever `target` (`compose.wire`); the simulation
+    decides which one works (a lamp lit from above needs "stone", a wall lever mostly a repeater)."""
+    from .compose import wire
+
+    for out_mode, in_mode in WIRE_MODES:
+        c = wire(cand, source, target, out_mode, in_mode)
+        if c is not None:
+            yield c
+
+
+def _shared(spec: Spec, sps: list[SharedSplit], depth: int, log: list[str] | None,
+            driven: bool) -> list[Candidate]:
     from .compose import chains
     from .evaluate import evaluate_any
 
     out = []
-    for sp in shared_splits(spec):
+    for sp in sps:
         gs, hs = _best(sp.g, depth, driven and 0 in sp.bound), _best(sp.h, depth, True) + _drivable_pla(sp.h)
         found = None
         for gc, hc in itertools.product(gs, hs):
             tries = 0
-            for _, cand in chains(gc, 0, hc, 0):
+            for _, chained in chains(gc, 0, hc, 0):
                 tries += 1
                 if tries > TRIES:
                     break
-                # composite: inputs bound (G order) + free (H order); outputs rest (H order) + local (G order)
-                ins = [None] * len(spec.inputs)
-                for pos, i in zip(cand.inputs, list(sp.bound) + list(sp.free)):
-                    ins[i] = pos
-                outs = [None] * len(spec.outputs)
-                for pos, j in zip(cand.outputs, list(sp.rest) + list(sp.local)):
-                    outs[j] = pos
-                cand = replace(cand, inputs=ins, outputs=outs, name=f"{gc.name} → {hc.name}",
-                               origin=f"zerlegt: {sp.describe(spec)}; {cand.origin}")
-                if evaluate_any(cand, spec, quick=True).correct:
-                    found = cand
+                # two signals: G's second one (the first output after H's) to H's second input
+                ways = ([chained] if sp.width == 1 else
+                        _second_lines(chained, chained.outputs[len(sp.rest)], chained.inputs[len(sp.bound)]))
+                for cand in ways:
+                    # composite: inputs bound (G order) + free (H order); outputs rest (H order) + local (G order)
+                    ins = [None] * len(spec.inputs)
+                    for pos, i in zip(cand.inputs, list(sp.bound) + list(sp.free)):
+                        ins[i] = pos
+                    outs = [None] * len(spec.outputs)
+                    for pos, j in zip(cand.outputs, list(sp.rest) + list(sp.local)):
+                        outs[j] = pos
+                    cand = replace(cand, inputs=ins, outputs=outs, name=f"{gc.name} → {hc.name}",
+                                   origin=f"zerlegt: {sp.describe(spec)}; {cand.origin}")
+                    if evaluate_any(cand, spec, quick=True).correct:
+                        found = cand
+                        break
+                if found is not None:
                     break
             if found is not None:
                 break
         if log is not None:
             from .report import COMPOSE_PREFIX
 
-            log.append(f"{COMPOSE_PREFIX}Zerlegung mit gemeinsamem Teil {sp.describe(spec)}: "
+            what = "gemeinsamem Teil" if sp.width == 1 else f"{sp.width} gemeinsamen Signalen"
+            log.append(f"{COMPOSE_PREFIX}Zerlegung mit {what} {sp.describe(spec)}: "
                        + (f"{found.name}, {found.block_count} Blöcke" if found
                           else "keine funktionierende Verbindung gefunden"))
         if found is not None:
