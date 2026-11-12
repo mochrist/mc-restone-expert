@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-12, Session 14. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-12, Session 15. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
@@ -11,17 +11,32 @@ Stand: 2026-11-12, Session 14. Geschätzter Gesamtfortschritt: **ca. 96 %** (gew
 | M4 Redesign | 25 % | ~87 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
-## Übergabe (aus Session 14)
+## Übergabe (aus Session 15)
 
-Session 14 sauber beendet: alles gemergt und committet, keine Worktrees, Oracle-Sperre frei, Suite grün
-(1540 Tests mit Rust-Kern, 149 Golden Traces). Nächste Aufgaben:
+Session 15 auf Wunsch des Nutzers vorzeitig beendet: alles committet, Suite grün (1540 Tests, 149 Golden Traces),
+Oracle-Sperre frei. Das Verzeichnis `.claude/worktrees/agent-a062f264c39293708` ließ sich nicht löschen
+(Datei gesperrt, Worktree schon abgemeldet), später von Hand entfernen. Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| M4: 4-/5-Bit-Komparator als Kaskade: G (cmp3) wird rekursiv nicht als reine Kaskade gewählt bzw. die zweite Leitung kommt an PLA-Teilen nicht an; außerdem kosten aussichtslose Verbindungen jetzt mehr Zeit (alle `WIRE_MODES` × tight; 4 Bit 74 s, 5 Bit 214 s, vorher 33/82 s) – Abbruch früher oder Leitungsarten nach Lampen-Speisung wählen | Opus | – |
+| M4: 4-Bit-Kaskade (`cmp4`, 370 Blöcke) als Beispiel `examples/specs/composed/` + Szenario im Spiel aufnehmen; 5-Bit-Komparator mit der neuen Teilspezifikations-Zerlegung messen (Zeit, Blöcke) und ggf. slow-Test | Opus | – |
 | M4: Kompaktieren größerer Züge (Budget ist kein Engpass mehr; `scripts/bench_compact.py`) | Opus | – |
 
 ## Verlauf
+
+### Session 15 (2026-11-12): Übergabe aus Session 14 (Opus-Hauptsession, 1 Sonnet-Agent), vorzeitig beendet
+
+- M4: Zerlegung mit gemeinsamen Signalen auch für Teilspezifikationen (`decompose._merged`: verträgliche Spalten
+  werden zu Klassen zusammengefasst, G wird partiell, wo keine Kombination zählt). Teilspezifikationen (das H
+  eines Zwei-Signal-Schnitts) nur mit Zwei-Signal-Schnitten mit kleinem H, und nicht weiter zerlegt, wenn eine
+  Vorlage passt; Durchreiche-Schnitte (so viele Klassen wie Belegungen) entfallen. 4-Bit-Komparator jetzt reine
+  Kaskade cmp1 → Stufe → Stufe → Stufe: 370 Blöcke in 34 s (vorher PLA-Komposition 937 Blöcke, 74 s). Noch nicht
+  im Spiel aufgenommen; 5 Bit nicht neu gemessen.
+- Oracle (Sonnet-Agent): Abweichung von `daylight-detector`/`kb-unmodeled` lag an der weiterlaufenden Spielzeit
+  (`gameTime`, Messung bei `gameTime % 20 == 0`), nicht an der Tageszeit. `ScenarioRun.build` springt jetzt um
+  mindestens 100 Ticks vor auf die Phase `game_time mod 20` (Szenariofeld `game_time` geht ins kompilierte JSON)
+  und setzt klares Wetter. Rücksprung der Uhr ließ 20 Fackel-Goldens abweichen (Ausbrenn-Einträge), daher nur
+  vorwärts. Alle 149 Szenarien identisch.
 
 ### Session 14 (2026-11-12): Übergabe aus Session 13 (Opus-Hauptsession, 1 Sonnet-Agent)
 
