@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-12, Session 13. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-12, Session 14. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
@@ -11,18 +11,36 @@ Stand: 2026-11-12, Session 13. Geschätzter Gesamtfortschritt: **ca. 96 %** (gew
 | M4 Redesign | 25 % | ~87 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 
-## Übergabe (aus Session 13)
+## Übergabe (aus Session 14)
 
-Session 13 sauber beendet: alles gemergt und committet, keine Worktrees, Oracle-Sperre frei, Suite grün
-(1540 Tests mit Rust-Kern, 149 Golden Traces), `knowledge/UNVERIFIED.md` neu erzeugt. Nächste Aufgaben:
+Session 14 sauber beendet: alles gemergt und committet, keine Worktrees, Oracle-Sperre frei, Suite grün
+(1540 Tests mit Rust-Kern, 149 Golden Traces). Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| M4: Komparator-Stufe v2 mit günstiger Anschlusslage, damit sich Stufen verketten lassen (gi/li auf einer Seite, go/lo gegenüber auf gleicher Höhe wie gi/li; Idee: ODER über zusammengeführten Staub am Rückeingang, go = (gi ∨ a∧¬b)∧¬li – bei gi=li=1 egal). Danach cmp3/cmp4 als reine Kaskade prüfen | Opus | – |
+| M4: 4-/5-Bit-Komparator als Kaskade: G (cmp3) wird rekursiv nicht als reine Kaskade gewählt bzw. die zweite Leitung kommt an PLA-Teilen nicht an; außerdem kosten aussichtslose Verbindungen jetzt mehr Zeit (alle `WIRE_MODES` × tight; 4 Bit 74 s, 5 Bit 214 s, vorher 33/82 s) – Abbruch früher oder Leitungsarten nach Lampen-Speisung wählen | Opus | – |
 | M4: Kompaktieren größerer Züge (Budget ist kein Engpass mehr; `scripts/bench_compact.py`) | Opus | – |
-| Oracle: `kb3-bud-reach` weicht in einem frischen Lauf vom Golden ab (Simulator = Golden); vermutlich „erste Aufnahme nach Serverstart“, klären | Sonnet | – |
+| Oracle: Weltuhr läuft zwischen Läufen weiter (`daylight-detector`, `kb-unmodeled` weichen in frischen Läufen ab); Zeit vor jedem Szenario festsetzen | Sonnet | – |
 
 ## Verlauf
+
+### Session 14 (2026-11-12): Übergabe aus Session 13 (Opus-Hauptsession, 1 Sonnet-Agent)
+
+- M4: Komparator-Stufe v2 (`cmp-stage-comparator`, 66 Blöcke): gi bzw. li laufen mit a−b bzw. b−a auf einem
+  Staub am Rückeingang des letzten Komparators zusammen, nur dieser speist die Lampe (stark). go/lo weichen von v1
+  nur bei gi = li = 1 ab (kommt in einer Kaskade nie vor). Im Spiel neu aufgenommen, identisch.
+- `compose.wire`: Ausgangsmodus „top“ (Lampe → Stein, Leitung beginnt obendrauf; nur bei stark gespeisten
+  Lampen sinnvoll), tight-Routen dürfen ihren Boden auf andere Blöcke legen (Brücke über fremde Leitungen) und
+  schon am Start steigen. Zwei-Signal-Schnitte mit kleinem H (≥ 2 freie Eingänge) zuerst, bis 6 Eingänge
+  (`MAX_CASCADE_INPUTS`), danach die billigsten.
+- Ergebnis 3-Bit-Komparator: reine Kaskade cmp1 → Stufe → Stufe (242 Blöcke, Volumen 1728) in 14 s; nach Volumen
+  am besten cmp1 → Stufe → PLA, kompaktiert 1496 (Session 13: 1750, Session 12: 6032; PLA allein 2700).
+  `cmp-cmp3` neu aufgenommen, identisch. Test `test_comparator_cascade_of_templates` (slow).
+- Oracle (Sonnet-Agent): `kb3-bud-reach`-Abweichung nicht reproduzierbar (> 10 frische Läufe, Batch aller 149,
+  neue Welt, CPU-Last), Golden unverändert. Einziger gefundener Mechanismus für „ein Tick daneben“:
+  `LevelTicks` überspringt Chunks außerhalb der Block-Tick-Reichweite. Der Oracle wartet jetzt 5 Ticks nach
+  „Chunks bereit“ (`SETTLE_TICKS`) und bricht mit `<name>.error.txt` ab, wenn die Szenario-Chunks nicht mehr
+  block-ticken. Nebenbefund: `daylight-detector`/`kb-unmodeled` hängen an der weiterlaufenden Weltuhr.
 
 ### Session 13 (2026-11-12): Übergabe aus Session 12 (Opus-Hauptsession, 1 Sonnet-Agent)
 
