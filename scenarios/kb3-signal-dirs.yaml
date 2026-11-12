@@ -1,0 +1,68 @@
+name: kb3-signal-dirs
+description: 'Lampen neben Signalquellen. Zeile z=1: ein Redstone-Block (bei 2 gesetzt) auf je einer der sechs Seiten
+  einer Lampe, alle sechs Lampen gehen an (hasNeighborSignal prueft alle Richtungen). Zeile z=5: Bodenfackeln (bei
+  2 gesetzt): neben der Lampe und unter der Lampe speisen sie, eine Fackel auf der Lampe nicht (die Lampe fragt
+  die Fackel mit Richtung UP, SIG-002).'
+build:
+  size: [28, 5, 9]
+  fill:
+  - [0, 0, 0, 27, 0, 8, stone]
+  blocks:
+  - [3, 2, 2, 'redstone_lamp[lit=false]']
+  - [7, 2, 2, 'redstone_lamp[lit=false]']
+  - [11, 2, 2, 'redstone_lamp[lit=false]']
+  - [15, 2, 2, 'redstone_lamp[lit=false]']
+  - [19, 2, 2, 'redstone_lamp[lit=false]']
+  - [23, 2, 2, 'redstone_lamp[lit=false]']
+  - [3, 1, 6, 'redstone_lamp[lit=false]']
+  - [7, 2, 6, 'redstone_lamp[lit=false]']
+  - [11, 1, 6, 'redstone_lamp[lit=false]']
+ticks: 8
+inputs:
+- tick: 2
+  pos: [3, 1, 2]
+  action: setblock
+  state: redstone_block
+- tick: 2
+  pos: [7, 3, 2]
+  action: setblock
+  state: redstone_block
+- tick: 2
+  pos: [11, 2, 1]
+  action: setblock
+  state: redstone_block
+- tick: 2
+  pos: [15, 2, 3]
+  action: setblock
+  state: redstone_block
+- tick: 2
+  pos: [18, 2, 2]
+  action: setblock
+  state: redstone_block
+- tick: 2
+  pos: [24, 2, 2]
+  action: setblock
+  state: redstone_block
+- tick: 2
+  pos: [4, 1, 6]
+  action: setblock
+  state: redstone_torch[lit=true]
+- tick: 2
+  pos: [7, 1, 6]
+  action: setblock
+  state: redstone_torch[lit=true]
+- tick: 2
+  pos: [11, 2, 6]
+  action: setblock
+  state: redstone_torch[lit=true]
+probes:
+  lamp-down: [3, 2, 2]
+  lamp-up: [7, 2, 2]
+  lamp-north: [11, 2, 2]
+  lamp-south: [15, 2, 2]
+  lamp-west: [19, 2, 2]
+  lamp-east: [23, 2, 2]
+  lamp-torch-side: [3, 1, 6]
+  lamp-torch-below: [7, 2, 6]
+  lamp-torch-above: [11, 1, 6]
+  torch-above: [11, 2, 6]

@@ -1,0 +1,110 @@
+{
+ "format": 1,
+ "scenario": "kb3-piston-retract",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 26,
+ "probes": {
+  "lever": [
+   0,
+   1,
+   2
+  ],
+  "piston": [
+   1,
+   1,
+   2
+  ],
+  "head": [
+   2,
+   1,
+   2
+  ],
+  "det-base": [
+   1,
+   1,
+   1
+  ],
+  "det-control": [
+   3,
+   1,
+   4
+  ]
+ },
+ "samples": {
+  "lever": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ],
+   [
+    14,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ]
+  ],
+  "piston": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=east]"
+   ],
+   [
+    3,
+    "minecraft:piston[extended=true,facing=east]"
+   ],
+   [
+    15,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    17,
+    "minecraft:piston[extended=false,facing=east]"
+   ]
+  ],
+  "head": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    3,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    5,
+    "minecraft:piston_head[facing=east,short=false,type=normal]"
+   ],
+   [
+    15,
+    "minecraft:air"
+   ]
+  ],
+  "det-base": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    10,
+    "minecraft:repeater[delay=1,facing=south,locked=false,powered=true]"
+   ],
+   [
+    17,
+    "minecraft:repeater[delay=1,facing=south,locked=false,powered=false]"
+   ]
+  ],
+  "det-control": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    10,
+    "minecraft:repeater[delay=1,facing=north,locked=false,powered=true]"
+   ]
+  ]
+ }
+}

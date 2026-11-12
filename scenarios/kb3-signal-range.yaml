@@ -1,0 +1,48 @@
+name: kb3-signal-range
+description: 'Signalstaerke 0 bis 15: Ein Hebel speist eine Staubleitung; der erste Staub hat 15, der 16. hat 0.'
+build:
+  size: [19, 2, 1]
+  fill:
+  - [0, 0, 0, 18, 0, 0, stone]
+  blocks:
+  - [0, 1, 0, 'lever[face=floor,facing=east,powered=false]']
+  - [1, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [2, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [3, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [4, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [5, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [6, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [7, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [8, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [9, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [10, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [11, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [12, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [13, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [14, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [15, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [16, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [17, 1, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+ticks: 6
+inputs:
+- tick: 2
+  pos: [0, 1, 0]
+  action: use
+probes:
+  dust0: [1, 1, 0]
+  dust1: [2, 1, 0]
+  dust2: [3, 1, 0]
+  dust3: [4, 1, 0]
+  dust4: [5, 1, 0]
+  dust5: [6, 1, 0]
+  dust6: [7, 1, 0]
+  dust7: [8, 1, 0]
+  dust8: [9, 1, 0]
+  dust9: [10, 1, 0]
+  dust10: [11, 1, 0]
+  dust11: [12, 1, 0]
+  dust12: [13, 1, 0]
+  dust13: [14, 1, 0]
+  dust14: [15, 1, 0]
+  dust15: [16, 1, 0]
+  dust16: [17, 1, 0]

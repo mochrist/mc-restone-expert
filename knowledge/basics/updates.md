@@ -31,7 +31,7 @@ experimentelle Redstone relevant.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `CollectingNeighborUpdater.MultiNeighborUpdate`, `NeighborUpdater#updateNeighborsAtExceptFromFacing`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-neighbor-updates.yaml)
 - Hinweise: Wird z. B. von Dioden und Observern genutzt, um den Block vor sich und dessen Nachbarn (außer sich selbst) zu aktualisieren.
 
 ### UPD-003: Shape-Updates gehen in der Reihenfolge West, Ost, Nord, Süd, Unten, Oben
@@ -69,7 +69,7 @@ experimentelle Redstone relevant.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `LevelChunk#setBlockState`, `RedstoneWireBlock#onPlace`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb-neighbor-updates.yaml)
 
 ### UPD-008: Shape-Updates an Shape-Nachbarn tragen Flags ohne 1 und 32 weiter
 - Aussage: `Level#setBlock` gibt Shape-Updates die eigenen Flags ohne `UPDATE_NEIGHBORS` und `UPDATE_SUPPRESS_DROPS` weiter, und `updateLimit` um 1 verringert; bei `updateLimit` 0 gibt es keine weiteren Shape-Updates.
@@ -84,8 +84,8 @@ experimentelle Redstone relevant.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `NeighborUpdater#executeShapeUpdate`, `Block#updateOrDestroy`
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: `destroyBlock` setzt mit Flag 3, löst also Neighbor-Updates aus; ein normales Shape-Update-`setBlock` hat Flag 1 meist nicht.
+- Status: im-Spiel-verifiziert (scenarios/kb3-shape-update.yaml)
+- Hinweise: `destroyBlock` setzt mit Flag 3, löst also Neighbor-Updates aus; ein normales Shape-Update-`setBlock` hat Flag 1 meist nicht. Im Spiel geprüft (kb3-shape-update): ein Repeater, dessen Stein darunter entfernt wird, wird zerstört und aktualisiert seine Nachbarn; ein zweites Staubstück verändert den Zustand des ersten per Shape-Update. Drops und das Weglassen von Flag 32 sind nicht geprüft.
 
 ### UPD-010: Neighbor- und Shape-Updates laufen sofort, wenn gerade keine Update-Kette läuft
 - Aussage: Wird ein Update angefordert, während der `CollectingNeighborUpdater` nicht arbeitet (Zähler 0), wird es sofort synchron ausgeführt, inklusive aller dadurch ausgelösten Folge-Updates, bevor der Aufruf zurückkehrt.

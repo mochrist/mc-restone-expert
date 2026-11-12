@@ -1,0 +1,326 @@
+name: kb3-torch-burnout
+description: Fackel-Burnout und das 60-gt-Fenster. Ein Hebel an der Seite des Blocks unter einer Fackel schaltet
+  die Fackel 7-mal im Abstand von 8 gt aus (Eintraege bei 4, 12, ..., 52). Der 8. Hebelimpuls kommt in jeder Bahn
+  zu einer anderen Zeit, sodass der erste Eintrag (4) beim 8. Ausschalten 58 bis 63 gt alt ist. Bis genau 60 gt
+  zaehlt er mit (Burnout, die Fackel bleibt aus), ab 61 wird er vorher entfernt (kein Burnout, die Fackel geht nach
+  dem Hebel wieder an).
+build:
+  size: [3, 3, 24]
+  fill:
+  - [0, 0, 0, 2, 0, 23, stone]
+  blocks:
+  - [0, 1, 0, stone]
+  - [0, 2, 0, 'redstone_torch[lit=true]']
+  - [1, 1, 0, 'lever[face=wall,facing=east,powered=false]']
+  - [0, 1, 4, stone]
+  - [0, 2, 4, 'redstone_torch[lit=true]']
+  - [1, 1, 4, 'lever[face=wall,facing=east,powered=false]']
+  - [0, 1, 8, stone]
+  - [0, 2, 8, 'redstone_torch[lit=true]']
+  - [1, 1, 8, 'lever[face=wall,facing=east,powered=false]']
+  - [0, 1, 12, stone]
+  - [0, 2, 12, 'redstone_torch[lit=true]']
+  - [1, 1, 12, 'lever[face=wall,facing=east,powered=false]']
+  - [0, 1, 16, stone]
+  - [0, 2, 16, 'redstone_torch[lit=true]']
+  - [1, 1, 16, 'lever[face=wall,facing=east,powered=false]']
+  - [0, 1, 20, stone]
+  - [0, 2, 20, 'redstone_torch[lit=true]']
+  - [1, 1, 20, 'lever[face=wall,facing=east,powered=false]']
+ticks: 90
+inputs:
+- tick: 2
+  pos: [1, 1, 0]
+  action: use
+- tick: 6
+  pos: [1, 1, 0]
+  action: use
+- tick: 10
+  pos: [1, 1, 0]
+  action: use
+- tick: 14
+  pos: [1, 1, 0]
+  action: use
+- tick: 18
+  pos: [1, 1, 0]
+  action: use
+- tick: 22
+  pos: [1, 1, 0]
+  action: use
+- tick: 26
+  pos: [1, 1, 0]
+  action: use
+- tick: 30
+  pos: [1, 1, 0]
+  action: use
+- tick: 34
+  pos: [1, 1, 0]
+  action: use
+- tick: 38
+  pos: [1, 1, 0]
+  action: use
+- tick: 42
+  pos: [1, 1, 0]
+  action: use
+- tick: 46
+  pos: [1, 1, 0]
+  action: use
+- tick: 50
+  pos: [1, 1, 0]
+  action: use
+- tick: 54
+  pos: [1, 1, 0]
+  action: use
+- tick: 60
+  pos: [1, 1, 0]
+  action: use
+- tick: 64
+  pos: [1, 1, 0]
+  action: use
+- tick: 2
+  pos: [1, 1, 4]
+  action: use
+- tick: 6
+  pos: [1, 1, 4]
+  action: use
+- tick: 10
+  pos: [1, 1, 4]
+  action: use
+- tick: 14
+  pos: [1, 1, 4]
+  action: use
+- tick: 18
+  pos: [1, 1, 4]
+  action: use
+- tick: 22
+  pos: [1, 1, 4]
+  action: use
+- tick: 26
+  pos: [1, 1, 4]
+  action: use
+- tick: 30
+  pos: [1, 1, 4]
+  action: use
+- tick: 34
+  pos: [1, 1, 4]
+  action: use
+- tick: 38
+  pos: [1, 1, 4]
+  action: use
+- tick: 42
+  pos: [1, 1, 4]
+  action: use
+- tick: 46
+  pos: [1, 1, 4]
+  action: use
+- tick: 50
+  pos: [1, 1, 4]
+  action: use
+- tick: 54
+  pos: [1, 1, 4]
+  action: use
+- tick: 61
+  pos: [1, 1, 4]
+  action: use
+- tick: 65
+  pos: [1, 1, 4]
+  action: use
+- tick: 2
+  pos: [1, 1, 8]
+  action: use
+- tick: 6
+  pos: [1, 1, 8]
+  action: use
+- tick: 10
+  pos: [1, 1, 8]
+  action: use
+- tick: 14
+  pos: [1, 1, 8]
+  action: use
+- tick: 18
+  pos: [1, 1, 8]
+  action: use
+- tick: 22
+  pos: [1, 1, 8]
+  action: use
+- tick: 26
+  pos: [1, 1, 8]
+  action: use
+- tick: 30
+  pos: [1, 1, 8]
+  action: use
+- tick: 34
+  pos: [1, 1, 8]
+  action: use
+- tick: 38
+  pos: [1, 1, 8]
+  action: use
+- tick: 42
+  pos: [1, 1, 8]
+  action: use
+- tick: 46
+  pos: [1, 1, 8]
+  action: use
+- tick: 50
+  pos: [1, 1, 8]
+  action: use
+- tick: 54
+  pos: [1, 1, 8]
+  action: use
+- tick: 62
+  pos: [1, 1, 8]
+  action: use
+- tick: 66
+  pos: [1, 1, 8]
+  action: use
+- tick: 2
+  pos: [1, 1, 12]
+  action: use
+- tick: 6
+  pos: [1, 1, 12]
+  action: use
+- tick: 10
+  pos: [1, 1, 12]
+  action: use
+- tick: 14
+  pos: [1, 1, 12]
+  action: use
+- tick: 18
+  pos: [1, 1, 12]
+  action: use
+- tick: 22
+  pos: [1, 1, 12]
+  action: use
+- tick: 26
+  pos: [1, 1, 12]
+  action: use
+- tick: 30
+  pos: [1, 1, 12]
+  action: use
+- tick: 34
+  pos: [1, 1, 12]
+  action: use
+- tick: 38
+  pos: [1, 1, 12]
+  action: use
+- tick: 42
+  pos: [1, 1, 12]
+  action: use
+- tick: 46
+  pos: [1, 1, 12]
+  action: use
+- tick: 50
+  pos: [1, 1, 12]
+  action: use
+- tick: 54
+  pos: [1, 1, 12]
+  action: use
+- tick: 63
+  pos: [1, 1, 12]
+  action: use
+- tick: 67
+  pos: [1, 1, 12]
+  action: use
+- tick: 2
+  pos: [1, 1, 16]
+  action: use
+- tick: 6
+  pos: [1, 1, 16]
+  action: use
+- tick: 10
+  pos: [1, 1, 16]
+  action: use
+- tick: 14
+  pos: [1, 1, 16]
+  action: use
+- tick: 18
+  pos: [1, 1, 16]
+  action: use
+- tick: 22
+  pos: [1, 1, 16]
+  action: use
+- tick: 26
+  pos: [1, 1, 16]
+  action: use
+- tick: 30
+  pos: [1, 1, 16]
+  action: use
+- tick: 34
+  pos: [1, 1, 16]
+  action: use
+- tick: 38
+  pos: [1, 1, 16]
+  action: use
+- tick: 42
+  pos: [1, 1, 16]
+  action: use
+- tick: 46
+  pos: [1, 1, 16]
+  action: use
+- tick: 50
+  pos: [1, 1, 16]
+  action: use
+- tick: 54
+  pos: [1, 1, 16]
+  action: use
+- tick: 64
+  pos: [1, 1, 16]
+  action: use
+- tick: 68
+  pos: [1, 1, 16]
+  action: use
+- tick: 2
+  pos: [1, 1, 20]
+  action: use
+- tick: 6
+  pos: [1, 1, 20]
+  action: use
+- tick: 10
+  pos: [1, 1, 20]
+  action: use
+- tick: 14
+  pos: [1, 1, 20]
+  action: use
+- tick: 18
+  pos: [1, 1, 20]
+  action: use
+- tick: 22
+  pos: [1, 1, 20]
+  action: use
+- tick: 26
+  pos: [1, 1, 20]
+  action: use
+- tick: 30
+  pos: [1, 1, 20]
+  action: use
+- tick: 34
+  pos: [1, 1, 20]
+  action: use
+- tick: 38
+  pos: [1, 1, 20]
+  action: use
+- tick: 42
+  pos: [1, 1, 20]
+  action: use
+- tick: 46
+  pos: [1, 1, 20]
+  action: use
+- tick: 50
+  pos: [1, 1, 20]
+  action: use
+- tick: 54
+  pos: [1, 1, 20]
+  action: use
+- tick: 65
+  pos: [1, 1, 20]
+  action: use
+- tick: 69
+  pos: [1, 1, 20]
+  action: use
+probes:
+  torch-d58: [0, 2, 0]
+  torch-d59: [0, 2, 4]
+  torch-d60: [0, 2, 8]
+  torch-d61: [0, 2, 12]
+  torch-d62: [0, 2, 16]
+  torch-d63: [0, 2, 20]

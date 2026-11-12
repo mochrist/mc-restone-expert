@@ -81,8 +81,8 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneWireBlock#updatesOnShapeChange`; [SRC-WIKI-BLOCK-UPDATE]
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: Der Zustand selbst wird per `setBlockAndUpdate` (Flag 3) gesetzt, das liefert zusätzlich die normalen Neighbor-Updates um den Staub.
+- Status: im-Spiel-verifiziert (scenarios/kb3-dust-toggle.yaml)
+- Hinweise: Der Zustand selbst wird per `setBlockAndUpdate` (Flag 3) gesetzt, das liefert zusätzlich die normalen Neighbor-Updates um den Staub. Im Spiel geprüft (kb3-dust-toggle, Punkt zu Kreuz und zurück): ein Detektor hinter einem Stein neben dem Staub bekommt ein Update, einer hinter Glas nicht. Die Reihenfolge N, O, S, W ist nicht beobachtbar geprüft.
 
 ### DUST-010: Staub powert den Block darunter und die Blöcke, in die er zeigt
 - Aussage: Staub liefert seine Stärke nach unten immer, nie nach oben, und horizontal nur an Empfänger auf einer Seite, auf der die aus der aktuellen Umgebung neu berechnete Form (`getConnectionState`) verbunden ist.

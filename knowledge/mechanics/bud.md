@@ -18,7 +18,8 @@ BUDs relevant ist.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ServerLevel#updateNeighborsAt`, `NeighborUpdater#UPDATE_ORDER`, `NeighborUpdater#updateNeighborsAtExceptFromFacing`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb3-bud-reach.yaml)
+- Hinweise: Im Spiel geprüft: Detektoren an den vier Seiten und darüber reagieren, Diagonale, diagonal darüber und Abstand 2/3 nicht. Dass `pos` selbst nicht aktualisiert wird, ist nicht getrennt geprüft.
 
 ### BUD-002: Eine Zustandsänderung mit Flag UPDATE_NEIGHBORS updatet die Nachbarn
 - Aussage: `Level#setBlock` löst nur bei gesetztem Flag 1 (`UPDATE_NEIGHBORS`) `updateNeighborsAt` an der geänderten Position aus; zusätzlich ein Comparator-Update, wenn der neue Block ein Analogsignal hat.

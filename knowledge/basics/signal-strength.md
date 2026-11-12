@@ -17,14 +17,14 @@ meistens das Maximum. Nur Redstone-Staub verliert pro Block eine Stufe, alle and
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `net.minecraft.world.level.redstone.Redstone`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb3-signal-range.yaml)
 
 ### SIG-002: Die Richtung im Signal-Aufruf zeigt vom Empfänger zur Quelle
 - Aussage: `SignalGetter#getSignal(pos, direction)` wird vom Empfänger mit `pos = empfänger.relative(direction)` aufgerufen; die Quelle bekommt also die Richtung, in der sie vom Empfänger aus liegt (z. B. fragt ein Block die Fackel über sich mit `UP` ab).
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `SignalGetter#getBestNeighborSignal`, `SignalGetter#getDirectSignalTo`, `DiodeBlock#getSignal`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/kb3-signal-dirs.yaml)
 - Hinweise: Wichtig für jede Simulator-Implementierung von `getSignal`: z. B. gibt eine Bodenfackel bei `direction == UP` 0 zurück (sie powert den Block unter sich nicht).
 
 ### SIG-003: getBestNeighborSignal ist das Maximum über alle sechs Nachbarn

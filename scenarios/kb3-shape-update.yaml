@@ -1,0 +1,30 @@
+name: kb3-shape-update
+description: 'Shape-Updates. z=1: Der Stein unter einem Repeater wird bei 2 entfernt, der Repeater wird zerstoert
+  (updateShape liefert Luft) und aktualisiert die Nachbarn (Detektor daneben geht aus). z=5: zwei Staubstuecke verbinden
+  sich, wenn das zweite bei 2 gesetzt wird (setBlock mit neuem Zustand). z=8: ein Detektor ohne Bezug bleibt an.'
+build:
+  size: [6, 3, 10]
+  fill:
+  - [0, 0, 0, 5, 0, 9, stone]
+  blocks:
+  - [1, 0, 1, stone]
+  - [1, 1, 1, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [2, 1, 1, 'repeater[delay=1,facing=north,locked=false,powered=true]']
+  - [1, 1, 5, 'redstone_wire[east=none,north=none,power=0,south=none,west=none]']
+  - [4, 1, 8, 'repeater[delay=1,facing=north,locked=false,powered=true]']
+ticks: 8
+inputs:
+- tick: 2
+  pos: [1, 0, 1]
+  action: setblock
+  state: air
+- tick: 2
+  pos: [2, 1, 5]
+  action: setblock
+  state: redstone_wire[east=none,north=none,power=0,south=none,west=none]
+probes:
+  rep: [1, 1, 1]
+  rep-neighbor-det: [2, 1, 1]
+  dust1: [1, 1, 5]
+  dust2: [2, 1, 5]
+  control-det: [4, 1, 8]

@@ -82,8 +82,8 @@ häufigem Schalten durchbrennen.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `RedstoneTorchBlock#tick`
 - Konfidenz: hoch
-- Status: belegt
-- Hinweise: Die Liste ist global pro Level (alle Fackeln) und wird nur vom Anfang her bereinigt; `RECENT_TOGGLES` ist eine `WeakHashMap` im Speicher und wird nicht gespeichert.
+- Status: im-Spiel-verifiziert (scenarios/kb3-torch-burnout.yaml)
+- Hinweise: Die Liste ist global pro Level (alle Fackeln) und wird nur vom Anfang her bereinigt; `RECENT_TOGGLES` ist eine `WeakHashMap` im Speicher und wird nicht gespeichert. Im Spiel geprüft (kb3-torch-burnout): beim 8. Ausschalten brennt die Fackel durch, wenn der erste Eintrag genau 60 gt alt ist, und nicht, wenn er 61 gt alt ist. Schluss aus dem Code (im Spiel nicht beobachtet): Nach einem Burnout ist der Wiederversuch nach 160 gt als Tick eingetragen; Neighbor-Updates dazwischen plant wegen der Deduplizierung (Position und Blocktyp) nichts, der Zweig „Eintrag-Zahl ≥ 8, Fackel bleibt aus“ von TRCH-012 ist deshalb praktisch nur beim Burnout selbst erreichbar.
 
 ### TRCH-011: Eine durchgebrannte Fackel plant einen Wiederversuch nach 160 Game-Ticks
 - Aussage: Beim Durchbrennen plant die Fackel einen Tick nach 160 gt (`RESTART_DELAY`) und löst Level-Event 1502 (Rauch/Zischen) aus.
