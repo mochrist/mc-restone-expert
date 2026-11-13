@@ -308,6 +308,11 @@ def _combo(n: int, bound, sb, free, fb) -> tuple[bool, ...]:
     return tuple(x)
 
 
+def _column_key(col) -> tuple:
+    """Sort key of a column whose entries may be None (does not matter in a partial spec)."""
+    return tuple((e is not None, e or ()) for e in col)
+
+
 def _shared_split(spec: Spec, bound, free, local, rest, columns, width: int) -> tuple[SharedSplit, int]:
     """The split for one bound set and its cost (terms of G and H; 0 for one signal, nothing to choose) with
     the cheapest code for the columns (the column of the all-off assignment gets code 0, so the signals rest
@@ -316,8 +321,8 @@ def _shared_split(spec: Spec, bound, free, local, rest, columns, width: int) -> 
 
     n = len(spec.inputs)
     # bound assignments without any combination that matters are missing from `columns` (G does not care)
-    zero = columns.get((False,) * len(bound), min(columns.values()))
-    others = sorted(set(columns.values()) - {zero})
+    zero = columns.get((False,) * len(bound), min(columns.values(), key=_column_key))
+    others = sorted(set(columns.values()) - {zero}, key=_column_key)
     codes = list(itertools.product([False, True], repeat=width))
     names = ["g"] if width == 1 else [f"g{k}" for k in range(width)]
     best = None
