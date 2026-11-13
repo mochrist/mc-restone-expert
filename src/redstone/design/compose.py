@@ -270,8 +270,23 @@ def _box(blocks) -> tuple[Pos, Pos]:
             Pos(*(max(x[i] for x in blocks) for i in range(3))))
 
 
+try:
+    from rsx_core import route as _route_rust  # the same search in the Rust core, ~2 orders faster
+except ImportError:  # no Rust core built, or an older one without the router
+    _route_rust = None
+
+
 def _route(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], lo: Pos, hi: Pos,
            tight: bool = False) -> list[Pos] | None:
+    """Shortest dust path, see `_route_py`; in the Rust core when it is built (same path)."""
+    if _route_rust is None:
+        return _route_py(start, goals, solid, keep_clear, lo, hi, tight)
+    path = _route_rust(tuple(start), goals, solid, keep_clear, tuple(lo), tuple(hi), tight)
+    return None if path is None else [Pos(*c) for c in path]
+
+
+def _route_py(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], lo: Pos, hi: Pos,
+              tight: bool = False) -> list[Pos] | None:
     """Shortest dust path (the cells the dust stands in) from `start` to one of `goals`, by breadth-first search.
 
     Moves: flat; one up (the block in front becomes the new floor, the cell above the current dust stays
