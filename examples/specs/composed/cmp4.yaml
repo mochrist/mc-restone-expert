@@ -1,0 +1,7 @@
+# 4-Bit-Größenvergleich: a = a3 a2 a1 a0, b = b3 b2 b1 b0. gt: a > b, lt: a < b.
+# Reine Vorlagen-Kaskade: cmp1 für die oberen Bits, dann je Bit eine Komparator-Stufe, die nur bei Gleichstand
+# der höheren Bits entscheidet (Zerlegung von Teilspezifikationen mit zwei gemeinsamen Signalen).
+inputs: [a3, b3, a2, b2, a1, b1, a0, b0]
+function:
+  gt: (a3+a3+a3+a3+a3+a3+a3+a3 + a2+a2+a2+a2 + a1+a1 + a0) > (b3+b3+b3+b3+b3+b3+b3+b3 + b2+b2+b2+b2 + b1+b1 + b0)
+  lt: (a3+a3+a3+a3+a3+a3+a3+a3 + a2+a2+a2+a2 + a1+a1 + a0) < (b3+b3+b3+b3+b3+b3+b3+b3 + b2+b2+b2+b2 + b1+b1 + b0)

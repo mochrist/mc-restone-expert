@@ -117,7 +117,7 @@ def test_no_split_for_majority():
     assert splits(from_functions(list("abc"), {"y": "(a and b) or (a and c) or (b and c)"})) == []
 
 
-SLOW_TABLES = {"adder3", "cmp3"}  # design search of about a minute
+SLOW_TABLES = {"adder3", "cmp3", "cmp4"}  # design search of one to a few minutes
 
 
 def _slow(paths):

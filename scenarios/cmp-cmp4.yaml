@@ -1,0 +1,1168 @@
+name: cmp-cmp4
+description: 'Zerlegung für examples/specs/composed/cmp4.yaml: cmp1-comparator → cmp-stage-comparator → cmp-stage-comparator
+  → cmp-stage-comparator-kompakt (kompaktiert aus zerlegt: g0, g1 aus (a3, b3, a2, b2), gt, lt aus (g0, g1, a1, b1, a0, b0);
+  komponiert: zerlegt: g0, g1 aus (a3, b3), g0, g1 aus (g0, g1, a2, b2); komponiert: template:cmp1-comparator (a3→a, b3→b)
+  → template:cmp-stage-comparator (g0→gi, g1→li, a2→a, b2→b) → zerlegt: g0, g1 aus (g0, g1, a1, b1), gt, lt aus (g0, g1, a0,
+  b0); komponiert: template:cmp-stage-comparator (g0→gi, g1→li, a1→a, b1→b) → template:cmp-stage-comparator (g0→gi, g1→li,
+  a0→a, b0→b)). Alle Hebel-Kombinationen im Gray-Code, je 50 gt Abstand.'
+build:
+  size: [18, 8, 22]
+  blocks:
+  - [0, 3, 10, stone]
+  - [0, 4, 9, stone]
+  - [0, 4, 10, 'redstone_wire[east=side,north=up,power=0,south=none,west=none]']
+  - [0, 5, 9, 'redstone_wire[east=up,north=none,power=0,south=side,west=none]']
+  - [1, 3, 8, stone]
+  - [1, 3, 9, stone]
+  - [1, 3, 10, stone]
+  - [1, 3, 14, stone]
+  - [1, 3, 15, stone]
+  - [1, 3, 16, stone]
+  - [1, 3, 17, stone]
+  - [1, 3, 18, stone]
+  - [1, 3, 19, stone]
+  - [1, 3, 20, stone]
+  - [1, 3, 21, stone]
+  - [1, 4, 8, 'lever[face=floor,facing=north,powered=false]']
+  - [1, 4, 9, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [1, 4, 10, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [1, 4, 14, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [1, 4, 15, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [1, 4, 16, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [1, 4, 17, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [1, 4, 18, 'redstone_wire[east=side,north=side,power=0,south=side,west=none]']
+  - [1, 4, 19, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [1, 4, 20, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [1, 4, 21, 'redstone_wire[east=side,north=side,power=0,south=none,west=none]']
+  - [1, 5, 9, stone]
+  - [1, 6, 9, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [2, 3, 0, stone]
+  - [2, 3, 1, stone]
+  - [2, 3, 2, stone]
+  - [2, 3, 8, stone]
+  - [2, 3, 9, stone]
+  - [2, 3, 10, stone]
+  - [2, 3, 14, stone]
+  - [2, 3, 18, stone]
+  - [2, 3, 21, stone]
+  - [2, 4, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [2, 4, 1, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [2, 4, 2, 'redstone_wire[east=none,north=side,power=0,south=up,west=none]']
+  - [2, 4, 3, stone]
+  - [2, 4, 8, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [2, 4, 9, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [2, 4, 10, 'lever[face=floor,facing=north,powered=false]']
+  - [2, 4, 14, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [2, 4, 18, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [2, 4, 21, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
+  - [2, 5, 3, 'redstone_wire[east=none,north=side,power=0,south=up,west=none]']
+  - [2, 5, 4, stone]
+  - [2, 5, 5, stone]
+  - [2, 5, 6, stone]
+  - [2, 5, 7, stone]
+  - [2, 5, 8, stone]
+  - [2, 5, 9, stone]
+  - [2, 6, 4, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [2, 6, 5, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [2, 6, 6, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [2, 6, 7, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [2, 6, 8, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [2, 6, 9, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  - [3, 3, 0, stone]
+  - [3, 3, 8, stone]
+  - [3, 3, 14, stone]
+  - [3, 3, 15, stone]
+  - [3, 3, 16, stone]
+  - [3, 3, 17, stone]
+  - [3, 3, 18, stone]
+  - [3, 4, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [3, 4, 8, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [3, 4, 13, 'redstone_lamp[lit=false]']
+  - [3, 4, 14, 'comparator[facing=south,mode=subtract,powered=false]']
+  - [3, 4, 15, 'redstone_wire[east=side,north=side,power=0,south=side,west=none]']
+  - [3, 4, 16, 'comparator[facing=south,mode=subtract,powered=false]']
+  - [3, 4, 17, 'lever[face=floor,facing=west,powered=false]']
+  - [3, 4, 18, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [3, 4, 21, stone]
+  - [3, 5, 20, stone]
+  - [3, 5, 21, 'redstone_wire[east=none,north=up,power=0,south=none,west=side]']
+  - [3, 6, 13, stone]
+  - [3, 6, 14, stone]
+  - [3, 6, 15, stone]
+  - [3, 6, 16, stone]
+  - [3, 6, 17, stone]
+  - [3, 6, 18, stone]
+  - [3, 6, 19, stone]
+  - [3, 6, 20, 'redstone_wire[east=none,north=up,power=0,south=side,west=none]']
+  - [3, 7, 13, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [3, 7, 14, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 7, 15, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 7, 16, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 7, 17, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 7, 18, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 7, 19, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [4, 2, 0, stone]
+  - [4, 3, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
+  - [4, 3, 2, stone]
+  - [4, 3, 3, stone]
+  - [4, 3, 4, stone]
+  - [4, 3, 5, stone]
+  - [4, 3, 6, stone]
+  - [4, 3, 7, stone]
+  - [4, 3, 8, stone]
+  - [4, 3, 15, stone]
+  - [4, 3, 16, stone]
+  - [4, 3, 17, stone]
+  - [4, 3, 18, stone]
+  - [4, 4, 2, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [4, 4, 3, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [4, 4, 4, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [4, 4, 5, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [4, 4, 6, 'redstone_wire[east=side,north=side,power=0,south=side,west=none]']
+  - [4, 4, 7, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [4, 4, 8, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  - [4, 4, 15, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [4, 4, 16, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [4, 4, 17, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [4, 4, 18, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [4, 6, 13, stone]
+  - [4, 7, 13, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [5, 1, 0, stone]
+  - [5, 2, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
+  - [5, 3, 2, stone]
+  - [5, 3, 6, stone]
+  - [5, 3, 15, stone]
+  - [5, 3, 16, stone]
+  - [5, 3, 17, stone]
+  - [5, 3, 18, stone]
+  - [5, 3, 19, stone]
+  - [5, 4, 2, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [5, 4, 6, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [5, 4, 15, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [5, 4, 16, 'lever[face=floor,facing=west,powered=false]']
+  - [5, 4, 17, 'comparator[facing=north,mode=subtract,powered=false]']
+  - [5, 4, 18, 'redstone_wire[east=none,north=side,power=0,south=side,west=side]']
+  - [5, 4, 19, 'comparator[facing=north,mode=subtract,powered=false]']
+  - [5, 4, 20, 'redstone_lamp[lit=false]']
+  - [5, 6, 13, stone]
+  - [5, 7, 13, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [6, 1, 0, stone]
+  - [6, 2, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [6, 3, 1, stone]
+  - [6, 3, 2, stone]
+  - [6, 3, 3, stone]
+  - [6, 3, 4, stone]
+  - [6, 3, 5, stone]
+  - [6, 3, 6, stone]
+  - [6, 3, 15, stone]
+  - [6, 3, 19, stone]
+  - [6, 4, 1, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [6, 4, 2, 'comparator[facing=south,mode=subtract,powered=false]']
+  - [6, 4, 3, 'redstone_wire[east=side,north=side,power=0,south=side,west=none]']
+  - [6, 4, 4, 'comparator[facing=south,mode=subtract,powered=false]']
+  - [6, 4, 5, 'lever[face=floor,facing=east,powered=false]']
+  - [6, 4, 6, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [6, 4, 15, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [6, 4, 19, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [6, 6, 13, stone]
+  - [6, 7, 13, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [7, 1, 0, stone]
+  - [7, 2, 0, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
+  - [7, 3, 1, stone]
+  - [7, 3, 3, stone]
+  - [7, 3, 4, stone]
+  - [7, 3, 5, stone]
+  - [7, 3, 6, stone]
+  - [7, 3, 13, stone]
+  - [7, 3, 14, stone]
+  - [7, 3, 15, stone]
+  - [7, 3, 16, stone]
+  - [7, 3, 17, stone]
+  - [7, 3, 18, stone]
+  - [7, 3, 19, stone]
+  - [7, 4, 1, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
+  - [7, 4, 3, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [7, 4, 4, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [7, 4, 5, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [7, 4, 6, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [7, 4, 13, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [7, 4, 14, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [7, 4, 15, 'redstone_wire[east=none,north=side,power=0,south=side,west=side]']
+  - [7, 4, 16, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [7, 4, 17, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [7, 4, 18, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [7, 4, 19, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  - [7, 6, 13, stone]
+  - [7, 7, 13, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [8, 2, 0, stone]
+  - [8, 3, 0, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
+  - [8, 3, 3, stone]
+  - [8, 3, 4, stone]
+  - [8, 3, 5, stone]
+  - [8, 3, 6, stone]
+  - [8, 3, 7, stone]
+  - [8, 3, 8, stone]
+  - [8, 3, 9, stone]
+  - [8, 3, 13, stone]
+  - [8, 4, 1, stone]
+  - [8, 4, 3, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [8, 4, 4, 'lever[face=floor,facing=east,powered=false]']
+  - [8, 4, 5, 'comparator[facing=north,mode=subtract,powered=false]']
+  - [8, 4, 6, 'redstone_wire[east=none,north=side,power=0,south=side,west=side]']
+  - [8, 4, 7, 'comparator[facing=north,mode=subtract,powered=false]']
+  - [8, 4, 8, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [8, 4, 9, 'redstone_wire[east=side,north=side,power=0,south=none,west=none]']
+  - [8, 4, 13, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [8, 5, 1, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
+  - [8, 6, 13, stone]
+  - [8, 7, 13, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [9, 3, 0, stone]
+  - [9, 3, 3, stone]
+  - [9, 3, 7, stone]
+  - [9, 3, 9, stone]
+  - [9, 3, 13, stone]
+  - [9, 3, 14, stone]
+  - [9, 3, 15, stone]
+  - [9, 4, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [9, 4, 3, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [9, 4, 7, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [9, 4, 9, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [9, 4, 13, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [9, 4, 14, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [9, 4, 15, 'redstone_wire[east=side,north=side,power=0,south=none,west=none]']
+  - [9, 5, 1, stone]
+  - [9, 6, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [9, 6, 13, stone]
+  - [9, 7, 13, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [10, 3, 0, stone]
+  - [10, 3, 1, stone]
+  - [10, 3, 2, stone]
+  - [10, 3, 3, stone]
+  - [10, 3, 4, stone]
+  - [10, 3, 5, stone]
+  - [10, 3, 6, stone]
+  - [10, 3, 7, stone]
+  - [10, 3, 9, stone]
+  - [10, 3, 10, stone]
+  - [10, 3, 11, stone]
+  - [10, 3, 12, stone]
+  - [10, 3, 13, stone]
+  - [10, 3, 15, stone]
+  - [10, 4, 0, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [10, 4, 1, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [10, 4, 2, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [10, 4, 3, 'redstone_wire[east=none,north=side,power=0,south=side,west=side]']
+  - [10, 4, 4, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [10, 4, 5, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [10, 4, 6, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [10, 4, 7, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  - [10, 4, 9, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
+  - [10, 4, 10, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [10, 4, 11, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [10, 4, 12, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [10, 4, 13, 'redstone_wire[east=side,north=side,power=0,south=none,west=side]']
+  - [10, 4, 15, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [10, 5, 1, stone]
+  - [10, 6, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [10, 6, 13, stone]
+  - [10, 7, 13, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [11, 3, 9, stone]
+  - [11, 3, 11, stone]
+  - [11, 3, 12, stone]
+  - [11, 3, 13, stone]
+  - [11, 3, 15, stone]
+  - [11, 4, 9, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [11, 4, 11, 'lever[face=floor,facing=south,powered=false]']
+  - [11, 4, 12, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [11, 4, 13, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [11, 4, 15, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [11, 5, 1, stone]
+  - [11, 6, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [11, 6, 13, stone]
+  - [11, 7, 13, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [12, 3, 9, stone]
+  - [12, 3, 11, stone]
+  - [12, 3, 12, stone]
+  - [12, 3, 13, stone]
+  - [12, 3, 15, stone]
+  - [12, 4, 9, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [12, 4, 11, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [12, 4, 12, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [12, 4, 13, 'lever[face=floor,facing=south,powered=false]']
+  - [12, 4, 15, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [12, 5, 1, stone]
+  - [12, 6, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [12, 6, 13, stone]
+  - [12, 7, 13, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [13, 3, 9, stone]
+  - [13, 3, 11, stone]
+  - [13, 3, 12, stone]
+  - [13, 3, 13, stone]
+  - [13, 3, 14, stone]
+  - [13, 3, 15, stone]
+  - [13, 4, 9, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [13, 4, 11, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
+  - [13, 4, 12, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [13, 4, 13, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [13, 4, 14, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [13, 4, 15, 'redstone_wire[east=side,north=side,power=0,south=none,west=side]']
+  - [13, 5, 1, stone]
+  - [13, 6, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [13, 6, 13, stone]
+  - [13, 7, 13, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [14, 3, 9, stone]
+  - [14, 3, 10, stone]
+  - [14, 3, 11, stone]
+  - [14, 3, 15, stone]
+  - [14, 4, 9, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [14, 4, 10, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [14, 4, 11, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [14, 4, 15, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [14, 5, 1, stone]
+  - [14, 6, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [14, 6, 13, stone]
+  - [14, 7, 13, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [15, 3, 11, stone]
+  - [15, 3, 15, stone]
+  - [15, 4, 11, stone]
+  - [15, 4, 15, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [15, 5, 1, stone]
+  - [15, 5, 13, stone]
+  - [15, 6, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [15, 6, 13, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
+  - [16, 0, 11, stone]
+  - [16, 0, 12, stone]
+  - [16, 1, 10, stone]
+  - [16, 1, 11, 'redstone_wire[east=none,north=up,power=0,south=side,west=none]']
+  - [16, 1, 12, 'redstone_wire[east=none,north=side,power=0,south=up,west=none]']
+  - [16, 1, 13, stone]
+  - [16, 2, 9, stone]
+  - [16, 2, 10, 'redstone_wire[east=none,north=up,power=0,south=side,west=none]']
+  - [16, 2, 13, 'redstone_wire[east=none,north=side,power=0,south=up,west=none]']
+  - [16, 2, 14, stone]
+  - [16, 3, 8, stone]
+  - [16, 3, 9, 'redstone_wire[east=none,north=up,power=0,south=side,west=none]']
+  - [16, 3, 11, stone]
+  - [16, 3, 12, stone]
+  - [16, 3, 14, 'redstone_wire[east=none,north=side,power=0,south=up,west=none]']
+  - [16, 3, 15, stone]
+  - [16, 4, 7, stone]
+  - [16, 4, 8, 'redstone_wire[east=none,north=up,power=0,south=side,west=none]']
+  - [16, 4, 11, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [16, 4, 12, 'redstone_wire[east=side,north=none,power=0,south=up,west=none]']
+  - [16, 4, 13, stone]
+  - [16, 4, 15, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  - [16, 5, 1, stone]
+  - [16, 5, 2, stone]
+  - [16, 5, 3, stone]
+  - [16, 5, 4, stone]
+  - [16, 5, 5, stone]
+  - [16, 5, 6, stone]
+  - [16, 5, 7, 'redstone_wire[east=none,north=up,power=0,south=side,west=none]']
+  - [16, 5, 13, 'redstone_wire[east=none,north=side,power=0,south=none,west=up]']
+  - [16, 6, 1, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [16, 6, 2, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [16, 6, 3, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [16, 6, 4, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [16, 6, 5, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [16, 6, 6, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [17, 3, 11, stone]
+  - [17, 3, 12, stone]
+  - [17, 4, 11, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [17, 4, 12, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  block_entities:
+  - [1, 4, 10, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [2, 4, 8, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [3, 4, 14, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [3, 4, 16, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [5, 4, 17, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [5, 4, 19, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [6, 4, 2, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [6, 4, 4, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [8, 4, 5, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [8, 4, 7, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [9, 4, 13, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [11, 4, 13, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [12, 4, 11, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [14, 4, 11, '{id: "minecraft:comparator", OutputSignal: 0}']
+ticks: 12802
+inputs:
+- tick: 2
+  pos: [1, 4, 8]
+  action: use
+- tick: 52
+  pos: [2, 4, 10]
+  action: use
+- tick: 102
+  pos: [1, 4, 8]
+  action: use
+- tick: 152
+  pos: [8, 4, 4]
+  action: use
+- tick: 202
+  pos: [1, 4, 8]
+  action: use
+- tick: 252
+  pos: [2, 4, 10]
+  action: use
+- tick: 302
+  pos: [1, 4, 8]
+  action: use
+- tick: 352
+  pos: [6, 4, 5]
+  action: use
+- tick: 402
+  pos: [1, 4, 8]
+  action: use
+- tick: 452
+  pos: [2, 4, 10]
+  action: use
+- tick: 502
+  pos: [1, 4, 8]
+  action: use
+- tick: 552
+  pos: [8, 4, 4]
+  action: use
+- tick: 602
+  pos: [1, 4, 8]
+  action: use
+- tick: 652
+  pos: [2, 4, 10]
+  action: use
+- tick: 702
+  pos: [1, 4, 8]
+  action: use
+- tick: 752
+  pos: [12, 4, 13]
+  action: use
+- tick: 802
+  pos: [1, 4, 8]
+  action: use
+- tick: 852
+  pos: [2, 4, 10]
+  action: use
+- tick: 902
+  pos: [1, 4, 8]
+  action: use
+- tick: 952
+  pos: [8, 4, 4]
+  action: use
+- tick: 1002
+  pos: [1, 4, 8]
+  action: use
+- tick: 1052
+  pos: [2, 4, 10]
+  action: use
+- tick: 1102
+  pos: [1, 4, 8]
+  action: use
+- tick: 1152
+  pos: [6, 4, 5]
+  action: use
+- tick: 1202
+  pos: [1, 4, 8]
+  action: use
+- tick: 1252
+  pos: [2, 4, 10]
+  action: use
+- tick: 1302
+  pos: [1, 4, 8]
+  action: use
+- tick: 1352
+  pos: [8, 4, 4]
+  action: use
+- tick: 1402
+  pos: [1, 4, 8]
+  action: use
+- tick: 1452
+  pos: [2, 4, 10]
+  action: use
+- tick: 1502
+  pos: [1, 4, 8]
+  action: use
+- tick: 1552
+  pos: [11, 4, 11]
+  action: use
+- tick: 1602
+  pos: [1, 4, 8]
+  action: use
+- tick: 1652
+  pos: [2, 4, 10]
+  action: use
+- tick: 1702
+  pos: [1, 4, 8]
+  action: use
+- tick: 1752
+  pos: [8, 4, 4]
+  action: use
+- tick: 1802
+  pos: [1, 4, 8]
+  action: use
+- tick: 1852
+  pos: [2, 4, 10]
+  action: use
+- tick: 1902
+  pos: [1, 4, 8]
+  action: use
+- tick: 1952
+  pos: [6, 4, 5]
+  action: use
+- tick: 2002
+  pos: [1, 4, 8]
+  action: use
+- tick: 2052
+  pos: [2, 4, 10]
+  action: use
+- tick: 2102
+  pos: [1, 4, 8]
+  action: use
+- tick: 2152
+  pos: [8, 4, 4]
+  action: use
+- tick: 2202
+  pos: [1, 4, 8]
+  action: use
+- tick: 2252
+  pos: [2, 4, 10]
+  action: use
+- tick: 2302
+  pos: [1, 4, 8]
+  action: use
+- tick: 2352
+  pos: [12, 4, 13]
+  action: use
+- tick: 2402
+  pos: [1, 4, 8]
+  action: use
+- tick: 2452
+  pos: [2, 4, 10]
+  action: use
+- tick: 2502
+  pos: [1, 4, 8]
+  action: use
+- tick: 2552
+  pos: [8, 4, 4]
+  action: use
+- tick: 2602
+  pos: [1, 4, 8]
+  action: use
+- tick: 2652
+  pos: [2, 4, 10]
+  action: use
+- tick: 2702
+  pos: [1, 4, 8]
+  action: use
+- tick: 2752
+  pos: [6, 4, 5]
+  action: use
+- tick: 2802
+  pos: [1, 4, 8]
+  action: use
+- tick: 2852
+  pos: [2, 4, 10]
+  action: use
+- tick: 2902
+  pos: [1, 4, 8]
+  action: use
+- tick: 2952
+  pos: [8, 4, 4]
+  action: use
+- tick: 3002
+  pos: [1, 4, 8]
+  action: use
+- tick: 3052
+  pos: [2, 4, 10]
+  action: use
+- tick: 3102
+  pos: [1, 4, 8]
+  action: use
+- tick: 3152
+  pos: [3, 4, 17]
+  action: use
+- tick: 3202
+  pos: [1, 4, 8]
+  action: use
+- tick: 3252
+  pos: [2, 4, 10]
+  action: use
+- tick: 3302
+  pos: [1, 4, 8]
+  action: use
+- tick: 3352
+  pos: [8, 4, 4]
+  action: use
+- tick: 3402
+  pos: [1, 4, 8]
+  action: use
+- tick: 3452
+  pos: [2, 4, 10]
+  action: use
+- tick: 3502
+  pos: [1, 4, 8]
+  action: use
+- tick: 3552
+  pos: [6, 4, 5]
+  action: use
+- tick: 3602
+  pos: [1, 4, 8]
+  action: use
+- tick: 3652
+  pos: [2, 4, 10]
+  action: use
+- tick: 3702
+  pos: [1, 4, 8]
+  action: use
+- tick: 3752
+  pos: [8, 4, 4]
+  action: use
+- tick: 3802
+  pos: [1, 4, 8]
+  action: use
+- tick: 3852
+  pos: [2, 4, 10]
+  action: use
+- tick: 3902
+  pos: [1, 4, 8]
+  action: use
+- tick: 3952
+  pos: [12, 4, 13]
+  action: use
+- tick: 4002
+  pos: [1, 4, 8]
+  action: use
+- tick: 4052
+  pos: [2, 4, 10]
+  action: use
+- tick: 4102
+  pos: [1, 4, 8]
+  action: use
+- tick: 4152
+  pos: [8, 4, 4]
+  action: use
+- tick: 4202
+  pos: [1, 4, 8]
+  action: use
+- tick: 4252
+  pos: [2, 4, 10]
+  action: use
+- tick: 4302
+  pos: [1, 4, 8]
+  action: use
+- tick: 4352
+  pos: [6, 4, 5]
+  action: use
+- tick: 4402
+  pos: [1, 4, 8]
+  action: use
+- tick: 4452
+  pos: [2, 4, 10]
+  action: use
+- tick: 4502
+  pos: [1, 4, 8]
+  action: use
+- tick: 4552
+  pos: [8, 4, 4]
+  action: use
+- tick: 4602
+  pos: [1, 4, 8]
+  action: use
+- tick: 4652
+  pos: [2, 4, 10]
+  action: use
+- tick: 4702
+  pos: [1, 4, 8]
+  action: use
+- tick: 4752
+  pos: [11, 4, 11]
+  action: use
+- tick: 4802
+  pos: [1, 4, 8]
+  action: use
+- tick: 4852
+  pos: [2, 4, 10]
+  action: use
+- tick: 4902
+  pos: [1, 4, 8]
+  action: use
+- tick: 4952
+  pos: [8, 4, 4]
+  action: use
+- tick: 5002
+  pos: [1, 4, 8]
+  action: use
+- tick: 5052
+  pos: [2, 4, 10]
+  action: use
+- tick: 5102
+  pos: [1, 4, 8]
+  action: use
+- tick: 5152
+  pos: [6, 4, 5]
+  action: use
+- tick: 5202
+  pos: [1, 4, 8]
+  action: use
+- tick: 5252
+  pos: [2, 4, 10]
+  action: use
+- tick: 5302
+  pos: [1, 4, 8]
+  action: use
+- tick: 5352
+  pos: [8, 4, 4]
+  action: use
+- tick: 5402
+  pos: [1, 4, 8]
+  action: use
+- tick: 5452
+  pos: [2, 4, 10]
+  action: use
+- tick: 5502
+  pos: [1, 4, 8]
+  action: use
+- tick: 5552
+  pos: [12, 4, 13]
+  action: use
+- tick: 5602
+  pos: [1, 4, 8]
+  action: use
+- tick: 5652
+  pos: [2, 4, 10]
+  action: use
+- tick: 5702
+  pos: [1, 4, 8]
+  action: use
+- tick: 5752
+  pos: [8, 4, 4]
+  action: use
+- tick: 5802
+  pos: [1, 4, 8]
+  action: use
+- tick: 5852
+  pos: [2, 4, 10]
+  action: use
+- tick: 5902
+  pos: [1, 4, 8]
+  action: use
+- tick: 5952
+  pos: [6, 4, 5]
+  action: use
+- tick: 6002
+  pos: [1, 4, 8]
+  action: use
+- tick: 6052
+  pos: [2, 4, 10]
+  action: use
+- tick: 6102
+  pos: [1, 4, 8]
+  action: use
+- tick: 6152
+  pos: [8, 4, 4]
+  action: use
+- tick: 6202
+  pos: [1, 4, 8]
+  action: use
+- tick: 6252
+  pos: [2, 4, 10]
+  action: use
+- tick: 6302
+  pos: [1, 4, 8]
+  action: use
+- tick: 6352
+  pos: [5, 4, 16]
+  action: use
+- tick: 6402
+  pos: [1, 4, 8]
+  action: use
+- tick: 6452
+  pos: [2, 4, 10]
+  action: use
+- tick: 6502
+  pos: [1, 4, 8]
+  action: use
+- tick: 6552
+  pos: [8, 4, 4]
+  action: use
+- tick: 6602
+  pos: [1, 4, 8]
+  action: use
+- tick: 6652
+  pos: [2, 4, 10]
+  action: use
+- tick: 6702
+  pos: [1, 4, 8]
+  action: use
+- tick: 6752
+  pos: [6, 4, 5]
+  action: use
+- tick: 6802
+  pos: [1, 4, 8]
+  action: use
+- tick: 6852
+  pos: [2, 4, 10]
+  action: use
+- tick: 6902
+  pos: [1, 4, 8]
+  action: use
+- tick: 6952
+  pos: [8, 4, 4]
+  action: use
+- tick: 7002
+  pos: [1, 4, 8]
+  action: use
+- tick: 7052
+  pos: [2, 4, 10]
+  action: use
+- tick: 7102
+  pos: [1, 4, 8]
+  action: use
+- tick: 7152
+  pos: [12, 4, 13]
+  action: use
+- tick: 7202
+  pos: [1, 4, 8]
+  action: use
+- tick: 7252
+  pos: [2, 4, 10]
+  action: use
+- tick: 7302
+  pos: [1, 4, 8]
+  action: use
+- tick: 7352
+  pos: [8, 4, 4]
+  action: use
+- tick: 7402
+  pos: [1, 4, 8]
+  action: use
+- tick: 7452
+  pos: [2, 4, 10]
+  action: use
+- tick: 7502
+  pos: [1, 4, 8]
+  action: use
+- tick: 7552
+  pos: [6, 4, 5]
+  action: use
+- tick: 7602
+  pos: [1, 4, 8]
+  action: use
+- tick: 7652
+  pos: [2, 4, 10]
+  action: use
+- tick: 7702
+  pos: [1, 4, 8]
+  action: use
+- tick: 7752
+  pos: [8, 4, 4]
+  action: use
+- tick: 7802
+  pos: [1, 4, 8]
+  action: use
+- tick: 7852
+  pos: [2, 4, 10]
+  action: use
+- tick: 7902
+  pos: [1, 4, 8]
+  action: use
+- tick: 7952
+  pos: [11, 4, 11]
+  action: use
+- tick: 8002
+  pos: [1, 4, 8]
+  action: use
+- tick: 8052
+  pos: [2, 4, 10]
+  action: use
+- tick: 8102
+  pos: [1, 4, 8]
+  action: use
+- tick: 8152
+  pos: [8, 4, 4]
+  action: use
+- tick: 8202
+  pos: [1, 4, 8]
+  action: use
+- tick: 8252
+  pos: [2, 4, 10]
+  action: use
+- tick: 8302
+  pos: [1, 4, 8]
+  action: use
+- tick: 8352
+  pos: [6, 4, 5]
+  action: use
+- tick: 8402
+  pos: [1, 4, 8]
+  action: use
+- tick: 8452
+  pos: [2, 4, 10]
+  action: use
+- tick: 8502
+  pos: [1, 4, 8]
+  action: use
+- tick: 8552
+  pos: [8, 4, 4]
+  action: use
+- tick: 8602
+  pos: [1, 4, 8]
+  action: use
+- tick: 8652
+  pos: [2, 4, 10]
+  action: use
+- tick: 8702
+  pos: [1, 4, 8]
+  action: use
+- tick: 8752
+  pos: [12, 4, 13]
+  action: use
+- tick: 8802
+  pos: [1, 4, 8]
+  action: use
+- tick: 8852
+  pos: [2, 4, 10]
+  action: use
+- tick: 8902
+  pos: [1, 4, 8]
+  action: use
+- tick: 8952
+  pos: [8, 4, 4]
+  action: use
+- tick: 9002
+  pos: [1, 4, 8]
+  action: use
+- tick: 9052
+  pos: [2, 4, 10]
+  action: use
+- tick: 9102
+  pos: [1, 4, 8]
+  action: use
+- tick: 9152
+  pos: [6, 4, 5]
+  action: use
+- tick: 9202
+  pos: [1, 4, 8]
+  action: use
+- tick: 9252
+  pos: [2, 4, 10]
+  action: use
+- tick: 9302
+  pos: [1, 4, 8]
+  action: use
+- tick: 9352
+  pos: [8, 4, 4]
+  action: use
+- tick: 9402
+  pos: [1, 4, 8]
+  action: use
+- tick: 9452
+  pos: [2, 4, 10]
+  action: use
+- tick: 9502
+  pos: [1, 4, 8]
+  action: use
+- tick: 9552
+  pos: [3, 4, 17]
+  action: use
+- tick: 9602
+  pos: [1, 4, 8]
+  action: use
+- tick: 9652
+  pos: [2, 4, 10]
+  action: use
+- tick: 9702
+  pos: [1, 4, 8]
+  action: use
+- tick: 9752
+  pos: [8, 4, 4]
+  action: use
+- tick: 9802
+  pos: [1, 4, 8]
+  action: use
+- tick: 9852
+  pos: [2, 4, 10]
+  action: use
+- tick: 9902
+  pos: [1, 4, 8]
+  action: use
+- tick: 9952
+  pos: [6, 4, 5]
+  action: use
+- tick: 10002
+  pos: [1, 4, 8]
+  action: use
+- tick: 10052
+  pos: [2, 4, 10]
+  action: use
+- tick: 10102
+  pos: [1, 4, 8]
+  action: use
+- tick: 10152
+  pos: [8, 4, 4]
+  action: use
+- tick: 10202
+  pos: [1, 4, 8]
+  action: use
+- tick: 10252
+  pos: [2, 4, 10]
+  action: use
+- tick: 10302
+  pos: [1, 4, 8]
+  action: use
+- tick: 10352
+  pos: [12, 4, 13]
+  action: use
+- tick: 10402
+  pos: [1, 4, 8]
+  action: use
+- tick: 10452
+  pos: [2, 4, 10]
+  action: use
+- tick: 10502
+  pos: [1, 4, 8]
+  action: use
+- tick: 10552
+  pos: [8, 4, 4]
+  action: use
+- tick: 10602
+  pos: [1, 4, 8]
+  action: use
+- tick: 10652
+  pos: [2, 4, 10]
+  action: use
+- tick: 10702
+  pos: [1, 4, 8]
+  action: use
+- tick: 10752
+  pos: [6, 4, 5]
+  action: use
+- tick: 10802
+  pos: [1, 4, 8]
+  action: use
+- tick: 10852
+  pos: [2, 4, 10]
+  action: use
+- tick: 10902
+  pos: [1, 4, 8]
+  action: use
+- tick: 10952
+  pos: [8, 4, 4]
+  action: use
+- tick: 11002
+  pos: [1, 4, 8]
+  action: use
+- tick: 11052
+  pos: [2, 4, 10]
+  action: use
+- tick: 11102
+  pos: [1, 4, 8]
+  action: use
+- tick: 11152
+  pos: [11, 4, 11]
+  action: use
+- tick: 11202
+  pos: [1, 4, 8]
+  action: use
+- tick: 11252
+  pos: [2, 4, 10]
+  action: use
+- tick: 11302
+  pos: [1, 4, 8]
+  action: use
+- tick: 11352
+  pos: [8, 4, 4]
+  action: use
+- tick: 11402
+  pos: [1, 4, 8]
+  action: use
+- tick: 11452
+  pos: [2, 4, 10]
+  action: use
+- tick: 11502
+  pos: [1, 4, 8]
+  action: use
+- tick: 11552
+  pos: [6, 4, 5]
+  action: use
+- tick: 11602
+  pos: [1, 4, 8]
+  action: use
+- tick: 11652
+  pos: [2, 4, 10]
+  action: use
+- tick: 11702
+  pos: [1, 4, 8]
+  action: use
+- tick: 11752
+  pos: [8, 4, 4]
+  action: use
+- tick: 11802
+  pos: [1, 4, 8]
+  action: use
+- tick: 11852
+  pos: [2, 4, 10]
+  action: use
+- tick: 11902
+  pos: [1, 4, 8]
+  action: use
+- tick: 11952
+  pos: [12, 4, 13]
+  action: use
+- tick: 12002
+  pos: [1, 4, 8]
+  action: use
+- tick: 12052
+  pos: [2, 4, 10]
+  action: use
+- tick: 12102
+  pos: [1, 4, 8]
+  action: use
+- tick: 12152
+  pos: [8, 4, 4]
+  action: use
+- tick: 12202
+  pos: [1, 4, 8]
+  action: use
+- tick: 12252
+  pos: [2, 4, 10]
+  action: use
+- tick: 12302
+  pos: [1, 4, 8]
+  action: use
+- tick: 12352
+  pos: [6, 4, 5]
+  action: use
+- tick: 12402
+  pos: [1, 4, 8]
+  action: use
+- tick: 12452
+  pos: [2, 4, 10]
+  action: use
+- tick: 12502
+  pos: [1, 4, 8]
+  action: use
+- tick: 12552
+  pos: [8, 4, 4]
+  action: use
+- tick: 12602
+  pos: [1, 4, 8]
+  action: use
+- tick: 12652
+  pos: [2, 4, 10]
+  action: use
+- tick: 12702
+  pos: [1, 4, 8]
+  action: use
+- tick: 12752
+  pos: [5, 4, 16]
+  action: use
+probes:
+  a3: [1, 4, 8]
+  b3: [2, 4, 10]
+  a2: [8, 4, 4]
+  b2: [6, 4, 5]
+  a1: [12, 4, 13]
+  b1: [11, 4, 11]
+  a0: [3, 4, 17]
+  b0: [5, 4, 16]
+  gt: [3, 4, 13]
+  lt: [5, 4, 20]
