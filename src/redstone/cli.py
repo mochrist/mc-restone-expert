@@ -113,6 +113,22 @@ def _cmd_sim(args: argparse.Namespace) -> int:
     return status
 
 
+def _cmd_materials(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from .gui.materials import format_materials
+
+    path = Path(args.file)
+    if path.suffix in (".yaml", ".yml"):
+        from .verify import load_scenario
+
+        grid = load_scenario(path).grid
+    else:
+        grid = io.load(path)
+    print(format_materials(grid))
+    return 0
+
+
 def _cmd_explain(args: argparse.Namespace) -> int:
     from pathlib import Path
 
@@ -406,6 +422,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("-o", "--out", help="write the Markdown report to this file")
     p.add_argument("--svg", metavar="DIR", help="also write one SVG timing diagram per input into DIR and link it")
     p.set_defaults(func=_cmd_explain)
+
+    p = sub.add_parser("materials", help="list the items needed to build a schematic or scenario (German)")
+    p.add_argument("file", help=".litematic/.schem/.nbt or scenario .yaml")
+    p.set_defaults(func=_cmd_materials)
 
     p = sub.add_parser("redesign", help="find compact circuits for a spec or an existing circuit (German report)")
     p.add_argument("file", help="spec .yaml (inputs/function|table), scenario .yaml or schematic")
