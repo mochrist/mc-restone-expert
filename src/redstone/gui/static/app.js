@@ -439,7 +439,8 @@ function setMode(mode, { fit = false } = {}) {
       v2.setBlocks(now, S.simModel.size);
     } else if (S.model) showModel(S.model, { reveal: false, fit });
     $('sTick1').disabled = $('sRun').disabled = !S.simId;
-    setInfo(S.simId ? 'Hebel und Knöpfe lassen sich in beiden Ansichten anklicken.' : '');
+    if (!S.simPaused) runSim();
+    setInfo(S.simId ? 'Die Zeit läuft von selbst. Hebel und Knöpfe lassen sich in beiden Ansichten anklicken.' : '');
   }
   renderIO();
 }
@@ -524,8 +525,9 @@ async function startSim() {
     S.simId = r.sim; S.simTick = r.tick; S.simModel = r.model;
     S.simState = new Map(r.model.blocks.map((b) => [b.p.join(','), b.s]));
     $('tickOut').textContent = 'Tick ' + r.tick;
+    S.simPaused = false;
     if (S.mode === 'sim') setMode('sim');
-    setStatus('Bereit zum Ausprobieren: Eingang anklicken, dann die Zeit laufen lassen.');
+    setStatus('Die Schaltung läuft. Klicke einen Eingang an und sieh zu, was passiert.');
   } catch (e) { fail(e); } finally { S.simStarting = false; }
 }
 $('sStart').addEventListener('click', startSim);
@@ -588,7 +590,7 @@ async function useBlock(p) {
     const r = await simCall(() => api.use(S.simId, p));
     applySim(r);
     const io = S.simModel.inputs.find((i) => i.p.join(',') === p.join(','));
-    setStatus(`${io ? `Eingang „${io.name}“` : `Block (${p.join(', ')})`} betätigt. „Laufen lassen“ zeigt die Reaktion über die Zeit.`);
+    setStatus(`${io ? `Eingang „${io.name}“` : `Block (${p.join(', ')})`} betätigt.`);
     if (!S.simRunning) simTicks(1); // show the immediate reaction
   } catch (e) { fail(e); }
 }
@@ -599,10 +601,11 @@ function stopSimRun() {
   S.simRunning = false;
   clearTimeout(S.simTimer);
   const b = $('sRun');
-  b.innerHTML = icon('play') + 'Laufen lassen';
+  b.innerHTML = icon('play') + 'Weiter';
 }
-$('sRun').addEventListener('click', () => {
-  if (S.simRunning) return stopSimRun();
+/** Let the time run: 10 steps a second, by default 2 ticks each (the speed of the game). */
+function runSim() {
+  if (S.simRunning || !S.simId || S.mode !== 'sim') return;
   S.simRunning = true;
   $('sRun').innerHTML = icon('pause') + 'Anhalten';
   const step = async () => {
@@ -611,6 +614,16 @@ $('sRun').addEventListener('click', () => {
     if (S.simRunning) S.simTimer = setTimeout(step, 100);
   };
   step();
+}
+// The time runs by itself while "Ausprobieren" is open; `simPaused` remembers that the user stopped it.
+$('sRun').addEventListener('click', () => {
+  S.simPaused = S.simRunning;
+  if (S.simRunning) { stopSimRun(); setStatus('Angehalten. „1 Tick“ geht einzeln weiter, „Weiter“ lässt die Zeit wieder laufen.'); }
+  else runSim();
+});
+// no ticking in a hidden browser tab
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopSimRun(); else if (!S.simPaused) runSim();
 });
 
 function goldenNote(box, cmp, what) {

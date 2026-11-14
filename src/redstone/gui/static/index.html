@@ -105,8 +105,8 @@
     </div>
     <div id="ctlSim" class="ctl" hidden>
       <span class="eyebrow">Zeit</span>
-      <button id="sRun" class="primary" title="Zeit laufen lassen / anhalten">Laufen lassen</button>
-      <button id="sTick1" title="Genau einen Tick weiter (1 Tick = 1/20 Sekunde)"><i data-icon="step"></i>1 Tick</button>
+      <button id="sRun" class="primary" title="Zeit anhalten oder weiterlaufen lassen">Anhalten</button>
+      <button id="sTick1" title="Bei angehaltener Zeit genau einen Tick weiter (1 Tick = 1/20 Sekunde)"><i data-icon="step"></i>1 Tick</button>
       <label title="Wie schnell die Zeit läuft">Tempo <input id="simSpeed" type="range" min="1" max="40" value="2"></label>
       <output id="simSpeedVal" hidden>2</output>
       <span class="spacer"></span>
@@ -150,7 +150,7 @@
   </section>
 
   <section class="task" id="taskSim" hidden>
-    <p class="hint">Klicke einen Eingang an, hier oder direkt an der Schaltung. Mit „Laufen lassen“ unter der Ansicht vergeht die Zeit.</p>
+    <p class="hint">Die Schaltung läuft von selbst. Klicke einen Eingang an, hier oder direkt an der Schaltung, und sieh zu, was passiert. Unter der Ansicht lässt sich die Zeit anhalten.</p>
     <h3>Eingänge <span class="muted">zum Anklicken</span></h3>
     <div id="ioIn" class="chips"><span class="none muted">–</span></div>
     <h3>Ausgänge</h3>

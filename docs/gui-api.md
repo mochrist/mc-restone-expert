@@ -134,7 +134,8 @@ ist die geladene Datei oder der beste Entwurf der letzten Suche; alle Aufgaben a
   Ohne Schaltung steht dort ein Startbildschirm (öffnen, Beispiel, neu entwerfen).
 - **Arbeitsbereich (rechts, Breite ziehbar)** mit einem Reiter je Aufgabe:
   - *Nachbauen*: Hinweise, Material (Summe, Stacks, Kisten), Herunterladen in allen Formaten.
-  - *Ausprobieren*: startet die Simulation selbst; Ein- und Ausgänge mit Namen (Eingänge anklickbar, ebenso Hebel
+  - *Ausprobieren*: startet die Simulation selbst und lässt die Zeit laufen (Echtzeit, 20 Ticks/s; anhaltbar,
+    pausiert in einem verdeckten Browser-Tab); Ein- und Ausgänge mit Namen (Eingänge anklickbar, ebenso Hebel
     und Knöpfe in den Ansichten), „Von vorn beginnen“. Bei Szenarien: Testablauf simulieren (Zeitdiagramm, Vergleich
     mit der Spielaufnahme) und im echten Spiel prüfen.
   - *Verstehen*: Analyse (Markdown gerendert, Zeitdiagramme als SVG) und Text-Ansicht, jeweils speicherbar.
