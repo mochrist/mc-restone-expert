@@ -1,5 +1,5 @@
 // Spec editor: write what a circuit should do (YAML as in examples/specs and examples/behaviour) and start a
-// design search for it. Lives as the "Spezifikation" tab of the document pane.
+// design search for it. Lives in the "Entwerfen" task of the work panel.
 
 const TEMPLATES = [
   ['Logik als Formel', `# Ausgänge als Formeln der Eingänge: and, or, not, ^ (XOR), != und == sind erlaubt.
@@ -57,11 +57,11 @@ on_ticks: 2
 const HELP = [
   'Logik: inputs (Namen der Hebel) und function (je Ausgang eine Formel) oder table (Wahrheitstabelle).',
   'Zeitverhalten und Speicher: behaviour mit monostable, pulse-extender, delay, t-flip-flop, rs-latch oder clock; dazu die Parameter aus den Vorlagen.',
-  'max_delay: N begrenzt die Verzögerung in Gameticks. Größe, erlaubte Blöcke usw. stehen links unter Entwurfssuche → Optionen.',
+  'max_delay: N begrenzt die Verzögerung in Gameticks. Größe, erlaubte Blöcke usw. stehen darunter bei „Grenzen“.',
   'Bis 8 Eingänge geht jede Funktion; größere nur, wenn sie sich zerlegen lässt (Addierer, Komparator, Multiplexer).',
 ];
 
-export function openSpecEditor({ docs, api, setStatus, fail, onSaved, onSearch }) {
+export function openSpecEditor({ mount, api, setStatus, fail, onSaved }) {
   const box = document.createElement('div');
   box.className = 'spec';
   const row = document.createElement('div');
@@ -79,24 +79,21 @@ export function openSpecEditor({ docs, api, setStatus, fail, onSaved, onSearch }
   area.spellcheck = false;
   const actions = document.createElement('div');
   actions.className = 'row';
-  const search = document.createElement('button');
-  search.className = 'primary';
-  search.textContent = 'Entwurf suchen';
   const save = document.createElement('button');
-  save.textContent = 'Speichern';
-  save.title = 'In der Dateiliste unter Spezifikationen ablegen (Ordner .cache/gui/specs)';
+  save.textContent = 'Vorgabe speichern';
+  save.title = 'In der Dateiliste unter „Vorgaben“ ablegen, um sie später wiederzuverwenden';
   const origin = document.createElement('span');
   origin.className = 'muted';
-  actions.append(search, save, origin);
+  actions.append(save, origin);
   const help = document.createElement('details');
-  help.innerHTML = '<summary>Kurzanleitung</summary>';
+  help.innerHTML = '<summary>Wie schreibe ich eine Vorgabe?</summary>';
   const ul = document.createElement('ul');
   for (const h of HELP) { const li = document.createElement('li'); li.textContent = h; ul.appendChild(li); }
   help.appendChild(ul);
   box.append(row, area, actions, help);
+  mount.appendChild(box);
 
   const ed = { path: null, orig: null };
-  const doc = { title: 'Spezifikation', node: box, download: () => ({ name: `${name.value.trim() || 'spezifikation'}.yaml`, text: area.value }) };
 
   tpl.addEventListener('change', () => {
     if (tpl.value === '') return;
@@ -137,10 +134,8 @@ export function openSpecEditor({ docs, api, setStatus, fail, onSaved, onSearch }
     area.value = text === null ? TEMPLATES[0][1] : text;
     ed.path = path; ed.orig = text;
     origin.textContent = path || 'neu, noch nicht gespeichert';
-    docs.set('spec', doc);
-    if (text === null) area.focus();
   };
-  search.addEventListener('click', async () => { const p = await ed.commit(); if (p) onSearch(p); });
+  ed.focus = () => area.focus();
   save.addEventListener('click', async () => { const p = await ed.commit(); if (p) setStatus(`Gespeichert: ${p}`); });
   return ed;
 }

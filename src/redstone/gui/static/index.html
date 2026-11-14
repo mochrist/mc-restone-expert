@@ -16,46 +16,116 @@
 </head>
 <body>
 <header id="top">
+  <button id="btnLib" class="icon" title="Dateiliste ein- oder ausblenden">&#9776;</button>
   <h1>Redstone-Werkstatt</h1>
-  <span id="modelName"></span>
+  <div id="current"><strong id="curName">Keine Schaltung geladen</strong> <span id="curMeta" class="muted"></span></div>
   <span class="spacer"></span>
-  <label title="Simulatorkern für neue Simulationen, Analysen und Suchen">Kern
-    <select id="coreSel"><option value="rust">Rust (schnell)</option><option value="python">Python (Referenz)</option></select>
-  </label>
   <div class="seg" id="layoutSeg" role="group" aria-label="Ansicht">
     <button data-layout="split" class="on">3D + Ebenen</button>
     <button data-layout="3d">3D</button>
     <button data-layout="2d">Ebenen</button>
-    <button data-layout="doc" title="Nur Berichte und Editor">Bericht</button>
   </div>
+  <details id="settings" class="menu">
+    <summary>Einstellungen</summary>
+    <div class="pop">
+      <label>Simulatorkern
+        <select id="coreSel"><option value="rust">Rust (schnell)</option><option value="python">Python (Referenz, langsam)</option></select>
+      </label>
+      <p class="hint">Gilt für neue Simulationen, Analysen und Suchen.</p>
+    </div>
+  </details>
 </header>
 
-<aside id="side">
-  <section>
-    <h2>Dateien</h2>
-    <input id="fileFilter" type="search" placeholder="Filtern ...">
-    <div id="fileList"></div>
-    <div class="row tight">
-      <button id="btnOpen" title="Schaltplan (.litematic, .schem, .nbt), Szenario oder Spezifikation (.yaml) vom Rechner laden; Dateien lassen sich auch ins Fenster ziehen">Datei öffnen …</button>
-      <input id="fileInput" type="file" accept=".litematic,.schem,.nbt,.yaml,.yml" multiple hidden>
-      <button id="btnNewSpec" title="Gewünschtes Verhalten beschreiben und dazu eine Schaltung entwerfen lassen">Neue Spezifikation</button>
-    </div>
-  </section>
+<aside id="lib">
+  <div class="row">
+    <button id="btnOpen" class="primary" title="Schaltplan (.litematic, .schem, .nbt), Szenario oder Spezifikation (.yaml) vom Rechner laden. Dateien lassen sich auch ins Fenster ziehen.">Datei öffnen …</button>
+    <input id="fileInput" type="file" accept=".litematic,.schem,.nbt,.yaml,.yml" multiple hidden>
+    <button id="btnNewSpec" title="Beschreiben, was die Schaltung tun soll, und einen Entwurf suchen lassen">Neu entwerfen</button>
+  </div>
+  <div class="seg full" id="groupSeg" role="group" aria-label="Dateiart">
+    <button data-group="schematics" class="on" title="Schaltpläne aus dem Spiel (.litematic, .schem, .nbt)">Schaltpläne</button>
+    <button data-group="scenarios" title="Schaltungen mit Testablauf; die meisten sind im echten Spiel aufgezeichnet">Szenarien</button>
+    <button data-group="specs" title="Beschreibungen, was eine Schaltung tun soll (Vorgaben für die Entwurfssuche)">Vorgaben</button>
+  </div>
+  <input id="fileFilter" type="search" placeholder="Suchen in allen Dateien ...">
+  <div id="fileList"></div>
+</aside>
 
-  <section id="selection">
-    <h2>Auswahl</h2>
-    <div id="selInfo">Keine Datei gewählt.</div>
-    <div class="row tight">
-      <button id="btnExplain" disabled title="Schaltung im Simulator untersuchen: Ein-/Ausgänge, Wahrheitstabelle, Zeitverhalten, erkannte Bausteine">Analysieren</button>
-      <button id="btnDump" disabled title="Schaltung Ebene für Ebene als Text, mit allen Bauteilen">Text-Ansicht</button>
-      <button id="btnScenario" hidden title="Ablauf des Szenarios im Simulator, Zeitdiagramm, Vergleich mit der Aufnahme aus dem Spiel">Szenario ablaufen</button>
-      <button id="btnSpecEdit" hidden>Spezifikation bearbeiten</button>
+<main id="stage">
+  <div id="views" class="split">
+    <div class="pane" id="pane3d">
+      <div class="toolbar">
+        <span class="ttl">3D</span>
+        <label title="Ebenen oberhalb ausblenden, um ins Innere zu sehen">bis Ebene <input id="maxY" type="range" min="0" max="0" value="0"></label>
+        <output id="maxYVal">0</output>
+        <span class="spacer"></span>
+        <button id="btnFit" title="Kamera auf die ganze Schaltung richten">Zentrieren</button>
+      </div>
+      <div class="canvasbox" id="box3d"></div>
     </div>
-    <div class="row tight" id="oracleRow" hidden>
-      <button id="btnOracle" title="Szenario im echten Spiel aufnehmen (startet den Fabric-Server, dauert ein bis drei Minuten) und mit dem Simulator vergleichen">Im Spiel prüfen</button>
-      <label title="Aufnahme nach tests/golden/ schreiben"><input id="oracleGolden" type="checkbox"> als Golden Trace speichern</label>
+    <div class="pane" id="pane2d">
+      <div class="toolbar">
+        <span class="ttl">Ebene</span>
+        <label title="Höhe der gezeigten Ebene (y); das Mausrad über der Ansicht ändert sie auch">y = <input id="layerY" type="range" min="0" max="0" value="0"></label>
+        <output id="layerYVal">0</output>
+      </div>
+      <div class="canvasbox" id="box2d"></div>
     </div>
-    <div class="row tight">
+    <div id="welcome">
+      <div class="inner">
+        <h2>Womit möchtest du anfangen?</h2>
+        <div class="cards">
+          <button id="wOpen"><strong>Schaltplan öffnen</strong><span>Eine .litematic-, .schem- oder .nbt-Datei vom Rechner laden, ansehen, analysieren und nachbauen.</span></button>
+          <button id="wExample"><strong>Beispiel ansehen</strong><span>Einen 2-Bit-Addierer laden und in der Simulation ausprobieren.</span></button>
+          <button id="wDesign"><strong>Neue Schaltung entwerfen</strong><span>Beschreiben, was die Schaltung tun soll. Die Werkstatt sucht einen kompakten Entwurf.</span></button>
+        </div>
+        <p class="hint">Oder links eine Datei wählen. Dateien lassen sich auch ins Fenster ziehen.</p>
+      </div>
+    </div>
+    <div id="tip" hidden></div>
+    <div id="drop" hidden>Datei hier ablegen</div>
+  </div>
+  <div id="transport">
+    <div id="ctlBuild" class="ctl" hidden>
+      <span class="ttl" id="ctlTitle">Bauanleitung</span>
+      <button id="bBack" class="icon" title="Einen Schritt zurück">&#9198;</button>
+      <button id="bPlay" class="icon" title="Abspielen / anhalten">&#9654;</button>
+      <button id="bStep" class="icon" title="Einen Schritt vor">&#9197;</button>
+      <input id="progress" type="range" min="0" max="0" value="0">
+      <label>Tempo <input id="speed" type="range" min="1" max="100" value="20"></label>
+      <output id="speedVal"></output>
+    </div>
+    <div id="ctlSim" class="ctl" hidden>
+      <span class="ttl">Simulation</span>
+      <button id="sRun" title="Zeit laufen lassen / anhalten">&#9654; Laufen lassen</button>
+      <button id="sTick1" title="Genau einen Gametick weiter">+1 Tick</button>
+      <label title="Wie viele Gameticks je Schritt (10 Schritte pro Sekunde)">Tempo <input id="simSpeed" type="range" min="1" max="40" value="2"></label>
+      <output id="simSpeedVal">2</output><span class="muted">Ticks je Schritt</span>
+      <strong id="tickOut">Tick 0</strong>
+    </div>
+    <div id="info"></div>
+  </div>
+</main>
+
+<div id="splitter" title="Ziehen, um den Arbeitsbereich breiter oder schmaler zu machen"></div>
+
+<aside id="work">
+  <nav class="tabs" id="taskTabs" role="tablist">
+    <button data-task="build" class="on" title="Material, Bauanleitung Schritt für Schritt, Herunterladen">Bauen</button>
+    <button data-task="sim" title="Schaltung ausprobieren: Hebel umlegen, Zeit laufen lassen">Simulieren</button>
+    <button data-task="analyze" title="Herausfinden, was die Schaltung tut">Analysieren</button>
+    <button data-task="design" title="Neue oder kompaktere Schaltung suchen lassen">Entwerfen</button>
+  </nav>
+
+  <section class="task" id="taskBuild">
+    <p class="hint" id="buildHint">Lade links eine Schaltung, um Material und Bauanleitung zu sehen.</p>
+    <div id="notes"></div>
+    <h3>Bauanleitung</h3>
+    <p class="hint">Unter der Ansicht lässt sich der Aufbau Block für Block abspielen oder mit dem Regler durchgehen.</p>
+    <h3>Material</h3>
+    <div id="materials"><span class="muted">Keine Schaltung geladen.</span></div>
+    <h3>Herunterladen</h3>
+    <div class="row">
       <select id="exportFmt" title="Format des Downloads">
         <option value="litematic">Litematica (.litematic)</option>
         <option value="schem">WorldEdit (.schem)</option>
@@ -70,104 +140,83 @@
     </div>
   </section>
 
-  <section id="searchSec">
-    <h2>Entwurfssuche</h2>
-    <div class="row tight">
-      <button id="btnRedesign" class="primary" disabled title="Kompakte Schaltung für die gewählte Spezifikation oder als Ersatz der gewählten Schaltung suchen">Entwurf suchen</button>
-      <button id="btnShowResult" hidden title="Besten Entwurf der letzten Suche anzeigen">Ergebnis zeigen</button>
-    </div>
-    <details id="searchOpts">
-      <summary>Optionen</summary>
-      <div class="form">
-        <label>Kompaktieren <input id="compact" type="number" min="0" max="10000" value="100" title="Höchstzahl der Versuche je Entwurf (0 = aus)"></label>
-        <label>Zeitlimit (s) <input id="optTime" type="number" min="1" max="3600" value="60" title="Zeitlimit für das Kompaktieren"></label>
-        <label>Max. Größe <input id="optSize" type="text" placeholder="X,Y,Z" title="Höchstmaße X,Y,Z; X und Z dürfen getauscht sein"></label>
-        <label>Max. Verzögerung <input id="optDelay" type="number" min="0" placeholder="gt" title="Höchste Verzögerung in Gameticks (leer: aus der Spezifikation)"></label>
-        <label>Nur Blöcke <input id="optAllow" type="text" placeholder="z. B. stone,redstone_wire" title="Erlaubte Block-IDs, durch Komma getrennt (Hebel und Lampe gehen immer); leer: alle"></label>
-        <label>Ohne Blöcke <input id="optForbid" type="text" placeholder="z. B. comparator,piston" title="Verbotene Block-IDs, durch Komma getrennt"></label>
-        <label>Ausgänge <input id="optOutputs" type="text" placeholder="out1,out3 oder all" title="Nur bei Bestandsschaltungen: welche Ausgänge der Entwurf behalten muss (Namen aus der Analyse)"></label>
-        <label>Kandidaten <input id="optTop" type="number" min="1" max="100" value="10" title="Anzahl der Kandidaten im Bericht"></label>
-        <label class="wide"><input id="optNoQc" type="checkbox"> ohne Quasi-Connectivity</label>
+  <section class="task" id="taskSim" hidden>
+    <p class="hint">Eingänge hier oder direkt in der Ansicht anklicken. Die Zeit läuft über die Leiste unter der Ansicht.</p>
+    <div class="row"><button id="sStart" title="Simulation auf den gespeicherten Anfangszustand zurücksetzen">Zurücksetzen</button></div>
+    <h3>Eingänge <span class="muted">(anklicken zum Schalten)</span></h3>
+    <div id="ioIn" class="chips"><span class="none muted">–</span></div>
+    <h3>Ausgänge</h3>
+    <div id="ioOut" class="chips"><span class="none muted">–</span></div>
+    <div id="scenarioBox" hidden>
+      <h3>Testablauf des Szenarios</h3>
+      <p class="hint">Dieses Szenario enthält einen festen Ablauf von Eingaben. Er lässt sich im Simulator abspielen und mit der Aufnahme aus dem echten Spiel vergleichen.</p>
+      <div class="row">
+        <button id="btnScenario" title="Ablauf im Simulator, Zeitdiagramm, Vergleich mit der Aufnahme aus dem Spiel">Ablauf simulieren</button>
+        <button id="btnOracle" title="Startet einen lokalen Minecraft-Server und nimmt den Ablauf dort auf (ein bis drei Minuten)">Im echten Spiel prüfen</button>
       </div>
-    </details>
+      <label class="check" title="Aufnahme nach tests/golden/ schreiben (für Entwickler)"><input id="oracleGolden" type="checkbox"> Aufnahme als Referenz speichern</label>
+    </div>
+    <div class="docbar"><div class="seg" id="simDocTabs"></div><span class="spacer"></span><button id="simDocSave" hidden>Speichern</button></div>
+    <div class="doc" id="simDocBody"></div>
   </section>
 
-  <section id="ioSec" hidden>
-    <h2>Ein- und Ausgänge</h2>
-    <div id="ioIn" class="chips"></div>
-    <div id="ioOut" class="chips"></div>
+  <section class="task" id="taskAnalyze" hidden>
+    <p class="hint">Die Analyse betätigt jeden Eingang im Simulator und beschreibt, was die Schaltung tut: Wahrheitstabelle, Verzögerungen, erkannte Bausteine.</p>
+    <div class="row">
+      <button id="btnExplain" class="primary" disabled>Analyse starten</button>
+      <button id="btnDump" disabled title="Schaltung Ebene für Ebene als Text, mit allen Bauteilen">Als Text zeigen</button>
+    </div>
+    <div class="docbar"><div class="seg" id="anDocTabs"></div><span class="spacer"></span><button id="anDocSave" hidden>Speichern</button></div>
+    <div class="doc" id="anDocBody"></div>
   </section>
-  <section id="framesSec" hidden>
-    <h2>Einzelbilder</h2>
-    <div id="frameLog"></div>
-  </section>
-  <section id="matSec">
-    <h2>Material</h2>
-    <div id="materials"><span class="muted">Kein Modell geladen.</span></div>
-    <div id="notes"></div>
+
+  <section class="task" id="taskDesign" hidden>
+    <h3><span class="step">1</span> Was soll entworfen werden?</h3>
+    <div class="seg full" id="goalSeg">
+      <button data-goal="spec" class="on" title="Selbst beschreiben, was die Schaltung tun soll">Eigene Vorgabe</button>
+      <button data-goal="file" title="Kompaktere Schaltung mit demselben Verhalten wie die geladene">Geladene Schaltung verkleinern</button>
+    </div>
+    <div id="goalSpec"></div>
+    <div id="goalFile" hidden>
+      <p id="goalFileText" class="hint"></p>
+      <label class="field">Nur diese Ausgänge erhalten <input id="optOutputs" type="text" placeholder="leer = automatisch, z. B. out1,out3 oder all" title="Namen der Ausgänge aus der Analyse; leer: alle (bei Zeitverhalten nur die Lampen)"></label>
+    </div>
+
+    <h3><span class="step">2</span> Grenzen <span class="muted">(optional)</span></h3>
+    <details id="searchOpts">
+      <summary>Größe, Blöcke, Verzögerung, Suchaufwand</summary>
+      <div class="form">
+        <label>Höchstmaße <input id="optSize" type="text" placeholder="X,Y,Z" title="X und Z dürfen getauscht sein"></label>
+        <label>Max. Verzögerung (gt) <input id="optDelay" type="number" min="0" placeholder="aus Vorgabe"></label>
+        <label>Nur diese Blöcke <input id="optAllow" type="text" placeholder="z. B. stone,redstone_wire" title="Block-IDs mit Komma; Hebel und Lampe gehen immer; leer: alle"></label>
+        <label>Diese Blöcke nicht <input id="optForbid" type="text" placeholder="z. B. comparator,piston" title="Block-IDs mit Komma"></label>
+        <label>Verkleinern: Versuche <input id="compact" type="number" min="0" max="10000" value="100" title="Höchstzahl der Versuche je Entwurf (0 = aus)"></label>
+        <label>Verkleinern: Zeit (s) <input id="optTime" type="number" min="1" max="3600" value="60"></label>
+        <label>Kandidaten im Bericht <input id="optTop" type="number" min="1" max="100" value="10"></label>
+        <label class="wide"><input id="optNoQc" type="checkbox"> keine Quasi-Connectivity verwenden</label>
+      </div>
+    </details>
+
+    <button id="btnRedesign" class="primary big">Entwurf suchen</button>
+
+    <h3><span class="step">3</span> Ergebnis</h3>
+    <p id="designState" class="hint">Noch keine Suche gestartet.</p>
+    <div class="row" id="resultActions" hidden>
+      <button id="btnShowResult" title="Besten Entwurf in der Ansicht zeigen">Entwurf zeigen</button>
+      <button id="rBuild">Nachbauen</button>
+      <button id="rSim">Simulieren</button>
+      <button id="rAnalyze">Analysieren</button>
+    </div>
+    <details id="framesSec" hidden>
+      <summary>Suchverlauf (<span id="frameCount">0</span> Schritte, unter der Ansicht abspielbar)</summary>
+      <div id="frameLog"></div>
+    </details>
+    <div class="docbar"><div class="seg" id="deDocTabs"></div><span class="spacer"></span><button id="deDocSave" hidden>Speichern</button></div>
+    <div class="doc" id="deDocBody"></div>
   </section>
 </aside>
 
-<main id="views" class="split">
-  <div class="pane" id="pane3d">
-    <div class="toolbar">
-      <span class="ttl">3D</span>
-      <label>Ebenen bis y= <input id="maxY" type="range" min="0" max="0" value="0"></label>
-      <output id="maxYVal">0</output>
-      <button id="btnFit" title="Kamera zurücksetzen">Ansicht zurücksetzen</button>
-    </div>
-    <div class="canvasbox" id="box3d"></div>
-  </div>
-  <div class="pane" id="pane2d">
-    <div class="toolbar">
-      <span class="ttl">Ebene</span>
-      <label>y= <input id="layerY" type="range" min="0" max="0" value="0"></label>
-      <output id="layerYVal">0</output>
-      <span class="muted">(Mausrad ändert die Ebene)</span>
-    </div>
-    <div class="canvasbox" id="box2d"></div>
-  </div>
-  <div class="pane" id="paneDoc" hidden>
-    <div class="toolbar">
-      <div class="seg" id="docTabs"></div>
-      <span class="spacer"></span>
-      <button id="docSave" title="Diesen Bericht als Datei speichern">Speichern</button>
-      <button id="docClose" title="Berichte ausblenden">&#10005;</button>
-    </div>
-    <div id="docBody"></div>
-  </div>
-  <div id="tip" hidden></div>
-  <div id="drop" hidden>Datei hier ablegen</div>
-</main>
-
-<footer id="play">
-  <div class="row">
-    <div class="seg" id="modeSeg" role="group" aria-label="Modus">
-      <button data-mode="build" class="on">Bauanleitung</button>
-      <button data-mode="search">Entwurfssuche</button>
-      <button data-mode="sim">Simulation</button>
-    </div>
-    <div id="ctlBuild" class="ctl">
-      <button id="bBack" title="Schritt zurück">&#9198;</button>
-      <button id="bPlay" title="Start/Pause">&#9654;</button>
-      <button id="bStep" title="Schritt vor">&#9197;</button>
-      <input id="progress" type="range" min="0" max="0" value="0">
-      <label><span id="speedLbl">Tempo</span> <input id="speed" type="range" min="1" max="100" value="20"></label>
-      <output id="speedVal"></output>
-    </div>
-    <div id="ctlSim" class="ctl" hidden>
-      <select id="simSrc"></select>
-      <button id="sStart">Simulation starten</button>
-      <button id="sTick1" disabled>1 Tick</button>
-      <button id="sRun" disabled>Start/Pause</button>
-      <label>Ticks je Schritt <input id="simSpeed" type="range" min="1" max="40" value="2"></label>
-      <output id="simSpeedVal">2</output>
-      <strong id="tickOut">Tick 0</strong>
-    </div>
-  </div>
-  <div id="info"></div>
-  <div id="status" role="status"></div>
-</footer>
+<footer id="statusbar"><div id="status" role="status"></div></footer>
 
 <script type="module" src="app.js"></script>
 </body>

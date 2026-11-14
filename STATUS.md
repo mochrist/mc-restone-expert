@@ -21,7 +21,7 @@ Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). N�
 |---|---|---|
 | M4: nicht-disjunkte Zerlegung auch für mehrere Ausgänge (`shared_splits` mit gemeinsamen Eingängen, z. B. Carry-Lookahead, Decoder/Demux über 8 Eingänge); danach Topologie per SAT/SMT (`docs/m4-search-and-performance.md`) | Opus | – |
 | M4: Größe der nicht-disjunkten Entwürfe (mux8: 782 Blöcke aus PLA → ansteuerbare PLA): Mux-Vorlagen als Teile (`mux2-comparator` verbindet sich als G bisher gar nicht, `chains` liefert 0 Layouts), Kaskade aus 2:1-Muxen | Opus | – |
-| M6: GUI weiter (Nutzerrückmeldung abwarten). Bekannt: leere 3D-Ansicht zeigt ein riesiges „N“-Schild, solange kein Modell geladen ist; Bauanleitung nur als Text exportierbar (kein Bild/PDF je Ebene); `rsx oracle --dump-blocks` gibt es nur auf der Kommandozeile; größere Entwürfe flüssig darstellen | Sonnet | Nutzer |
+| M6: GUI weiter (Nutzerrückmeldung abwarten). Bekannt: Bauanleitung nur als Text exportierbar (kein Bild/PDF je Ebene); `rsx oracle --dump-blocks` gibt es nur auf der Kommandozeile; größere Entwürfe flüssig darstellen | Sonnet | Nutzer |
 
 ## Verlauf
 
@@ -38,6 +38,11 @@ Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). N�
   Ein-/Ausgänge mit Namen in der Simulation (Eingänge anklickbar), Ziehen von Dateien ins Fenster, „Ergebnis
   zeigen“ macht den besten Entwurf zur aktuellen Schaltung (analysieren, simulieren, herunterladen).
   URL-Parameter `click=…` drückt Knöpfe der Reihe nach (für Screenshots ohne Erweiterung).
+- Auf Rückmeldung des Nutzers („noch nicht übersichtlich“) Oberfläche nach Aufgaben neu gegliedert: links nur
+  Dateien (Reiter je Dateiart, Suche), Mitte Ansichten mit Abspielleiste und Startbildschirm, rechts
+  Arbeitsbereich mit Reitern Bauen / Simulieren / Analysieren / Entwerfen (Bedienelemente und Ergebnisse je
+  Aufgabe zusammen; Entwerfen in drei Schritten). „Aktuelle Schaltung“ = Datei oder Entwurf der Suche; der
+  Reiter Simulieren startet die Simulation selbst. Berichtsspalte, Modus-Schalter und Quellenauswahl entfallen.
 - `design/evaluate.py`: bei `--allow`/`--forbid` zählt die Wandfackel als Fackel (vorher umging
   `--forbid redstone_torch` die Wandfackel).
 - `tests/sim/test_core_equivalence.py`: Kerne laufen Tick für Tick nebeneinander (vorher alle Welt-Dumps im

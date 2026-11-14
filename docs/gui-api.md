@@ -118,25 +118,33 @@ sagt, ob er funktioniert und übernommen wurde). Einzelbilder sind vollständige
 eigene Min-Ecke bezogen. Höchstens 3000 Einzelbilder je Job (danach nur noch übernommene). `result` am Ende:
 Modell des besten Entwurfs plus `"summary"` (deutscher Bericht von `rsx redesign`).
 
-## Ansichten der Oberfläche
+## Aufbau der Oberfläche
 
-- **3D**: Blöcke als vereinfachte Formen (Vollblock, Staub als flache Linie mit Stärke-Farbe und Verbindungen,
-  Fackel, Verstärker/Comparator als Platte mit Richtungspfeil, Hebel, Lampe leuchtend wenn `lit=true`, Kolben),
-  Orbit-Steuerung, Klick auf Hebel/Knopf in der Simulation = `use`. Ebenen über der gewählten ausblendbar.
-- **2D / Ebenen**: Draufsicht einer y-Ebene (Schieberegler), Kacheln mit Symbol je Blockart, darunter die Ebene
-  darunter blass; Tooltip mit Zustand.
-- **Material**: Tabelle aus `materials`, Summe, Stapel (64er) und Kisten.
-- **Bericht**: dritte Spalte (oder allein über „Bericht“) mit Reitern: Analyse, Text-Ansicht, Szenario, Im Spiel,
-  Entwurfsbericht (Markdown gerendert, Zeitdiagramme als SVG, „Speichern“ lädt den Bericht herunter) und der
-  Spezifikations-Editor mit Vorlagen.
-- **Seitenleiste**: Dateien (auch „Datei öffnen …“ und Ziehen ins Fenster), Aktionen zur Auswahl, Download,
-  Entwurfssuche mit Optionen, in der Simulation Ein- und Ausgänge mit Namen (Eingänge anklickbar).
-- **Abspielen**: Bau-Reihenfolge (`build_order`) Block für Block, Einzelbilder einer Entwurfssuche, Simulation
-  (Ticks); jeweils Start/Pause/Schritt und Tempo-Regler.
+Drei Spalten, nach Aufgaben statt nach Funktionen geordnet. Die **aktuelle Schaltung** (Name oben in der Leiste)
+ist die geladene Datei oder der beste Entwurf der letzten Suche; alle Aufgaben arbeiten auf ihr.
+
+- **Dateien (links, mit ☰ ausblendbar)**: „Datei öffnen …“ (auch Ziehen ins Fenster), „Neu entwerfen“, Reiter
+  Schaltpläne / Szenarien / Vorgaben (= Spezifikationen), Suchfeld über alle Dateien.
+- **Ansichten (Mitte)**: 3D (vereinfachte Blockformen, Orbit-Steuerung, Ebenen oberhalb ausblendbar) und Ebene
+  (Draufsicht einer y-Ebene, Ebene darunter blass, Tooltip mit Zustand); oben rechts umschaltbar. Darunter die
+  Abspielleiste: Bauanleitung Block für Block, Schritte einer Entwurfssuche oder die Zeit der Simulation.
+  Ohne Schaltung steht dort ein Startbildschirm (öffnen, Beispiel, neu entwerfen).
+- **Arbeitsbereich (rechts, Breite ziehbar)** mit einem Reiter je Aufgabe:
+  - *Bauen*: Hinweise, Material (Summe, Stacks, Kisten), Herunterladen in allen Formaten.
+  - *Simulieren*: startet die Simulation selbst; Ein- und Ausgänge mit Namen (Eingänge anklickbar, ebenso Hebel
+    und Knöpfe in den Ansichten), „Zurücksetzen“. Bei Szenarien: Testablauf simulieren (Zeitdiagramm, Vergleich
+    mit der Spielaufnahme) und im echten Spiel prüfen.
+  - *Analysieren*: Analyse (Markdown gerendert, Zeitdiagramme als SVG) und Text-Ansicht, jeweils speicherbar.
+  - *Entwerfen*: 1 Ziel (eigene Vorgabe im Editor mit Vorlagen, oder die geladene Schaltung verkleinern),
+    2 Grenzen (Optionen der Suche), 3 Ergebnis (Zustand, Suchverlauf, Bericht; Knöpfe zum Nachbauen, Simulieren,
+    Analysieren des Entwurfs).
+
+Fensteraufteilung (Ansicht, Breite des Arbeitsbereichs, Dateiliste) merkt sich der Browser (`localStorage`).
 
 ### URL-Parameter (zum Testen und für Screenshots)
 
-`/?path=<Datei>&layout=3d|2d|split|doc&y=<Ebene>&cam=px,py,pz,tx,ty,tz&click=…` – `path` wählt eine Datei vor,
-`layout` die Ansicht, `y` die Ebene der 2D-Ansicht, `cam` Kameraposition und Blickziel der 3D-Ansicht. `click`
-drückt nacheinander Knöpfe (Element-IDs, je 1,2 s Abstand), `mode:sim|search|build` wechselt den Modus, eine Zahl
-wartet so viele Millisekunden, z. B. `click=btnExplain` oder `click=btnRedesign,6000,btnShowResult,mode:sim,sStart`.
+`/?path=<Datei>&task=build|sim|analyze|design&layout=3d|2d|split&y=<Ebene>&cam=px,py,pz,tx,ty,tz&click=…` – `path`
+wählt eine Datei vor, `task` den Reiter, `layout` die Ansicht, `y` die Ebene der 2D-Ansicht, `cam` Kameraposition
+und Blickziel der 3D-Ansicht. `click` drückt nacheinander Knöpfe (Element-IDs, je 1,2 s Abstand), `task:sim` usw.
+wechselt den Reiter, eine Zahl wartet so viele Millisekunden, z. B. `click=wExample,800,sRun` oder
+`path=examples/specs/xor.yaml&click=btnRedesign,7000`.

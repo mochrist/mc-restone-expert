@@ -100,13 +100,13 @@ export function saveBlob(blob, name) {
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
 
-/** Tabs of documents. A document: {title, node | render(), download: {name, text, type} | () => {...}}. */
+/** A small set of reports shown as tabs inside one task of the work panel.
+ *  A document: {title, node, download: {name, text, type}}. */
 export class DocPane {
-  constructor({ pane, tabs, body, save, close, onToggle }) {
-    this.pane = pane; this.tabs = tabs; this.body = body; this.saveBtn = save; this.onToggle = onToggle;
+  constructor({ tabs, body, save }) {
+    this.tabs = tabs; this.body = body; this.saveBtn = save;
     this.docs = new Map();
     this.current = null;
-    close.addEventListener('click', () => this.hide());
     save.addEventListener('click', () => {
       const d = this.docs.get(this.current);
       const dl = d && (typeof d.download === 'function' ? d.download() : d.download);
@@ -114,54 +114,39 @@ export class DocPane {
     });
   }
 
-  get visible() { return !this.pane.hidden; }
+  get(key) { return this.docs.get(key); }
 
-  /** Add or replace a document and show it (unless `show` is false or another one should stay in front). */
-  set(key, doc, { show = true } = {}) {
+  /** Add or replace a document and bring it to the front. */
+  set(key, doc) {
     this.docs.set(key, doc);
-    if (show || this.current === key) this.show(key); else this.renderTabs();
+    this.show(key);
   }
-
-  has(key) { return this.docs.has(key); }
 
   remove(key) {
-    this.docs.delete(key);
-    if (this.current === key) {
-      this.current = this.docs.size ? [...this.docs.keys()].pop() : null;
-      if (this.current && this.visible) this.show(this.current); else if (!this.current) this.hide();
-    }
-    this.renderTabs();
+    if (!this.docs.delete(key)) return;
+    if (this.current === key) this.current = this.docs.size ? [...this.docs.keys()].pop() : null;
+    this.show(this.current);
   }
 
-  renderTabs() {
+  clear() {
+    this.docs.clear();
+    this.current = null;
+    this.show(null);
+  }
+
+  show(key) {
+    const d = this.docs.get(key);
+    this.current = d ? key : null;
     this.tabs.textContent = '';
-    for (const [key, d] of this.docs) {
+    for (const [k, doc] of this.docs) {
       const b = document.createElement('button');
-      b.textContent = d.title;
-      b.classList.toggle('on', key === this.current);
-      b.addEventListener('click', () => this.show(key));
+      b.textContent = doc.title;
+      b.classList.toggle('on', k === this.current);
+      b.addEventListener('click', () => this.show(k));
       this.tabs.appendChild(b);
     }
-  }
-
-  show(key = this.current || [...this.docs.keys()].pop()) {
-    const d = this.docs.get(key);
-    if (!d) return false;
-    this.current = key;
-    this.renderTabs();
     this.body.textContent = '';
-    this.body.appendChild(d.node || d.render());
-    this.body.scrollTop = 0;
-    this.saveBtn.hidden = !d.download;
-    const was = this.visible;
-    this.pane.hidden = false;
-    if (!was) this.onToggle?.(true);
-    return true;
-  }
-
-  hide() {
-    if (!this.visible) return;
-    this.pane.hidden = true;
-    this.onToggle?.(false);
+    if (d) this.body.appendChild(d.node);
+    this.saveBtn.hidden = !(d && d.download);
   }
 }

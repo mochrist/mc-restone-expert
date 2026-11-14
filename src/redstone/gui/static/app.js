@@ -1,4 +1,6 @@
-// Application glue: sidebar, playback modes (build / design search / simulation), reports, status line.
+// Application glue. Layout: file library (left), views with the transport bar (middle), work panel with one tab
+// per task (right): build, simulate, analyze, design. The "current circuit" is the loaded file or the best
+// design of the last search; every task works on it.
 import { api } from './api.js';
 import { Scene3D } from './blocks3d.js';
 import { LayerView } from './layers2d.js';
@@ -8,18 +10,20 @@ import { openSpecEditor } from './speceditor.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
+const TASKS = { build: 'taskBuild', sim: 'taskSim', analyze: 'taskAnalyze', design: 'taskDesign' };
+const GROUP_TITLES = { schematics: 'Schaltpläne', scenarios: 'Szenarien', specs: 'Vorgaben' };
+const EXAMPLES = ['scenarios/cmp-adder2.yaml', 'scenarios/tpl-xor2-comparator.yaml'];
 
 const S = {
   demo: params.get('demo') === '1',
-  files: null, path: null, pathGroup: null, groups: {},
+  path: null, groups: {}, group: 'schematics',
   model: null, modelPath: null, modelGroup: null, fromJob: false,
-  mode: 'build',
+  task: 'build', mode: 'build', goal: 'spec',
   playing: false,
   buildN: 0,
   job: null,
-  simId: null, simTick: 0, simRunning: false, busy: Promise.resolve(), simModel: null, simState: new Map(),
+  simId: null, simTick: 0, simRunning: false, simStarting: false, busy: Promise.resolve(), simModel: null, simState: new Map(),
   lastSize: [1, 1, 1],
-  layout: 'split',
 };
 
 // --- helpers ---------------------------------------------------------------------------------------------------------
@@ -27,13 +31,18 @@ const S = {
 function setStatus(msg, err = false) {
   const el = $('status');
   el.textContent = msg || '';
+  el.title = msg || '';
   el.classList.toggle('err', err);
 }
 const fail = (e) => setStatus(e && e.message ? e.message : String(e), true);
-const setInfo = (t) => { $('info').textContent = t || ''; };
+const setInfo = (t) => { $('info').textContent = t || ''; $('info').title = t || ''; };
 const baseName = (p) => p.split('/').pop();
 const stem = (p) => baseName(p).replace(/\.[^.]+$/, '');
 const isOwn = (p) => p.startsWith('.cache/gui/'); // uploaded or written in the GUI
+const store = {
+  get(k) { try { return localStorage.getItem('rsx.' + k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem('rsx.' + k, v); } catch { /* private mode */ } },
+};
 
 function node(tag, text, cls) {
   const e = document.createElement(tag);
@@ -56,7 +65,7 @@ function onHover(info, ev) {
   hovered = { info, ev };
   const [x, y, z] = info.p;
   let name = '';
-  const m = S.job && S.mode === 'search' ? null : S.model;
+  const m = S.mode === 'search' ? null : S.model;
   if (m) {
     const io = [...(m.inputs || []).map((i) => ['Eingang', i]), ...(m.outputs || []).map((o) => ['Ausgang', o])]
       .find(([, i]) => i.p[0] === x && i.p[1] === y && i.p[2] === z);
@@ -69,7 +78,7 @@ function onHover(info, ev) {
   tip.style.top = (ev.clientY + 16) + 'px';
 }
 
-// --- views -----------------------------------------------------------------------------------------------------------
+// --- views and layout ------------------------------------------------------------------------------------------------
 
 const v3 = new Scene3D($('box3d'), { onHover, onUse: (p) => useBlock(p) });
 const v2 = new LayerView($('box2d'), {
@@ -98,10 +107,10 @@ $('layerY').addEventListener('input', (e) => { $('layerYVal').textContent = e.ta
 $('btnFit').addEventListener('click', () => v3.fit());
 
 function setLayout(l) {
-  if (l === 'doc' && !docs.show()) { setStatus('Noch kein Bericht: z. B. "Analysieren" oder "Neue Spezifikation" wählen.'); return; }
-  S.layout = l;
+  if (!['split', '3d', '2d'].includes(l)) l = 'split';
   for (const x of $('layoutSeg').children) x.classList.toggle('on', x.dataset.layout === l);
-  $('views').className = { split: 'split', '3d': 'only3d', '2d': 'only2d', doc: 'onlydoc' }[l] || 'split';
+  $('views').className = { split: 'split', '3d': 'only3d', '2d': 'only2d' }[l];
+  store.set('layout', l);
   resizeViews();
 }
 $('layoutSeg').addEventListener('click', (e) => {
@@ -109,10 +118,34 @@ $('layoutSeg').addEventListener('click', (e) => {
   if (b) setLayout(b.dataset.layout);
 });
 
-const docs = new DocPane({
-  pane: $('paneDoc'), tabs: $('docTabs'), body: $('docBody'), save: $('docSave'), close: $('docClose'),
-  onToggle: (open) => { if (!open && S.layout === 'doc') setLayout('split'); else resizeViews(); },
+$('btnLib').addEventListener('click', () => {
+  store.set('nolib', document.body.classList.toggle('nolib') ? '1' : '');
+  resizeViews();
 });
+
+// splitter between the views and the work panel
+(() => {
+  const sp = $('splitter');
+  const apply = (w) => {
+    w = Math.max(320, Math.min(window.innerWidth * 0.7, w));
+    document.documentElement.style.setProperty('--work-w', w + 'px');
+    return w;
+  };
+  const saved = +store.get('workW');
+  if (saved) apply(saved);
+  sp.addEventListener('pointerdown', (e) => {
+    sp.setPointerCapture(e.pointerId);
+    sp.classList.add('drag');
+    const move = (ev) => { store.set('workW', apply(window.innerWidth - ev.clientX)); v3.resize(); v2.resize(); };
+    const up = () => { sp.classList.remove('drag'); sp.removeEventListener('pointermove', move); sp.removeEventListener('pointerup', up); };
+    sp.addEventListener('pointermove', move);
+    sp.addEventListener('pointerup', up);
+  });
+  window.addEventListener('resize', resizeViews);
+})();
+
+// close the settings menu on a click elsewhere
+document.addEventListener('click', (e) => { if (!$('settings').contains(e.target)) $('settings').open = false; });
 
 /** Show a full model; `reveal` enables build-order hiding, `fit` re-fits the camera. */
 function showModel(model, { reveal = false, fit = false, io = true } = {}) {
@@ -124,14 +157,13 @@ function showModel(model, { reveal = false, fit = false, io = true } = {}) {
   for (const v of views) v.setReveal(reveal ? model.build_order : null);
   S.lastSize = model.size.slice();
   syncSliders(model.size);
-  $('modelName').textContent = model.name ? `– ${model.name} (${model.size.join('×')})` : '';
 }
 
 function renderMaterials(model) {
   const el = $('materials');
   el.textContent = '';
   const mats = (model && model.materials) || [];
-  if (!mats.length) { el.innerHTML = '<span class="muted">Kein Material.</span>'; }
+  if (!mats.length) el.appendChild(node('span', model ? 'Kein Material.' : 'Keine Schaltung geladen.', 'muted'));
   else {
     const t = document.createElement('table');
     t.className = 'mat';
@@ -156,33 +188,49 @@ function renderMaterials(model) {
   }
   const notes = $('notes');
   notes.textContent = '';
-  for (const n of (model && model.notes) || []) { const d = document.createElement('div'); d.textContent = '• ' + n; notes.appendChild(d); }
+  for (const n of (model && model.notes) || []) notes.appendChild(node('div', n));
+  $('buildHint').hidden = !!model;
 }
 
-// --- files -----------------------------------------------------------------------------------------------------------
+// --- library ---------------------------------------------------------------------------------------------------------
 
 function renderFiles() {
   const box = $('fileList');
   box.textContent = '';
   const filt = $('fileFilter').value.trim().toLowerCase();
-  const titles = { schematics: 'Schaltpläne', scenarios: 'Szenarien', specs: 'Spezifikationen' };
-  for (const g of ['schematics', 'scenarios', 'specs']) {
+  for (const b of $('groupSeg').children) {
+    const n = (S.groups[b.dataset.group] || []).length;
+    b.classList.toggle('on', !filt && b.dataset.group === S.group);
+    b.textContent = `${GROUP_TITLES[b.dataset.group]} ${n}`;
+  }
+  // without a filter: the chosen group; with one: matches from all groups
+  for (const g of filt ? Object.keys(GROUP_TITLES) : [S.group]) {
     const list = (S.groups[g] || []).filter((p) => !filt || p.toLowerCase().includes(filt));
     if (!list.length) continue;
-    const h = document.createElement('h3'); h.textContent = `${titles[g]} (${list.length})`; box.appendChild(h);
+    if (filt) box.appendChild(node('h3', `${GROUP_TITLES[g]} (${list.length})`));
+    let lastDir = null;
     for (const p of list) {
+      const dir = isOwn(p) ? 'Eigene Dateien' : p.split('/').slice(0, -1).join('/');
+      if (!filt && g !== 'scenarios' && dir !== lastDir) { box.appendChild(node('h3', dir || '.')); lastDir = dir; }
       const b = document.createElement('button');
-      b.textContent = (isOwn(p) ? '✎ ' : '') + baseName(p);
-      b.title = isOwn(p) ? `${p} (hochgeladen oder in der Oberfläche geschrieben)` : p;
-      b.dataset.path = p; b.dataset.group = g;
+      b.textContent = baseName(p);
+      b.title = p;
       if (p === S.path) b.classList.add('sel');
       b.addEventListener('click', () => selectFile(p, g));
       box.appendChild(b);
     }
   }
-  if (!box.children.length) box.innerHTML = '<div class="muted" style="padding:6px">Keine Dateien.</div>';
+  if (!box.children.length) box.appendChild(node('div', filt ? 'Nichts gefunden.' : 'Keine Dateien.', 'hint'));
+  box.querySelector('.sel')?.scrollIntoView({ block: 'nearest' });
 }
 $('fileFilter').addEventListener('input', renderFiles);
+$('groupSeg').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  S.group = b.dataset.group;
+  $('fileFilter').value = '';
+  renderFiles();
+});
 
 async function refreshFiles() {
   S.groups = await api.files();
@@ -190,50 +238,74 @@ async function refreshFiles() {
 }
 
 async function selectFile(path, group) {
-  S.path = path; S.pathGroup = group;
+  S.path = path;
+  if (!$('fileFilter').value.trim()) S.group = group;
   renderFiles();
-  updateActions();
-  if (group === 'specs') return editSpec(path);
+  if (group === 'specs') {
+    setTask('design');
+    setGoal('spec');
+    return editSpec(path);
+  }
   await loadModel(path, group);
+  if (S.task === 'design' && S.modelPath === path) setGoal('file');
 }
 
 async function loadModel(path, group = 'schematics') {
-  stopAll();
+  setPlaying(false);
   setStatus('Lade ' + path + ' ...');
   try {
     const m = S.demo ? await api.demo() : await api.model(path);
     S.model = m; S.modelPath = path; S.modelGroup = group; S.fromJob = false;
-    endSim();
-    renderMaterials(m);
-    setMode('build', { fit: true });
-    setStatus(`${m.blocks.length} Blöcke geladen.`);
+    circuitChanged();
+    applyTask({ fit: true, forceModel: true });
+    setStatus(`${m.name}: ${m.blocks.length} Blöcke geladen.`);
   } catch (e) { fail(e); }
-  updateActions();
 }
 
-/** The circuit the sidebar actions work on: the shown result of a search or the loaded file. */
+/** The circuit all tasks work on: the shown result of a search or the loaded file. */
 function currentRef() {
   if (S.fromJob && S.job && S.job.result && S.job.result.blocks) return { job: S.job.id };
   return S.modelPath ? { path: S.modelPath } : null;
 }
-const currentName = () => (S.fromJob && S.model ? S.model.name : S.modelPath ? stem(S.modelPath) : 'schaltung');
+const currentName = () => (S.model ? S.model.name : 'schaltung');
+
+/** After the current circuit was replaced: drop everything that belonged to the old one. */
+function circuitChanged() {
+  endSim();
+  anDocs.clear();
+  simDocs.clear();
+  renderMaterials(S.model);
+  updateActions();
+}
 
 function updateActions() {
   const ref = S.demo ? null : currentRef();
+  const m = S.model;
   const scenario = !!ref && !ref.job && S.modelGroup === 'scenarios';
-  const specSel = S.pathGroup === 'specs';
-  $('selInfo').textContent = ref && ref.job ? `Entwurf der Suche: ${S.model.name}`
-    : S.path ? S.path : 'Keine Datei gewählt.';
+  $('curName').textContent = m ? m.name : 'Keine Schaltung geladen';
+  $('curMeta').textContent = m ? `${m.size.join('×')} · ${m.blocks.length} Blöcke${S.fromJob ? ' · Entwurf der Suche' : ''}` : '';
   $('btnExplain').disabled = $('btnDump').disabled = $('btnExport').disabled = !ref;
-  $('btnScenario').hidden = $('oracleRow').hidden = !scenario;
-  $('btnSpecEdit').hidden = !specSel;
-  $('btnRedesign').disabled = S.demo || !S.path;
-  $('btnShowResult').hidden = !(S.job && S.job.result && S.job.result.blocks) || S.fromJob;
+  $('sStart').disabled = !ref;
+  $('scenarioBox').hidden = !scenario;
+  $('btnOracle').disabled = !!oracle;
   const sel = $('exportFmt');
   for (const o of sel.options) {
     o.hidden = o.disabled = (o.dataset.for === 'scenario' && !scenario) || (o.dataset.for === 'job' && !(ref && ref.job));
   }
   if (sel.selectedOptions[0] && sel.selectedOptions[0].disabled) sel.value = 'litematic';
+  // design task
+  const fileGoal = $('goalSeg').querySelector('[data-goal="file"]');
+  fileGoal.disabled = !S.modelPath;
+  if (!S.modelPath && S.goal === 'file') setGoal('spec');
+  $('goalFileText').textContent = S.modelPath
+    ? `Sucht eine kompaktere Schaltung mit demselben Verhalten wie „${stem(S.modelPath)}“. Das Verhalten wird zuerst im Simulator gemessen.`
+    : '';
+  $('btnRedesign').disabled = S.demo || (S.goal === 'file' && !S.modelPath) || !!(S.job && !S.job.done);
+  $('btnRedesign').textContent = S.job && !S.job.done ? 'Suche läuft ...' : 'Entwurf suchen';
+  const hasResult = !!(S.job && S.job.result && S.job.result.blocks);
+  $('resultActions').hidden = !hasResult;
+  $('btnShowResult').disabled = hasResult && S.fromJob && S.mode !== 'search';
+  $('welcome').hidden = !!m || !!(S.job && S.task === 'design');
 }
 
 // upload: button, file dialog, drag and drop
@@ -249,6 +321,7 @@ async function uploadFiles(fileList) {
   if (last) await selectFile(last.path, last.group);
 }
 $('btnOpen').addEventListener('click', () => $('fileInput').click());
+$('wOpen').addEventListener('click', () => $('fileInput').click());
 $('fileInput').addEventListener('change', (e) => { uploadFiles(e.target.files); e.target.value = ''; });
 let dragDepth = 0;
 const hasFiles = (e) => [...(e.dataTransfer?.types || [])].includes('Files');
@@ -261,15 +334,120 @@ window.addEventListener('drop', (e) => {
   dragDepth = 0; $('drop').hidden = true;
   uploadFiles(e.dataTransfer.files);
 });
+$('wExample').addEventListener('click', () => {
+  const p = EXAMPLES.find((x) => (S.groups.scenarios || []).includes(x)) || (S.groups.scenarios || [])[0];
+  if (p) selectFile(p, 'scenarios').then(() => setTask('sim'));
+});
+$('wDesign').addEventListener('click', newSpec);
+$('btnNewSpec').addEventListener('click', newSpec);
 
-// --- reports: analysis, text view, scenario run, oracle, export ------------------------------------------------------
+// --- tasks -----------------------------------------------------------------------------------------------------------
+
+function setTask(task) {
+  if (!TASKS[task]) return;
+  S.task = task;
+  for (const b of $('taskTabs').children) b.classList.toggle('on', b.dataset.task === task);
+  for (const [t, id] of Object.entries(TASKS)) $(id).hidden = t !== task;
+  applyTask();
+}
+$('taskTabs').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (b && b.dataset.task !== S.task) setTask(b.dataset.task);
+});
+
+/** Bring views and transport bar in line with the task. forceModel: show the circuit even in the design task. */
+function applyTask({ fit = false, forceModel = false } = {}) {
+  if (S.task === 'sim') {
+    setMode('sim', { fit });
+    if (!S.simId && !S.simStarting && currentRef() && !S.demo) startSim();
+  } else if (S.task === 'design' && S.job && !forceModel && !(S.fromJob && S.job.finalShown)) setMode('search', { fit });
+  else setMode('build', { fit });
+  updateActions();
+}
+
+// --- playback: common ------------------------------------------------------------------------------------------------
+
+function rate() { return 1.5 * Math.pow(1.045, +$('speed').value); }
+function updateSpeedLabel() {
+  const r = rate();
+  $('speedVal').textContent = `${r < 10 ? r.toFixed(1) : Math.round(r)} ${S.mode === 'build' ? 'Blöcke' : 'Schritte'}/s`;
+}
+$('speed').addEventListener('input', updateSpeedLabel);
+
+function setPlaying(p) {
+  S.playing = p;
+  $('bPlay').innerHTML = p ? '&#9208;' : '&#9654;';
+}
+
+function setMode(mode, { fit = false } = {}) {
+  setPlaying(false);
+  stopSimRun();
+  const changed = S.mode !== mode;
+  S.mode = mode;
+  $('ctlBuild').hidden = mode === 'sim' || (mode === 'build' ? !S.model : !(S.job && S.job.frames.length));
+  $('ctlSim').hidden = mode !== 'sim' || !S.model;
+  $('ctlTitle').textContent = mode === 'build' ? 'Bauanleitung' : 'Suchverlauf';
+  if (changed) $('speed').value = mode === 'build' ? 40 : 35;
+  updateSpeedLabel();
+  if (mode === 'build') {
+    if (S.model) {
+      showModel(S.model, { reveal: true, fit });
+      const total = S.model.build_order.length;
+      $('progress').max = total;
+      setBuild(total);
+    } else setInfo('');
+  } else if (mode === 'search') {
+    if (S.job && S.job.frames.length) showFrame(Math.max(0, Math.min(S.job.idx, S.job.frames.length - 1)));
+    else setInfo(S.job ? 'Suche läuft, noch keine Zwischenschritte ...' : '');
+  } else {
+    if (S.simId && S.simModel) {
+      showModel(S.simModel, { reveal: false, fit });
+      const now = [...S.simState].filter(([, s]) => s !== 'air').map(([k, s]) => ({ p: k.split(',').map(Number), s }));
+      v3.setBlocks(now, S.simModel.size, { fit: false });
+      v2.setBlocks(now, S.simModel.size);
+    } else if (S.model) showModel(S.model, { reveal: false, fit });
+    $('sTick1').disabled = $('sRun').disabled = !S.simId;
+    setInfo(S.simId ? 'Hebel und Knöpfe lassen sich in beiden Ansichten anklicken.' : '');
+  }
+  renderIO();
+}
+
+// --- build instructions ----------------------------------------------------------------------------------------------
+
+function setBuild(n) {
+  const order = S.model.build_order, total = order.length;
+  n = Math.max(0, Math.min(total, n));
+  S.buildN = n;
+  for (const v of views) v.setRevealCount(n);
+  $('progress').value = n;
+  if (n >= total) setInfo(`Alle ${total} Blöcke gesetzt. ▶ spielt den Aufbau von vorn ab.`);
+  else if (n > 0) {
+    const p = order[n - 1];
+    const st = S.model.blocks.find((b) => b.p[0] === p[0] && b.p[1] === p[1] && b.p[2] === p[2]);
+    setInfo(`Block ${n} von ${total}: ${st ? st.s : ''} bei (${p.join(', ')})`);
+  } else setInfo(`Block 0 von ${total}`);
+}
+
+$('btnExport').addEventListener('click', () => {
+  const ref = currentRef();
+  if (!ref) return;
+  busyWith($('btnExport'), 'Erzeuge Datei ...', async () => {
+    const { blob, name } = await api.download(ref, $('exportFmt').value);
+    saveBlob(blob, name);
+    setStatus(`${name} heruntergeladen.`);
+  });
+});
+
+// --- analyze ---------------------------------------------------------------------------------------------------------
+
+const anDocs = new DocPane({ tabs: $('anDocTabs'), body: $('anDocBody'), save: $('anDocSave') });
 
 $('btnExplain').addEventListener('click', () => {
   const ref = currentRef(), name = currentName();
   if (!ref) return;
-  busyWith($('btnExplain'), `Analysiere ${name} (Simulationsläufe) ...`, async () => {
+  busyWith($('btnExplain'), `Analysiere ${name} (viele Simulationsläufe, bei großen Schaltungen einige Sekunden) ...`, async () => {
     const r = await api.explain(ref);
-    docs.set('explain', {
+    anDocs.set('explain', {
       title: 'Analyse', node: renderMarkdown(r.markdown, r.svgs),
       download: { name: `${name}-analyse.md`, text: r.markdown, type: 'text/markdown;charset=utf-8' },
     });
@@ -283,11 +461,126 @@ $('btnDump').addEventListener('click', () => {
   busyWith($('btnDump'), 'Erzeuge Text-Ansicht ...', async () => {
     const r = await api.dump(ref, { states: true });
     const box = node('div');
-    box.appendChild(node('h2', `Text-Ansicht: ${name}`));
+    box.appendChild(node('h2', `Als Text: ${name}`));
     box.appendChild(node('pre', r.text));
-    docs.set('dump', { title: 'Text', node: box, download: { name: `${name}-ebenen.txt`, text: r.text } });
+    anDocs.set('dump', { title: 'Text', node: box, download: { name: `${name}-ebenen.txt`, text: r.text } });
     setStatus('Text-Ansicht fertig.');
   });
+});
+
+// --- simulation ------------------------------------------------------------------------------------------------------
+
+const simDocs = new DocPane({ tabs: $('simDocTabs'), body: $('simDocBody'), save: $('simDocSave') });
+
+function endSim() {
+  stopSimRun();
+  S.simId = null; S.simModel = null; S.simState = new Map();
+  $('sTick1').disabled = $('sRun').disabled = true;
+  $('tickOut').textContent = 'Tick 0';
+  renderIO();
+}
+
+async function startSim() {
+  const ref = currentRef();
+  if (!ref || S.simStarting) return;
+  stopSimRun();
+  S.simStarting = true;
+  try {
+    setStatus('Starte Simulation ...');
+    const r = await api.sim(ref);
+    if (JSON.stringify(ref) !== JSON.stringify(currentRef())) return; // another circuit was loaded meanwhile
+    S.simId = r.sim; S.simTick = r.tick; S.simModel = r.model;
+    S.simState = new Map(r.model.blocks.map((b) => [b.p.join(','), b.s]));
+    $('tickOut').textContent = 'Tick ' + r.tick;
+    if (S.mode === 'sim') setMode('sim');
+    setStatus('Simulation bereit: Eingänge anklicken, dann die Zeit laufen lassen.');
+  } catch (e) { fail(e); } finally { S.simStarting = false; }
+}
+$('sStart').addEventListener('click', startSim);
+
+const isOn = (s) => !!s && (/(?:powered|lit|extended|open)=true/.test(s) || /power=[1-9]/.test(s) || /\|output=[1-9]/.test(s));
+
+/** Inputs as buttons and outputs as lights, by name: handy when the levers are hard to find in the view. */
+function renderIO() {
+  const m = S.simId ? S.simModel : null;
+  const fill = (box, items, make) => {
+    box.textContent = '';
+    if (!items.length) { box.appendChild(node('span', m ? 'keine gefunden' : '–', 'none muted')); return; }
+    for (const it of items) {
+      const s = S.simState.get(it.p.join(','));
+      const e = make(it);
+      e.textContent = it.name;
+      e.classList.toggle('on', isOn(s));
+      e.title = `(${it.p.join(', ')}) ${s || ''}`;
+      box.appendChild(e);
+    }
+  };
+  fill($('ioIn'), m ? m.inputs : [], (it) => {
+    const b = document.createElement('button');
+    b.addEventListener('click', () => useBlock(it.p));
+    return b;
+  });
+  fill($('ioOut'), m ? m.outputs : [], () => node('span', undefined, 'io'));
+}
+
+// Serialise all sim requests so ticks and clicks never overlap.
+function simCall(fn) {
+  const p = S.busy.then(fn);
+  S.busy = p.catch(() => {});
+  return p;
+}
+function applySim(r) {
+  S.simTick = r.tick;
+  $('tickOut').textContent = 'Tick ' + r.tick;
+  if (r.changed && r.changed.length) {
+    for (const c of r.changed) S.simState.set(c.p.join(','), c.s);
+    if (S.mode === 'sim') for (const v of views) v.applyChanges(r.changed);
+    renderIO();
+  }
+  if (hovered) {
+    const [x, y, z] = hovered.info.p;
+    const c = (r.changed || []).find((b) => b.p[0] === x && b.p[1] === y && b.p[2] === z);
+    if (c) onHover({ p: hovered.info.p, s: c.s === 'air' ? null : c.s }, hovered.ev);
+  }
+}
+async function simTicks(n) {
+  if (!S.simId) return;
+  try { applySim(await simCall(() => api.tick(S.simId, n))); } catch (e) { stopSimRun(); fail(e); }
+}
+async function useBlock(p) {
+  if (S.mode !== 'sim' || !S.simId) {
+    if (S.model && S.mode !== 'search') setStatus('Zum Schalten oben rechts auf „Simulieren“ wechseln.');
+    return;
+  }
+  try {
+    const r = await simCall(() => api.use(S.simId, p));
+    applySim(r);
+    const io = S.simModel.inputs.find((i) => i.p.join(',') === p.join(','));
+    setStatus(`${io ? `Eingang „${io.name}“` : `Block (${p.join(', ')})`} betätigt. „Laufen lassen“ zeigt die Reaktion über die Zeit.`);
+    if (!S.simRunning) simTicks(1); // show the immediate reaction
+  } catch (e) { fail(e); }
+}
+$('sTick1').addEventListener('click', () => simTicks(1));
+$('simSpeed').addEventListener('input', (e) => { $('simSpeedVal').textContent = e.target.value; });
+
+function stopSimRun() {
+  S.simRunning = false;
+  clearTimeout(S.simTimer);
+  const b = $('sRun');
+  b.classList.remove('primary');
+  b.innerHTML = '&#9654; Laufen lassen';
+}
+$('sRun').addEventListener('click', () => {
+  if (S.simRunning) return stopSimRun();
+  S.simRunning = true;
+  $('sRun').classList.add('primary');
+  $('sRun').innerHTML = '&#9208; Anhalten';
+  const step = async () => {
+    if (!S.simRunning) return;
+    await simTicks(+$('simSpeed').value);
+    if (S.simRunning) S.simTimer = setTimeout(step, 100);
+  };
+  step();
 });
 
 function goldenNote(box, cmp, what) {
@@ -301,19 +594,21 @@ function goldenNote(box, cmp, what) {
 $('btnScenario').addEventListener('click', () => {
   const path = S.modelPath;
   if (!path) return;
-  busyWith($('btnScenario'), `Szenario ${stem(path)} läuft im Simulator ...`, async () => {
+  busyWith($('btnScenario'), `Ablauf von ${stem(path)} läuft im Simulator ...`, async () => {
     const r = await api.scenario(path);
     const box = node('div');
-    box.appendChild(node('h2', `Szenario: ${r.name}`));
-    if (r.description) box.appendChild(node('p', r.description));
-    box.appendChild(node('p', `${r.ticks} Ticks im Simulator.`));
-    if (r.golden) goldenNote(box, r.golden, 'Vergleich mit der Aufnahme aus dem Spiel (Golden Trace)');
-    else box.appendChild(node('p', 'Zu diesem Szenario gibt es keine Aufnahme aus dem Spiel ("Im Spiel prüfen" nimmt eine auf).', 'muted'));
+    box.appendChild(node('h2', `Testablauf: ${r.name}`));
+    if (r.golden) goldenNote(box, r.golden, 'Vergleich mit der Aufnahme aus dem echten Spiel');
+    else box.appendChild(node('p', 'Zu diesem Szenario gibt es noch keine Aufnahme aus dem Spiel.', 'muted'));
+    box.appendChild(node('p', `${r.ticks} Gameticks. Jede Zeile ist ein Messpunkt, # heißt „an“.`, 'muted'));
     for (const w of r.warnings) box.appendChild(node('p', 'Warnung: ' + w, 'bad'));
     box.appendChild(svgImage(r.svg, 'Zeitdiagramm'));
-    box.appendChild(node('pre', r.diagram));
-    docs.set('scenario', { title: 'Szenario', node: box, download: { name: `${r.name}.svg`, text: r.svg, type: 'image/svg+xml' } });
-    setStatus(r.golden ? (r.golden.matches ? 'Szenario stimmt mit dem Spiel überein.' : 'Szenario weicht vom Spiel ab.') : 'Szenario fertig.', !!r.golden && !r.golden.matches);
+    const det = node('details');
+    det.appendChild(node('summary', 'Zeitdiagramm als Text'));
+    det.appendChild(node('pre', r.diagram));
+    box.appendChild(det);
+    simDocs.set('scenario', { title: 'Testablauf', node: box, download: { name: `${r.name}.svg`, text: r.svg, type: 'image/svg+xml' } });
+    setStatus(r.golden ? (r.golden.matches ? 'Der Simulator stimmt mit dem Spiel überein.' : 'Der Simulator weicht vom Spiel ab.') : 'Ablauf fertig.', !!r.golden && !r.golden.matches);
   });
 });
 
@@ -321,32 +616,31 @@ let oracle = null; // {id, timer, started}
 $('btnOracle').addEventListener('click', async () => {
   const path = S.modelPath;
   if (!path || oracle) return;
-  const golden = $('oracleGolden').checked;
   try {
-    const { job } = await api.oracle(path, golden);
+    const { job } = await api.oracle(path, $('oracleGolden').checked);
     const box = node('div');
-    box.appendChild(node('h2', `Im Spiel: ${stem(path)}`));
+    box.appendChild(node('h2', `Im echten Spiel: ${stem(path)}`));
     const state = node('p', '');
     box.appendChild(state);
-    docs.set('oracle', { title: 'Im Spiel', node: box });
+    const doc = { title: 'Im Spiel', node: box };
+    simDocs.set('oracle', doc);
     oracle = { id: job, started: Date.now() };
-    $('btnOracle').disabled = true;
+    updateActions();
     const poll = async () => {
       const secs = Math.round((Date.now() - oracle.started) / 1000);
-      state.textContent = `Der Minecraft-Server läuft (${secs} s; üblich sind ein bis drei Minuten, beim ersten Mal länger) ...`;
+      state.textContent = `Der Minecraft-Server läuft seit ${secs} s (üblich sind ein bis drei Minuten, beim ersten Mal länger) ...`;
       let d;
       try { d = await api.job(oracle.id, 0); } catch (e) { d = { done: true, error: e.message }; }
       if (!d.done) return;
-      clearInterval(oracle.timer); oracle = null; $('btnOracle').disabled = false;
+      clearInterval(oracle.timer); oracle = null; updateActions();
       if (d.error) { state.textContent = d.error; state.className = 'bad'; setStatus(d.error, true); return; }
       const r = d.result;
-      state.textContent = `Aufnahme fertig nach ${secs} s: ${r.ticks} Ticks.`;
+      state.textContent = `Aufnahme fertig nach ${secs} s: ${r.ticks} Gameticks.`;
       goldenNote(box, r.simulator, 'Vergleich Spiel ↔ Simulator');
-      if (r.written) box.appendChild(node('p', `Als Golden Trace gespeichert: ${r.written}`));
+      if (r.written) box.appendChild(node('p', `Als Referenz gespeichert: ${r.written}`));
       box.appendChild(svgImage(r.svg, 'Zeitdiagramm'));
-      box.appendChild(node('pre', r.diagram));
-      docs.docs.get('oracle').download = { name: `${r.name}-spiel.svg`, text: r.svg, type: 'image/svg+xml' };
-      if (docs.current === 'oracle') docs.show('oracle');
+      doc.download = { name: `${r.name}-spiel.svg`, text: r.svg, type: 'image/svg+xml' };
+      if (simDocs.get('oracle') === doc && simDocs.current === 'oracle') simDocs.show('oracle');
       setStatus(r.simulator.matches ? 'Spiel und Simulator stimmen überein.' : 'Spiel und Simulator weichen ab.', !r.simulator.matches);
     };
     oracle.timer = setInterval(poll, 2000);
@@ -355,115 +649,42 @@ $('btnOracle').addEventListener('click', async () => {
   } catch (e) { fail(e); }
 });
 
-$('btnExport').addEventListener('click', () => {
-  const ref = currentRef();
-  if (!ref) return;
-  busyWith($('btnExport'), 'Erzeuge Datei ...', async () => {
-    const { blob, name } = await api.download(ref, $('exportFmt').value);
-    saveBlob(blob, name);
-    setStatus(`${name} heruntergeladen.`);
-  });
-});
+// --- design ----------------------------------------------------------------------------------------------------------
 
-// --- spec editor -----------------------------------------------------------------------------------------------------
-
+const deDocs = new DocPane({ tabs: $('deDocTabs'), body: $('deDocBody'), save: $('deDocSave') });
 const specEditor = openSpecEditor({
-  docs, api, setStatus, fail,
-  onSaved: async (path) => { await refreshFiles(); S.path = path; S.pathGroup = 'specs'; renderFiles(); updateActions(); },
-  onSearch: (path) => startRedesign(path),
+  mount: $('goalSpec'), api, setStatus, fail,
+  onSaved: async (path) => { await refreshFiles(); S.path = path; S.group = 'specs'; renderFiles(); },
 });
+specEditor.open({ name: 'meine-schaltung', text: null, path: null });
+
+function setGoal(goal) {
+  S.goal = goal;
+  for (const b of $('goalSeg').children) b.classList.toggle('on', b.dataset.goal === goal);
+  $('goalSpec').hidden = goal !== 'spec';
+  $('goalFile').hidden = goal !== 'file';
+  updateActions();
+}
+$('goalSeg').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (b && !b.disabled) setGoal(b.dataset.goal);
+});
+
 async function editSpec(path) {
   try {
     const r = await api.text(path);
     specEditor.open({ name: stem(path), text: r.text, path });
-    setStatus('Spezifikation geladen: im Editor ändern oder gleich "Entwurf suchen".');
+    setStatus('Vorgabe geladen. Bei Bedarf ändern, dann „Entwurf suchen“.');
   } catch (e) { fail(e); }
 }
-$('btnNewSpec').addEventListener('click', () => { if (!S.demo) specEditor.open({ name: 'meine-schaltung', text: null, path: null }); });
-$('btnSpecEdit').addEventListener('click', () => { if (S.path && S.pathGroup === 'specs') editSpec(S.path); });
-
-// --- playback: common ------------------------------------------------------------------------------------------------
-
-function rate() { return 1.5 * Math.pow(1.045, +$('speed').value); }
-function updateSpeedLabel() {
-  const r = rate();
-  $('speedVal').textContent = `${r < 10 ? r.toFixed(1) : Math.round(r)} ${S.mode === 'build' ? 'Blöcke' : 'Bilder'}/s`;
+function newSpec() {
+  if (S.demo) return;
+  setTask('design');
+  setGoal('spec');
+  specEditor.open({ name: 'meine-schaltung', text: null, path: null });
+  specEditor.focus();
+  setStatus('Vorgabe schreiben oder eine Vorlage einfügen, dann „Entwurf suchen“.');
 }
-$('speed').addEventListener('input', updateSpeedLabel);
-
-function setPlaying(p) {
-  S.playing = p;
-  $('bPlay').innerHTML = p ? '&#9208;' : '&#9654;';
-}
-
-function stopAll() {
-  setPlaying(false);
-  stopSimRun();
-}
-
-function setMode(mode, { fit = false } = {}) {
-  setPlaying(false);
-  stopSimRun();
-  S.mode = mode;
-  for (const b of $('modeSeg').children) b.classList.toggle('on', b.dataset.mode === mode);
-  $('ctlBuild').hidden = mode === 'sim';
-  $('ctlSim').hidden = mode !== 'sim';
-  $('framesSec').hidden = !(mode === 'search' && S.job);
-  $('speedLbl').textContent = mode === 'build' ? 'Blöcke/s' : 'Bilder/s';
-  $('speed').value = mode === 'build' ? 40 : 35;
-  updateSpeedLabel();
-  if (mode === 'build') {
-    if (S.model) {
-      showModel(S.model, { reveal: true, fit });
-      const total = S.model.build_order.length;
-      $('progress').max = total;
-      setBuild(total);
-    } else { setInfo('Bitte eine Datei wählen.'); $('progress').max = 0; }
-  } else if (mode === 'search') {
-    if (S.job && S.job.frames.length) showFrame(Math.max(0, Math.min(S.job.idx, S.job.frames.length - 1)));
-    else { $('progress').max = 0; setInfo(S.job ? 'Suche läuft, noch keine Einzelbilder ...' : 'Keine Entwurfssuche gestartet: links eine Datei wählen und "Entwurf suchen" drücken.'); }
-  } else {
-    if (S.simId && S.simModel) {
-      showModel(S.simModel, { reveal: false, fit });
-      const now = [...S.simState].map(([k, s]) => ({ p: k.split(',').map(Number), s }));
-      for (const v of views) { v.setBlocks(now.filter((b) => b.s !== 'air'), S.simModel.size, { fit: false }); v.setIO(S.simModel.inputs, S.simModel.outputs); }
-    } else if (S.model) showModel(S.model, { reveal: false, fit });
-    refreshSimSrc();
-    $('sTick1').disabled = $('sRun').disabled = !S.simId;
-    setInfo(S.simId ? 'Simulation läuft. Hebel und Knöpfe lassen sich anklicken.' : 'Quelle wählen und "Simulation starten" drücken.');
-  }
-  renderIO();
-}
-$('modeSeg').addEventListener('click', (e) => {
-  const b = e.target.closest('button');
-  if (b && b.dataset.mode !== S.mode) setMode(b.dataset.mode);
-});
-
-// --- build instructions ----------------------------------------------------------------------------------------------
-
-function setBuild(n) {
-  const order = S.model.build_order, total = order.length;
-  n = Math.max(0, Math.min(total, n));
-  S.buildN = n;
-  for (const v of views) v.setRevealCount(n);
-  $('progress').value = n;
-  if (n > 0 && n <= total) {
-    const p = order[n - 1];
-    const st = S.model.blocks.find((b) => b.p[0] === p[0] && b.p[1] === p[1] && b.p[2] === p[2]);
-    setInfo(`Block ${n}/${total}: (${p.join(', ')}) ${st ? st.s : ''}`);
-  } else setInfo(`Block 0/${total}`);
-}
-
-// --- design search ---------------------------------------------------------------------------------------------------
-
-$('btnRedesign').addEventListener('click', async () => {
-  if (!S.path) return;
-  // a spec that is open in the editor is searched as edited
-  if (S.pathGroup === 'specs' && specEditor.path === S.path) {
-    const path = await specEditor.commit();
-    if (path) startRedesign(path);
-  } else startRedesign(S.path);
-});
 
 function searchOptions() {
   const num = (id) => ($(id).value.trim() === '' ? undefined : +$(id).value);
@@ -471,22 +692,34 @@ function searchOptions() {
   return {
     compact: Math.max(0, Math.round(num('compact') ?? 100)), time: num('optTime') ?? 60, top: Math.max(1, Math.round(num('optTop') ?? 10)),
     max_size: txt('optSize'), max_delay: num('optDelay'), allow: txt('optAllow'), forbid: txt('optForbid'),
-    outputs: txt('optOutputs'), no_qc: $('optNoQc').checked,
+    outputs: S.goal === 'file' ? txt('optOutputs') : undefined, no_qc: $('optNoQc').checked,
   };
 }
 
+$('btnRedesign').addEventListener('click', async () => {
+  const path = S.goal === 'file' ? S.modelPath : await specEditor.commit();
+  if (path) startRedesign(path);
+});
+
 async function startRedesign(path) {
   if (S.job && S.job.timer) clearInterval(S.job.timer);
-  stopAll();
+  setPlaying(false);
   try {
     setStatus('Starte Entwurfssuche ...');
     const { job } = await api.redesign(path, searchOptions());
+    if (S.fromJob) { // the old result is gone: back to the file, or to nothing
+      S.fromJob = false;
+      if (!S.modelPath) S.model = null;
+      circuitChanged();
+    }
     S.job = { id: job, path, frames: [], done: false, result: null, idx: -1, since: 0, timer: null, finalShown: false, follow: true };
-    if (S.fromJob) { S.fromJob = false; }
     $('frameLog').textContent = '';
-    docs.remove('report');
-    setMode('search');
+    $('frameCount').textContent = '0';
     $('framesSec').hidden = false;
+    $('designState').textContent = `Suche für „${stem(path)}“ läuft ...`;
+    $('designState').className = 'hint';
+    deDocs.clear();
+    setTask('design');
     S.job.timer = setInterval(pollJob, 500);
     pollJob();
   } catch (e) { fail(e); }
@@ -502,34 +735,44 @@ async function pollJob() {
     const d = await api.job(j.id, j.since);
     if (j !== S.job) return;
     const wasLast = j.idx === j.frames.length - 1;
+    const hadFrames = j.frames.length > 0;
     for (const f of d.frames || []) {
       j.frames.push(f);
       j.since = f.i + 1;
       addFrameLog(f, j.frames.length - 1);
     }
+    $('frameCount').textContent = j.frames.length;
     if (S.mode === 'search') {
+      if (!hadFrames && j.frames.length) { $('ctlBuild').hidden = false; updateActions(); }
       $('progress').max = Math.max(0, j.frames.length - 1);
       if (j.frames.length && (j.idx < 0 || (wasLast && j.follow && !S.playing))) showFrame(j.frames.length - 1);
     }
     if (d.done) {
       clearInterval(j.timer); j.timer = null; j.done = true;
-      if (d.error) { setStatus('Entwurfssuche fehlgeschlagen: ' + d.error, true); }
+      const st = $('designState');
       if (d.result) {
         j.result = d.result;
         if (d.result.summary) {
-          docs.set('report', {
-            title: 'Entwurfsbericht', node: renderMarkdown(d.result.summary),
+          deDocs.set('report', {
+            title: 'Bericht', node: renderMarkdown(d.result.summary),
             download: { name: `${stem(j.path)}-redesign.md`, text: d.result.summary, type: 'text/markdown;charset=utf-8' },
           });
         }
-        if (!d.error) setStatus(`Entwurfssuche fertig (${j.frames.length} Bilder).`);
-        refreshSimSrc();
-        if (d.result.blocks && S.mode === 'search' && !S.playing && j.idx === j.frames.length - 1 && !j.finalShown) showResult();
-      } else if (!d.error) setStatus('Entwurfssuche beendet ohne Ergebnis.');
+      }
+      if (d.error) {
+        st.textContent = d.error; st.className = 'bad';
+        setStatus('Entwurfssuche ohne Erfolg: ' + d.error, true);
+      } else if (d.result && d.result.blocks) {
+        const r = d.result;
+        st.textContent = `Bester Entwurf: „${r.name}“, ${r.size.join('×')}, ${r.blocks.length} Blöcke. Er ist jetzt die aktuelle Schaltung.`;
+        st.className = 'good';
+        setStatus(`Entwurfssuche fertig: ${r.name}, ${r.blocks.length} Blöcke.`);
+        if (S.mode === 'search' && !S.playing && (j.idx === j.frames.length - 1 || !j.frames.length)) showResult();
+      } else { st.textContent = 'Die Suche endete ohne Ergebnis.'; st.className = 'bad'; }
       updateActions();
-    } else if (S.mode === 'search') setStatus(`Suche läuft ... ${j.frames.length} Bilder`);
+    } else setStatus(`Suche läuft ... ${j.frames.length} Zwischenschritte`);
   } catch (e) {
-    if (j === S.job) { clearInterval(j.timer); j.timer = null; fail(e); }
+    if (j === S.job) { clearInterval(j.timer); j.timer = null; j.done = true; fail(e); updateActions(); }
   } finally { polling = false; }
 }
 
@@ -538,8 +781,8 @@ function addFrameLog(f, i) {
   d.dataset.i = i;
   const mark = f.phase === 'compact' ? (f.accepted ? '<span class="ok">✓</span> ' : '<span class="no">✗</span> ') : '<span class="ok">●</span> ';
   d.innerHTML = mark;
-  d.appendChild(document.createTextNode(`${i + 1} ${f.phase}: ${f.label}`));
-  d.addEventListener('click', () => { setPlaying(false); S.job.follow = false; showFrame(i); });
+  d.appendChild(document.createTextNode(`${i + 1} ${f.phase === 'compose' ? 'zusammengesetzt' : 'verkleinert'}: ${f.label}`));
+  d.addEventListener('click', () => { setPlaying(false); if (S.mode !== 'search') setMode('search'); S.job.follow = false; showFrame(i); updateActions(); });
   $('frameLog').appendChild(d);
 }
 
@@ -550,6 +793,7 @@ function showFrame(i) {
   const first = j.idx < 0 || !j.shownFrame;
   const f = j.frames[i];
   j.idx = i; j.shownFrame = true;
+  onHover(null);
   v3.setBlocks(f.blocks, f.size, { fit: first });
   v2.setBlocks(f.blocks, f.size);
   for (const v of views) { v.setReveal(null); v.setIO([], []); }
@@ -557,11 +801,11 @@ function showFrame(i) {
   $('progress').max = j.frames.length - 1;
   $('progress').value = i;
   const mark = f.phase === 'compact' ? (f.accepted ? ' ✓ übernommen' : ' ✗ verworfen') : '';
-  setInfo(`Bild ${i + 1}/${j.frames.length} · ${f.phase === 'compose' ? 'Zusammensetzen' : 'Kompaktieren'}${mark} · ${f.label} · ${f.blocks.length} Blöcke`);
+  setInfo(`Schritt ${i + 1} von ${j.frames.length} · ${f.phase === 'compose' ? 'Zusammensetzen' : 'Verkleinern'}${mark} · ${f.label} · ${f.blocks.length} Blöcke`);
   const log = $('frameLog');
   log.querySelector('.cur')?.classList.remove('cur');
   const row = log.children[i];
-  if (row) { row.classList.add('cur'); row.scrollIntoView({ block: 'nearest' }); }
+  if (row) { row.classList.add('cur'); if ($('framesSec').open) row.scrollIntoView({ block: 'nearest' }); }
   j.follow = i === j.frames.length - 1;
 }
 
@@ -569,17 +813,21 @@ function showFrame(i) {
 function showResult() {
   const j = S.job;
   if (!j || !j.result || !j.result.blocks) return;
+  setPlaying(false);
   j.finalShown = true;
   S.model = j.result; S.modelPath = null; S.modelGroup = null; S.fromJob = true;
-  endSim();
-  showModel(j.result, { reveal: false, fit: true });
-  renderMaterials(j.result);
-  setInfo('Ergebnis der Entwurfssuche (bester Entwurf). Analysieren, simulieren, herunterladen oder unter "Bauanleitung" Block für Block nachbauen.');
+  S.path = null;
+  renderFiles();
+  circuitChanged();
+  setMode('build', { fit: true });
   updateActions();
 }
-$('btnShowResult').addEventListener('click', () => { showResult(); setMode('build', { fit: true }); });
+$('btnShowResult').addEventListener('click', showResult);
+for (const [id, task] of [['rBuild', 'build'], ['rSim', 'sim'], ['rAnalyze', 'analyze']]) {
+  $(id).addEventListener('click', () => { if (!S.fromJob) showResult(); setTask(task); });
+}
 
-// --- playback buttons ------------------------------------------------------------------------------------------------
+// --- transport buttons -----------------------------------------------------------------------------------------------
 
 function seek(delta) {
   if (S.mode === 'build' && S.model) setBuild(S.buildN + delta);
@@ -594,7 +842,7 @@ $('bPlay').addEventListener('click', () => {
     if (S.buildN >= S.model.build_order.length) setBuild(0);
   } else if (S.mode === 'search') {
     if (!S.job || !S.job.frames.length) return;
-    if (S.job.idx >= S.job.frames.length - 1 && S.job.done) { S.job.finalShown = false; showFrame(0); }
+    if (S.job.idx >= S.job.frames.length - 1 && S.job.done) showFrame(0);
   }
   setPlaying(true);
 });
@@ -622,133 +870,12 @@ function loop(now) {
     const j = S.job, last = j.frames.length - 1;
     if (j.idx + k >= last) {
       showFrame(last);
-      if (j.done) { setPlaying(false); if (j.result && !j.finalShown) showResult(); }
+      if (j.done) setPlaying(false);
       // else: live job, keep waiting for new frames
     } else showFrame(j.idx + k);
   }
 }
 requestAnimationFrame(loop);
-
-// --- simulation ------------------------------------------------------------------------------------------------------
-
-function refreshSimSrc() {
-  const sel = $('simSrc'), prev = sel.value;
-  sel.textContent = '';
-  const add = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); };
-  if (S.modelPath) add('file', 'Datei: ' + baseName(S.modelPath));
-  if (S.job && S.job.done && S.job.result && S.job.result.blocks) add('job', 'Entwurf der Suche');
-  if (S.fromJob && [...sel.options].some((o) => o.value === 'job')) sel.value = 'job';
-  else if (prev && [...sel.options].some((o) => o.value === prev)) sel.value = prev;
-  $('sStart').disabled = S.demo || !sel.options.length;
-}
-
-function endSim() {
-  stopSimRun();
-  S.simId = null; S.simModel = null; S.simState = new Map();
-  $('sStart').textContent = 'Simulation starten';
-  $('sTick1').disabled = $('sRun').disabled = true;
-  renderIO();
-}
-
-$('sStart').addEventListener('click', async () => {
-  const src = $('simSrc').value;
-  if (!src) return;
-  stopSimRun();
-  try {
-    setStatus('Starte Simulation ...');
-    const body = src === 'job' ? { job: S.job.id } : { path: S.modelPath };
-    const r = await api.sim(body);
-    S.simId = r.sim; S.simTick = r.tick; S.simModel = r.model;
-    S.simState = new Map(r.model.blocks.map((b) => [b.p.join(','), b.s]));
-    showModel(r.model, { reveal: false, fit: false });
-    $('tickOut').textContent = 'Tick ' + r.tick;
-    $('sTick1').disabled = $('sRun').disabled = false;
-    $('sStart').textContent = 'Neu starten';
-    renderIO();
-    setInfo('Simulation läuft. Hebel und Knöpfe lassen sich anklicken (3D, Ebenenansicht oder links unter "Ein- und Ausgänge").');
-    setStatus('Simulation gestartet.');
-  } catch (e) { fail(e); }
-});
-
-const isOn = (s) => !!s && (/(?:powered|lit|extended|open)=true/.test(s) || /power=[1-9]/.test(s) || /\|output=[1-9]/.test(s));
-
-/** Inputs as buttons and outputs as lights, by name: handy when the levers are hard to find in the view. */
-function renderIO() {
-  const m = S.simModel;
-  const show = S.mode === 'sim' && !!S.simId && !!m && (m.inputs.length + m.outputs.length) > 0;
-  $('ioSec').hidden = !show;
-  if (!show) return;
-  const fill = (box, items, make) => {
-    box.textContent = '';
-    for (const it of items) {
-      const s = S.simState.get(it.p.join(','));
-      const e = make(it);
-      e.textContent = it.name;
-      e.classList.toggle('on', isOn(s));
-      e.title = `(${it.p.join(', ')}) ${s || ''}`;
-      box.appendChild(e);
-    }
-  };
-  fill($('ioIn'), m.inputs, (it) => {
-    const b = document.createElement('button');
-    b.addEventListener('click', () => useBlock(it.p));
-    return b;
-  });
-  fill($('ioOut'), m.outputs, () => document.createElement('span'));
-}
-
-// Serialise all sim requests so ticks and clicks never overlap.
-function simCall(fn) {
-  const p = S.busy.then(fn);
-  S.busy = p.catch(() => {});
-  return p;
-}
-function applySim(r) {
-  S.simTick = r.tick;
-  $('tickOut').textContent = 'Tick ' + r.tick;
-  if (r.changed && r.changed.length) {
-    for (const c of r.changed) S.simState.set(c.p.join(','), c.s);
-    for (const v of views) v.applyChanges(r.changed);
-    renderIO();
-  }
-  if (hovered) {
-    const [x, y, z] = hovered.info.p;
-    const c = (r.changed || []).find((b) => b.p[0] === x && b.p[1] === y && b.p[2] === z);
-    if (c) onHover({ p: hovered.info.p, s: c.s === 'air' ? null : c.s }, hovered.ev);
-  }
-}
-async function simTicks(n) {
-  if (!S.simId) return;
-  try { applySim(await simCall(() => api.tick(S.simId, n))); } catch (e) { stopSimRun(); fail(e); }
-}
-async function useBlock(p) {
-  if (!S.simId || S.mode !== 'sim') { setStatus('Zum Schalten zuerst die Simulation starten (Modus "Simulation").'); return; }
-  try {
-    const r = await simCall(() => api.use(S.simId, p));
-    applySim(r);
-    setStatus(`Bedient: (${p.join(', ')})`);
-  } catch (e) { fail(e); }
-}
-$('sTick1').addEventListener('click', () => simTicks(1));
-$('simSpeed').addEventListener('input', (e) => { $('simSpeedVal').textContent = e.target.value; });
-
-function stopSimRun() {
-  S.simRunning = false;
-  clearTimeout(S.simTimer);
-  const b = $('sRun');
-  if (b) b.classList.remove('primary');
-}
-$('sRun').addEventListener('click', () => {
-  if (S.simRunning) return stopSimRun();
-  S.simRunning = true;
-  $('sRun').classList.add('primary');
-  const step = async () => {
-    if (!S.simRunning) return;
-    await simTicks(+$('simSpeed').value);
-    if (S.simRunning) S.simTimer = setTimeout(step, 100);
-  };
-  step();
-});
 
 // --- simulator core --------------------------------------------------------------------------------------------------
 
@@ -756,7 +883,7 @@ let core = 'rust';
 $('coreSel').addEventListener('change', async (e) => {
   try {
     core = (await api.setCore(e.target.value)).core;
-    setStatus(`Simulatorkern: ${core === 'rust' ? 'Rust' : 'Python (Referenz, deutlich langsamer)'}. Gilt für neue Simulationen, Analysen und Suchen.`);
+    setStatus(`Simulatorkern: ${core === 'rust' ? 'Rust' : 'Python (Referenz, deutlich langsamer)'}.`);
   } catch (err) { fail(err); }
   e.target.value = core;
 });
@@ -765,33 +892,36 @@ $('coreSel').addEventListener('change', async (e) => {
 
 async function init() {
   updateSpeedLabel();
+  setLayout(params.get('layout') || store.get('layout') || 'split');
+  if (store.get('nolib')) document.body.classList.add('nolib');
+  renderMaterials(null);
+  setGoal('spec');
+  setMode('build');
   updateActions();
   if (S.demo) {
     S.groups = { schematics: ['demo/model.json'] };
-    renderFiles();
-    for (const id of ['btnOpen', 'btnNewSpec', 'coreSel']) $(id).disabled = true;
+    for (const id of ['btnOpen', 'btnNewSpec', 'coreSel', 'wOpen', 'wExample', 'wDesign']) $(id).disabled = true;
     S.path = 'demo/model.json';
+    renderFiles();
     await loadModel(S.path);
-    setStatus('Demomodus: nur Modellansicht und Bauanleitung verfügbar.');
+    setStatus('Demomodus: nur Ansicht, Material und Bauanleitung.');
     return;
   }
   try {
     const f = await api.files();
     S.groups = f;
     renderFiles();
-    setStatus('Bereit. Datei links wählen, eigene Datei öffnen oder eine neue Spezifikation schreiben.');
+    setStatus('Bereit.');
     api.info().then((i) => {
       core = i.core; $('coreSel').value = core;
       if (!i.rust) { const o = $('coreSel').querySelector('option[value="rust"]'); o.disabled = true; o.textContent = 'Rust (nicht gebaut)'; }
     }).catch(() => {});
     const initial = params.get('path');
     if (initial) {
-      const g = ['schematics', 'scenarios', 'specs'].find((k) => (f[k] || []).includes(initial)) || 'schematics';
+      const g = Object.keys(GROUP_TITLES).find((k) => (f[k] || []).includes(initial)) || 'schematics';
       await selectFile(initial, g);
     }
-    // ?layout=3d|2d|split|doc and ?y=<layer> (handy for screenshots)
-    const lay = params.get('layout');
-    if (lay) setLayout(lay);
+    if (params.get('task')) setTask(params.get('task'));
     const cam = (params.get('cam') || '').split(',').map(Number); // ?cam=px,py,pz,tx,ty,tz
     if (cam.length === 6 && cam.every(Number.isFinite)) {
       v3.camera.position.set(cam[0], cam[1], cam[2]); v3.controls.target.set(cam[3], cam[4], cam[5]);
@@ -802,10 +932,10 @@ async function init() {
       const ly = Math.max(0, Math.min(S.lastSize[1] - 1, +yy || 0));
       $('layerY').value = ly; $('layerYVal').textContent = ly; v2.setLayer(ly);
     }
-    // ?click=btnExplain,sStart,... presses these buttons one after the other (tests, screenshots);
-    // mode:sim / mode:search / mode:build switch the mode, a number waits that many milliseconds
+    // ?click=btnExplain,sRun,... presses these buttons one after the other (tests, screenshots);
+    // task:sim / task:design ... switch the task, a number waits that many milliseconds
     for (const step of (params.get('click') || '').split(',').filter(Boolean)) {
-      if (step.startsWith('mode:')) setMode(step.slice(5));
+      if (step.startsWith('task:')) setTask(step.slice(5));
       else if (/^\d+$/.test(step)) await new Promise((r) => setTimeout(r, +step));
       else { $(step)?.click(); await new Promise((r) => setTimeout(r, 1200)); }
     }
