@@ -1,6 +1,6 @@
 # 5-Bit-Größenvergleich: a = a4 … a0, b = b4 … b0. gt: a > b, lt: a < b.
-# Reine Vorlagen-Kaskade cmp1 → 4 Stufen (545 Blöcke). Teilspezifikationen (der Rest der Kaskade) werden auch
-# über 6 Eingängen mit kleinen Zwei-Signal-Schnitten zerlegt. Suche dauert einige Minuten (kein Test); noch nicht im Spiel aufgenommen.
+# Reine Vorlagen-Kaskade cmp1 → 4 Stufen (kompaktiert 533 Blöcke, 31×5×19). Teilspezifikationen (der Rest der Kaskade) werden auch
+# über 6 Eingängen mit kleinen Zwei-Signal-Schnitten zerlegt. Suche ~15 min (slow-Test); im Spiel aufgenommen (cmp-cmp5), identisch.
 inputs: [a4, b4, a3, b3, a2, b2, a1, b1, a0, b0]
 function:
   gt: (a4+a4+a4+a4+a4+a4+a4+a4+a4+a4+a4+a4+a4+a4+a4+a4 + a3+a3+a3+a3+a3+a3+a3+a3 + a2+a2+a2+a2 + a1+a1 + a0) > (b4+b4+b4+b4+b4+b4+b4+b4+b4+b4+b4+b4+b4+b4+b4+b4 + b3+b3+b3+b3+b3+b3+b3+b3 + b2+b2+b2+b2 + b1+b1 + b0)
