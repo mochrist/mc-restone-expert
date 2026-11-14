@@ -14,11 +14,12 @@ Stand: 2026-11-14, Session 17. Geschätzter Gesamtfortschritt: **ca. 90 %** (gew
 
 ## Übergabe (aus Session 17)
 
-Alles committet, Suite grün (1559 Tests, 149 Golden Traces). Nächste Aufgaben:
+Alles committet, Suite grün (1560 Tests, 149 Golden Traces). Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| M4: Kompaktieren größerer Züge (`scripts/bench_compact.py`); 5-Bit-Komparator: mit `MAX_CASCADE_INPUTS = 10` und Rust-Router 4 Bit in 98 s, 5 Bit noch nicht gemessen | Opus | – |
+| M4: Bausteine mit Komparator-Signalen umziehen: bei `cmp3`/`cmp4` werden jetzt Umzüge simuliert, scheitern aber (cmp1 speist die Stufe direkt; als Staubleitung fehlt die Signalstärke, die die Subtraktion braucht). Leitungen in Komparator-Eingänge mit voller Stärke (Verstärker am Ende) oder solche Bausteine nur zusammen verschieben | Opus | – |
+| M4: `examples/specs/large/cmp5.yaml` im Spiel aufnehmen (1024 Kombinationen, Oracle ~45 min; nicht während der Nutzer spielt) und ggf. nach `composed/` | Opus | – |
 
 ## Verlauf
 
@@ -38,6 +39,17 @@ Alles committet, Suite grün (1559 Tests, 149 Golden Traces). Nächste Aufgaben:
   GUI. Material-Wörterbuch (Sonnet-Agent): Farben × Nomen mit Adjektivendung, Holzarten, Steinvarianten, Kupfer.
 - Headless-Screenshot ohne Erweiterung: `chrome.exe --headless=new --enable-unsafe-swiftshader
   --use-angle=swiftshader --virtual-time-budget=15000 --screenshot=x.png <url>`.
+
+- M4: 5-Bit-Komparator als reine Vorlagen-Kaskade cmp1 → 4 Stufen: 545 Blöcke, 36×8×19 (vorher PLA → PLA 1401
+  Blöcke, 42×8×45). Teilspezifikationen (Rest einer Kaskade) bekommen kleine Zwei-Signal-Schnitte jetzt auch über
+  `MAX_CASCADE_INPUTS`; Paare von Teilentwürfen werden nach geschätztem Volumen probiert (`decompose._pairs`).
+  Beispiel `examples/specs/large/cmp5.yaml` (ohne Spielaufnahme, Suche mehrere Minuten). Zeiten dieser Session
+  nicht belastbar (Rechner nebenbei ausgelastet), Größen schon.
+- M4 Kompaktieren: `relocations` versetzt auch zusammenhängende Gruppen von Bausteinen (`compact._units`: Kopf
+  oder Ende einer Kaskade). Wichtiger: `MAX_PLACES` zählte Platzierungen mit, die mit dem Rest überlappen – bei
+  Kaskaden waren das alle 4000 besten, es wurde nie ein Umzug versucht. Jetzt zählen nur freie Plätze.
+  `bench_compact.py` (Budget 100): Summe Volumen 8100 → 8012, `adder3` 1056 → 968. Der Benchmark baut nur die mit
+  `--only` gewählten Entwürfe (Cache wird ergänzt).
 
 ### Session 16 (2026-11-13, abgebrochen durch Login-Fehler, nicht in STATUS eingetragen)
 

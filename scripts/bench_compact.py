@@ -21,21 +21,25 @@ sys.path.insert(0, str(ROOT / "src"))
 CACHE = ROOT / ".cache" / "bench_compact.pickle"
 
 
-def designs() -> dict[str, tuple]:
-    """name -> (spec, candidate): the best uncompacted decomposition of every composed example."""
+def designs(only: set[str] = frozenset()) -> dict[str, tuple]:
+    """name -> (spec, candidate): the best uncompacted decomposition of every composed example (cached; designs
+    missing from the cache are added)."""
     from redstone.design.search import redesign
     from redstone.design.spec import load
 
-    if CACHE.exists():
-        return pickle.loads(CACHE.read_bytes())
-    out = {}
+    out = pickle.loads(CACHE.read_bytes()) if CACHE.exists() else {}
+    wanted = lambda name: (not only or name in only) and name not in out  # noqa: E731
     for path in sorted((ROOT / "examples" / "specs" / "composed").glob("*.yaml")):
+        if not wanted(path.stem):
+            continue
         spec = load(path)
         for ev in redesign(spec):
             if ev.ok and ev.candidate.origin.startswith(("zerlegt", "nebeneinander")):
                 out[path.stem] = (spec, ev.candidate)
                 break
     for name in ("xor", "fulladder", "majority"):
+        if not wanted(f"pla-{name}"):
+            continue
         spec = load(ROOT / "examples" / "specs" / f"{name}.yaml")
         ev = next(e for e in redesign(spec) if e.ok and e.candidate.origin.startswith("synthese"))
         out[f"pla-{name}"] = (spec, ev.candidate)
@@ -54,7 +58,7 @@ def main() -> None:
     args = ap.parse_args()
     only = set(filter(None, args.only.split(",")))
     total = [0, 0, 0, 0]
-    for name, (spec, cand) in designs().items():
+    for name, (spec, cand) in designs(only).items():
         if only and name not in only:
             continue
         t = time.perf_counter()

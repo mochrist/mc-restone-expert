@@ -21,6 +21,7 @@ recomputed by placing the grid in the simulator and letting shape updates run (`
 
 from __future__ import annotations
 
+import itertools
 from dataclasses import replace
 
 from ..model import BlockState, Grid, Pos
@@ -34,6 +35,8 @@ from .evaluate import Constraints, evaluate_any
 from .spec import Spec
 
 MAX_EVALUATIONS = 400
+MAX_UNITS = 16  # blocks and groups of blocks that relocations tries to move (`_units`)
+MAX_UNIT_PARTS = 10  # groups only for designs of at most this many building blocks
 CUT_SHARE = 0.2  # share of the evaluations one pass of plane cuts may use (sparse planes first)
 MIN_CUTS = 12
 DOWN = Pos(0, -1, 0)
@@ -668,14 +671,54 @@ def _repeater_before(blocks: dict, r: Pos, b: Pos, laid: dict, name) -> Pos | No
     return r - d
 
 
+def _units(groups: list[frozenset[Pos]], found) -> list[frozenset[Pos]]:
+    """What `relocations` may move: every building block alone, then groups of blocks that hang together over
+    their lines while the rest does too (the head or the tail of a cascade, a subtree), smallest first; at most
+    MAX_UNITS. A cascade's box is set by several blocks, so moving a single one rarely makes it smaller."""
+    n = len(groups)
+    owner = {}
+    for i, g in enumerate(groups):
+        for p in g:
+            owner[p] = i
+    adj = {i: set() for i in range(n)}
+    for a, _, b in found:
+        i, j = owner.get(a), owner.get(b)
+        if i is not None and j is not None and i != j:
+            adj[i].add(j)
+            adj[j].add(i)
+
+    def connected(s: frozenset) -> bool:
+        if not s:
+            return False
+        seen, todo = set(), [next(iter(s))]
+        while todo:
+            i = todo.pop()
+            if i not in seen:
+                seen.add(i)
+                todo += [j for j in adj[i] if j in s]
+        return seen == s
+
+    out = [frozenset(g) for g in groups]
+    if 2 < n <= MAX_UNIT_PARTS:
+        everything = frozenset(range(n))
+        multi = []
+        for size in range(2, n - 1 + 1):
+            for s in itertools.combinations(range(n), size):
+                s = frozenset(s)
+                if connected(s) and connected(everything - s):
+                    multi.append(frozenset().union(*(groups[i] for i in s)))
+        out += multi[:MAX_UNITS - n]
+    return out
+
+
 def relocations(c: Candidate):
     """Move one building block (`parts`) elsewhere, turned in any of the four ways, and lay the lines to the
     other blocks anew (`_dust_path`, from the same cell next to each line end as before, so the line ends keep
     their shapes). The block keeps one block of air to the others, also diagonally.
 
     Yields (description, candidate): placements whose box (without lines) is smallest first, at most
-    MAX_PLACES placements are checked. Only candidates with a smaller box than `c` come out; nothing is
-    simulated here."""
+    MAX_PLACES placements that do not overlap the rest are checked. Only candidates with a smaller box than `c`
+    come out; nothing is simulated here."""
     from .compose import UNROTATABLE, _halo, turn_pos, turn_state
 
     states = dict(c.grid.items())
@@ -685,7 +728,7 @@ def relocations(c: Candidate):
     volume = c.volume
     options = []
     setups = []
-    for k, part in enumerate(groups):
+    for part in _units(groups, found):
         attached = [k for k, ln in enumerate(found) if (ln[0] in part) != (ln[2] in part)]
         internal = [k for k, ln in enumerate(found) if ln[0] in part and ln[2] in part]
         moved = set(part)
@@ -723,7 +766,10 @@ def relocations(c: Candidate):
     halos: dict[int, set] = {}
     turned: dict[tuple[int, int], list] = {}  # positions of a moved block, turned, relative to its new corner
     pool = []
-    for _, turns, s, n in options[:MAX_PLACES]:
+    checked = 0
+    for _, turns, s, n in options:
+        if checked >= MAX_PLACES:
+            break
         part, attached, moved, fixed, mlo, msize = setups[s]
         lo = Pos(*n)
 
@@ -736,7 +782,8 @@ def relocations(c: Candidate):
             turned[s, turns] = [tuple(turn_pos(p - mlo, msize[0], msize[2], turns)) for p in moved]
         halo, (nx, ny, nz) = halos[s], n
         if any((x + nx, y + ny, z + nz) in halo for x, y, z in turned[s, turns]):
-            continue
+            continue  # overlaps: cheap, does not count (the smallest boxes mostly lie inside the others)
+        checked += 1
         new = {place(p): turn_state(states[p], turns) for p in moved}
         blocks = dict(fixed)
         blocks.update(new)
@@ -791,7 +838,8 @@ def relocations(c: Candidate):
             def port(p: Pos) -> Pos:
                 return (place(p) if p in moved else p) - blo
 
-            what = (f"Baustein bei {min(part)} ({len(part)} Blöcke)"
+            n_parts = sum(1 for gr in groups if gr <= part)
+            what = ((f"{n_parts} Bausteine" if n_parts > 1 else "Baustein") + f" bei {min(part)} ({len(part)} Blöcke)"
                     + (f" um {90 * turns}° gedreht und" if turns else "")
                     + f" nach {lo} versetzt, {len(attached)} Leitungen neu verlegt")
             asm = None
