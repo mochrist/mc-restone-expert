@@ -149,3 +149,28 @@ def test_compact_moves_a_building_block():
     assert evaluate(small, spec).ok
     assert any("Baustein" in s for s in log), log
     assert small.volume <= 10, (small.grid.size, log)
+
+
+def test_dust_path_does_not_cut_itself():
+    """Climbing in place (up, up, back) would put the floor of the top dust right over the bottom one, which
+    cuts the step between them: the search must not lay such a path."""
+    from redstone.design.compact import _clashes
+
+    a, b, c = Pos(0, 0, 0), Pos(0, 1, 1), Pos(0, 2, 0)
+    prev = {a: None, b: a}
+    assert _clashes(c, b, prev)  # c's floor (0,1,0) lies right over a
+    assert not _clashes(Pos(0, 2, 2), b, prev)  # straight on up the stairs
+    assert _clashes(Pos(1, 1, 0), b, prev)  # beside a: a shortcut
+
+
+def test_boosts_put_repeaters_on_long_lines():
+    from redstone.design.compact import FULL_RUN, _boosts
+
+    straight = [Pos(x, 0, 0) for x in range(30)]
+    assert _boosts(straight[:10], 12, 12, False) == []
+    reps = _boosts(straight, 12, 12, False)
+    assert reps and reps[0] <= 12 and all(j - i - 1 <= FULL_RUN for i, j in zip(reps, reps[1:]))
+    assert len(straight) - 1 - reps[-1] <= 12
+    assert _boosts(straight[:5], 12, 12, True) == [3]  # a repeater is needed: as late as possible
+    bent = [Pos(0, 0, 0), Pos(1, 0, 0), Pos(1, 0, 1), Pos(2, 0, 1)]
+    assert _boosts(bent, 12, 12, True) is None  # no straight cell for a repeater
