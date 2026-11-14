@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from redstone.gui.materials import _support, build_order, format_materials, items_for_state, materials, stacks
+from redstone.gui.materials import (_support, build_order, format_materials, items_for_state, label_for, materials,
+                                    stacks)
 from redstone.model import Grid, Pos
 from redstone.verify import load_scenario
 
@@ -47,7 +48,7 @@ def test_slabs_pistons_fluids_and_counts():
     assert c["oak_door"] == 1 and c["red_bed"] == 1
     labels = {m["item"]: m["label"] for m in materials(g)}
     assert labels["water_bucket"] == "Wassereimer" and labels["lava_bucket"] == "Lavaeimer"
-    assert labels["red_bed"] == "Red bed"
+    assert labels["red_bed"] == "Rotes Bett"
 
 
 def test_container_contents():
@@ -104,3 +105,22 @@ def test_real_scenario():
         sup = _support(grid.get(p), p)
         if sup in idx:
             assert idx[sup] < idx[p]
+
+
+def test_german_labels_rules():
+    expected = {
+        "white_wool": "Weiße Wolle", "white_concrete": "Weißer Beton", "red_bed": "Rotes Bett",
+        "light_blue_concrete_powder": "Hellblauer Trockenbeton", "orange_wool": "Orange Wolle",
+        "orange_concrete": "Oranger Beton", "pink_bed": "Rosa Bett", "lime_stained_glass": "Hellgrünes Glas",
+        "gray_stained_glass_pane": "Graue Glasscheibe", "cyan_glazed_terracotta": "Türkise glasierte Keramik",
+        "black_shulker_box": "Schwarze Shulker-Kiste", "oak_planks": "Eichenholzbretter",
+        "oak_slab": "Eichenholzstufe", "spruce_stairs": "Fichtenholztreppe", "dark_oak_trapdoor": "Schwarzeichenholzfalltür",
+        "birch_button": "Birkenholzknopf", "crimson_pressure_plate": "Karmesindruckplatte", "oak_log": "Eichenstamm",
+        "jungle_log": "Tropenbaumstamm", "cobblestone_slab": "Bruchsteinstufe", "stone_slab": "Steinstufe",
+        "smooth_stone_slab": "Glatte Steinstufe", "stone_brick_stairs": "Steinziegeltreppe",
+        "waxed_exposed_copper_bulb": "Gewachste freigelegte Kupferlampe", "oxidized_copper_block": "Oxidierter Kupferblock",
+        "observer": "Beobachter",
+    }
+    for item, label in expected.items():
+        assert label_for(item) == label, item
+    assert label_for("unknown_thing") == "Unknown thing"

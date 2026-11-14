@@ -26,31 +26,132 @@ LABELS = {
     "glass": "Glas", "glass_pane": "Glasscheibe", "redstone": "Redstone-Staub",
     "redstone_torch": "Redstone-Fackel", "torch": "Fackel", "soul_torch": "Seelenfackel",
     "repeater": "Verstärker", "comparator": "Komparator", "redstone_lamp": "Redstone-Lampe",
-    "lever": "Hebel", "stone_button": "Steinknopf", "oak_button": "Eichenknopf", "piston": "Kolben",
+    "lever": "Hebel", "stone_button": "Steinknopf", "piston": "Kolben",
     "sticky_piston": "Klebriger Kolben", "observer": "Beobachter", "hopper": "Trichter",
     "dispenser": "Spender", "dropper": "Werfer", "target": "Zielblock", "note_block": "Notenblock",
     "redstone_block": "Redstone-Block", "slime_block": "Schleimblock", "honey_block": "Honigblock",
     "chest": "Kiste", "trapped_chest": "Redstone-Kiste", "barrel": "Fass",
     "daylight_detector": "Tageslichtsensor", "stone_pressure_plate": "Steindruckplatte",
-    "oak_pressure_plate": "Eichendruckplatte", "light_weighted_pressure_plate": "Leichte Druckplatte",
+    "light_weighted_pressure_plate": "Leichte Druckplatte",
     "heavy_weighted_pressure_plate": "Schwere Druckplatte", "rail": "Schiene", "powered_rail": "Antriebsschiene",
     "detector_rail": "Sensorschiene", "activator_rail": "Aktivierungsschiene", "crafter": "Crafter",
     "tripwire_hook": "Haken", "string": "Faden", "tnt": "TNT", "obsidian": "Obsidian", "dirt": "Erde",
-    "sand": "Sand", "gravel": "Kies", "oak_planks": "Eichenholzbretter", "iron_block": "Eisenblock",
+    "sand": "Sand", "gravel": "Kies", "iron_block": "Eisenblock",
     "water_bucket": "Wassereimer", "lava_bucket": "Lavaeimer", "sculk_sensor": "Sculk-Sensor",
     "calibrated_sculk_sensor": "Kalibrierter Sculk-Sensor", "cake": "Kuchen", "snow": "Schnee",
-    "iron_door": "Eisentür", "oak_door": "Eichentür", "ladder": "Leiter", "cauldron": "Kessel",
+    "iron_door": "Eisentür", "ladder": "Leiter", "cauldron": "Kessel",
     "lectern": "Lesepult", "jukebox": "Plattenspieler", "bell": "Glocke", "sea_pickle": "Meeresgurke",
-    "candle": "Kerze", "flower_pot": "Blumentopf", "white_wool": "Weiße Wolle", "bone_block": "Knochenblock",
+    "candle": "Kerze", "flower_pot": "Blumentopf", "bone_block": "Knochenblock",
     "sculk_shrieker": "Sculk-Schreier", "lightning_rod": "Blitzableiter",
-    "stone_slab": "Steinstufe", "oak_slab": "Eichenstufe",
+    "terracotta": "Keramik", "tinted_glass": "Getöntes Glas", "ice": "Eis", "packed_ice": "Packeis",
+    "blue_ice": "Blaueis", "iron_trapdoor": "Eisenfalltür", "iron_bars": "Eisengitter",
+    "coal_block": "Kohleblock", "gold_block": "Goldblock", "diamond_block": "Diamantblock",
+    "emerald_block": "Smaragdblock", "lapis_block": "Lapislazuliblock", "netherrack": "Netherrack",
+    "soul_sand": "Seelensand", "glowstone": "Leuchtstein", "sea_lantern": "Seelaterne",
+    "hay_block": "Heuballen", "magma_block": "Magmablock", "bookshelf": "Bücherregal",
+    "composter": "Komposter", "furnace": "Ofen", "crafting_table": "Werkbank", "scaffolding": "Gerüst",
+    "end_rod": "Endstab", "sponge": "Schwamm", "shulker_box": "Shulker-Kiste", "quartz_block": "Quarzblock",
+    "sandstone": "Sandstein", "red_sandstone": "Roter Sandstein", "bricks": "Ziegelsteine",
+    "nether_bricks": "Netherziegel", "deepslate": "Tiefenschiefer", "polished_deepslate": "Polierter Tiefenschiefer",
+    "crimson_stem": "Karmesinstiel", "warped_stem": "Wirrstiel", "bamboo_block": "Bambusblock",
+    "copper_block": "Kupferblock", "copper_bulb": "Kupferlampe",
 }
+
+# Colour -> (feminine, masculine, neuter) adjective form; others are stem + e/er/es.
+_COLOURS = {"white": "Weiß", "light_blue": "Hellblau", "yellow": "Gelb", "lime": "Hellgrün", "gray": "Grau",
+            "light_gray": "Hellgrau", "cyan": "Türkis", "purple": "Violett", "blue": "Blau", "brown": "Braun",
+            "green": "Grün", "red": "Rot", "black": "Schwarz"}
+_COLOUR_FORMS = {c: (s + "e", s + "er", s + "es") for c, s in _COLOURS.items()}
+_COLOUR_FORMS["orange"] = ("Orange", "Oranger", "Oranges")
+_COLOUR_FORMS["magenta"] = ("Magenta",) * 3
+_COLOUR_FORMS["pink"] = ("Rosa",) * 3
+_COLOUR_ORDER = sorted(_COLOUR_FORMS, key=len, reverse=True)  # light_blue before blue
+
+# noun id -> (gender index 0=f 1=m 2=n, German noun)
+_COLOUR_NOUNS = {
+    "wool": (0, "Wolle"), "concrete": (1, "Beton"), "concrete_powder": (1, "Trockenbeton"),
+    "terracotta": (0, "Keramik"), "glazed_terracotta": (0, "glasierte Keramik"),
+    "stained_glass": (2, "Glas"), "stained_glass_pane": (0, "Glasscheibe"), "carpet": (1, "Teppich"),
+    "bed": (2, "Bett"), "candle": (0, "Kerze"), "banner": (2, "Banner"), "shulker_box": (0, "Shulker-Kiste"),
+}
+
+# wood -> (prefix for planks/slab/..., prefix for logs or None)
+_WOODS = {
+    "oak": ("Eichenholz", "Eichen"), "spruce": ("Fichtenholz", "Fichten"), "birch": ("Birkenholz", "Birken"),
+    "jungle": ("Tropenholz", "Tropenbaum"), "acacia": ("Akazienholz", "Akazien"),
+    "dark_oak": ("Schwarzeichenholz", "Schwarzeichen"), "mangrove": ("Mangrovenholz", "Mangroven"),
+    "cherry": ("Kirschholz", "Kirsch"), "pale_oak": ("Blasseichenholz", "Blasseichen"),
+    "bamboo": ("Bambus", None), "crimson": ("Karmesin", None), "warped": ("Wirr", None),
+}
+_WOOD_NOUNS = {"planks": "bretter", "slab": "stufe", "stairs": "treppe", "fence": "zaun", "fence_gate": "zauntor",
+               "door": "tür", "trapdoor": "falltür", "button": "knopf", "pressure_plate": "druckplatte",
+               "sign": "schild"}
+
+# stone base id -> (name, compound stem for slab/stairs/wall)
+_STONES = {
+    "stone": ("Stein", "Stein"), "cobblestone": ("Bruchstein", "Bruchstein"),
+    "mossy_cobblestone": ("Bemooster Bruchstein", "Bemooster Bruchstein"),
+    "smooth_stone": ("Glatter Stein", "Glatte Stein"), "stone_brick": ("Steinziegel", "Steinziegel"),
+    "mossy_stone_brick": ("Bemooste Steinziegel", "Bemooste Steinziegel"),
+    "andesite": ("Andesit", "Andesit"), "diorite": ("Diorit", "Diorit"), "granite": ("Granit", "Granit"),
+    "polished_andesite": ("Polierter Andesit", "Polierte Andesit"),
+    "polished_diorite": ("Polierter Diorit", "Polierte Diorit"),
+    "polished_granite": ("Polierter Granit", "Polierte Granit"),
+    "blackstone": ("Schwarzstein", "Schwarzstein"),
+    "polished_blackstone": ("Polierter Schwarzstein", "Polierte Schwarzstein"),
+    "polished_deepslate": ("Polierter Tiefenschiefer", "Polierte Tiefenschiefer"),
+    "sandstone": ("Sandstein", "Sandstein"), "red_sandstone": ("Roter Sandstein", "Rote Sandstein"),
+    "brick": ("Ziegelstein", "Ziegel"), "nether_brick": ("Netherziegel", "Netherziegel"),
+    "quartz": ("Quarzblock", "Quarz"), "smooth_quartz": ("Glatter Quarzblock", "Glatte Quarz"),
+}
+_STONE_NOUNS = {"slab": "stufe", "stairs": "treppe", "wall": "mauer"}
+
+_OXIDATION = {"exposed": ("Freigelegter", "Freigelegte"), "weathered": ("Verwitterter", "Verwitterte"),
+              "oxidized": ("Oxidierter", "Oxidierte")}
+_COPPER_NOUNS = {"copper_block": (0, "Kupferblock"), "copper": (0, "Kupferblock"), "copper_bulb": (1, "Kupferlampe")}
+
+
+def _rule_label(item: str) -> str | None:
+    """Label from the systematic tables (colours, woods, stones, copper), None if no rule applies."""
+    for c in _COLOUR_ORDER:
+        rest = item.removeprefix(c + "_")
+        if rest != item and rest in _COLOUR_NOUNS:
+            g, noun = _COLOUR_NOUNS[rest]
+            return f"{_COLOUR_FORMS[c][g]} {noun}"
+    for w, (hp, lp) in _WOODS.items():
+        rest = item.removeprefix(w + "_")
+        if rest != item and rest in _WOOD_NOUNS:
+            return hp + _WOOD_NOUNS[rest]
+        if lp and item in (f"{w}_log", f"stripped_{w}_log"):
+            return ("Entrindeter " if item.startswith("stripped_") else "") + lp + "stamm"
+    for st, (name, stem) in _STONES.items():
+        rest = item.removeprefix(st + "_")
+        if rest != item and rest in _STONE_NOUNS:
+            return stem + _STONE_NOUNS[rest]
+    waxed = item.startswith("waxed_")
+    base = item.removeprefix("waxed_")
+    ox = None
+    for o in _OXIDATION:
+        if base.startswith(o + "_") and base[len(o) + 1:] in _COPPER_NOUNS:
+            ox, base = o, base[len(o) + 1:]
+    if base in _COPPER_NOUNS:
+        g, noun = _COPPER_NOUNS[base]
+        words = ([_OXIDATION[ox][g].lower()] if ox else []) + [noun]
+        text = " ".join(words)
+        if waxed:
+            return ("Gewachster " if g == 0 else "Gewachste ") + text
+        return text[0].upper() + text[1:]
+    return None
+
 
 
 def label_for(item: str) -> str:
     """German name of an item, falling back to the id with spaces and a capital first letter."""
     if item in LABELS:
         return LABELS[item]
+    rule = _rule_label(item)
+    if rule:
+        return rule
     return item.replace("_", " ").capitalize()
 
 
