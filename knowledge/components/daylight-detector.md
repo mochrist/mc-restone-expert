@@ -56,5 +56,5 @@ modelliert die Oracle-Welt: Weltuhr bei 0 eingefroren, klares Wetter.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `LevelReader#getEffectiveSkyBrightness`
 - Konfidenz: mittel
-- Status: ungeprüft
-- Hinweise: ASSUMPTION: Lichtdichte Blöcke werden durch Redstone-Leiter angenähert (volle Würfel); Platten, Treppen, Blätter, Wasser und so weiter sind nicht modelliert. Im Spiel gemessen (Messläufe, nicht als Szenario aufgezeichnet): Sensor unter einem Stein 7 (Himmelslicht 14); Sensor 3 Blöcke tief unter einer Platte 6 (Himmelslicht 12). Der Stein-Fall ist in `scenarios/daylight-detector.yaml` (Zeile C) enthalten.
+- Status: im-Spiel-verifiziert (scenarios/daylight-skylight-distance.yaml)
+- Hinweise: Im Spiel bestätigt für volle Würfel als lichtdichte Blöcke: `scenarios/daylight-skylight-distance.yaml` (zwei lange Räume mit Steindach, nur an den Enden offen; invertierte Sensoren bei x=1..12 lesen 1,2,3,4,5,6,6,5,4,3,2,1, also Himmelslicht 15 minus Abstand durch Luftzellen zur nächsten offenen Zelle; gleich bei Dach in 3 und in 6 Blöcken Höhe, Simulator in beiden Kernen identisch). Der Stein-Fall ist zusätzlich in `scenarios/daylight-detector.yaml` (Zeile C) enthalten. ASSUMPTION (bleibt): Lichtdichte Blöcke werden durch Redstone-Leiter angenähert (volle Würfel); Platten, Treppen, Blätter, Wasser und so weiter sind nicht modelliert.

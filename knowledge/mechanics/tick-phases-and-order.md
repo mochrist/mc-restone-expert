@@ -114,8 +114,8 @@ Block-Events → Entities → Block Entities. Der Simulator sollte genau diese P
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `MinecraftServer#processPacketsAndTick`, `MinecraftServer#waitUntilNextTick`, `MinecraftServer#tickChildren`; [SRC-M-WIKI-TICK]
 - Konfidenz: mittel
-- Status: widersprüchlich
-- Hinweise: Das Wiki ordnet die Paketverarbeitung als Schritt nach dem Ticken aller Dimensionen ein (innerhalb desselben Ticks). Für Redstone ist das gleichwertig: In beiden Darstellungen liegt die Aktion zwischen der Block-Entity-Phase eines Ticks und der Block-Tick-Phase des nächsten. Die Zuordnung „Tick-Nummer" einer Aktion ist daher Konvention; ein in der Aktion geplanter Tick nutzt die bereits erhöhte bzw. noch nicht erhöhte `gameTime`. Genaue Klärung im Oracle nötig.
+- Status: belegt
+- Hinweise: Kein echter Widerspruch, nur unterschiedliche Zählweise (aufgelöst, Code als Beleg). Das Oracle führt Eingaben im `END_SERVER_TICK` aus (`OracleMod#onEndTick`), also nach der Block-Entity-Phase und vor den geplanten Ticks des nächsten Ticks; alle Golden Traces mit Eingaben stimmen mit dem Simulator überein, der dieselbe Konvention nutzt. Der echte Paketweg (Netzwerk-Thread, `processPacketsAndTick`) wird damit nicht getestet. Das Wiki ordnet die Paketverarbeitung als Schritt nach dem Ticken aller Dimensionen ein (innerhalb desselben Ticks). Für Redstone ist das gleichwertig: In beiden Darstellungen liegt die Aktion zwischen der Block-Entity-Phase eines Ticks und der Block-Tick-Phase des nächsten. Die Zuordnung „Tick-Nummer" einer Aktion ist daher Konvention; ein in der Aktion geplanter Tick nutzt die bereits erhöhte bzw. noch nicht erhöhte `gameTime`.
 
 ### ORD-015: Dimensionen werden nacheinander getickt
 - Aussage: `MinecraftServer#tickChildren` tickt zuerst die Tick-Funktionen (`commandFunctions`), dann jede Dimension vollständig nacheinander (Overworld, Nether, End, weitere).

@@ -1,0 +1,371 @@
+{
+ "format": 1,
+ "scenario": "daylight-skylight-distance",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 40,
+ "probes": {
+  "a1": [
+   1,
+   1,
+   1
+  ],
+  "a2": [
+   2,
+   1,
+   1
+  ],
+  "a3": [
+   3,
+   1,
+   1
+  ],
+  "a4": [
+   4,
+   1,
+   1
+  ],
+  "a5": [
+   5,
+   1,
+   1
+  ],
+  "a6": [
+   6,
+   1,
+   1
+  ],
+  "a7": [
+   7,
+   1,
+   1
+  ],
+  "a8": [
+   8,
+   1,
+   1
+  ],
+  "a9": [
+   9,
+   1,
+   1
+  ],
+  "a10": [
+   10,
+   1,
+   1
+  ],
+  "a11": [
+   11,
+   1,
+   1
+  ],
+  "a12": [
+   12,
+   1,
+   1
+  ],
+  "b1": [
+   1,
+   1,
+   5
+  ],
+  "b2": [
+   2,
+   1,
+   5
+  ],
+  "b3": [
+   3,
+   1,
+   5
+  ],
+  "b4": [
+   4,
+   1,
+   5
+  ],
+  "b5": [
+   5,
+   1,
+   5
+  ],
+  "b6": [
+   6,
+   1,
+   5
+  ],
+  "b7": [
+   7,
+   1,
+   5
+  ],
+  "b8": [
+   8,
+   1,
+   5
+  ],
+  "b9": [
+   9,
+   1,
+   5
+  ],
+  "b10": [
+   10,
+   1,
+   5
+  ],
+  "b11": [
+   11,
+   1,
+   5
+  ],
+  "b12": [
+   12,
+   1,
+   5
+  ]
+ },
+ "samples": {
+  "a1": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=1]"
+   ]
+  ],
+  "a2": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=2]"
+   ]
+  ],
+  "a3": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=3]"
+   ]
+  ],
+  "a4": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=4]"
+   ]
+  ],
+  "a5": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=5]"
+   ]
+  ],
+  "a6": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=6]"
+   ]
+  ],
+  "a7": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=6]"
+   ]
+  ],
+  "a8": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=5]"
+   ]
+  ],
+  "a9": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=4]"
+   ]
+  ],
+  "a10": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=3]"
+   ]
+  ],
+  "a11": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=2]"
+   ]
+  ],
+  "a12": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=1]"
+   ]
+  ],
+  "b1": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=1]"
+   ]
+  ],
+  "b2": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=2]"
+   ]
+  ],
+  "b3": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=3]"
+   ]
+  ],
+  "b4": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=4]"
+   ]
+  ],
+  "b5": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=5]"
+   ]
+  ],
+  "b6": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=6]"
+   ]
+  ],
+  "b7": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=6]"
+   ]
+  ],
+  "b8": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=5]"
+   ]
+  ],
+  "b9": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=4]"
+   ]
+  ],
+  "b10": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=3]"
+   ]
+  ],
+  "b11": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=2]"
+   ]
+  ],
+  "b12": [
+   [
+    0,
+    "minecraft:daylight_detector[inverted=true,power=0]"
+   ],
+   [
+    17,
+    "minecraft:daylight_detector[inverted=true,power=1]"
+   ]
+  ]
+ }
+}

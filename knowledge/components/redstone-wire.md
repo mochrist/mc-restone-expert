@@ -160,8 +160,8 @@ durch den Strang ausbreiten. Die Reihenfolge dieser Updates hängt über ein `Ha
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `DefaultRedstoneWireEvaluator#updatePowerStrength`; [SRC-WIKI-BLOCK-UPDATE]
 - Konfidenz: hoch
-- Status: widersprüchlich
-- Hinweise: Das Wiki (Block update) schreibt „in random order". Der Code nutzt ein `HashSet` ohne Zufall; „zufällig" meint vermutlich „ohne erkennbares Muster/ortsabhängig". Für 26.3 gilt der Code.
+- Status: belegt
+- Hinweise: Die Wiki-Angabe (Block update: „in random order") ist für 26.3 durch den Code widerlegt: `updatePowerStrength` sammelt die Positionen in einem `HashSet<BlockPos>` (kein Zufallsgenerator, keine Zeit- oder Zustandsabhängigkeit), die Reihenfolge ergibt sich allein aus den Koordinaten (siehe DUST-018, `tests/sim/test_wire.py`). „Zufällig" im Wiki meint vermutlich „ohne erkennbares Muster". Kein eigenes Spielszenario: Ein Szenario kann Determinismus nur durch Wiederholung stützen, Zufall nicht ausschließen.
 
 ### DUST-020: Signaländerungen breiten sich ohne Verzögerung im selben Spieltick aus
 - Aussage: Staub plant keine Ticks; die gesamte Kaskade von Stärkeänderungen läuft innerhalb der Neighbor-Update-Kette, die sie ausgelöst hat.
