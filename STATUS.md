@@ -10,7 +10,7 @@ Stand: 2026-11-14, Session 17. Geschätzter Gesamtfortschritt: **ca. 90 %** (gew
 | M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
 | M4 Redesign | 25 % | ~87 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
-| M6 GUI | 15 % | ~60 % | `rsx gui`: lokale Web-App (three.js), 3D- und Ebenen-Ansicht, Materialliste, Bauanleitung, Entwurfssuche live, Simulation; `rsx materials`. Bauanleitung im Browser gesehen, Suche/Simulation nur über API-Tests |
+| M6 GUI | 15 % | ~85 % | `rsx gui`: lokale Web-App (three.js), 3D- und Ebenen-Ansicht, Materialliste, Bauanleitung, Entwurfssuche live, Simulation; `rsx materials`. alle drei Modi im Browser geprüft (Session 17) |
 
 ## Übergabe (aus Session 17)
 
@@ -18,8 +18,6 @@ Alles committet, Suite grün (1559 Tests, 149 Golden Traces). Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| M6: Modi „Entwurfssuche“ und „Simulation“ im Browser durchklicken (Chrome-Erweiterung war nicht verbunden; Bauanleitung per headless-Chrome-Screenshot geprüft), Fehler beheben; Formen prüfen (Wandhebel, Wandfackel, Kolben) | Opus | – |
-| M6: Deutsche Namen im Material-Wörterbuch ergänzen (Hölzer, Farben, Betten), Summe der Materialliste ohne „Stacks“ über verschiedene Gegenstände | Sonnet | – |
 | M4: Kompaktieren größerer Züge (`scripts/bench_compact.py`); 5-Bit-Komparator: mit `MAX_CASCADE_INPUTS = 10` und Rust-Router 4 Bit in 98 s, 5 Bit noch nicht gemessen | Opus | – |
 
 ## Verlauf
@@ -33,6 +31,11 @@ Alles committet, Suite grün (1559 Tests, 149 Golden Traces). Nächste Aufgaben:
   `?demo=1` mit `static/demo/model.json`), `gui/materials.py` + `rsx materials`.
 - `RustWorld.block_entities` hält die Welt nur noch schwach: der Zyklus ließ den Garbage Collector Rust-Welten
   (unsendable) in fremden Threads freigeben (Fehlermeldungen, Speicherleck).
+- GUI im Browser (Chrome-Erweiterung) geprüft: Bauanleitung, Simulation (Hebel per Klick in der Ebenen-Ansicht,
+  Lampe geht an), Entwurfssuche (`adder2`: 32 Einzelbilder, Ergebnis simulierbar). Tooltip folgt jetzt
+  Simulationsänderungen. Standard-Port 8737; unter Windows exklusiv gebunden (SO_REUSEADDR ließ mehrere Server
+  denselben Port teilen; auf 127.0.0.1:8765 lag zudem ein Service Worker einer anderen App). `gui.bat` startet die
+  GUI. Material-Wörterbuch (Sonnet-Agent): Farben × Nomen mit Adjektivendung, Holzarten, Steinvarianten, Kupfer.
 - Headless-Screenshot ohne Erweiterung: `chrome.exe --headless=new --enable-unsafe-swiftshader
   --use-angle=swiftshader --virtual-time-budget=15000 --screenshot=x.png <url>`.
 

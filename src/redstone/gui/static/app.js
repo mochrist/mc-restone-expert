@@ -30,8 +30,10 @@ const fail = (e) => setStatus(e && e.message ? e.message : String(e), true);
 const setInfo = (t) => { $('info').textContent = t || ''; };
 
 const tip = $('tip');
+let hovered = null; // {info, ev} of the visible tooltip, so it can follow simulation changes
 function onHover(info, ev) {
-  if (!info || !ev) { tip.hidden = true; return; }
+  if (!info || !ev) { tip.hidden = true; hovered = null; return; }
+  hovered = { info, ev };
   const [x, y, z] = info.p;
   let name = '';
   const m = S.job && S.mode === 'search' ? null : S.model;
@@ -85,6 +87,7 @@ $('layoutSeg').addEventListener('click', (e) => {
 
 /** Show a full model; `reveal` enables build-order hiding, `fit` re-fits the camera. */
 function showModel(model, { reveal = false, fit = false, io = true } = {}) {
+  onHover(null);
   v3.setBlocks(model.blocks, model.size, { fit });
   v2.setBlocks(model.blocks, model.size);
   v3.setIO(io ? model.inputs : [], io ? model.outputs : []);
@@ -432,6 +435,11 @@ function applySim(r) {
   S.simTick = r.tick;
   $('tickOut').textContent = 'Tick ' + r.tick;
   if (r.changed && r.changed.length) for (const v of views) v.applyChanges(r.changed);
+  if (hovered) {
+    const [x, y, z] = hovered.info.p;
+    const c = (r.changed || []).find((b) => b.p[0] === x && b.p[1] === y && b.p[2] === z);
+    if (c) onHover({ p: hovered.info.p, s: c.s === 'air' ? null : c.s }, hovered.ev);
+  }
 }
 async function simTicks(n) {
   if (!S.simId) return;
