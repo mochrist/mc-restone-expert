@@ -53,49 +53,14 @@ class CopperBulbBlock(Block):
 
 
 # ---------------------------------------------------------------------- note block
-_MOB_HEADS = {"zombie": "zombie", "skeleton": "skeleton", "creeper": "creeper", "dragon": "dragon",
-              "wither_skeleton": "wither_skeleton", "piglin": "piglin", "player": "custom_head"}
+# NoteBlockInstrument#worksAboveNoteBlock(): every instrument of type MOB_HEAD or CUSTOM.
+_WORKS_ABOVE = frozenset({"zombie", "skeleton", "creeper", "dragon", "wither_skeleton", "piglin", "custom_head"})
 
 
 def _instrument(state: BlockState) -> str:
-    """BlockState#instrument for the blocks a note block typically sits on.
+    """``BlockState#instrument()``: the per-block ``BlockBehaviour.Properties#instrument`` from blocks_26.3.json."""
+    return blockdata.instrument(state)
 
-    ASSUMPTION: name heuristic. The game reads BlockBehaviour.Properties#instrument, which is not in
-    blocks_26.3.json yet; unknown blocks give harp.
-    """
-    n = state.id
-    for head, inst in _MOB_HEADS.items():
-        if n in (f"{head}_head", f"{head}_wall_head", f"{head}_skull", f"{head}_wall_skull"):
-            return inst
-    table = (
-        (("wool", "carpet"), "guitar"), (("glass", "sea_lantern", "beacon"), "hat"),
-        (("concrete_powder", "sand", "gravel"), "snare"), (("clay",), "flute"), (("gold_block",), "bell"),
-        (("packed_ice",), "chime"), (("bone_block",), "xylophone"), (("iron_block",), "iron_xylophone"),
-        (("soul_sand",), "cow_bell"), (("pumpkin",), "didgeridoo"), (("emerald_block",), "bit"),
-        (("hay_block",), "banjo"), (("glowstone",), "pling"),
-    )
-    for keys, inst in table:
-        if any(k in n for k in keys) and "sandstone" not in n:
-            return inst
-    if "copper" in n and not any(k in n for k in ("bulb", "door", "grate", "bars", "chain", "lantern")):
-        for stage in ("exposed", "weathered", "oxidized"):
-            if stage in n:
-                return f"trumpet_{stage}"
-        return "trumpet"
-    if any(k in n for k in ("planks", "_log", "_wood", "stem", "hyphae", "note_block", "bookshelf", "chest",
-                            "barrel", "crafting_table", "lectern", "fence", "mushroom_block", "bamboo_block")):
-        return "bass"
-    if blockdata.is_conductor(state) and any(k in n for k in ("stone", "cobble", "deepslate", "ore", "bricks",
-                                                             "obsidian", "netherrack", "terracotta", "concrete",
-                                                             "quartz", "basalt", "blackstone", "tuff", "prismarine",
-                                                             "end_stone", "purpur", "andesite", "diorite",
-                                                             "granite", "calcite", "dripstone", "observer",
-                                                             "dispenser", "dropper", "furnace", "bedrock")):
-        return "basedrum"
-    return "harp"
-
-
-_WORKS_ABOVE = set(_MOB_HEADS.values())
 
 
 class NoteBlock(Block):

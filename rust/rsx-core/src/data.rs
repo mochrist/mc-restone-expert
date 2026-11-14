@@ -38,6 +38,20 @@ pub struct BlockEntry {
     pub unbreakable: Val<bool>,
     /// Deprecated BlockState#isSolid (legacy "solid" flag).
     pub solid: Val<bool>,
+    /// BlockState#instrument() as its serialized name (an `INSTRUMENTS` entry).
+    pub instrument: Val<&'static str>,
+}
+
+/// NoteBlockInstrument serialized names; the table stores them as interned `&'static str`.
+pub const INSTRUMENTS: &[&str] = &[
+    "harp", "basedrum", "snare", "hat", "bass", "flute", "bell", "guitar", "chime", "xylophone", "iron_xylophone",
+    "cow_bell", "didgeridoo", "bit", "banjo", "pling", "trumpet", "trumpet_exposed", "trumpet_oxidized",
+    "trumpet_weathered", "zombie", "skeleton", "creeper", "dragon", "wither_skeleton", "piglin", "custom_head",
+];
+
+fn as_instrument(v: &Value) -> Result<&'static str, String> {
+    let s = v.as_str().ok_or_else(|| format!("expected string, got {v}"))?;
+    INSTRUMENTS.iter().find(|i| **i == s).copied().ok_or_else(|| format!("unknown instrument {s:?}"))
 }
 
 pub struct BlockData {
@@ -121,6 +135,7 @@ pub fn init(blocks_json: &str, stacks_json: &str) -> Result<(), String> {
                 block_entity: be("block_entity")?,
                 unbreakable: be("unbreakable")?,
                 solid: be("solid")?,
+                instrument: val(v, "instrument", as_instrument).map_err(|e| format!("{name}: {e}"))?,
             },
         );
     }
@@ -159,6 +174,7 @@ pub struct StateData {
     pub block_entity: bool,
     pub unbreakable: bool,
     pub solid: bool,
+    pub instrument: &'static str,
 }
 
 /// blockdata._lookup: state index is mixed radix over the listed properties; missing properties take the
@@ -211,6 +227,7 @@ pub fn lookup(name: &str, props: &[(&str, &str)]) -> StateData {
                 block_entity: entry.block_entity.at(i),
                 unbreakable: entry.unbreakable.at(i),
                 solid: entry.solid.at(i),
+                instrument: entry.instrument.at(i),
             }
         }
         None => {
@@ -228,6 +245,7 @@ pub fn lookup(name: &str, props: &[(&str, &str)]) -> StateData {
                 block_entity: false,
                 unbreakable: false,
                 solid: !is_air_name(name), // blockdata.is_solid default
+                instrument: "harp",
             }
         }
     }

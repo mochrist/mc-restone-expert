@@ -100,7 +100,7 @@ Leiter), reagieren also auf schwache und starke Ladung. Zeiten in Game-Ticks (gt
 - Quelle: [SRC-MC-CODE] `NoteBlock#neighborChanged`, `NoteBlock#useWithoutItem`
 - Konfidenz: hoch
 - Status: im-Spiel-verifiziert (scenarios/note-block.yaml)
-- Hinweise: `instrument` wird nur bei Shape-Updates von oben/unten neu bestimmt (`NoteBlock#updateShape`). Der Ton selbst ist ein Block-Event ohne Einfluss auf den Zustand.
+- Hinweise: `instrument` wird nur bei Shape-Updates von oben/unten neu bestimmt (`NoteBlock#updateShape`, Herkunft des Werts: OUT-016). Der Ton selbst ist ein Block-Event ohne Einfluss auf den Zustand.
 
 ### OUT-013: Zauntore reagieren sofort; Rechtsklick dreht sie zum Spieler
 - Aussage: Ein Zauntor setzt bei Änderung des Eingangs `powered` und `open` sofort im Neighbor-Update mit Flag 2. Beim Öffnen per Rechtsklick wird `facing` auf die Blickrichtung des Spielers gesetzt, wenn das Tor vorher zum Spieler hin zeigte.
@@ -124,3 +124,11 @@ Leiter), reagieren also auf schwache und starke Ladung. Zeiten in Game-Ticks (gt
 - Quelle: [SRC-MC-CODE] `PoweredRailBlock#isSameRailWithPower`
 - Konfidenz: hoch
 - Status: im-Spiel-verifiziert (scenarios/powered-rails.yaml)
+
+### OUT-016: Das Instrument des Notenblocks kommt aus der Block-Eigenschaft `instrument` des Blocks darunter (oder eines Mobkopfs darüber)
+- Aussage: `NoteBlock#setInstrument` liest `BlockState#instrument()` des Blocks darüber; funktioniert dieses Instrument über einem Notenblock (Mobkopf-Typ, `worksAboveNoteBlock`), gilt es, sonst das des Blocks darunter (ein Kopf-Instrument darunter ergibt Harfe). `instrument()` ist pro Block festgelegt (`BlockBehaviour.Properties#instrument`, Vorgabe `HARP`) und wird beim Kopieren (`ofFullCopy`/`ofLegacyCopy`, Treppen, Stufen, Mauern) mit übernommen; Wandvarianten (`wallVariant`) beginnen bei `Properties.of()` und geben Harfe. Teppiche, Knöpfe, Türen und Kupferbirnen haben Harfe, Wandköpfe ebenfalls (nur stehende Köpfe wirken).
+- Version: 26.3
+- Quelle: [SRC-MC-CODE] `NoteBlock#setInstrument`, `NoteBlock#updateShape`, `NoteBlockInstrument`, `BlockBehaviour.Properties#instrument`, `Blocks`
+- Konfidenz: hoch
+- Status: belegt
+- Hinweise: Die Tabelle `src/redstone/sim/data/blocks_26.3.json` (Schlüssel `instrument`) wird mit `scripts/gen_note_block_instruments.py` aus `Blocks.java` abgeleitet; der Oracle (`BlockDump.java`) schreibt das Feld bei einem neuen Dump selbst (dann Abgleich mit dem Skript, `--check`). Beispiele: Stein basedrum, Sand snare, Glas hat, Wolle guitar, Goldblock bell, Ton flute, Packeis chime, Knochenblock xylophone, Eisenblock iron_xylophone, Seelensand cow_bell, Kürbis didgeridoo, Smaragdblock bit, Heuballen banjo, Glowstone pling, Holz bass, Kupferblöcke trumpet(_exposed/_weathered/_oxidized). Platzierung (`getStateForPlacement`) wird nicht modelliert; der Anfangszustand kommt aus dem Szenario.
