@@ -291,7 +291,17 @@ def _partial_spec(analysis, title: str, original, chosen):
     return spec, cand
 
 
-def _cmd_redesign(args: argparse.Namespace) -> int:
+class RedesignInputError(Exception):
+    """No specification can be derived from the given circuit (German message)."""
+
+
+def run_redesign(file, constraints=None, *, compact: int = 100, time_limit: float | None = 60,
+                 outputs: str | None = None, out: str | None = None, top: int = 10,
+                 steps: list[str] | None = None):
+    """`rsx redesign` without the command line: returns (best candidate or None, German report, spec).
+
+    file: spec .yaml, scenario .yaml or schematic. Raises RedesignInputError (German message) if no spec can be
+    derived from an existing circuit. steps: filled with the compaction log while the search runs."""
     from pathlib import Path
 
     import yaml
@@ -301,7 +311,8 @@ def _cmd_redesign(args: argparse.Namespace) -> int:
     from .design.report import report
     from .design.search import redesign
 
-    path = Path(args.file)
+    constraints = constraints or Constraints()
+    path = Path(file)
     original = None
     title = path.stem
     raw = yaml.safe_load(path.read_text(encoding="utf-8")) if path.suffix in (".yaml", ".yml") else None
@@ -321,12 +332,33 @@ def _cmd_redesign(args: argparse.Namespace) -> int:
             grid = load_scenario(path).grid
         else:
             grid = io.load(path)
-        analysis = analyze(grid)
         try:
-            spec, original = _spec_of_existing(analysis, title, args.outputs)
+            spec, original = _spec_of_existing(analyze(grid), title, outputs)
         except ValueError as e:
-            print(f"Fehler: {e}")
-            return 2
+            raise RedesignInputError(str(e)) from e
+    steps = [] if steps is None else steps
+    results = redesign(spec, constraints, extra=[original] if original is not None else None,
+                       compact_budget=compact, log=steps, time_limit=time_limit)
+    results = [r for r in results if r.candidate is not original]
+    orig_ev = evaluate_any(original, spec, constraints) if original is not None else None
+    written = None
+    ok = [r for r in results if r.ok]
+    if out and ok:
+        target = Path(out)
+        if target.suffix == "":
+            target.mkdir(parents=True, exist_ok=True)
+            target = target / f"{title}-redesign.litematic"
+        io.save(ok[0].candidate.grid, target)
+        written = str(target)
+    text = report(spec, constraints, results, title, orig_ev, written, top=top, compact_log=steps)
+    return (ok[0].candidate if ok else None), text, spec
+
+
+def _cmd_redesign(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from .design.evaluate import Constraints
+
     constraints = Constraints(
         max_size=args.max_size,
         allowed_blocks=set(args.allow.split(",")) if args.allow else None,
@@ -334,27 +366,25 @@ def _cmd_redesign(args: argparse.Namespace) -> int:
         allow_qc=not args.no_qc,
         max_delay=args.max_delay,
     )
-    steps: list[str] = []
-    results = redesign(spec, constraints, extra=[original] if original is not None else None,
-                       compact_budget=args.compact, log=steps, time_limit=args.time)
-    results = [r for r in results if r.candidate is not original]
-    orig_ev = evaluate_any(original, spec, constraints) if original is not None else None
-    written = None
-    ok = [r for r in results if r.ok]
-    if args.out and ok:
-        out = Path(args.out)
-        if out.suffix == "":
-            out.mkdir(parents=True, exist_ok=True)
-            out = out / f"{title}-redesign.litematic"
-        io.save(ok[0].candidate.grid, out)
-        written = str(out)
-    text = report(spec, constraints, results, title, orig_ev, written, top=args.top, compact_log=steps)
+    try:
+        best, text, _ = run_redesign(args.file, constraints, compact=args.compact, time_limit=args.time,
+                                  outputs=args.outputs, out=args.out, top=args.top)
+    except RedesignInputError as e:
+        print(f"Fehler: {e}")
+        return 2
     if args.report:
         Path(args.report).write_text(text, encoding="utf-8")
         print(f"wrote {args.report}")
     else:
         print(text)
-    return 0 if ok else 1
+    return 0 if best is not None else 1
+
+
+def _cmd_gui(args: argparse.Namespace) -> int:
+    from .gui.server import serve
+
+    serve(args.port, args.file, open_browser=not args.no_browser)
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -424,6 +454,12 @@ def main(argv: list[str] | None = None) -> int:
                    help="outputs of an existing circuit that the redesign must keep: names from `rsx explain` "
                         "(out1,out3) or 'all' (default: all for a truth table, only the lamps for behaviour)")
     p.set_defaults(func=_cmd_redesign)
+
+    p = sub.add_parser("gui", help="local web GUI: 3D/2D views, materials, build playback, search, simulation")
+    p.add_argument("file", nargs="?", help="schematic or scenario to open first")
+    p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--no-browser", action="store_true", help="do not open the browser")
+    p.set_defaults(func=_cmd_gui)
 
     args = parser.parse_args(argv)
     if args.sim_core:

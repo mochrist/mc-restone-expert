@@ -8,6 +8,8 @@ offers views for the attributes other code reads directly: ``blocks``, ``block_e
 
 from __future__ import annotations
 
+import weakref
+
 from collections.abc import Iterator
 from typing import Any
 
@@ -239,7 +241,13 @@ class _BlockEntities:
     """``World.block_entities``: position -> block entity, in the insertion order of the Python dict."""
 
     def __init__(self, world: RustWorld) -> None:
-        self._world = world
+        # weak: no reference cycle, so a world is freed (by reference counting) on the thread that owns it;
+        # the Rust world is unsendable and must not be dropped by the garbage collector on another thread
+        self._ref = weakref.ref(world)
+
+    @property
+    def _world(self) -> RustWorld:
+        return self._ref()
 
     def get(self, pos: Pos, default: Any = None) -> Any:
         be = self._world._c.raw_block_entity(pos)

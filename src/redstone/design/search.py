@@ -11,6 +11,7 @@ import itertools
 from dataclasses import replace
 
 from ..analysis.analyze import Analysis
+from . import observe
 from .candidate import Candidate
 from .evaluate import Constraints, Evaluation, evaluate_any
 from .report import COMPOSE_PREFIX
@@ -290,6 +291,7 @@ def redesign(spec: Spec, constraints: Constraints | None = None,
     for cand in candidates:
         quick = evaluate_any(cand, spec, constraints, quick=True)
         results.append(evaluate_any(cand, spec, constraints) if quick.correct else quick)
+        observe.frame(cand, "compose", cand.name, results[-1].ok)
     if compact_budget:
         # the best working compositions as well (first: they are built from parts with air and lines in between
         # and shrink the most); generated designs far larger than the best working one so far are skipped

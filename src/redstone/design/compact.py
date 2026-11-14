@@ -28,6 +28,7 @@ from ..sim import blockdata
 from ..sim.constants import UPDATE_ALL
 from ..sim.core import World
 from ..sim.runner import ORACLE_ORIGIN
+from . import observe
 from .candidate import Assembly, Candidate, is_line, under
 from .evaluate import Constraints, evaluate_any
 from .spec import Spec
@@ -875,6 +876,7 @@ def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
     current = crop(c)
     if current is not c:
         log.append("auf die Bounding Box zugeschnitten")
+    observe.frame(current, "compact", f"{c.name}: Start", True)
     failed: set = set()  # surroundings of edits that did not work (see _local_key)
 
     def attempt(kind: str, key, make) -> bool:
@@ -885,7 +887,10 @@ def compact(c: Candidate, spec: Spec, constraints: Constraints | None = None,
         cand = make()
         if cand is not None and works(cand, kind):
             current = cand
+            observe.frame(cand, "compact", kind, True)
             return True
+        if cand is not None:
+            observe.frame(cand, "compact", kind, False)
         if budget[0] > 0:  # a variant that was not simulated (limit reached) did not fail
             failed.add(key)
         return False

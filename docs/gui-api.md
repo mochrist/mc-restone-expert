@@ -1,7 +1,12 @@
 # GUI (M6): Aufbau und JSON-Schnittstelle
 
 `uv run rsx gui [datei]` startet einen lokalen Server (nur `127.0.0.1`, Standardport 8765, Python-Standardbibliothek)
-und öffnet den Browser. Die Oberfläche ist eine statische Web-App ohne Build-Schritt.
+und öffnet den Browser (`--port N`, `--no-browser`). Mit Datei öffnet der Browser `/?file=<pfad>`, die
+Oberfläche lädt diese Datei dann gleich. Die Oberfläche ist eine statische Web-App ohne Build-Schritt.
+
+Pfade in Anfragen sind relativ zum Repository; Dateien außerhalb (außer der beim Start angegebenen) lehnt der
+Server mit 403 ab. Jede Simulation läuft in einem eigenen Thread (Rust-Welten sind an ihren Thread gebunden),
+höchstens 16 gleichzeitig (die älteste fällt weg).
 
 | Teil | Ort | Inhalt |
 |---|---|---|
@@ -76,6 +81,8 @@ Alle Antworten sind JSON; Fehler als HTTP 4xx/5xx mit `{"error": "<deutscher Tex
 }
 ```
 
+`log`: Kompaktier-Protokoll, wächst während der Suche (immer vollständig). `error`: deutscher Text, auch wenn
+kein funktionierender Entwurf gefunden wurde (dann `result` nur mit `summary`).
 `phase`: `compose` (ein fertig zusammengesetzter Kandidat) oder `compact` (ein Kompaktier-Versuch; `accepted`
 sagt, ob er funktioniert und übernommen wurde). Einzelbilder sind vollständige Blocklisten, jeweils auf ihre
 eigene Min-Ecke bezogen. Höchstens 3000 Einzelbilder je Job (danach nur noch übernommene). `result` am Ende:
