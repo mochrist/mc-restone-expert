@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redstone-Werkstatt</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<header id="top">
+  <h1>Redstone-Werkstatt</h1>
+  <span id="modelName"></span>
+  <span class="spacer"></span>
+  <div class="seg" id="layoutSeg" role="group" aria-label="Ansicht">
+    <button data-layout="split" class="on">3D + Ebenen</button>
+    <button data-layout="3d">3D</button>
+    <button data-layout="2d">Ebenen</button>
+  </div>
+</header>
+
+<aside id="side">
+  <section>
+    <h2>Dateien</h2>
+    <input id="fileFilter" type="search" placeholder="Filtern ...">
+    <div id="fileList"></div>
+  </section>
+  <section id="selection">
+    <div id="selInfo">Keine Datei gewählt.</div>
+    <div class="row">
+      <button id="btnRedesign" disabled>Entwurf suchen</button>
+      <label>Kompaktieren <input id="compact" type="number" min="0" max="10000" value="100"></label>
+    </div>
+  </section>
+  <section id="summarySec" hidden>
+    <h2>Ergebnis</h2>
+    <pre id="summary"></pre>
+  </section>
+  <section id="framesSec" hidden>
+    <h2>Einzelbilder</h2>
+    <div id="frameLog"></div>
+  </section>
+  <section id="matSec">
+    <h2>Material</h2>
+    <div id="materials"><span class="muted">Kein Modell geladen.</span></div>
+    <div id="notes"></div>
+  </section>
+</aside>
+
+<main id="views" class="split">
+  <div class="pane" id="pane3d">
+    <div class="toolbar">
+      <span class="ttl">3D</span>
+      <label>Ebenen bis y= <input id="maxY" type="range" min="0" max="0" value="0"></label>
+      <output id="maxYVal">0</output>
+      <button id="btnFit" title="Kamera zurücksetzen">Ansicht zurücksetzen</button>
+    </div>
+    <div class="canvasbox" id="box3d"></div>
+  </div>
+  <div class="pane" id="pane2d">
+    <div class="toolbar">
+      <span class="ttl">Ebene</span>
+      <label>y= <input id="layerY" type="range" min="0" max="0" value="0"></label>
+      <output id="layerYVal">0</output>
+      <span class="muted">(Mausrad ändert die Ebene)</span>
+    </div>
+    <div class="canvasbox" id="box2d"></div>
+  </div>
+  <div id="tip" hidden></div>
+</main>
+
+<footer id="play">
+  <div class="row">
+    <div class="seg" id="modeSeg" role="group" aria-label="Modus">
+      <button data-mode="build" class="on">Bauanleitung</button>
+      <button data-mode="search">Entwurfssuche</button>
+      <button data-mode="sim">Simulation</button>
+    </div>
+    <div id="ctlBuild" class="ctl">
+      <button id="bBack" title="Schritt zurück">&#9198;</button>
+      <button id="bPlay" title="Start/Pause">&#9654;</button>
+      <button id="bStep" title="Schritt vor">&#9197;</button>
+      <input id="progress" type="range" min="0" max="0" value="0">
+      <label><span id="speedLbl">Tempo</span> <input id="speed" type="range" min="1" max="100" value="20"></label>
+      <output id="speedVal"></output>
+    </div>
+    <div id="ctlSim" class="ctl" hidden>
+      <select id="simSrc"></select>
+      <button id="sStart">Simulation starten</button>
+      <button id="sTick1" disabled>1 Tick</button>
+      <button id="sRun" disabled>Start/Pause</button>
+      <label>Ticks je Schritt <input id="simSpeed" type="range" min="1" max="40" value="2"></label>
+      <output id="simSpeedVal">2</output>
+      <strong id="tickOut">Tick 0</strong>
+    </div>
+  </div>
+  <div id="info"></div>
+  <div id="status" role="status"></div>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
