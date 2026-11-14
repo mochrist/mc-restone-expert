@@ -98,3 +98,8 @@ Modell des besten Entwurfs plus `"summary"` (deutscher Bericht von `rsx redesign
 - **Material**: Tabelle aus `materials`, Summe, Stapel (64er) und Kisten.
 - **Abspielen**: Bau-Reihenfolge (`build_order`) Block für Block, Einzelbilder einer Entwurfssuche, Simulation
   (Ticks); jeweils Start/Pause/Schritt und Tempo-Regler.
+
+### URL-Parameter (zum Testen und für Screenshots)
+
+`/?path=<Datei>&layout=3d|2d|split&y=<Ebene>&cam=px,py,pz,tx,ty,tz` – `path` wählt eine Datei vor, `layout` die Ansicht,
+`y` die Ebene der 2D-Ansicht, `cam` Kameraposition und Blickziel der 3D-Ansicht.

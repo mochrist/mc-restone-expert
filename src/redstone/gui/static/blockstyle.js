@@ -63,9 +63,15 @@ const FIXED = {
   coal_block: 0x1b1b1b, quartz_block: 0xe8e2d6, netherrack: 0x6e2f2f, bricks: 0x96564a, target: 0xe0b9a8,
   note_block: 0x7a5230, sculk: 0x0d3b44, hopper: 0x4a4a4a, dropper: 0x777777, dispenser: 0x777777,
   observer: 0x6e6e6e, piston: 0xb08a52, sticky_piston: 0xb08a52, tnt: 0xd04030, bedrock: 0x333333,
-  water: 0x3355cc, ice: 0xa5c8f5, slime_block: 0x7bc255, honey_block: 0xe9a73a, glass: 0xcfe8f0,
-  lectern: 0x9b7a45, daylight_sensor: 0xc9b98c, sculk_sensor: 0x1f5a66, calibrated_sculk_sensor: 0x2a6b8a,
+  rail: 0x6a5a48, powered_rail: 0x8a6a30, detector_rail: 0x6a5a48, activator_rail: 0x6a5a48, chest: 0x9a6a30,
+  trapped_chest: 0x8a4a2a, water: 0x3355cc, ice: 0xa5c8f5, slime_block: 0x7bc255, honey_block: 0xe9a73a, glass: 0xcfe8f0,
+  lectern: 0x9b7a45, daylight_sensor: 0xc9b98c, daylight_detector: 0xc9b98c, sculk_sensor: 0x1f5a66, calibrated_sculk_sensor: 0x2a6b8a,
   oak_planks: 0xb08a52, redstone_lamp: 0x5a3318, copper_block: 0xc4694a, bamboo_block: 0xb5a64a, crafter: 0x8a7a68,
+};
+
+const WOOD = {
+  oak: 0xb08a52, spruce: 0x7a5a34, birch: 0xc8b77a, jungle: 0xa0734f, acacia: 0xa85a32, dark_oak: 0x4a3018,
+  mangrove: 0x76363a, cherry: 0xe0a8a8, pale_oak: 0xe3d9d0, bamboo: 0xc8b04a, crimson: 0x6a3050, warped: 0x2b7f78,
 };
 
 function hashColor(id) {
@@ -81,7 +87,10 @@ function hashColor(id) {
 /** Base colour (0xRRGGBB) and whether the id is in a known table (else hashed). */
 export function baseColor(id, props = {}) {
   if (id === 'redstone_lamp') return { color: props.lit === 'true' ? 0xffd36a : 0x5a3318, known: true };
+  if (id.endsWith('copper_bulb')) return { color: props.lit === 'true' ? 0xf2c96a : 0xa8573c, known: true };
   if (FIXED[id] !== undefined) return { color: FIXED[id], known: true };
+  if (WOOD[id] !== undefined) return { color: WOOD[id], known: true }; // slab/stairs base names
+  for (const w of Object.keys(WOOD)) if (id.startsWith(w + '_')) return { color: WOOD[w], known: true };
   const cn = colorName(id);
   if (cn) return { color: COLOR_NAMES[cn], known: true };
   if (id.endsWith('_planks') || id.endsWith('_wood')) return { color: 0xb08a52, known: true };
@@ -100,7 +109,8 @@ export const isGlassLike = (id) => TRANSLUCENT.has(id) || id.endsWith('_stained_
 const SPECIAL_EXACT = new Set([
   'redstone_wire', 'redstone_torch', 'redstone_wall_torch', 'repeater', 'comparator', 'lever', 'piston',
   'sticky_piston', 'piston_head', 'moving_piston', 'observer', 'target', 'note_block', 'dispenser', 'dropper',
-  'rail', 'powered_rail', 'detector_rail', 'activator_rail', 'daylight_sensor', 'hopper',
+  'rail', 'powered_rail', 'detector_rail', 'activator_rail', 'daylight_sensor', 'daylight_detector', 'hopper', 'chest', 'trapped_chest',
+  'ender_chest', 'sculk_sensor', 'calibrated_sculk_sensor',
 ]);
 
 /** "cube" (instanced, coloured), "glass" (instanced translucent) or "obj" (individual shape). */

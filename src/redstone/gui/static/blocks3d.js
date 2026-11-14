@@ -103,12 +103,13 @@ function orientFacing(group, facing) {
 // For wall attachment `facing` points away from the wall.
 function placeFaced(group, face, facing) {
   const q = new THREE.Quaternion();
+  const yaw = new THREE.Quaternion().setFromAxisAngle(UP, YAW[facing] ?? 0);
   if (face === 'wall') {
-    const d = DIRS[facing] || DIRS.north;
-    q.setFromUnitVectors(UP, new THREE.Vector3(...d));
+    // tilt the floor shape up onto the wall (up -> north), then yaw it to the real direction
+    q.copy(yaw).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2));
   } else {
     if (face === 'ceiling') q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI);
-    q.multiply(new THREE.Quaternion().setFromAxisAngle(UP, YAW[facing] ?? 0));
+    q.multiply(yaw);
   }
   group.quaternion.copy(q);
 }
@@ -147,7 +148,9 @@ function diodeGroup(st) {
     g.add(stub(0, -0.36 + 0.09 * (delay - 1), lit));
     if (P.locked === 'true') g.add(box(0.9, 0.05, 0.06, mat(0x222222), 0, top + 0.03, 0.12));
   } else {
-    g.add(stub(0, 0.34, P.mode === 'subtract'));
+    const sub = P.mode === 'subtract'; // front torch: tall and bright in subtract mode, a short dark stub in compare mode
+    const fh = sub ? 0.3 : 0.1;
+    g.add(box(0.12, fh, 0.12, mat(sub ? 0xff5a2a : 0x5a1a10, sub ? 0xff3000 : 0), 0, top + fh / 2, 0.34));
     g.add(stub(-0.28, -0.3, lit));
     g.add(stub(0.28, -0.3, lit));
   }
@@ -161,7 +164,9 @@ function leverGroup(st) {
   g.add(box(0.3, 0.16, 0.4, mat(0x777777), 0, -0.5 + 0.08, 0));
   const pivot = new THREE.Group();
   pivot.position.set(0, -0.5 + 0.16, 0);
-  pivot.rotation.x = on ? -0.65 : 0.65;
+  // on a wall the local +z axis ends up pointing up: powered levers point up there, down otherwise
+  const sign = (P.face === 'wall') ? -1 : 1;
+  pivot.rotation.x = (on ? -0.65 : 0.65) * sign;
   pivot.add(box(0.1, 0.45, 0.1, mat(on ? 0xc8a060 : 0x8b6b3a), 0, 0.225, 0));
   g.add(pivot);
   const out = new THREE.Group();
@@ -219,10 +224,10 @@ function slabGroup(st) {
   } else if (id.endsWith('_slab')) {
     if (P.type === 'double') g.add(box(1, 1, 1, m));
     else g.add(box(1, 0.5, 1, m, 0, P.type === 'top' ? 0.25 : -0.25, 0));
-  } else { // stairs: facing north has the high part at +z
+  } else { // stairs: the high step lies on the `facing` side (facing north -> high part at -z)
     const top = P.half === 'top';
     g.add(box(1, 0.5, 1, m, 0, top ? 0.25 : -0.25, 0));
-    g.add(box(1, 0.5, 0.5, m, 0, top ? -0.25 : 0.25, 0.25));
+    g.add(box(1, 0.5, 0.5, m, 0, top ? -0.25 : 0.25, -0.25));
     g.rotation.y = YAW[P.facing] ?? 0;
   }
   return g;
@@ -242,7 +247,8 @@ function buildObject(st) {
     case 'piston': case 'sticky_piston': case 'piston_head': case 'moving_piston': return pistonGroup(st);
     case 'observer': {
       const g = cubeWith(0x6e6e6e, (gr) => {
-        gr.add(box(0.6, 0.22, 0.04, mat(0x222222), 0, 0.1, -0.5));
+        gr.add(box(0.7, 0.3, 0.04, mat(0x2a2a2a), 0, 0.15, -0.5));
+        gr.add(box(0.12, 0.12, 0.05, mat(0xe0e0e0), -0.2, 0.15, -0.5)); gr.add(box(0.12, 0.12, 0.05, mat(0xe0e0e0), 0.2, 0.15, -0.5));
         gr.add(box(0.2, 0.2, 0.04, mat(P.powered === 'true' ? 0xff3020 : 0x802020, P.powered === 'true' ? 0xff2000 : 0), 0, 0, 0.5));
       });
       orientFacing(g, P.facing || 'north');
@@ -253,10 +259,42 @@ function buildObject(st) {
       orientFacing(g, P.facing || 'north');
       return g;
     }
+    case 'chest': case 'trapped_chest': case 'ender_chest': {
+      const g = new THREE.Group();
+      const wood = id === 'ender_chest' ? 0x1f3a3a : id === 'trapped_chest' ? 0x8a4a2a : 0x9a6a30;
+      g.add(box(0.875, 0.875, 0.875, mat(wood), 0, -0.5 + 0.4375, 0));
+      g.add(box(0.875, 0.06, 0.875, mat(0x6b4a20), 0, -0.5 + 0.55, 0)); // lid seam
+      g.add(box(0.12, 0.16, 0.05, mat(0xc0c0c0), 0, -0.5 + 0.55, -0.45)); // latch on the front (facing side)
+      g.rotation.y = YAW[P.facing] ?? 0;
+      return g;
+    }
+    case 'hopper': {
+      const g = new THREE.Group(), m = mat(0x4a4a4a), dk = mat(0x1a1a1a);
+      g.add(box(1, 0.125, 1, m, 0, 0.4375, 0)); // rim (top)
+      g.add(box(0.125, 0.375, 1, m, -0.4375, 0.25, 0)); g.add(box(0.125, 0.375, 1, m, 0.4375, 0.25, 0));
+      g.add(box(0.75, 0.375, 0.125, m, 0, 0.25, -0.4375)); g.add(box(0.75, 0.375, 0.125, m, 0, 0.25, 0.4375));
+      g.add(box(0.75, 0.04, 0.75, dk, 0, 0.1, 0));
+      g.add(box(0.5, 0.25, 0.5, m, 0, -0.1, 0));
+      const spout = box(0.25, 0.25, 0.25, m, 0, -0.35, 0);
+      const f = P.facing || 'down';
+      if (f in DIRS && f !== 'down') { spout.position.set(DIRS[f][0] * 0.375, -0.3, DIRS[f][2] * 0.375); } // spout toward the target inventory
+      g.add(spout);
+      return g;
+    }
+    case 'sculk_sensor': case 'calibrated_sculk_sensor': {
+      const g = new THREE.Group(), pw = +P.power > 0 || P.sculk_sensor_phase === 'active';
+      g.add(box(1, 0.5, 1, mat(id === 'sculk_sensor' ? 0x1f5a66 : 0x2a6b8a, pw ? 0x108090 : 0), 0, -0.25, 0));
+      g.add(box(0.5, 0.06, 0.5, mat(0x59d0e0, pw ? 0x30c0d0 : 0), 0, 0.03, 0));
+      return g;
+    }
     case 'target': return cubeWith(0xf0e8e0, (gr) => gr.add(box(0.55, 0.02, 0.55, mat(0xd03030), 0, 0.5, 0)));
     case 'note_block': return cubeWith(0x7a5230, (gr) => gr.add(box(0.3, 0.02, 0.3, mat(0x222222), 0, 0.5, 0)));
-    case 'hopper': return cubeWith(0x4a4a4a, (gr) => gr.add(box(0.5, 0.02, 0.5, mat(0x111111), 0, 0.5, 0)));
-    case 'daylight_sensor': { const g = new THREE.Group(); g.add(box(1, 0.375, 1, mat(0xc9b98c), 0, -0.3125, 0)); return g; }
+    case 'daylight_detector': case 'daylight_sensor': {
+      const g = new THREE.Group();
+      g.add(box(1, 0.375, 1, mat(0x8a6a40), 0, -0.3125, 0));
+      g.add(box(0.96, 0.02, 0.96, mat(P.inverted === 'true' ? 0x2a3a5a : 0xd8c690), 0, -0.5 + 0.375 + 0.005, 0));
+      return g;
+    }
     case 'rail': case 'powered_rail': case 'detector_rail': case 'activator_rail': {
       const g = new THREE.Group();
       g.add(box(0.7, 0.04, 1, mat(id === 'powered_rail' && P.powered === 'true' ? 0xd0a030 : 0x8a7a60), 0, -0.48, 0));

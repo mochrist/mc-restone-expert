@@ -498,6 +498,19 @@ async function init() {
       const g = ['schematics', 'scenarios', 'specs'].find((k) => (f[k] || []).includes(initial)) || 'schematics';
       await selectFile(initial, g);
     }
+    // ?layout=3d|2d|split and ?y=<layer> (handy for screenshots)
+    const lay = params.get('layout');
+    if (lay) $('layoutSeg').querySelector(`button[data-layout="${lay}"]`)?.click();
+    const cam = (params.get('cam') || '').split(',').map(Number); // ?cam=px,py,pz,tx,ty,tz
+    if (cam.length === 6 && cam.every(Number.isFinite)) {
+      v3.camera.position.set(cam[0], cam[1], cam[2]); v3.controls.target.set(cam[3], cam[4], cam[5]);
+      v3.controls.update(); v3.requestRender();
+    }
+    const yy = params.get('y');
+    if (yy !== null && yy !== '') {
+      const ly = Math.max(0, Math.min(S.lastSize[1] - 1, +yy || 0));
+      $('layerY').value = ly; $('layerYVal').textContent = ly; v2.setLayer(ly);
+    }
   } catch (e) { fail(e); }
 }
 init();
