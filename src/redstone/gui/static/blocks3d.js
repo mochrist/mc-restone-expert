@@ -225,9 +225,16 @@ function slabGroup(st) {
     if (P.type === 'double') g.add(box(1, 1, 1, m));
     else g.add(box(1, 0.5, 1, m, 0, P.type === 'top' ? 0.25 : -0.25, 0));
   } else { // stairs: the high step lies on the `facing` side (facing north -> high part at -z)
-    const top = P.half === 'top';
-    g.add(box(1, 0.5, 1, m, 0, top ? 0.25 : -0.25, 0));
-    g.add(box(1, 0.5, 0.5, m, 0, top ? -0.25 : 0.25, -0.25));
+    // local frame: facing north, high part at -z, left = -x; shapes per Minecraft (straight/inner/outer, left/right)
+    const top = P.half === 'top', yb = top ? 0.25 : -0.25, yt = top ? -0.25 : 0.25;
+    g.add(box(1, 0.5, 1, m, 0, yb, 0));
+    const shape = P.shape || 'straight', sx = shape.endsWith('left') ? -1 : 1;
+    if (shape.startsWith('outer')) {
+      g.add(box(0.5, 0.5, 0.5, m, sx * 0.25, yt, -0.25));
+    } else {
+      g.add(box(1, 0.5, 0.5, m, 0, yt, -0.25));
+      if (shape.startsWith('inner')) g.add(box(0.5, 0.5, 0.5, m, sx * 0.25, yt, 0.25));
+    }
     g.rotation.y = YAW[P.facing] ?? 0;
   }
   return g;

@@ -205,15 +205,23 @@ export class LayerView {
       }
       case 'redstone_torch': case 'redstone_wall_torch': {
         const lit = P.lit === 'true';
-        if (id === 'redstone_wall_torch') {
+        const wall = id === 'redstone_wall_torch';
+        let tx = cx, ty = cy, tr = t * 0.22;
+        if (wall) {
+          // stick from the wall side towards the tile centre, flame at its inner end
           const d = facingDir(OPPOSITE[P.facing] || 'south'); // towards the wall
-          ctx.strokeStyle = '#7a5a2e'; ctx.lineWidth = Math.max(2, t * 0.12);
-          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + d[0] * t * 0.45, cy + d[2] * t * 0.45); ctx.stroke();
+          fillBg(0x777777, 0.25);
+          ctx.strokeStyle = '#7a5a2e'; ctx.lineWidth = Math.max(3, t * 0.16); ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(cx + d[0] * t * 0.46, cy + d[2] * t * 0.46); ctx.lineTo(cx - d[0] * t * 0.05, cy - d[2] * t * 0.05); ctx.stroke();
+          ctx.lineCap = 'butt';
+          ctx.fillStyle = '#4a4a4a'; // wall edge
+          ctx.fillRect(cx + d[0] * t * 0.46 - (d[0] ? t * 0.03 : t * 0.3), cy + d[2] * t * 0.46 - (d[2] ? t * 0.03 : t * 0.3), d[0] ? t * 0.06 : t * 0.6, d[2] ? t * 0.06 : t * 0.6);
+          tx = cx - d[0] * t * 0.08; ty = cy - d[2] * t * 0.08; tr = t * 0.2;
         }
-        if (lit) { ctx.fillStyle = 'rgba(255,60,30,0.3)'; ctx.beginPath(); ctx.arc(cx, cy, t * 0.4, 0, Math.PI * 2); ctx.fill(); }
+        if (lit) { ctx.fillStyle = 'rgba(255,60,30,0.3)'; ctx.beginPath(); ctx.arc(tx, ty, t * 0.4, 0, Math.PI * 2); ctx.fill(); }
         ctx.fillStyle = lit ? '#ff3b1f' : '#5a1a10';
         ctx.strokeStyle = '#2a1005'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(cx, cy, t * 0.22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(tx, ty, tr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         return;
       }
       case 'repeater': case 'comparator': {
@@ -238,16 +246,31 @@ export class LayerView {
         return;
       }
       case 'lever': {
-        fillBg(0x777777, 0.55);
-        const on = P.powered === 'true';
-        const d = facingDir(P.facing);
-        const ax = d[0] ? [1, 0] : [0, 1];
-        const k = on ? 0.22 : -0.22;
-        ctx.strokeStyle = on ? '#e8c070' : '#8b6b3a'; ctx.lineWidth = Math.max(2, t * 0.14);
-        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + ax[0] * t * k * 1.6, cy + ax[1] * t * k * 1.6); ctx.stroke();
+        fillBg(0x777777, 0.4);
+        const on = P.powered === 'true', face = P.face || 'floor';
+        const d = facingDir(face === 'wall' ? OPPOSITE[P.facing] || 'south' : P.facing); // wall: towards the wall
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.atan2(d[2], d[0])); // local +x = d
+        const lw = Math.max(3, t * 0.14);
+        ctx.fillStyle = '#8a8a8a'; ctx.strokeStyle = '#222'; ctx.lineWidth = 1;
+        ctx.strokeStyle = on ? '#e8c070' : '#8b6b3a'; ctx.lineWidth = lw; ctx.lineCap = 'round';
+        let hx, px;
+        if (face === 'wall') { // plate on the wall edge, handle stands up (on, long, bright) or hangs down (off, short)
+          px = t * 0.3; ctx.fillStyle = '#8a8a8a';
+          ctx.fillRect(t * 0.3, -t * 0.22, t * 0.17, t * 0.44); ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.strokeRect(t * 0.3, -t * 0.22, t * 0.17, t * 0.44);
+          hx = on ? -t * 0.2 : t * 0.0;
+          ctx.strokeStyle = on ? '#e8c070' : '#8b6b3a'; ctx.lineWidth = lw;
+          ctx.beginPath(); ctx.moveTo(t * 0.38, 0); ctx.lineTo(hx, 0); ctx.stroke();
+        } else { // floor/ceiling: base plate, handle tilts along the facing axis
+          ctx.fillRect(-t * 0.2, -t * 0.16, t * 0.4, t * 0.32); ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.strokeRect(-t * 0.2, -t * 0.16, t * 0.4, t * 0.32);
+          hx = on ? t * 0.36 : -t * 0.36;
+          ctx.strokeStyle = on ? '#e8c070' : '#8b6b3a'; ctx.lineWidth = lw;
+          ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(hx, 0); ctx.stroke();
+        }
+        ctx.lineCap = 'butt';
         ctx.fillStyle = on ? '#ff5a30' : '#444';
-        ctx.beginPath(); ctx.arc(cx + ax[0] * t * k * 1.6, cy + ax[1] * t * k * 1.6, t * 0.1, 0, Math.PI * 2); ctx.fill();
-        if (P.face && P.face !== 'floor' && t >= 18) text(P.face === 'wall' ? 'W' : 'D', '#fff', 0.22, t * 0.3, -t * 0.32);
+        ctx.beginPath(); ctx.arc(hx, 0, t * 0.1, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        if (face === 'ceiling' && t >= 18) text('D', '#fff', 0.22, t * 0.3, -t * 0.32);
         return;
       }
       case 'piston': case 'sticky_piston': case 'piston_head': {
@@ -285,10 +308,19 @@ export class LayerView {
     }
     if (id.endsWith('_button')) {
       fillBg(0x777777, 0.4);
-      const on = P.powered === 'true';
-      ctx.fillStyle = on ? '#ff7a50' : (id.startsWith('stone') ? '#9a9a9a' : '#b08a52');
-      ctx.fillRect(cx - t * 0.2, cy - t * 0.14, t * 0.4, t * 0.28);
-      ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.strokeRect(cx - t * 0.2, cy - t * 0.14, t * 0.4, t * 0.28);
+      const on = P.powered === 'true', face = P.face || 'floor';
+      ctx.fillStyle = on ? '#ff7a50' : (id.startsWith('stone') || id.startsWith('polished') ? '#9a9a9a' : '#b08a52');
+      ctx.strokeStyle = '#222'; ctx.lineWidth = 1;
+      if (face === 'wall') { // small rectangle against the attached wall side; pressed = flatter
+        const d = facingDir(OPPOSITE[P.facing] || 'south'), dep = on ? 0.14 : 0.24;
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.atan2(d[2], d[0]));
+        ctx.fillRect(t * (0.48 - dep), -t * 0.2, t * dep, t * 0.4); ctx.strokeRect(t * (0.48 - dep), -t * 0.2, t * dep, t * 0.4);
+        ctx.restore();
+      } else {
+        const w = t * 0.5, h = t * 0.36;
+        ctx.fillRect(cx - w / 2, cy - h / 2, w, h); ctx.strokeRect(cx - w / 2, cy - h / 2, w, h);
+        if (face === 'ceiling' && t >= 18) text('D', '#fff', 0.22, t * 0.3, -t * 0.32);
+      }
       return;
     }
     const kind = classify(b.st);
