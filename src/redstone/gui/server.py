@@ -6,6 +6,8 @@ Rust worlds may only be used from the thread that created them, so every simulat
 from __future__ import annotations
 
 import itertools
+import socket
+import sys
 import json
 import threading
 import traceback
@@ -21,6 +23,7 @@ from . import model as gmodel
 ROOT = Path(__file__).resolve().parents[3]  # the repository (src/redstone/gui/server.py)
 STATIC = Path(__file__).resolve().parent / "static"
 SCHEMATIC_SUFFIXES = (".litematic", ".schem", ".nbt")
+DEFAULT_PORT = 8737  # unusual on purpose: other local apps (and their service workers) like 8765/8000/8080
 MAX_FRAMES = 3000
 MAX_TICKS = 1000
 MAX_SIMS = 16
@@ -349,17 +352,31 @@ def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
     return Handler
 
 
-def make_server(port: int = 8765, extra: Path | None = None, root: Path = ROOT) -> ThreadingHTTPServer:
-    server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(State(root, extra)))
+class _Server(ThreadingHTTPServer):
+    # On Windows SO_REUSEADDR lets a second server bind a busy port silently (requests then go to either);
+    # claim the port exclusively there instead, so a busy port fails at startup.
+    allow_reuse_address = sys.platform != "win32"
+
+    def server_bind(self) -> None:
+        if sys.platform == "win32":
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
+def make_server(port: int = DEFAULT_PORT, extra: Path | None = None, root: Path = ROOT) -> ThreadingHTTPServer:
+    server = _Server(("127.0.0.1", port), make_handler(State(root, extra)))
     server.daemon_threads = True
     return server
 
 
-def serve(port: int = 8765, file: str | None = None, open_browser: bool = True) -> None:
+def serve(port: int = DEFAULT_PORT, file: str | None = None, open_browser: bool = True) -> None:
     from urllib.parse import quote
 
     extra = Path(file) if file else None
-    server = make_server(port, extra)
+    try:
+        server = make_server(port, extra)
+    except OSError as e:
+        raise SystemExit(f"Port {port} ist belegt ({e.strerror}); läuft die GUI schon? Sonst: rsx gui --port N") from None
     url = f"http://127.0.0.1:{server.server_address[1]}/"
     if extra is not None:
         url += f"?path={quote(State(ROOT, extra).rel(extra))}"

@@ -477,7 +477,7 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("gui", help="local web GUI: 3D/2D views, materials, build playback, search, simulation")
     p.add_argument("file", nargs="?", help="schematic or scenario to open first")
-    p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--port", type=int, default=8737)
     p.add_argument("--no-browser", action="store_true", help="do not open the browser")
     p.set_defaults(func=_cmd_gui)
 

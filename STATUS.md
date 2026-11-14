@@ -27,7 +27,7 @@ Alles committet, Suite grün (1559 Tests, 149 Golden Traces). Nächste Aufgaben:
 ### Session 17 (2026-11-14): Fortsetzung der abgebrochenen Session 16 (Opus-Hauptsession, 2 Sonnet-Agents)
 
 - M6 GUI (Entscheidung des Nutzers in Session 16: lokale Web-App, alle drei Live-Ansichten). Vertrag
-  `docs/gui-api.md`. Server `gui/server.py` (Standardbibliothek, 127.0.0.1:8765; jede Simulation in eigenem
+  `docs/gui-api.md`. Server `gui/server.py` (Standardbibliothek, 127.0.0.1:8737; jede Simulation in eigenem
   Thread, Suche als Job mit Einzelbildern aus `design/observe.py`), `gui/model.py`, `rsx gui [datei]`.
   `cli.run_redesign()` ausgelagert. Sonnet-Agents: Oberfläche `gui/static/` (three.js 0.160 per Import-Map,
   `?demo=1` mit `static/demo/model.json`), `gui/materials.py` + `rsx materials`.
@@ -392,7 +392,7 @@ uv run rsx dump <datei> [--components]             # Schematic als Text
 uv run rsx sim scenarios/<x>.yaml --diff           # Simulator vs. Golden Trace
 uv run rsx oracle scenarios/<x>.yaml --golden      # im echten Spiel aufzeichnen (~10 s pro Batch)
 uv run rsx explain <schematic|scenario.yaml>       # Analyse (M3-Entwurf)
-uv run rsx gui [datei]                             # GUI im Browser (M6), http://127.0.0.1:8765
+uv run rsx gui [datei]                             # GUI im Browser (M6), http://127.0.0.1:8737
 uv run rsx materials <schematic|scenario.yaml>     # Materialliste
 uv run python -m redstone.knowledge lint|index     # Wissensbasis prüfen / Index erzeugen
 uv run python -m redstone.knowledge mark scenarios/<x>.yaml ID...   # Aussagen als im Spiel verifiziert markieren

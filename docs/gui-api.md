@@ -1,6 +1,6 @@
 # GUI (M6): Aufbau und JSON-Schnittstelle
 
-`uv run rsx gui [datei]` startet einen lokalen Server (nur `127.0.0.1`, Standardport 8765, Python-Standardbibliothek)
+`uv run rsx gui [datei]` startet einen lokalen Server (nur `127.0.0.1`, Standardport 8737, Python-Standardbibliothek)
 und öffnet den Browser (`--port N`, `--no-browser`). Mit Datei öffnet der Browser `/?path=<pfad>`, die
 Oberfläche lädt diese Datei dann gleich. Die Oberfläche ist eine statische Web-App ohne Build-Schritt.
 
