@@ -126,6 +126,13 @@ def _drivable_pla(spec: Spec) -> list[Candidate]:
     return [replace(c, inputs=list(c.inputs)) for c in _DRIVABLE[key]]
 
 
+def _pairs(gs: list[Candidate], hs: list[Candidate]) -> list[tuple[Candidate, Candidate]]:
+    """Pairs of part designs, the smallest estimated result (sum of the parts' volumes) first: the first pair
+    that connects is taken, and the parts are each sorted by their own rank, so a large PLA for G would win
+    over a cascade of small parts just by coming first."""
+    return sorted(itertools.product(gs, hs), key=lambda p: p[0].volume + p[1].volume)
+
+
 def _design_part(spec: Spec, depth: int, driven: bool = False) -> list[Candidate]:
     """The PARTS best designs by rank (volume first) plus the one with the fewest blocks; for a driven part,
     designs whose first input can be driven first."""
@@ -169,7 +176,7 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None, driven:
     for sp in splits(spec):
         gs, hs = _best(sp.g, depth, driven and 0 in sp.bound), _best(sp.h, depth, True) + _drivable_pla(sp.h)
         found = None
-        for gc, hc in itertools.product(gs, hs):
+        for gc, hc in _pairs(gs, hs):
             tries = 0
             for _, cand in chains(gc, 0, hc, 0):
                 tries += 1
@@ -265,7 +272,8 @@ def shared_splits(spec: Spec, width: int = 1) -> list[SharedSplit]:
         return [f[1] for f in found[:MAX_SHARED_SPLITS]]
     # two signals: the splits with the smallest H (at least two free inputs) first, a stage of a cascade that
     # a template may cover; then the cheapest ones
-    small = sorted(found if n <= MAX_CASCADE_INPUTS else [],
+    # (a partial spec gets only these, so no input limit there: the rest of a long cascade is a partial spec)
+    small = sorted(found if n <= MAX_CASCADE_INPUTS or spec.partial else [],
                    key=lambda f: (len(f[1].free) < 2, len(f[1].free), f[0]))
     out: list[SharedSplit] = []
     for f in small[:MAX_WIDE_SPLITS] + ([] if spec.partial else found[:MAX_WIDE_SPLITS]):
@@ -397,7 +405,7 @@ def _shared(spec: Spec, sps: list[SharedSplit], depth: int, log: list[str] | Non
     for sp in sps:
         gs, hs = _best(sp.g, depth, driven and 0 in sp.bound), _best(sp.h, depth, True) + _drivable_pla(sp.h)
         found = None
-        for gc, hc in itertools.product(gs, hs):
+        for gc, hc in _pairs(gs, hs):
             tries = 0
             for _, chained in chains(gc, 0, hc, 0):
                 tries += 1
