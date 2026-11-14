@@ -7,11 +7,31 @@ import { LayerView } from './layers2d.js';
 import { stacksText } from './blockstyle.js';
 import { DocPane, renderMarkdown, svgImage, saveBlob } from './docs.js';
 import { openSpecEditor } from './speceditor.js';
+import { initWizard } from './wizard.js';
+import { icon, applyIcons } from './icons.js';
+
+applyIcons();
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const TASKS = { build: 'taskBuild', sim: 'taskSim', analyze: 'taskAnalyze', design: 'taskDesign' };
-const GROUP_TITLES = { schematics: 'Schaltpläne', scenarios: 'Szenarien', specs: 'Vorgaben' };
+const GROUP_TITLES = { schematics: 'Schaltpläne', scenarios: 'Beispiele', specs: 'Vorgaben' };
+// a few examples with plain names on top of the long list
+const FEATURED = [
+  ['scenarios/cmp-adder2.yaml', 'Addierer für zwei 2-Bit-Zahlen'],
+  ['scenarios/tpl-xor2-comparator.yaml', 'Entweder-oder (XOR)'],
+  ['scenarios/tpl-and2-torch.yaml', 'Beide Hebel nötig (UND)'],
+  ['scenarios/seq-t-flip-flop-copper-bulb-button.yaml', 'Ein/Aus per Knopf'],
+  ['scenarios/seq-monostable-comparator.yaml', 'Kurzer Impuls'],
+  ['scenarios/seq-clock-repeater-ring.yaml', 'Blinker'],
+  ['scenarios/seq-rs-latch-torch.yaml', 'An-Knopf und Aus-Knopf'],
+  ['scenarios/cmp-cmp3.yaml', 'Vergleicher für zwei 3-Bit-Zahlen'],
+  ['scenarios/cmp-mux8.yaml', 'Auswahlschalter 8 zu 1'],
+];
+const DIR_TITLES = {
+  'tests/fixtures/external': 'Aus der Community', 'tests/fixtures/licensed': 'Weitere Schaltpläne', out: 'Eigene Ausgaben',
+  'examples/specs': 'Logik', 'examples/specs/composed': 'Größere Logik', 'examples/behaviour': 'Zeitverhalten und Speicher',
+};
 const EXAMPLES = ['scenarios/cmp-adder2.yaml', 'scenarios/tpl-xor2-comparator.yaml'];
 
 const S = {
@@ -201,23 +221,35 @@ function renderFiles() {
   for (const b of $('groupSeg').children) {
     const n = (S.groups[b.dataset.group] || []).length;
     b.classList.toggle('on', !filt && b.dataset.group === S.group);
-    b.textContent = `${GROUP_TITLES[b.dataset.group]} ${n}`;
+    b.textContent = GROUP_TITLES[b.dataset.group];
+    b.title = `${b.title.replace(/ \(\d+ Dateien\)$/, '')} (${n} Dateien)`;
   }
   // without a filter: the chosen group; with one: matches from all groups
   for (const g of filt ? Object.keys(GROUP_TITLES) : [S.group]) {
     const list = (S.groups[g] || []).filter((p) => !filt || p.toLowerCase().includes(filt));
     if (!list.length) continue;
     if (filt) box.appendChild(node('h3', `${GROUP_TITLES[g]} (${list.length})`));
-    let lastDir = null;
-    for (const p of list) {
-      const dir = isOwn(p) ? 'Eigene Dateien' : p.split('/').slice(0, -1).join('/');
-      if (!filt && g !== 'scenarios' && dir !== lastDir) { box.appendChild(node('h3', dir || '.')); lastDir = dir; }
+    const entry = (p, title) => {
       const b = document.createElement('button');
-      b.textContent = baseName(p);
+      b.textContent = title || baseName(p);
+      if (title) b.appendChild(node('small', baseName(p)));
       b.title = p;
       if (p === S.path) b.classList.add('sel');
       b.addEventListener('click', () => selectFile(p, g));
       box.appendChild(b);
+    };
+    if (!filt && g === 'scenarios') {
+      const featured = FEATURED.filter(([p]) => list.includes(p));
+      if (featured.length) box.appendChild(node('h3', 'Zum Einstieg'));
+      for (const [p, title] of featured) entry(p, title);
+      box.appendChild(node('h3', `Alle Beispiele und Tests (${list.length})`));
+    }
+    let lastDir = null;
+    for (const p of list) {
+      const raw = p.split('/').slice(0, -1).join('/');
+      const dir = isOwn(p) ? 'Eigene Dateien' : DIR_TITLES[raw] || raw;
+      if (!filt && g !== 'scenarios' && dir !== lastDir) { box.appendChild(node('h3', dir || '.')); lastDir = dir; }
+      entry(p);
     }
   }
   if (!box.children.length) box.appendChild(node('div', filt ? 'Nichts gefunden.' : 'Keine Dateien.', 'hint'));
@@ -376,7 +408,7 @@ $('speed').addEventListener('input', updateSpeedLabel);
 
 function setPlaying(p) {
   S.playing = p;
-  $('bPlay').innerHTML = p ? '&#9208;' : '&#9654;';
+  $('bPlay').innerHTML = icon(p ? 'pause' : 'play');
 }
 
 function setMode(mode, { fit = false } = {}) {
@@ -445,13 +477,13 @@ const anDocs = new DocPane({ tabs: $('anDocTabs'), body: $('anDocBody'), save: $
 $('btnExplain').addEventListener('click', () => {
   const ref = currentRef(), name = currentName();
   if (!ref) return;
-  busyWith($('btnExplain'), `Analysiere ${name} (viele Simulationsläufe, bei großen Schaltungen einige Sekunden) ...`, async () => {
+  busyWith($('btnExplain'), `Untersuche ${name} (bei großen Schaltungen dauert das einige Sekunden) ...`, async () => {
     const r = await api.explain(ref);
     anDocs.set('explain', {
-      title: 'Analyse', node: renderMarkdown(r.markdown, r.svgs),
+      title: 'Erklärung', node: renderMarkdown(r.markdown, r.svgs),
       download: { name: `${name}-analyse.md`, text: r.markdown, type: 'text/markdown;charset=utf-8' },
     });
-    setStatus('Analyse fertig.');
+    setStatus('Erklärung fertig.');
   });
 });
 
@@ -493,7 +525,7 @@ async function startSim() {
     S.simState = new Map(r.model.blocks.map((b) => [b.p.join(','), b.s]));
     $('tickOut').textContent = 'Tick ' + r.tick;
     if (S.mode === 'sim') setMode('sim');
-    setStatus('Simulation bereit: Eingänge anklicken, dann die Zeit laufen lassen.');
+    setStatus('Bereit zum Ausprobieren: Eingang anklicken, dann die Zeit laufen lassen.');
   } catch (e) { fail(e); } finally { S.simStarting = false; }
 }
 $('sStart').addEventListener('click', startSim);
@@ -549,7 +581,7 @@ async function simTicks(n) {
 }
 async function useBlock(p) {
   if (S.mode !== 'sim' || !S.simId) {
-    if (S.model && S.mode !== 'search') setStatus('Zum Schalten oben rechts auf „Simulieren“ wechseln.');
+    if (S.model && S.mode !== 'search') setStatus('Zum Schalten rechts auf „Ausprobieren“ wechseln.');
     return;
   }
   try {
@@ -567,14 +599,12 @@ function stopSimRun() {
   S.simRunning = false;
   clearTimeout(S.simTimer);
   const b = $('sRun');
-  b.classList.remove('primary');
-  b.innerHTML = '&#9654; Laufen lassen';
+  b.innerHTML = icon('play') + 'Laufen lassen';
 }
 $('sRun').addEventListener('click', () => {
   if (S.simRunning) return stopSimRun();
   S.simRunning = true;
-  $('sRun').classList.add('primary');
-  $('sRun').innerHTML = '&#9208; Anhalten';
+  $('sRun').innerHTML = icon('pause') + 'Anhalten';
   const step = async () => {
     if (!S.simRunning) return;
     await simTicks(+$('simSpeed').value);
@@ -653,10 +683,16 @@ $('btnOracle').addEventListener('click', async () => {
 
 const deDocs = new DocPane({ tabs: $('deDocTabs'), body: $('deDocBody'), save: $('deDocSave') });
 const specEditor = openSpecEditor({
-  mount: $('goalSpec'), api, setStatus, fail,
-  onSaved: async (path) => { await refreshFiles(); S.path = path; S.group = 'specs'; renderFiles(); },
+  mount: $('specMount'), api, setStatus, fail,
+  onSaved: () => refreshFiles(),
 });
-specEditor.open({ name: 'meine-schaltung', text: null, path: null });
+// the wish cards write the spec text; the editor below them shows it and takes over for "Eigene Vorgabe"
+const wizard = initWizard({
+  mount: $('wizard'),
+  onSpec: ({ name, text }) => specEditor.open({ name, text, path: null }),
+  onCustom: () => { $('specAdvanced').open = true; },
+});
+wizard.select('logic');
 
 function setGoal(goal) {
   S.goal = goal;
@@ -673,17 +709,17 @@ $('goalSeg').addEventListener('click', (e) => {
 async function editSpec(path) {
   try {
     const r = await api.text(path);
+    wizard.select('custom');
     specEditor.open({ name: stem(path), text: r.text, path });
-    setStatus('Vorgabe geladen. Bei Bedarf ändern, dann „Entwurf suchen“.');
+    setStatus('Vorgabe geladen. Bei Bedarf den Text ändern, dann „Entwurf suchen“.');
   } catch (e) { fail(e); }
 }
 function newSpec() {
   if (S.demo) return;
   setTask('design');
   setGoal('spec');
-  specEditor.open({ name: 'meine-schaltung', text: null, path: null });
-  specEditor.focus();
-  setStatus('Vorgabe schreiben oder eine Vorlage einfügen, dann „Entwurf suchen“.');
+  if (wizard.current === 'custom') wizard.select('logic');
+  setStatus('Wähle, was die Schaltung tun soll, dann „Entwurf suchen“.');
 }
 
 function searchOptions() {
@@ -718,6 +754,7 @@ async function startRedesign(path) {
     $('framesSec').hidden = false;
     $('designState').textContent = `Suche für „${stem(path)}“ läuft ...`;
     $('designState').className = 'hint';
+    setTimeout(() => $('btnRedesign').scrollIntoView({ block: 'start', behavior: 'smooth' }), 50);
     deDocs.clear();
     setTask('design');
     S.job.timer = setInterval(pollJob, 500);

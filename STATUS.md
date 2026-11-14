@@ -21,7 +21,7 @@ Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). N�
 |---|---|---|
 | M4: nicht-disjunkte Zerlegung auch für mehrere Ausgänge (`shared_splits` mit gemeinsamen Eingängen, z. B. Carry-Lookahead, Decoder/Demux über 8 Eingänge); danach Topologie per SAT/SMT (`docs/m4-search-and-performance.md`) | Opus | – |
 | M4: Größe der nicht-disjunkten Entwürfe (mux8: 782 Blöcke aus PLA → ansteuerbare PLA): Mux-Vorlagen als Teile (`mux2-comparator` verbindet sich als G bisher gar nicht, `chains` liefert 0 Layouts), Kaskade aus 2:1-Muxen | Opus | – |
-| M6: GUI weiter (Nutzerrückmeldung abwarten). Bekannt: Bauanleitung nur als Text exportierbar (kein Bild/PDF je Ebene); `rsx oracle --dump-blocks` gibt es nur auf der Kommandozeile; größere Entwürfe flüssig darstellen | Sonnet | Nutzer |
+| M6: GUI weiter (Nutzerrückmeldung abwarten; Nutzer ist kein Redstone-Profi: einfache Sprache, wenig Fachbegriffe). Bekannt: Berichte von `rsx explain`/`redesign` sind noch fachsprachlich (Pulsfilter, Komparator …), eine laienverständliche Zusammenfassung fehlt; Bauanleitung nur als Text exportierbar (kein Bild/PDF je Ebene); `rsx oracle --dump-blocks` gibt es nur auf der Kommandozeile; größere Entwürfe flüssig darstellen | Sonnet | Nutzer |
 
 ## Verlauf
 
@@ -43,6 +43,12 @@ Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). N�
   Arbeitsbereich mit Reitern Bauen / Simulieren / Analysieren / Entwerfen (Bedienelemente und Ergebnisse je
   Aufgabe zusammen; Entwerfen in drei Schritten). „Aktuelle Schaltung“ = Datei oder Entwurf der Suche; der
   Reiter Simulieren startet die Simulation selbst. Berichtsspalte, Modus-Schalter und Quellenauswahl entfallen.
+- Auf weiteren Wunsch („moderneres Design wie Watermelon UI / Cult UI, bin kein Schaltkreis-Profi“): neues
+  Aussehen (fast schwarzer Grund, schwebende Karten, Pillen-Knöpfe, Akzent Redstone-Rot, Schrift Geist, Icons
+  `static/icons.js`), Reiter heißen Nachbauen / Ausprobieren / Verstehen / Entwerfen, Startbildschirm, Beispiele
+  mit Klarnamen („Zum Einstieg“), Bedienhinweise in den Ansichten. Entwerfen über Wunsch-Karten statt YAML
+  (`static/wizard.js`). Die Regler bieten nur Werte an, für die `rsx redesign` einen Entwurf findet (gemessen:
+  Impuls 2–8, 12, 16, 20, 30, 40 gt; Blinker nur zehn Paare aus Periode/An-Zeit; andere Längen haben keine Vorlage).
 - `design/evaluate.py`: bei `--allow`/`--forbid` zählt die Wandfackel als Fackel (vorher umging
   `--forbid redstone_torch` die Wandfackel).
 - `tests/sim/test_core_equivalence.py`: Kerne laufen Tick für Tick nebeneinander (vorher alle Welt-Dumps im

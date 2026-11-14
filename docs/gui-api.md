@@ -120,22 +120,28 @@ Modell des besten Entwurfs plus `"summary"` (deutscher Bericht von `rsx redesign
 
 ## Aufbau der Oberfläche
 
-Drei Spalten, nach Aufgaben statt nach Funktionen geordnet. Die **aktuelle Schaltung** (Name oben in der Leiste)
+Drei Spalten als schwebende Karten (dunkel oder hell nach Systemeinstellung, Schrift Geist von Google Fonts,
+Icons in `static/icons.js`), nach Aufgaben statt nach Funktionen geordnet und für Leute ohne Redstone-Vorwissen
+beschriftet. Die **aktuelle Schaltung** (Name oben in der Leiste)
 ist die geladene Datei oder der beste Entwurf der letzten Suche; alle Aufgaben arbeiten auf ihr.
 
-- **Dateien (links, mit ☰ ausblendbar)**: „Datei öffnen …“ (auch Ziehen ins Fenster), „Neu entwerfen“, Reiter
-  Schaltpläne / Szenarien / Vorgaben (= Spezifikationen), Suchfeld über alle Dateien.
+- **Dateien (links, mit ☰ ausblendbar)**: „Öffnen“ (auch Ziehen ins Fenster), „Entwerfen“, Suchfeld über alle
+  Dateien, Reiter Schaltpläne / Beispiele (= Szenarien, oben eine Auswahl „Zum Einstieg“ mit Klarnamen) /
+  Vorgaben (= Spezifikationen).
 - **Ansichten (Mitte)**: 3D (vereinfachte Blockformen, Orbit-Steuerung, Ebenen oberhalb ausblendbar) und Ebene
   (Draufsicht einer y-Ebene, Ebene darunter blass, Tooltip mit Zustand); oben rechts umschaltbar. Darunter die
   Abspielleiste: Bauanleitung Block für Block, Schritte einer Entwurfssuche oder die Zeit der Simulation.
   Ohne Schaltung steht dort ein Startbildschirm (öffnen, Beispiel, neu entwerfen).
 - **Arbeitsbereich (rechts, Breite ziehbar)** mit einem Reiter je Aufgabe:
-  - *Bauen*: Hinweise, Material (Summe, Stacks, Kisten), Herunterladen in allen Formaten.
-  - *Simulieren*: startet die Simulation selbst; Ein- und Ausgänge mit Namen (Eingänge anklickbar, ebenso Hebel
-    und Knöpfe in den Ansichten), „Zurücksetzen“. Bei Szenarien: Testablauf simulieren (Zeitdiagramm, Vergleich
+  - *Nachbauen*: Hinweise, Material (Summe, Stacks, Kisten), Herunterladen in allen Formaten.
+  - *Ausprobieren*: startet die Simulation selbst; Ein- und Ausgänge mit Namen (Eingänge anklickbar, ebenso Hebel
+    und Knöpfe in den Ansichten), „Von vorn beginnen“. Bei Szenarien: Testablauf simulieren (Zeitdiagramm, Vergleich
     mit der Spielaufnahme) und im echten Spiel prüfen.
-  - *Analysieren*: Analyse (Markdown gerendert, Zeitdiagramme als SVG) und Text-Ansicht, jeweils speicherbar.
-  - *Entwerfen*: 1 Ziel (eigene Vorgabe im Editor mit Vorlagen, oder die geladene Schaltung verkleinern),
+  - *Verstehen*: Analyse (Markdown gerendert, Zeitdiagramme als SVG) und Text-Ansicht, jeweils speicherbar.
+  - *Entwerfen*: 1 Ziel: Wunsch-Karten mit wenigen Reglern (`static/wizard.js`: Lampe nach Regel, Umkehrer,
+    Impuls, Nachleuchten, Ein/Aus per Knopf, zwei Knöpfe, Blinker, Verzögerung, Addierer; jede schreibt das YAML
+    der Spezifikation, der Texteditor darunter zeigt es und dient für „Eigene Vorgabe“), oder die geladene
+    Schaltung verkleinern,
     2 Grenzen (Optionen der Suche), 3 Ergebnis (Zustand, Suchverlauf, Bericht; Knöpfe zum Nachbauen, Simulieren,
     Analysieren des Entwurfs).
 

@@ -172,7 +172,8 @@ class Job:
                 self.grid = best.grid if best is not None else None
                 self.result = result
                 if best is None:
-                    self.error = "Kein funktionierender Entwurf gefunden (Bericht unter „summary“)."
+                    self.error = ("Dafür wurde kein funktionierender Entwurf gefunden. Andere Werte wählen oder die "
+                                  "Grenzen lockern; Einzelheiten stehen im Bericht.")
         except RedesignInputError as e:
             self.error = str(e)
         except Exception as e:  # report to the GUI instead of losing the thread
