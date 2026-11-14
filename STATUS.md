@@ -1,31 +1,51 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-14, Session 17. Geschätzter Gesamtfortschritt: **ca. 95 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 96–97 %).
+Stand: 2026-11-14, Session 18. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 97 %).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
-| M0 Wissensbasis | 10 % | ~98 % | 296 Aussagen aus dem 26.3-Code belegt, 224 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
+| M0 Wissensbasis | 10 % | 100 % | 296 Aussagen aus dem 26.3-Code belegt, 227 davon im Spiel verifiziert, keine offen; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~96 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 149 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen, Sculk-Sensoren, Notenblock-Instrument aus Block-Daten |
+| M2 Oracle + Simulator | 35 % | ~97 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 154 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen, Sculk-Sensoren, Notenblock-Instrument aus Block-Daten (im Spiel bestätigt) |
 | M3 Analyse + Erklärung | 20 % | ~96 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~90 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
+| M4 Redesign | 25 % | ~92 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen; nicht-disjunkte Zerlegung mit gemeinsamen Eingängen über 8 Eingängen, z. B. 8:1-Multiplexer; Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
 | M6 GUI | 15 % | ~90 % | `rsx gui`: lokale Web-App (three.js), 3D- und Ebenen-Ansicht, Materialliste, Bauanleitung, Entwurfssuche live, Simulation; `rsx materials`. alle drei Modi im Browser geprüft (Session 17) |
 
-## Übergabe (aus Session 17)
+## Übergabe (aus Session 18)
 
-Alles committet, Suite grün (1570 Tests, 149 Golden Traces; slow-Tests der Kompositionen grün nach Neuaufnahme
-von `cmp3`/`cmp4`). Keine laufenden Worktrees, Oracle-Sperre frei. Rechtefreigaben des Nutzers in
-`.claude/settings.local.json` (nicht im Repo). Nächste Aufgaben:
+Alles committet, Suite grün (1582 Tests, 154 Golden Traces). Keine laufenden Worktrees, Oracle-Sperre frei.
+Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| M4: `examples/specs/large/cmp5.yaml` im Spiel aufnehmen (1024 Kombinationen, Oracle ~45 min; nur wenn der Nutzer den Rechner nicht braucht, vorher fragen) und ggf. nach `composed/` | Opus | – |
-| M4: Funktionen über 8 Eingängen, die sich nicht disjunkt zerlegen lassen (nicht-disjunkte Zerlegung, z. B. Carry-Lookahead), oder Topologie per SAT/SMT (`docs/m4-search-and-performance.md`) | Opus | – |
-| M2: Notenblock-Instrument im Spiel bestätigen (Wandkopf oben → harp, Teppich unten → harp; Szenario + Oracle) und nach dem nächsten `rsx oracle --dump-blocks` `scripts/gen_note_block_instruments.py --check` | Sonnet | – |
-| M0: die 4 offenen Aussagen in `knowledge/UNVERIFIED.md` (DAY-006, DUST-019, ORD-014, ZT-006) prüfen bzw. auflösen | Sonnet | – |
+| M4: nicht-disjunkte Zerlegung auch für mehrere Ausgänge (`shared_splits` mit gemeinsamen Eingängen, z. B. Carry-Lookahead, Decoder/Demux über 8 Eingänge); danach Topologie per SAT/SMT (`docs/m4-search-and-performance.md`) | Opus | – |
+| M4: Größe der nicht-disjunkten Entwürfe (mux8: 782 Blöcke aus PLA → ansteuerbare PLA): Mux-Vorlagen als Teile (`mux2-comparator` verbindet sich als G bisher gar nicht, `chains` liefert 0 Layouts), Kaskade aus 2:1-Muxen | Opus | – |
+| M6: GUI weiter (Nutzerrückmeldung abwarten; z. B. Export der Bauanleitung, größere Entwürfe flüssig darstellen) | Sonnet | Nutzer |
 
 ## Verlauf
+
+### Session 18 (2026-11-14): Übergabe aus Session 17 (Opus-Hauptsession, 2 Sonnet-Agents)
+
+- M4: `cmp5` (5-Bit-Komparator, reine Vorlagen-Kaskade, kompaktiert 533 Blöcke, 31×5×19) nach `composed/`, im
+  Spiel aufgenommen (`cmp-cmp5`, 1024 Kombinationen, Oracle nur wenige Minuten statt geschätzter 45): identisch,
+  Wahrheitstabelle stimmt. Suche ~15 min (slow-Test).
+- M4: nicht-disjunkte Zerlegung f = h(g(S ∪ C), C, F) (`decompose.nondisjoint_splits`, `CommonSplit`,
+  `_nondisjoint`): bis zu zwei gemeinsame Eingänge C, je Belegung von C höchstens zwei Spalten. H's gemeinsame
+  Hebel werden über angezapfte Leitungen von G's Hebeln gespeist (`compose.wire`, `_tapped`; am Wandhebel einer
+  ansteuerbaren PLA meist Repeater). Vor dem Anzapfen wird die Verkettung mit getrennten Hebeln geprüft
+  (`_apart`, Stichprobe von 128 Kombinationen) – die meisten Layouts scheitern schon dort (PLA-Lampe von Staub
+  darüber gespeist: nur Modus „stone“ geht). Nur für einen Ausgang, nur ohne disjunkte Zerlegung und nur über
+  dem PLA-Limit (innerhalb der Teile vervielfachte sie die Suchzeit: mux8 17 min → 1 min, gleiches Ergebnis).
+  Beispiel `examples/specs/composed/mux8.yaml` (8:1-Multiplexer, 11 Eingänge): kompaktiert 782 Blöcke,
+  14×10×23, ~5 min; `cmp-mux8` im Spiel identisch (2048 Kombinationen). Spaltenvergleich über
+  `operator.itemgetter` auf der umsortierten Wahrheitstabelle (11 Eingänge: ~2 s).
+- M2 (Sonnet): Notenblock-Instrument im Spiel (`note-block-instrument`, 7 Fälle, OUT-016): Wandkopf oben wirkt
+  nicht (der Block darunter zählt; harp nur bei Luft darunter), Teppich → harp, Wolltreppe → guitar,
+  Eichentreppe → bass. Block-Dump identisch, `gen_note_block_instruments.py --check` ok.
+- M0 (Sonnet): alle 4 offenen Aussagen aufgelöst. DAY-006 im Spiel (`daylight-skylight-distance`: 15 minus
+  Abstand bestätigt), ZT-006 im Spiel (Wiki widerlegt), DUST-019 per Code (HashSet, deterministisch), ORD-014
+  nur Zählweise. `UNVERIFIED.md`: 0 offen.
 
 ### Session 17 (2026-11-14): Fortsetzung der abgebrochenen Session 16 (Opus-Hauptsession, 9 Agents)
 
@@ -411,7 +431,7 @@ von `cmp3`/`cmp4`). Keine laufenden Worktrees, Oracle-Sperre frei. Rechtefreigab
 ## Befehle
 
 ```
-uv run pytest -q [--sim-core python|rust] [--slow] # ~1520 Tests, alle grün (Rust ~70 s, Python ~9 min)
+uv run pytest -q [--sim-core python|rust] [--slow] # ~1580 Tests, alle grün (Rust ~70 s, Python ~9 min)
 uv sync                                            # baut auch den Rust-Kern; nach Rust-Änderungen:
 uv pip install --reinstall-package rsx-core ./rust/rsx-core
 uv run rsx --sim-core python|rust <befehl>         # Kern wählen (Standard: Rust, wenn gebaut)
