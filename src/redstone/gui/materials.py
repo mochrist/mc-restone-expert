@@ -106,7 +106,7 @@ _STONES = {
 }
 _STONE_NOUNS = {"slab": "stufe", "stairs": "treppe", "wall": "mauer"}
 
-_OXIDATION = {"exposed": ("Freigelegter", "Freigelegte"), "weathered": ("Verwitterter", "Verwitterte"),
+_OXIDATION = {"exposed": ("Angelaufener", "Angelaufene"), "weathered": ("Verwitterter", "Verwitterte"),
               "oxidized": ("Oxidierter", "Oxidierte")}
 _COPPER_NOUNS = {"copper_block": (0, "Kupferblock"), "copper": (0, "Kupferblock"), "copper_bulb": (1, "Kupferlampe")}
 

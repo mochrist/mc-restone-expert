@@ -118,7 +118,7 @@ def test_german_labels_rules():
         "birch_button": "Birkenholzknopf", "crimson_pressure_plate": "Karmesindruckplatte", "oak_log": "Eichenstamm",
         "jungle_log": "Tropenbaumstamm", "cobblestone_slab": "Bruchsteinstufe", "stone_slab": "Steinstufe",
         "smooth_stone_slab": "Glatte Steinstufe", "stone_brick_stairs": "Steinziegeltreppe",
-        "waxed_exposed_copper_bulb": "Gewachste freigelegte Kupferlampe", "oxidized_copper_block": "Oxidierter Kupferblock",
+        "waxed_exposed_copper_bulb": "Gewachste angelaufene Kupferlampe", "oxidized_copper_block": "Oxidierter Kupferblock",
         "observer": "Beobachter",
     }
     for item, label in expected.items():
