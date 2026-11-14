@@ -280,3 +280,39 @@ def test_timing_behind_logic_is_not_redesigned_as_a_truth_table():
     spec, _ = _spec_of_existing(analyze(grid), "cmp")
     assert isinstance(spec, bh.BehaviourSpec)  # the AND table alone meets steady states and transitions
     assert spec.gate_hints == ["in1 and in2"]
+
+
+def _mux(sel: list[str], data: list[str]) -> str:
+    terms = []
+    for i, d in enumerate(data):
+        bits = [(s if i >> (len(sel) - 1 - k) & 1 else f"not {s}") for k, s in enumerate(sel)]
+        terms.append(f"({' and '.join(bits)} and {d})")
+    return " or ".join(terms)
+
+
+def test_nondisjoint_split_of_a_multiplexer():
+    """4:1 multiplexer: no disjoint split, but g = mux2 of two data inputs with both select inputs, h needs one
+    select input again; g and h compute the spec together."""
+    from redstone.design.decompose import nondisjoint_splits, splits
+
+    names = ["s1", "s0", "d0", "d1", "d2", "d3"]
+    spec = from_functions(names, {"y": _mux(["s1", "s0"], ["d0", "d1", "d2", "d3"])})
+    assert splits(spec) == []
+    sps = nondisjoint_splits(spec)
+    assert sps and all(len(sp.common) == 1 for sp in sps)
+    for sp in sps:
+        gi, hi = sorted(sp.common + sp.bound), sorted(sp.common + sp.free)
+        for combo, row in spec.table.items():
+            g = sp.g.table[tuple(combo[i] for i in gi)][0]
+            assert sp.h.table[(g, *(combo[i] for i in hi))] == row
+
+
+def test_nondisjoint_split_needs_inputs_of_the_bound_set():
+    from redstone.design.decompose import nondisjoint_splits
+
+    # y = a xor b xor c xor d decomposes disjointly; every non-disjoint split must still use all of S
+    spec = from_functions(list("abcd"), {"y": "a != (b != (c != d))"})
+    for sp in nondisjoint_splits(spec):
+        gi = sorted(sp.common + sp.bound)
+        from redstone.design.decompose import support
+        assert {gi.index(i) for i in sp.bound} <= set(support(sp.g, 0))

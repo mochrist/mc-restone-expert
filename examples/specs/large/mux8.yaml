@@ -1,0 +1,5 @@
+# 8:1-Multiplexer: s2 s1 s0 wählen einen von d0 … d7 (11 Eingänge, über dem PLA-Limit).
+# Nicht disjunkt zerlegbar: beide Hälften brauchen die unteren Auswahlbits (gemeinsame Eingänge, angezapfte Leitung).
+inputs: [s2, s1, s0, d0, d1, d2, d3, d4, d5, d6, d7]
+function:
+  y: (not s2 and not s1 and not s0 and d0) or (not s2 and not s1 and s0 and d1) or (not s2 and s1 and not s0 and d2) or (not s2 and s1 and s0 and d3) or (s2 and not s1 and not s0 and d4) or (s2 and not s1 and s0 and d5) or (s2 and s1 and not s0 and d6) or (s2 and s1 and s0 and d7)

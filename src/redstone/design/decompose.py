@@ -202,7 +202,201 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None, driven:
                           else "keine funktionierende Verbindung gefunden"))
         if found is not None:
             out.append(found)
+    if not out and not splits(spec):
+        out = _nondisjoint(spec, nondisjoint_splits(spec), depth, log, driven)
     return out
+
+
+# ---------------------------------------------------------------------- non-disjoint decomposition
+@dataclass(frozen=True)
+class CommonSplit:
+    """Non-disjoint decomposition f(x) = h(g(x_S, x_C), x_C, x_F): the common inputs C feed both parts (one
+    lever, its line tapped for H). It exists when, for every assignment of C, the chart over S × F has at
+    most two distinct columns. An 8:1 multiplexer: g = the 4:1 multiplexer of the low data inputs, h picks
+    between g and the high data inputs; both need the two low select inputs."""
+    bound: tuple[int, ...]  # S
+    common: tuple[int, ...]  # C
+    free: tuple[int, ...]  # F
+    g: Spec  # inputs = C ∪ S in spec order
+    h: Spec  # inputs = ["g"] + C ∪ F in spec order
+
+    def describe(self, names: list[str]) -> str:
+        gi = ", ".join(names[i] for i in sorted(self.bound + self.common))
+        hi = ", ".join(names[i] for i in sorted(self.common + self.free))
+        return f"g({gi}), h(g, {hi}) mit gemeinsamen {', '.join(names[i] for i in self.common)}"
+
+
+MAX_COMMON = 2  # common inputs C tried
+MAX_COMMON_SPLITS = 4
+
+
+def _perm(n: int, first: tuple[int, ...]) -> list[int]:
+    """Indices of the 2^n combinations (input 0 most significant, as itertools.product) in the order where
+    the inputs `first` vary slowest, the others fastest."""
+    perm = [0]
+    for i in list(first) + [i for i in range(n) if i not in first]:
+        w = 1 << (n - 1 - i)
+        perm = [p + b for p in perm for b in (0, w)]
+    return perm
+
+
+def nondisjoint_splits(spec: Spec, out: int = 0) -> list[CommonSplit]:
+    """Non-disjoint decompositions of output `out` with 1 to MAX_COMMON common inputs, |S| >= 2, |F| >= 1,
+    every input of S used by g; the most balanced first (the larger part smallest), then fewer common inputs.
+    Only for full specs; columns are compared as slices of the reordered truth table (operator.itemgetter)."""
+    import operator
+
+    n = len(spec.inputs)
+    if spec.partial or n < 4:
+        return []
+    values = tuple(spec.table[c][out] for c in itertools.product([False, True], repeat=n))
+    sup = set(support(spec, out))
+    found = []
+    for k in range(1, MAX_COMMON + 1):
+        for common in itertools.combinations(sorted(sup), k):
+            others = [i for i in range(n) if i not in common]
+            for size in range(2, len(others)):
+                for bound in itertools.combinations(others, size):
+                    if not set(bound) <= sup:
+                        continue
+                    free = tuple(i for i in others if i not in bound)
+                    perm = operator.itemgetter(*_perm(n, common + bound))(values)
+                    w, nb = 2 ** len(free), 2 ** size
+                    slices, two = [], False
+                    for c in range(2 ** k):
+                        base = c * nb * w
+                        cols = [perm[base + s * w: base + (s + 1) * w] for s in range(nb)]
+                        distinct = set(cols)
+                        if len(distinct) > 2:
+                            break
+                        two |= len(distinct) == 2
+                        slices.append(cols)
+                    else:
+                        if two:
+                            found.append((common, bound, free, slices))
+    found.sort(key=lambda f: (max(len(f[0]) + len(f[1]), 1 + len(f[0]) + len(f[2])), len(f[0])))
+    out_splits = []
+    for common, bound, free, slices in found:
+        sp = _common_split(spec, out, common, bound, free, slices)
+        if sp is not None:
+            out_splits.append(sp)
+        if len(out_splits) >= MAX_COMMON_SPLITS:
+            break
+    return out_splits
+
+
+def _common_split(spec: Spec, out: int, common, bound, free, slices) -> CommonSplit | None:
+    """The parts of one non-disjoint split; g is off for the column of S all off in every slice. None when
+    an input of S does not change g (it would be a dead lever)."""
+    k, size = len(common), len(bound)
+    gi, hi = sorted(common + bound), sorted(common + free)
+    g_table, h_table = {}, {}
+    for c, cbits in enumerate(itertools.product([False, True], repeat=k)):
+        cols = slices[c]
+        zero = cols[0]
+        one = next((col for col in cols if col != zero), zero)
+        for s, sbits in enumerate(itertools.product([False, True], repeat=size)):
+            x = dict(zip(common, cbits)) | dict(zip(bound, sbits))
+            g_table[tuple(x[i] for i in gi)] = (cols[s] != zero,)
+        for gv in (False, True):
+            col = one if gv else zero
+            for f, fbits in enumerate(itertools.product([False, True], repeat=len(free))):
+                x = dict(zip(common, cbits)) | dict(zip(free, fbits))
+                h_table[(gv, *(x[i] for i in hi))] = (col[f],)
+    names = spec.inputs
+    g = Spec([names[i] for i in gi], ["g"], g_table, source="Zerlegung")
+    if not {gi.index(i) for i in bound} <= set(support(g, 0)):
+        return None
+    h = Spec(["g"] + [names[i] for i in hi], [spec.outputs[out]], h_table, source="Zerlegung")
+    return CommonSplit(tuple(bound), tuple(common), tuple(free), g, h)
+
+
+def _nondisjoint(spec: Spec, sps: list[CommonSplit], depth: int, log: list[str] | None,
+                 driven: bool) -> list[Candidate]:
+    """Candidates from `nondisjoint_splits`: g's output drives h's first input (`compose.chains`), then the
+    lines of h's common levers are fed from g's levers (`compose.wire` taps them)."""
+    from .compose import chains
+    from .evaluate import evaluate_any
+
+    out = []
+    for sp in sps:
+        gi, hi = sorted(sp.common + sp.bound), sorted(sp.common + sp.free)
+        gs = _best(sp.g, depth, driven and 0 in gi)
+        hs = _best(sp.h, depth, True) + _drivable_pla(sp.h)
+        apart = _apart(sp, gi, hi)
+        found = None
+        for gc, hc in _pairs(gs, hs):
+            tries = 0
+            for k, (_, chained) in enumerate(chains(gc, 0, hc, 0)):
+                if tries >= TRIES or k >= CHAINS_SEEN:
+                    break
+                # the chain with H's common levers still separate must work before lines are tapped (most
+                # layouts fail already there: a PLA lamp lit from above needs the "stone" output)
+                if not evaluate_any(chained, apart, quick=True).correct:
+                    continue
+                tries += 1
+                for cand in _tapped(chained, gi + hi, sp.common):
+                    cand = replace(cand, name=f"{gc.name} → {hc.name}",
+                                   origin=f"zerlegt: {sp.describe(spec.inputs)}; {cand.origin}")
+                    if evaluate_any(cand, spec, quick=True).correct:
+                        found = cand
+                        break
+                if found is not None:
+                    break
+            if found is not None:
+                break
+        if log is not None:
+            from .report import COMPOSE_PREFIX
+
+            log.append(f"{COMPOSE_PREFIX}Zerlegung {sp.describe(spec.inputs)}: "
+                       + (f"{found.name}, {found.block_count} Blöcke" if found
+                          else "keine funktionierende Verbindung gefunden"))
+        if found is not None:
+            out.append(found)
+    return out
+
+
+CHAINS_SEEN = 60  # chains looked at per pair of parts (only those that work count against TRIES)
+APART_SAMPLE = 128  # combinations checked before tapping
+
+
+def _apart(sp: CommonSplit, gi: list[int], hi: list[int]) -> Spec:
+    """The spec of the chain before tapping: G's inputs, then H's own (common ones again, separate levers).
+    Wide chains get a partial spec (APART_SAMPLE combinations: all off, every single lever, the rest drawn
+    with a fixed seed): it only has to sort out broken joints, the tapped design is checked in full."""
+    import random
+
+    n = len(gi) + len(hi)
+    if 2 ** n <= APART_SAMPLE:
+        combos = list(itertools.product([False, True], repeat=n))
+    else:
+        rng = random.Random(0)
+        picked = {(False,) * n} | {tuple(k == j for k in range(n)) for j in range(n)}
+        while len(picked) < APART_SAMPLE:
+            picked.add(tuple(rng.random() < 0.5 for _ in range(n)))
+        combos = sorted(picked)
+    table = {}
+    for x in combos:
+        g = sp.g.table[x[:len(gi)]][0]
+        table[x] = sp.h.table[(g, *x[len(gi):])]
+    return Spec([f"i{k}" for k in range(n)], sp.h.outputs, table, source="Zerlegung",
+                care=None if len(table) == 2 ** n else set(table))
+
+
+def _tapped(cand: Candidate, labels: list[int], common):
+    """Every way to feed H's common levers from G's (`compose.wire`, a tapped line, repeater or dust at the
+    lever: a wall lever of a drivable PLA mostly needs the repeater), inputs in spec order."""
+    from .compose import wire
+
+    if not common:
+        yield replace(cand, inputs=[cand.inputs[labels.index(i)] for i in range(len(labels))])
+        return
+    i, rest = common[0], common[1:]
+    t = len(labels) - 1 - labels[::-1].index(i)
+    for mode in ("repeater", "dust"):
+        w = wire(cand, cand.inputs[labels.index(i)], cand.inputs[t], input_mode=mode)
+        if w is not None:
+            yield from _tapped(w, labels[:t] + labels[t + 1:], rest)
 
 
 # ---------------------------------------------------------------------- shared part of several outputs
