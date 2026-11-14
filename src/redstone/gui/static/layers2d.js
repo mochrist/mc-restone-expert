@@ -228,7 +228,10 @@ export class LayerView {
             ctx.fillStyle = '#222';
             for (let i = 0; i < (+P.delay || 1); i++) ctx.fillRect(cx + inp[0] * t * 0.38 - t * 0.04 + (inp[2] ? (i - 1.5) * t * 0.1 : 0), cy + inp[2] * t * 0.38 - t * 0.04 + (inp[0] ? (i - 1.5) * t * 0.1 : 0), t * 0.08, t * 0.08);
           } else {
-            text(P.mode === 'subtract' ? '−' : '=', '#222', 0.34, t * 0.25, t * 0.25);
+            if (P.mode === 'subtract') { // subtract: red-framed tile with a minus sign
+              ctx.strokeStyle = '#ff3b1f'; ctx.lineWidth = Math.max(2, t * 0.07); ctx.strokeRect(x + inset + 1, y + inset + 1, t - 2 * inset - 2, t - 2 * inset - 2);
+            }
+            text(P.mode === 'subtract' ? '−' : '=', P.mode === 'subtract' ? '#c01808' : '#222', 0.4, t * 0.25, t * 0.25);
             if (b.st.output != null) text(String(b.st.output), '#fff', 0.26, -t * 0.25, t * 0.3);
           }
         }
@@ -295,12 +298,51 @@ export class LayerView {
       ctx.strokeStyle = hex(bc.color); ctx.lineWidth = 2; ctx.strokeRect(x + inset, y + inset, t - 2 * inset, t - 2 * inset);
       return;
     }
-    fillBg(bc.color);
     if (id.endsWith('_slab') || id.endsWith('_stairs') || id.endsWith('_carpet')) {
-      ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.setLineDash([3, 3]); ctx.strokeRect(x + inset + 1, y + inset + 1, t - 2 * inset - 2, t - 2 * inset - 2); ctx.setLineDash([]);
+      const col = hex(bc.color), w = t - 2 * inset;
+      const shade = (a) => { ctx.fillStyle = `rgba(${a ? '255,255,255' : '0,0,0'},${a ? 0.28 : 0.38})`; };
+      fillBg(bc.color);
+      if (id.endsWith('_slab') && P.type !== 'double') {
+        // bottom slab: darkened with a dashed outline; top slab: brightened with a solid outline
+        const top = P.type === 'top';
+        shade(top); ctx.fillRect(x + inset, y + inset, w, w);
+        ctx.strokeStyle = top ? '#fff' : 'rgba(0,0,0,0.6)'; ctx.lineWidth = Math.max(1, t * 0.06);
+        ctx.setLineDash(top ? [] : [3, 3]); ctx.strokeRect(x + inset + 1, y + inset + 1, w - 2, w - 2); ctx.setLineDash([]);
+        if (t >= 14) text(top ? '▔' : '▁', '#fff', 0.4);
+      } else if (id.endsWith('_stairs')) {
+        // high step on the facing side: brighter half plus an arrow towards it (upside-down stairs: darker)
+        const f = facingDir(P.facing), up = P.half !== 'top';
+        shade(up); ctx.fillRect(x + inset + (f[0] > 0 ? w / 2 : 0), y + inset + (f[2] > 0 ? w / 2 : 0), f[0] ? w / 2 : w, f[2] ? w / 2 : w);
+        this._arrow(cx, cy, f, t * 0.22, '#fff');
+      } else if (id.endsWith('_carpet')) {
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.setLineDash([3, 3]); ctx.strokeRect(x + inset + 1, y + inset + 1, w - 2, w - 2); ctx.setLineDash([]);
+      } else if (P.type === 'double') {
+        ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 1; ctx.strokeRect(x + inset + 0.5, y + inset + 0.5, w - 1, w - 1);
+      }
+      return;
     }
+    fillBg(bc.color);
     if (id === 'dispenser' || id === 'dropper') this._arrow(cx, cy, facingDir(P.facing), t * 0.25, '#eee');
-    else if (!bc.known && t >= 14) text(id.slice(0, 2), '#fff', 0.34);
+    else if (id === 'hopper') {
+      ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(cx, cy, t * 0.3, 0, Math.PI * 2); ctx.fill();
+      if (P.facing && P.facing !== 'down') this._arrow(cx, cy, facingDir(P.facing), t * 0.28, '#eee');
+      else { ctx.fillStyle = '#777'; ctx.beginPath(); ctx.arc(cx, cy, t * 0.12, 0, Math.PI * 2); ctx.fill(); }
+    } else if (id.endsWith('chest')) {
+      ctx.strokeStyle = '#3a2410'; ctx.lineWidth = Math.max(1, t * 0.06); ctx.strokeRect(x + t * 0.15, y + t * 0.15, t * 0.7, t * 0.7);
+      ctx.fillStyle = '#d8d8d8'; const f = facingDir(P.facing);
+      ctx.fillRect(cx + f[0] * t * 0.32 - t * 0.05, cy + f[2] * t * 0.32 - t * 0.05, t * 0.1, t * 0.1);
+    } else if (id === 'daylight_detector' || id === 'daylight_sensor') {
+      ctx.fillStyle = P.inverted === 'true' ? '#2a3a5a' : '#e8d890'; ctx.fillRect(x + t * 0.15, y + t * 0.15, t * 0.7, t * 0.7);
+      if (t >= 14) text(P.inverted === 'true' ? '☾' : '☀', '#333', 0.4);
+    } else if (id.endsWith('sculk_sensor')) {
+      ctx.fillStyle = +P.power > 0 ? '#80f0ff' : '#59d0e0'; ctx.beginPath(); ctx.arc(cx, cy, t * 0.22, 0, Math.PI * 2); ctx.fill();
+    } else if (id.endsWith('copper_bulb')) {
+      ctx.fillStyle = P.lit === 'true' ? '#fff3b0' : '#5a2a18'; ctx.beginPath(); ctx.arc(cx, cy, t * 0.24, 0, Math.PI * 2); ctx.fill();
+    } else if (id.endsWith('rail')) {
+      ctx.strokeStyle = P.powered === 'true' ? '#e8b030' : '#444'; ctx.lineWidth = Math.max(2, t * 0.1);
+      const ew = /east_west/.test(P.shape || '');
+      ctx.beginPath(); ctx.moveTo(cx - (ew ? t * 0.4 : 0), cy - (ew ? 0 : t * 0.4)); ctx.lineTo(cx + (ew ? t * 0.4 : 0), cy + (ew ? 0 : t * 0.4)); ctx.stroke();
+    } else if (!bc.known && t >= 14) text(id.slice(0, 2), '#fff', 0.34);
     else if (id === 'redstone_block' && t >= 14) text('R', '#fff', 0.4);
     else if (id === 'note_block' && t >= 14) text('♪', '#fff', 0.45);
   }
