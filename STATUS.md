@@ -1,24 +1,24 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-14, Session 17. Geschätzter Gesamtfortschritt: **ca. 90 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 96 %).
+Stand: 2026-11-14, Session 17. Geschätzter Gesamtfortschritt: **ca. 95 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 96 %).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
 | M0 Wissensbasis | 10 % | ~98 % | 295 Aussagen aus dem 26.3-Code belegt, 224 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
 | M2 Oracle + Simulator | 35 % | ~96 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 149 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen, Sculk-Sensoren |
-| M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~87 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
+| M3 Analyse + Erklärung | 20 % | ~96 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
+| M4 Redesign | 25 % | ~90 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
-| M6 GUI | 15 % | ~85 % | `rsx gui`: lokale Web-App (three.js), 3D- und Ebenen-Ansicht, Materialliste, Bauanleitung, Entwurfssuche live, Simulation; `rsx materials`. alle drei Modi im Browser geprüft (Session 17) |
+| M6 GUI | 15 % | ~90 % | `rsx gui`: lokale Web-App (three.js), 3D- und Ebenen-Ansicht, Materialliste, Bauanleitung, Entwurfssuche live, Simulation; `rsx materials`. alle drei Modi im Browser geprüft (Session 17) |
 
 ## Übergabe (aus Session 17)
 
-Alles committet, Suite grün (1560 Tests, 149 Golden Traces). Nächste Aufgaben:
+Alles committet, schnelle Suite grün (1567 Tests, 149 Golden Traces); zwei slow-Tests warten auf neue Aufnahmen (s. u.). Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| M4: Bausteine mit Komparator-Signalen umziehen: bei `cmp3`/`cmp4` werden jetzt Umzüge simuliert, scheitern aber (cmp1 speist die Stufe direkt; als Staubleitung fehlt die Signalstärke, die die Subtraktion braucht). Leitungen in Komparator-Eingänge mit voller Stärke (Verstärker am Ende) oder solche Bausteine nur zusammen verschieben | Opus | – |
+| M4: `cmp3`/`cmp4` neu aufnehmen (Entwürfe durch das Kompaktieren kleiner, die slow-Tests `test_decomposed_scenario_up_to_date[cmp3/cmp4]` schlagen bis dahin fehl): `uv run python scripts/compose_scenarios.py && uv run rsx oracle scenarios/cmp-cmp3.yaml scenarios/cmp-cmp4.yaml --golden`; erstmals Verstärker in neu verlegten Leitungen im Spiel. Nicht während der Nutzer spielt | Opus | – |
 | M4: `examples/specs/large/cmp5.yaml` im Spiel aufnehmen (1024 Kombinationen, Oracle ~45 min; nicht während der Nutzer spielt) und ggf. nach `composed/` | Opus | – |
 
 ## Verlauf
@@ -50,6 +50,13 @@ Alles committet, Suite grün (1560 Tests, 149 Golden Traces). Nächste Aufgaben:
   Kaskaden waren das alle 4000 besten, es wurde nie ein Umzug versucht. Jetzt zählen nur freie Plätze.
   `bench_compact.py` (Budget 100): Summe Volumen 8100 → 8012, `adder3` 1056 → 968. Der Benchmark baut nur die mit
   `--only` gewählten Entwürfe (Cache wird ergänzt).
+
+- Drei Agents parallel: M4 (Opus) Umzüge bei Komparator-Kaskaden: `_dust_path` schnitt sich selbst ab (Treppe
+  auf der Stelle, Boden über eigenem Staub; `_clashes`), lange Leitungen verloren Signalstärke (`_strength_limits`,
+  `_boosts` setzen Verstärker auf gerade Zellen). `bench_compact`: cmp3 1632 → 1260, cmp4 3344 → 2346, Summe
+  8012 → 6954. M6 (Sonnet) Blockformen: Wandhebel/-knöpfe, Treppen, Holzfarben, Truhe, Trichter, Sculk-Sensor,
+  Tageslichtsensor (`daylight_detector`), Komparator-Modus; URL-Parameter `?layout`, `?y`, `?cam`. M3 (Sonnet)
+  `analyze._refine_dependencies` (s. Offene Punkte 1), Teiltabellen bis 8 Hebel.
 
 ### Session 16 (2026-11-13, abgebrochen durch Login-Fehler, nicht in STATUS eingetragen)
 
