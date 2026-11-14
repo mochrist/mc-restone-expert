@@ -53,8 +53,8 @@ während der Block-Event-Phase entstehen, werden in derselben Phase abgearbeitet
 - Version: 26.3
 - Quelle: [SRC-M-WIKI-ZEROTICK]; [SRC-MC-CODE] `RepeaterBlock#tick`
 - Konfidenz: hoch
-- Status: widersprüchlich
-- Hinweise: Im Spiel geprüft (scenarios/verify-timing.yaml, Sonden `zt_repeater`, `zt_comparator`): Ein Repeater (delay 1) wird bei einem 0-Tick-Puls (Redstone-Block setzen und im selben Tick entfernen) 2 gt später für 2 gt eingeschaltet, der Comparator bleibt unverändert. Das Wiki („Repeater verlieren den Puls") stimmt in 26.3 nicht; Simulator und Spiel sind identisch. Ein kurzer Puls an einem Repeater wird also zu einem Puls der Länge `delay * 2` (vgl. Pulsverlängerer). Der Workaround „0-Tick-Repeater" über Block-Events (Pistons) bleibt davon unberührt.
+- Status: im-Spiel-verifiziert (scenarios/verify-timing.yaml)
+- Hinweise: Im Spiel geprüft (scenarios/verify-timing.yaml, Sonden `zt_repeater`, `zt_comparator`): Ein Repeater (delay 1) wird bei einem 0-Tick-Puls (Redstone-Block setzen und im selben Tick entfernen) 2 gt später für 2 gt eingeschaltet, der Comparator bleibt unverändert. Das Wiki („Repeater verlieren den Puls") ist für 26.3 widerlegt (die Aussage dieses Eintrags ist im Spiel bestätigt, nur die Wiki-Angabe war falsch); Simulator und Spiel sind identisch. Ein kurzer Puls an einem Repeater wird also zu einem Puls der Länge `delay * 2` (vgl. Pulsverlängerer). Der Workaround „0-Tick-Repeater" über Block-Events (Pistons) bleibt davon unberührt.
 
 ### ZT-007: Dispenser und Dropper werden durch einen 0-Tick-Puls ausgelöst
 - Aussage: Erhält ein Dispenser/Dropper während eines 0-Tick-Pulses ein `neighborChanged` im bestromten Zustand, wird der 4-gt-Tick geplant und die Ausgabe erfolgt unabhängig davon, dass die Leistung im selben Tick wieder wegfällt.

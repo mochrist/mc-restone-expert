@@ -1,0 +1,69 @@
+name: daylight-skylight-distance
+description: >
+  Himmelslicht am Tageslichtsensor unter einem Dach (DAY-006). Zwei lange Räume mit Steinwänden und Steindach,
+  nur an den Enden x=0 und x=13 offen. Invertierte Sensoren bei x=1..12 lesen 15 minus Himmelslicht, also den
+  Abstand zur nächsten Zelle mit offenem Himmel (Erwartung 1..6 und 6..1). Raum A (z=1): Dach bei y=3. Raum B
+  (z=5): Dach bei y=6 (hoher Raum), Sensoren ebenfalls bei y=1. Die Sensoren sind veraltet (Stärke 0) gesetzt;
+  die erste Aktualisierung kommt vom 20-gt-Takt. game_time gibt die Phase vor (docs/scenario-format.md).
+game_time: 30843
+build:
+  size: [14, 8, 7]
+  fill:
+    - [0, 0, 0, 13, 0, 6, "stone"]
+    - [1, 1, 0, 12, 3, 0, "stone"]
+    - [1, 1, 2, 12, 3, 2, "stone"]
+    - [1, 3, 1, 12, 3, 1, "stone"]
+    - [1, 1, 4, 12, 6, 4, "stone"]
+    - [1, 1, 6, 12, 6, 6, "stone"]
+    - [1, 6, 5, 12, 6, 5, "stone"]
+  blocks:
+    - [1, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [1, 1, 5, "daylight_detector[inverted=true,power=0]"]
+    - [2, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [2, 1, 5, "daylight_detector[inverted=true,power=0]"]
+    - [3, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [3, 1, 5, "daylight_detector[inverted=true,power=0]"]
+    - [4, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [4, 1, 5, "daylight_detector[inverted=true,power=0]"]
+    - [5, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [5, 1, 5, "daylight_detector[inverted=true,power=0]"]
+    - [6, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [6, 1, 5, "daylight_detector[inverted=true,power=0]"]
+    - [7, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [7, 1, 5, "daylight_detector[inverted=true,power=0]"]
+    - [8, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [8, 1, 5, "daylight_detector[inverted=true,power=0]"]
+    - [9, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [9, 1, 5, "daylight_detector[inverted=true,power=0]"]
+    - [10, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [10, 1, 5, "daylight_detector[inverted=true,power=0]"]
+    - [11, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [11, 1, 5, "daylight_detector[inverted=true,power=0]"]
+    - [12, 1, 1, "daylight_detector[inverted=true,power=0]"]
+    - [12, 1, 5, "daylight_detector[inverted=true,power=0]"]
+ticks: 40
+probes:
+  a1: [1, 1, 1]
+  a2: [2, 1, 1]
+  a3: [3, 1, 1]
+  a4: [4, 1, 1]
+  a5: [5, 1, 1]
+  a6: [6, 1, 1]
+  a7: [7, 1, 1]
+  a8: [8, 1, 1]
+  a9: [9, 1, 1]
+  a10: [10, 1, 1]
+  a11: [11, 1, 1]
+  a12: [12, 1, 1]
+  b1: [1, 1, 5]
+  b2: [2, 1, 5]
+  b3: [3, 1, 5]
+  b4: [4, 1, 5]
+  b5: [5, 1, 5]
+  b6: [6, 1, 5]
+  b7: [7, 1, 5]
+  b8: [8, 1, 5]
+  b9: [9, 1, 5]
+  b10: [10, 1, 5]
+  b11: [11, 1, 5]
+  b12: [12, 1, 5]
