@@ -117,7 +117,7 @@ function renderMaterials(model) {
     }
     t.appendChild(body);
     const foot = document.createElement('tfoot');
-    foot.innerHTML = `<tr><td>Summe</td><td class="n">${total}</td><td class="n">${stacksText(total)}</td></tr>` +
+    foot.innerHTML = `<tr><td>Summe</td><td class="n">${total}</td><td></td></tr>` +
       `<tr><td colspan="3" class="muted" style="font-weight:400">${stacks} belegte Plätze ≈ ${Math.ceil(stacks / 27)} Kisten (27 Plätze)</td></tr>`;
     t.appendChild(foot);
     el.appendChild(t);
