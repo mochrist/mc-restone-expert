@@ -431,7 +431,7 @@ export class Scene3D {
 
     this.helpers = new THREE.Group();
     this.scene.add(this.helpers);
-    this.hl = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.02, 1.02, 1.02)),
+    this.hl = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)),
       new THREE.LineBasicMaterial({ color: 0xffffff, depthTest: false }));
     this.hl.visible = false; this.hl.renderOrder = 20;
     this.scene.add(this.hl);
@@ -630,6 +630,25 @@ export class Scene3D {
     return null;
   }
 
+  /** Outline of the hovered block: the whole cell for full blocks, the drawn shape (a little larger, never
+   *  beyond the cell) for small ones like dust, levers, buttons and torches. */
+  _highlight(e) {
+    const lo = new THREE.Vector3(e.p[0], e.p[1], e.p[2]), hi = lo.clone().addScalar(1);
+    if (e.obj) {
+      const box = new THREE.Box3().setFromObject(e.obj);
+      if (!box.isEmpty()) {
+        box.expandByScalar(0.04);
+        lo.max(box.min); hi.min(box.max);
+        for (const a of ['x', 'y', 'z']) { // keep very flat shapes visible as a box
+          if (hi[a] - lo[a] < 0.1) { const m = (hi[a] + lo[a]) / 2; lo[a] = m - 0.05; hi[a] = m + 0.05; }
+        }
+      }
+    }
+    this.hl.scale.set(hi.x - lo.x + 0.02, hi.y - lo.y + 0.02, hi.z - lo.z + 0.02);
+    this.hl.position.set((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, (lo.z + hi.z) / 2);
+    this.hl.visible = true;
+  }
+
   _bindEvents() {
     const el = this.renderer.domElement;
     let down = null, raf = false, last = null;
@@ -650,7 +669,7 @@ export class Scene3D {
         raf = false;
         if (!last || down) return;
         const e = this._pick(last);
-        if (e) { this.hl.position.set(e.p[0] + 0.5, e.p[1] + 0.5, e.p[2] + 0.5); this.hl.visible = true; } else this.hl.visible = false;
+        if (e) this._highlight(e); else this.hl.visible = false;
         this.requestRender();
         this.cb.onHover?.(e ? { p: e.p, s: e.s } : null, last);
       });
