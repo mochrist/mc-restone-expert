@@ -311,6 +311,26 @@ def lines(c: Candidate) -> list[tuple[Pos, list[Pos], Pos]]:
     return out
 
 
+def _clashes(q: Pos, c: Pos, prev: dict, ends: tuple[Pos, ...] = ()) -> bool:
+    """Whether dust at q, laid after the path that ends at c (cells back to the start over `prev`), would break
+    that path or itself. The floors of the path are only put in afterwards, so the search sees them as free:
+    dust two blocks above or below a path cell (or one of the line ends `ends`) puts a floor right over the
+    lower one, which cuts its steps up and down (also the step that leads to q, which needs the cell above the
+    lower dust free); dust right under or on a path cell takes its floor. Dust beside another path cell than c
+    joins the line there (a shortcut that may also turn the dust towards other blocks)."""
+    for e in ends:
+        if e.x == q.x and e.z == q.z and abs(e.y - q.y) <= 2:
+            return True
+    p = c
+    while p is not None:
+        if p.x == q.x and p.z == q.z and abs(p.y - q.y) <= 2:
+            return True
+        if p != c and _joined(p, q):
+            return True
+        p = prev.get(p)
+    return False
+
+
 def _dust_route(states: dict, a: Pos, b: Pos, limit: int) -> list[Pos] | None:
     """Shortest new dust path (cells between a and b) of at most `limit` cells, by breadth-first search.
 
@@ -354,7 +374,7 @@ def _dust_route(states: dict, a: Pos, b: Pos, limit: int) -> list[Pos] | None:
             if h not in states:
                 steps.append(h + DOWN)
             for q in steps:
-                if q not in prev and q != b and ok(q):
+                if q not in prev and q != b and ok(q) and not _clashes(q, c, prev, (b,)):
                     prev[q] = c
                     queue.append((q, n + 1))
     return None
@@ -636,12 +656,12 @@ def _dust_path(states: dict, start: Pos, goal: Pos, a: Pos, b: Pos, limit: int,
             for q in steps:
                 if q in prev:
                     continue
-                if q == goal:
+                if q == goal and not _clashes(q, c, prev, (a, b)):
                     path = [q, c]
                     while prev[path[-1]] is not None:
                         path.append(prev[path[-1]])
                     return path[::-1]
-                if ok(q):
+                if ok(q) and not _clashes(q, c, prev, (a, b)):
                     prev[q] = c
                     queue.append((q, n + 1))
     return None
