@@ -362,7 +362,7 @@ def serve(port: int = 8765, file: str | None = None, open_browser: bool = True) 
     server = make_server(port, extra)
     url = f"http://127.0.0.1:{server.server_address[1]}/"
     if extra is not None:
-        url += f"?file={quote(State(ROOT, extra).rel(extra))}"
+        url += f"?path={quote(State(ROOT, extra).rel(extra))}"
     print(f"GUI läuft auf {url} (Strg+C beendet)")
     if open_browser:
         import webbrowser

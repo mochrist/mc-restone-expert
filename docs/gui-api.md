@@ -1,7 +1,7 @@
 # GUI (M6): Aufbau und JSON-Schnittstelle
 
 `uv run rsx gui [datei]` startet einen lokalen Server (nur `127.0.0.1`, Standardport 8765, Python-Standardbibliothek)
-und öffnet den Browser (`--port N`, `--no-browser`). Mit Datei öffnet der Browser `/?file=<pfad>`, die
+und öffnet den Browser (`--port N`, `--no-browser`). Mit Datei öffnet der Browser `/?path=<pfad>`, die
 Oberfläche lädt diese Datei dann gleich. Die Oberfläche ist eine statische Web-App ohne Build-Schritt.
 
 Pfade in Anfragen sind relativ zum Repository; Dateien außerhalb (außer der beim Start angegebenen) lehnt der
@@ -46,7 +46,7 @@ Die Oberfläche lädt three.js als ES-Modul per Import-Map von `https://unpkg.co
 `materials`: benötigte Gegenstände (nicht Blockzustände), absteigend nach Anzahl; z. B. Wandfackel →
 `redstone_torch`, Staub → `redstone`, Doppelstufe → 2× Stufe, Kolbenkopf zählt nicht. `build_order`: alle
 Blockpositionen in einer Reihenfolge, in der man sie im Spiel setzen kann (Stützblock vor Staub, Fackel, Diode,
-Hebel; unten nach oben). `inputs`/`outputs`: Hebel/Knöpfe bzw. Lampen (bei Szenarien die Probes, bei Entwürfen
+Hebel; unten nach oben). Positionen ohne Gegenstand (Kolbenkopf, obere Türhälfte …) fehlen. `inputs`/`outputs`: Hebel/Knöpfe bzw. Lampen (bei Szenarien die Probes, bei Entwürfen
 die Ports des Kandidaten). `notes`: optionale Hinweise (deutsch).
 
 ## Endpunkte

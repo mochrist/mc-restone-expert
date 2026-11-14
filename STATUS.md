@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-12, Session 15. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine).
+Stand: 2026-11-14, Session 17. Geschätzter Gesamtfortschritt: **ca. 90 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 96 %).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
@@ -10,19 +10,38 @@ Stand: 2026-11-12, Session 15. Geschätzter Gesamtfortschritt: **ca. 96 %** (gew
 | M3 Analyse + Erklärung | 20 % | ~94 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
 | M4 Redesign | 25 % | ~87 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
+| M6 GUI | 15 % | ~60 % | `rsx gui`: lokale Web-App (three.js), 3D- und Ebenen-Ansicht, Materialliste, Bauanleitung, Entwurfssuche live, Simulation; `rsx materials`. Bauanleitung im Browser gesehen, Suche/Simulation nur über API-Tests |
 
-## Übergabe (aus Session 15)
+## Übergabe (aus Session 17)
 
-Session 15 auf Wunsch des Nutzers vorzeitig beendet: alles committet, Suite grün (1540 Tests, 149 Golden Traces),
-Oracle-Sperre frei. Das Verzeichnis `.claude/worktrees/agent-a062f264c39293708` ließ sich nicht löschen
-(Datei gesperrt, Worktree schon abgemeldet), später von Hand entfernen. Nächste Aufgaben:
+Alles committet, Suite grün (1559 Tests, 149 Golden Traces). Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| M4: 4-Bit-Kaskade (`cmp4`, 370 Blöcke) als Beispiel `examples/specs/composed/` + Szenario im Spiel aufnehmen; 5-Bit-Komparator mit der neuen Teilspezifikations-Zerlegung messen (Zeit, Blöcke) und ggf. slow-Test | Opus | – |
-| M4: Kompaktieren größerer Züge (Budget ist kein Engpass mehr; `scripts/bench_compact.py`) | Opus | – |
+| M6: Modi „Entwurfssuche“ und „Simulation“ im Browser durchklicken (Chrome-Erweiterung war nicht verbunden; Bauanleitung per headless-Chrome-Screenshot geprüft), Fehler beheben; Formen prüfen (Wandhebel, Wandfackel, Kolben) | Opus | – |
+| M6: Deutsche Namen im Material-Wörterbuch ergänzen (Hölzer, Farben, Betten), Summe der Materialliste ohne „Stacks“ über verschiedene Gegenstände | Sonnet | – |
+| M4: Kompaktieren größerer Züge (`scripts/bench_compact.py`); 5-Bit-Komparator: mit `MAX_CASCADE_INPUTS = 10` und Rust-Router 4 Bit in 98 s, 5 Bit noch nicht gemessen | Opus | – |
 
 ## Verlauf
+
+### Session 17 (2026-11-14): Fortsetzung der abgebrochenen Session 16 (Opus-Hauptsession, 2 Sonnet-Agents)
+
+- M6 GUI (Entscheidung des Nutzers in Session 16: lokale Web-App, alle drei Live-Ansichten). Vertrag
+  `docs/gui-api.md`. Server `gui/server.py` (Standardbibliothek, 127.0.0.1:8765; jede Simulation in eigenem
+  Thread, Suche als Job mit Einzelbildern aus `design/observe.py`), `gui/model.py`, `rsx gui [datei]`.
+  `cli.run_redesign()` ausgelagert. Sonnet-Agents: Oberfläche `gui/static/` (three.js 0.160 per Import-Map,
+  `?demo=1` mit `static/demo/model.json`), `gui/materials.py` + `rsx materials`.
+- `RustWorld.block_entities` hält die Welt nur noch schwach: der Zyklus ließ den Garbage Collector Rust-Welten
+  (unsendable) in fremden Threads freigeben (Fehlermeldungen, Speicherleck).
+- Headless-Screenshot ohne Erweiterung: `chrome.exe --headless=new --enable-unsafe-swiftshader
+  --use-angle=swiftshader --virtual-time-budget=15000 --screenshot=x.png <url>`.
+
+### Session 16 (2026-11-13, abgebrochen durch Login-Fehler, nicht in STATUS eingetragen)
+
+- `cmp4` als Beispiel, im Spiel aufgenommen (362 Blöcke). Fehler bei 5 Bit in `decompose._shared_split`
+  (Spalten mit „egal“) behoben. BFS-Router in Rust (`rust/rsx-core/src/route.rs`, Differenztest
+  `tests/design/test_route.py`).
+
 
 ### Session 15 (2026-11-12): Übergabe aus Session 14 (Opus-Hauptsession, 1 Sonnet-Agent), vorzeitig beendet
 
@@ -373,6 +392,8 @@ uv run rsx dump <datei> [--components]             # Schematic als Text
 uv run rsx sim scenarios/<x>.yaml --diff           # Simulator vs. Golden Trace
 uv run rsx oracle scenarios/<x>.yaml --golden      # im echten Spiel aufzeichnen (~10 s pro Batch)
 uv run rsx explain <schematic|scenario.yaml>       # Analyse (M3-Entwurf)
+uv run rsx gui [datei]                             # GUI im Browser (M6), http://127.0.0.1:8765
+uv run rsx materials <schematic|scenario.yaml>     # Materialliste
 uv run python -m redstone.knowledge lint|index     # Wissensbasis prüfen / Index erzeugen
 uv run python -m redstone.knowledge mark scenarios/<x>.yaml ID...   # Aussagen als im Spiel verifiziert markieren
 uv run python scripts/fetch_external_fixtures.py   # Test-Schematics ohne Lizenz lokal laden
@@ -423,7 +444,8 @@ src/redstone/
   sim/          world.py (Level#setBlock, NeighborUpdater, LevelTicks, Block-Events), block.py, blockdata.py,
                 notes.py, runner.py, blocks/{basic,diode,torch_observer,container,wire,piston,dispenser_hopper,outputs}.py, data/
   analysis/     ports.py, experiment.py, analyze.py, patterns.py, explain.py
-  design/       candidate.py, spec.py, behaviour.py, evaluate.py, templates.py, seq_templates.py, synth.py,
+  gui/          server.py, model.py, materials.py, static/ (Web-Oberfläche)
+  design/       observe.py, candidate.py, spec.py, behaviour.py, evaluate.py, templates.py, seq_templates.py, synth.py,
                 search.py, compact.py, report.py, compose.py (Router), decompose.py
   knowledge.py  Linter, Index, mark
   oracle.py     Start des Fabric-Servers
