@@ -27,6 +27,20 @@ Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). N�
 
 ## Verlauf
 
+### Session 20 (2026-11-14): M4-Agent (Opus, Worktree), auf Wunsch des Nutzers vorzeitig beendet
+
+- Keine Code-Änderung, nur Analyse. Befund zu `mux2-comparator`: als G verbindet er sich doch
+  (`chains(mux2, 0, buffer-dust, 0)`: 32 von 40 Layouts korrekt, Lampe → Staub nach Süden), als H an den
+  Dateneingängen a/b ebenfalls (23 bzw. 24 von 40), am Auswahleingang s nie (0 von 40).
+- Plan für kleinere Multiplexer (offen): Shannon-Zerlegung f = mux2(s, f|s=0, f|s=1) mit zwei G-Teilen, wenn
+  die Kofaktoren höchstens `MAX_COMMON` gemeinsame Eingänge haben: G0 → mux2.a (`chains`), G1 → Eingang b der
+  Komposition (`chains` mit `in_index`), gemeinsame Hebel per `_tapped`. mux8 wäre dann 7 × mux2 (je 19 Blöcke)
+  plus Leitungen statt 782 Blöcke; Tiefe 2 reicht (mux8 → mux4 → mux2-Vorlage).
+- Plan für mehrere Ausgänge mit gemeinsamen Eingängen (offen): `shared_splits` mit C wie in `_common_split`
+  (je Belegung von C höchstens zwei Mehrausgangs-Spalten), Verbindung wie `_nondisjoint`. Gutes Beispiel:
+  Addierer/Subtrahierer (op, a0..a3, b0..b3; 9 Eingänge), op ist in jeder Stufe gemeinsam. Carry-Lookahead ist
+  als Funktion ohnehin Ripple-zerlegbar und braucht das nicht.
+
 ### Session 19 (2026-11-14): Oberfläche, „alle Funktionen auch in der GUI“ (Fable-5.2-Hauptsession, keine Agents)
 
 - Server (`gui/server.py`, neu `gui/tools.py`): Endpunkte für Analyse (`/api/explain`, Markdown plus SVGs),
