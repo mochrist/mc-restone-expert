@@ -691,6 +691,65 @@ def _repeater_before(blocks: dict, r: Pos, b: Pos, laid: dict, name) -> Pos | No
     return r - d
 
 
+FULL_RUN = 15  # dust after a full-strength source that still carries a signal (15 down to 1)
+_FULL_SOURCES = {"repeater", "redstone_torch", "redstone_wall_torch", "lever", "redstone_block"}
+
+
+def _strength_limits(states: dict, a: Pos, inner: list[Pos], b: Pos) -> tuple[int, int, bool]:
+    """How much dust a line laid anew instead of a -> inner may have, so that the signal arrives about as
+    strong as before (the target may compare strengths, as a comparator does): (first, last, needs).
+
+    first: dust before the first repeater of the new line (a feeds it with an unknown strength unless it is a
+    repeater, torch or lever: then up to FULL_RUN; otherwise as many as the old line had up to its first
+    repeater, or, if it had none, that many plus LINE_SLACK, or LINE_MAX). last: dust after the last repeater
+    (or after a) up to the target: as before plus LINE_SLACK, or LINE_MAX. A comparator as target gets no
+    more dust than before on either count. needs: the new line needs a repeater of its own (the old one had
+    one and a gives no full signal). The new line ends at the same cell beside the target as the old one, so
+    it enters the same face."""
+    ids = [states[p].id for p in inner]
+    full = states[a].id in _FULL_SOURCES
+    exact = states[b].id == "comparator"  # it subtracts or compares: no dust more than before
+    reps = [i for i, x in enumerate(ids) if x == "repeater"]
+    before = reps[0] if reps else len(ids)
+    after = len(ids) - 1 - reps[-1] if reps else len(ids)
+    if full:
+        first = FULL_RUN
+    elif reps or exact:  # the old line shows only that this much dust reaches its first repeater
+        first = before
+    else:
+        first = min(max(before + LINE_SLACK, LINE_MAX), FULL_RUN)
+    last = after if exact else min(max(after + LINE_SLACK, LINE_MAX), FULL_RUN)
+    return first, last, bool(reps) and not full
+
+
+def _boosts(path: list[Pos], first: int, last: int, needs: bool) -> list[int] | None:
+    """Cells of a new dust path to turn into repeaters (as late as possible), such that at most `first` dust
+    come before the first one, at most FULL_RUN between two and at most `last` after the last one; at least
+    one if `needs`. A repeater fits on a cell whose neighbours on the path lie straight before and behind it at
+    the same height. None if that cannot be done on this path."""
+    n = len(path)
+    fits = [i for i in range(1, n - 1)
+            if path[i - 1].y == path[i].y == path[i + 1].y and path[i + 1] - path[i] == path[i] - path[i - 1]]
+    out: list[int] = []
+    start, bound = 0, first
+    while n - start > min(bound, last) or (needs and not out):
+        j = max((i for i in fits if start <= i <= start + bound), default=None)
+        if j is None:
+            return None
+        out.append(j)
+        start, bound = j + 1, FULL_RUN
+    return out
+
+
+def _repeater(r: Pos, back: Pos) -> BlockState:
+    """A repeater at r that takes its input from the neighbour `back`."""
+    from ..model import Direction
+
+    d = back - r
+    facing = next(x for x in Direction if x.vec == (d.x, 0, d.z))
+    return BlockState.parse(f"repeater[delay=1,facing={facing.label},locked=false,powered=false]")
+
+
 def _units(groups: list[frozenset[Pos]], found) -> list[frozenset[Pos]]:
     """What `relocations` may move: every building block alone, then groups of blocks that hang together over
     their lines while the rest does too (the head or the tail of a cascade, a subtree), smallest first; at most
@@ -819,13 +878,17 @@ def relocations(c: Candidate):
             ea, sa = (place(a), place(first)) if a in part else (a, first)
             eb, sb = (place(b), place(last)) if b in part else (b, last)
             limit = max(len(inner) + LINE_SLACK, LINE_MAX)
-            path = None
+            first, tail, needs = _strength_limits(states, a, inner, b)
+            path = boost = None
             if states[last].id != WIRE_ID:  # b took a full signal: a repeater in front of it again if it fits
                 extra: dict = {}
                 goal = _repeater_before(blocks, sb, eb, extra, names[k])
                 if goal is not None:
                     path = _dust_path(blocks, sa, goal, ea, sb, limit, box)
-                    if path is None:
+                    if path is not None:
+                        boost = _boosts(path, first, FULL_RUN, False)
+                    if boost is None:
+                        path = None
                         for w in extra:
                             del blocks[w]
                     else:
@@ -833,10 +896,12 @@ def relocations(c: Candidate):
             if path is None:
                 weak += states[last].id != WIRE_ID
                 path = _dust_path(blocks, sa, sb, ea, eb, limit, box)
-            if path is None:
+                if path is not None:
+                    boost = _boosts(path, first, tail, needs)
+            if path is None or boost is None:
                 break
-            for w in path:
-                blocks[w] = _DUST_STATE
+            for i, w in enumerate(path):
+                blocks[w] = _DUST_STATE if i not in boost else _repeater(w, path[i - 1])
                 laid[w] = names[k]
                 if (w + DOWN) not in blocks:
                     blocks[w + DOWN] = _FLOOR_STATE
