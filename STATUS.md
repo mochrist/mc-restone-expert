@@ -421,7 +421,11 @@ Neuaufbau von `.cache/` (nur nötig, um Spielcode zu lesen): Server-Jar 26.3 üb
 1. **M3 fertigstellen:**
    - Erledigt (Session 3, Ende): Druckplatten als Eingang (Emulation „betreten und sofort verlassen“, `PressurePlateBlock` in `basic.py`, nicht gegen das Spiel validiert, weil der Oracle keine Entities hat); volle Wahrheitstabelle bis 6 Hebel, darüber Teiltabellen je Ausgangsgruppe (`seg7`: NAND über 4 Hebel); höchstens 64 Ausgänge; Gatternamen AND/OR/NAND/NOR für n Eingänge.
    - Teiltabellen sehen Abhängigkeiten aus Einzel- und Paar-Umschaltungen (Session 10) und aus Stichproben
-     (Session 11); seltene Kombinationen (AND über viele Hebel) können fehlen.
+     (Session 11). Session 18: `analyze._refine_dependencies` prüft die Abhängigkeitsmengen an ganzen Hebelstellungen
+     (alle an, alle an bis auf einen, 80 zufällige): ändert sich ein Ausgang, wenn die Hebel außerhalb der Menge
+     zurückgesetzt werden, kommen die nötigen Hebel hinzu. AND über 7/8 Hebel und ODER von UND-Termen mit 3+ Hebeln
+     werden gefunden; Teiltabellen jetzt bis 8 Hebel (`MAX_PARTIAL_TABLE_LEVERS`), ca. +60 bis +300 Läufe
+     (Tests `tests/analysis/test_rare_dependencies.py`). Weiter können nur noch sehr seltene Kombinationen fehlen.
    - Erledigt (Session 4): Clock-Erkennung an echten Clocks. SVG-Timing-Diagramm erledigt (Session 11). Geschwindigkeit erledigt (Rust-Kern).
    - BUD-Notiz ist eine Heuristik (Staub zwei Blöcke entfernt wird nicht gemeldet). Genau ginge es nur mit der
      Position des auslösenden Blocks (in 26.3 liefert `neighborChanged` nur die Orientierung) oder mit einem

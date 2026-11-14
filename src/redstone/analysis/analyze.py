@@ -397,6 +397,70 @@ def _sampled_dependencies(circuit: Circuit, levers: list[Port],
     return deps, samples
 
 
+MAX_PARTIAL_TABLE_LEVERS = 8  # a table over the levers one output group depends on: 256 fresh runs at most
+REFINE_SAMPLES = 80  # positions checked against each output's dependency set in `_refine_dependencies`
+REFINE_ROUNDS = 4
+
+
+def _refine_dependencies(circuit: Circuit, levers: list[Port], outputs: list[Port],
+                         deps: dict[str, set[str]]) -> tuple[int, int] | None:
+    """Check the dependency sets against whole lever positions and extend them where they are too small.
+
+    For a position P (levers flipped from the stored states) and an output whose dependencies are D, the output
+    must not change when the levers outside D are put back to their stored states. If it does, the levers
+    outside D matter: they are put back one at a time and those whose return changes the output again are
+    added to D (a minimal set that explains the difference). Positions: all on, all on except one lever, and
+    random ones of different density; fixed seed. This finds what single and pair flips miss: an AND over many
+    levers (visible from all on) or an OR of ANDs whose terms each need three or more levers.
+    Updates `deps`; returns (positions checked, extended outputs), None if a run never settles."""
+    n = len(levers)
+    names = [lv.name for lv in levers]
+    index = {name: i for i, name in enumerate(names)}
+    rng = random.Random(1)
+    all_on = frozenset(i for i, lv in enumerate(levers) if not lv.state.get_bool("powered"))
+    positions = [all_on] + [all_on ^ {i} for i in range(n)]
+    while len(positions) < REFINE_SAMPLES + n + 1:
+        density = SAMPLE_DENSITIES[len(positions) % len(SAMPLE_DENSITIES)]
+        positions.append(frozenset(i for i in range(n) if rng.random() < density))
+    cache: dict[frozenset[int], tuple[bool, ...] | None] = {}
+
+    def steady(flipped: frozenset[int]):
+        if flipped not in cache:
+            rec = circuit.run([(1, levers[i].pos, "use") for i in sorted(flipped)], max_ticks=MAX_TICKS, quiet=QUIET)
+            cache[flipped] = None if rec.settled_at is None else tuple(rec.on_at(o.pos, rec.ticks) for o in outputs)
+        return cache[flipped]
+
+    extended = 0
+    for _ in range(REFINE_ROUNDS):
+        changed = False
+        for k, o in enumerate(outputs):
+            inside = frozenset(index[x] for x in deps[o.name])
+            for pos in positions:
+                full = steady(pos)
+                ref = steady(pos & inside)
+                if full is None or ref is None:
+                    return None
+                if full[k] == ref[k]:
+                    continue
+                keep = set(pos)  # put the levers outside D back one at a time
+                for i in sorted(pos - inside):
+                    trial = steady(frozenset(keep - {i}))
+                    if trial is None:
+                        return None
+                    if trial[k] == full[k]:
+                        keep.discard(i)  # the output survived without lever i: not needed (yet)
+                found = {i for i in keep - inside}
+                if not found:
+                    continue
+                deps[o.name] |= {names[i] for i in found}
+                inside |= found
+                extended += 1
+                changed = True
+        if not changed:
+            break
+    return len(positions), extended
+
+
 def _partial_tables(analysis: Analysis, circuit: Circuit, levers: list[Port], outputs: list[Port]) -> None:
     """Group outputs by the levers they depend on (single toggles and pairs from the stored states, single
     toggles at random lever positions) and tabulate each group on its own."""
@@ -414,6 +478,7 @@ def _partial_tables(analysis: Analysis, circuit: Circuit, levers: list[Port], ou
     if sampled is not None:
         for name, more in sampled[0].items():
             deps[name] |= more
+    refined = _refine_dependencies(circuit, levers, outputs, deps) if sampled is not None else None
     groups: dict[frozenset[str], list[Port]] = {}
     for o in outputs:
         groups.setdefault(frozenset(deps[o.name]), []).append(o)
@@ -422,7 +487,7 @@ def _partial_tables(analysis: Analysis, circuit: Circuit, levers: list[Port], ou
     for names, outs in sorted(groups.items(), key=lambda kv: sorted(kv[0])):
         if len(names) < 2:
             continue
-        if len(names) > MAX_TRUTH_TABLE_LEVERS:
+        if len(names) > MAX_PARTIAL_TABLE_LEVERS:
             skipped += [o.name for o in outs]
             continue
         group_levers = [by_name[n] for n in sorted(names, key=lambda n: [p.name for p in levers].index(n))]
@@ -436,8 +501,12 @@ def _partial_tables(analysis: Analysis, circuit: Circuit, levers: list[Port], ou
     analysis.warnings.append(
         f"{len(levers)} Hebel sind zu viele für eine volle Wahrheitstabelle (höchstens {MAX_TRUTH_TABLE_LEVERS}); "
         + ((f"Teiltabellen über die Hebel, auf die ein Ausgang einzeln oder paarweise umgelegt oder in einer von "
-            f"{sampled[1]} zufälligen Hebelstellungen reagiert. Abhängigkeiten, die nur in seltenen Kombinationen "
-            "sichtbar werden (z. B. ein AND über viele Hebel), können fehlen" if sampled is not None else
+            f"{sampled[1]} zufälligen Hebelstellungen reagiert"
+            + (f"; zusätzlich an {refined[0]} Hebelstellungen (alle an, alle an bis auf einen, zufällig) geprüft, ob "
+               f"die übrigen Hebel den Ausgang noch ändern" + (f" (bei {refined[1]} Ausgängen kamen so Hebel hinzu)"
+                                                              if refined[1] else "") if refined else "")
+            + ". Abhängigkeiten, die nur in sehr seltenen Kombinationen sichtbar werden, können trotzdem fehlen"
+            if sampled is not None else
             "Teiltabellen über die Hebel, auf die ein Ausgang einzeln oder paarweise umgelegt reagiert. "
             "Abhängigkeiten, die erst bei drei oder mehr gleichzeitig umgelegten Hebeln sichtbar werden, fehlen darin")
            if pairs is not None else
