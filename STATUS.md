@@ -1,12 +1,12 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-14, Session 17. Geschätzter Gesamtfortschritt: **ca. 95 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 96 %).
+Stand: 2026-11-14, Session 17. Geschätzter Gesamtfortschritt: **ca. 95 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 96–97 %).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
-| M0 Wissensbasis | 10 % | ~98 % | 295 Aussagen aus dem 26.3-Code belegt, 224 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
+| M0 Wissensbasis | 10 % | ~98 % | 296 Aussagen aus dem 26.3-Code belegt, 224 davon im Spiel verifiziert; Linter, Index (`knowledge/UNVERIFIED.md`) |
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
-| M2 Oracle + Simulator | 35 % | ~96 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 149 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen, Sculk-Sensoren |
+| M2 Oracle + Simulator | 35 % | ~96 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 149 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen, Sculk-Sensoren, Notenblock-Instrument aus Block-Daten |
 | M3 Analyse + Erklärung | 20 % | ~96 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
 | M4 Redesign | 25 % | ~90 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen, Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
@@ -14,16 +14,20 @@ Stand: 2026-11-14, Session 17. Geschätzter Gesamtfortschritt: **ca. 95 %** (gew
 
 ## Übergabe (aus Session 17)
 
-Alles committet, schnelle Suite grün (1567 Tests, 149 Golden Traces); zwei slow-Tests warten auf neue Aufnahmen (s. u.). Nächste Aufgaben:
+Alles committet, Suite grün (1570 Tests, 149 Golden Traces; slow-Tests der Kompositionen grün nach Neuaufnahme
+von `cmp3`/`cmp4`). Keine laufenden Worktrees, Oracle-Sperre frei. Rechtefreigaben des Nutzers in
+`.claude/settings.local.json` (nicht im Repo). Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| M4: `cmp3`/`cmp4` neu aufnehmen (Entwürfe durch das Kompaktieren kleiner, die slow-Tests `test_decomposed_scenario_up_to_date[cmp3/cmp4]` schlagen bis dahin fehl): `uv run python scripts/compose_scenarios.py && uv run rsx oracle scenarios/cmp-cmp3.yaml scenarios/cmp-cmp4.yaml --golden`; erstmals Verstärker in neu verlegten Leitungen im Spiel. Nicht während der Nutzer spielt | Opus | – |
-| M4: `examples/specs/large/cmp5.yaml` im Spiel aufnehmen (1024 Kombinationen, Oracle ~45 min; nicht während der Nutzer spielt) und ggf. nach `composed/` | Opus | – |
+| M4: `examples/specs/large/cmp5.yaml` im Spiel aufnehmen (1024 Kombinationen, Oracle ~45 min; nur wenn der Nutzer den Rechner nicht braucht, vorher fragen) und ggf. nach `composed/` | Opus | – |
+| M4: Funktionen über 8 Eingängen, die sich nicht disjunkt zerlegen lassen (nicht-disjunkte Zerlegung, z. B. Carry-Lookahead), oder Topologie per SAT/SMT (`docs/m4-search-and-performance.md`) | Opus | – |
+| M2: Notenblock-Instrument im Spiel bestätigen (Wandkopf oben → harp, Teppich unten → harp; Szenario + Oracle) und nach dem nächsten `rsx oracle --dump-blocks` `scripts/gen_note_block_instruments.py --check` | Sonnet | – |
+| M0: die 4 offenen Aussagen in `knowledge/UNVERIFIED.md` (DAY-006, DUST-019, ORD-014, ZT-006) prüfen bzw. auflösen | Sonnet | – |
 
 ## Verlauf
 
-### Session 17 (2026-11-14): Fortsetzung der abgebrochenen Session 16 (Opus-Hauptsession, 2 Sonnet-Agents)
+### Session 17 (2026-11-14): Fortsetzung der abgebrochenen Session 16 (Opus-Hauptsession, 9 Agents)
 
 - M6 GUI (Entscheidung des Nutzers in Session 16: lokale Web-App, alle drei Live-Ansichten). Vertrag
   `docs/gui-api.md`. Server `gui/server.py` (Standardbibliothek, 127.0.0.1:8737; jede Simulation in eigenem
@@ -57,6 +61,13 @@ Alles committet, schnelle Suite grün (1567 Tests, 149 Golden Traces); zwei slow
   8012 → 6954. M6 (Sonnet) Blockformen: Wandhebel/-knöpfe, Treppen, Holzfarben, Truhe, Trichter, Sculk-Sensor,
   Tageslichtsensor (`daylight_detector`), Komparator-Modus; URL-Parameter `?layout`, `?y`, `?cam`. M3 (Sonnet)
   `analyze._refine_dependencies` (s. Offene Punkte 1), Teiltabellen bis 8 Hebel.
+
+- Nachtrag: `cmp3` (jetzt 9×8×10) und `cmp4` (17×6×23) neu im Spiel aufgenommen, identisch – die von
+  `_boosts` gesetzten Verstärker sind damit im Spiel bestätigt. M6 (Sonnet): Treppenecken (`shape=inner/outer_*`,
+  gegen `StairBlock.java` geprüft), deutlichere Hebel/Knöpfe/Wandfackeln in der Ebenen-Ansicht. M2 (Sonnet):
+  Notenblock-Instrument aus Feld `instrument` in `blocks_26.3.json` (abgeleitet aus `Blocks.java` mit
+  `scripts/gen_note_block_instruments.py`, `BlockDump.java` schreibt es künftig), beide Kerne, OUT-016; alte
+  Namensheuristik war bei Teppich, Wandköpfen und Wolltreppen falsch. Demo-GIF der GUI erstellt (nicht im Repo).
 
 ### Session 16 (2026-11-13, abgebrochen durch Login-Fehler, nicht in STATUS eingetragen)
 
