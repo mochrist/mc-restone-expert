@@ -104,3 +104,104 @@ def test_observer_is_per_thread():
         t.join()
     observe.frame(object(), "compose", "after")
     assert [a[2] for a in seen] == ["x"]
+
+
+@pytest.fixture(scope="module")
+def raw():
+    """Like `api`, but returns status, headers and the raw body (downloads, uploads)."""
+    server = make_server(0)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    port = server.server_address[1]
+
+    def call(path: str, data: bytes | None = None):
+        req = urllib.request.Request(f"http://127.0.0.1:{port}{path}", data=data,
+                                     method="GET" if data is None else "POST")
+        try:
+            with urllib.request.urlopen(req) as r:
+                return r.status, dict(r.headers), r.read()
+        except urllib.error.HTTPError as e:
+            return e.code, dict(e.headers), e.read()
+
+    yield call
+    server.shutdown()
+    server.server_close()
+
+
+def test_explain_dump_and_scenario(api):
+    status, r = api("/api/explain", {"path": "scenarios/tpl-xor2-comparator.yaml"})
+    assert status == 200 and "**XOR**" in r["markdown"]
+    assert set(r["svgs"]) == {"in1.svg", "in2.svg"} and "](svg/in1.svg)" in r["markdown"]
+    assert all(s.lstrip().startswith("<svg") for s in r["svgs"].values())
+    status, r = api("/api/dump", {"path": "scenarios/tpl-xor2-comparator.yaml", "layers": [1], "states": True})
+    assert status == 200 and "Blockzustände" in r["text"] and "comparator" in r["text"]
+    status, r = api("/api/scenario", {"path": "scenarios/tpl-xor2-comparator.yaml"})
+    assert status == 200 and r["golden"] == {"matches": True, "count": 0, "mismatches": []}
+    assert "#" in r["diagram"] and r["svg"].lstrip().startswith("<svg")
+    assert api("/api/scenario", {"path": "examples/specs/xor.yaml"})[0] == 400
+    assert api("/api/oracle", {"path": "examples/specs/xor.yaml"})[0] == 400
+    status, info = api("/api/info")
+    assert status == 200 and info["core"] in ("python", "rust")
+    assert api("/api/core", {"core": info["core"]}) == (200, {"core": info["core"]})
+    assert api("/api/core", {"core": "java"})[0] == 400
+    status, r = api("/api/text?path=examples/specs/xor.yaml")
+    assert status == 200 and "a != b" in r["text"]
+
+
+def test_export_and_upload(raw, tmp_path):
+    from redstone import io
+    from redstone.gui.server import ROOT, WORK_DIR
+
+    status, headers, body = raw("/api/export?path=scenarios/tpl-xor2-comparator.yaml&format=litematic")
+    assert status == 200 and 'filename="tpl-xor2-comparator.litematic"' in headers["Content-Disposition"]
+    target = tmp_path / "x.litematic"
+    target.write_bytes(body)
+    assert io.load(target).size == (5, 2, 5)
+    for fmt, needle in (("materials", "Gesamt"), ("guide", "Bauanleitung"), ("dump", "y=0"), ("scenario", '"probes"')):
+        status, _, text = raw(f"/api/export?path=scenarios/tpl-xor2-comparator.yaml&format={fmt}")
+        assert status == 200 and needle in text.decode("utf-8"), fmt
+    assert raw("/api/export?path=scenarios/tpl-xor2-comparator.yaml&format=exe")[0] == 400
+
+    name = "gui-test-upload.litematic"
+    try:
+        status, _, answer = raw(f"/api/upload?name=../{name}", body)
+        assert status == 200
+        up = json.loads(answer)
+        assert up == {"path": f"{WORK_DIR.as_posix()}/uploads/{name}", "group": "schematics"}
+        status, _, files = raw("/api/files")
+        assert up["path"] in json.loads(files)["schematics"]
+        status, _, model = raw(f"/api/model?path={up['path']}")
+        assert status == 200 and json.loads(model)["size"] == [5, 2, 5]
+        assert raw("/api/upload?name=bad.litematic", b"not a schematic")[0] == 400
+        assert raw("/api/upload?name=virus.exe", b"MZ")[0] == 400
+    finally:
+        (ROOT / WORK_DIR / "uploads" / name).unlink(missing_ok=True)
+
+
+def test_spec_from_text_with_constraints(api):
+    from redstone.gui.server import ROOT
+
+    assert api("/api/spec", {"name": "x", "text": "- a\n- b\n"})[0] == 400
+    status, spec = api("/api/spec", {"name": "gui test/and", "text": "inputs: [a, b]\nfunction:\n  y: a and b\n"})
+    assert status == 200 and spec["group"] == "specs" and spec["path"].endswith("specs/and.yaml")
+    try:
+        assert api("/api/redesign", {"path": spec["path"], "max_size": "1,2"})[0] == 400
+        assert api("/api/redesign", {"path": spec["path"], "time": 0})[0] == 400
+        status, body = api("/api/redesign", {"path": spec["path"], "compact": 0, "forbid": "redstone_torch, repeater",
+                                             "max_size": "6x4x6", "time": 20, "top": 3})
+        assert status == 200
+        deadline = time.time() + 120
+        while True:
+            _, st = api(f"/api/job/{body['job']}?since=0")
+            if st["done"] or time.time() > deadline:
+                break
+            time.sleep(0.2)
+        assert st["done"] and st["kind"] == "redesign"
+        summary = st["result"]["summary"]
+        assert "ohne redstone_torch, repeater" in summary and "max. 6×4×6" in summary
+        if st["error"] is None:
+            assert not any(b["s"].startswith(("redstone_torch", "redstone_wall_torch", "repeater"))
+                           for b in st["result"]["blocks"])
+            status, r = api("/api/explain", {"job": body["job"]})
+            assert status == 200 and "Wahrheitstabelle" in r["markdown"]
+    finally:
+        (ROOT / spec["path"]).unlink(missing_ok=True)

@@ -79,7 +79,8 @@ def check_constraints(candidate: Candidate, constraints: Constraints) -> list[st
         x, y, z = candidate.size
         if not (y <= my and ((x <= mx and z <= mz) or (z <= mx and x <= mz))):
             out.append(f"Größe {x}×{y}×{z} passt nicht in {mx}×{my}×{mz}")
-    ids = _block_ids(candidate) - INTERFACE
+    # a wall torch is the same item as a torch: allowing or forbidding one means both
+    ids = {i.replace("_wall_torch", "_torch") for i in _block_ids(candidate) - INTERFACE}
     if constraints.allowed_blocks is not None:
         extra = ids - constraints.allowed_blocks
         if extra:

@@ -6,6 +6,7 @@ Rust worlds may only be used from the thread that created them, so every simulat
 from __future__ import annotations
 
 import itertools
+import re
 import socket
 import sys
 import json
@@ -19,6 +20,7 @@ from urllib.parse import parse_qs, urlparse
 
 from ..model import Grid, Pos
 from . import model as gmodel
+from . import tools
 
 ROOT = Path(__file__).resolve().parents[3]  # the repository (src/redstone/gui/server.py)
 STATIC = Path(__file__).resolve().parent / "static"
@@ -28,6 +30,8 @@ MAX_FRAMES = 3000
 MAX_TICKS = 1000
 MAX_SIMS = 16
 MAX_JOBS = 8
+MAX_UPLOAD = 64 * 1024 * 1024
+WORK_DIR = Path(".cache") / "gui"  # uploads and specs written in the GUI (not in git)
 CONTENT_TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
                  ".css": "text/css; charset=utf-8", ".json": "application/json", ".svg": "image/svg+xml",
                  ".png": "image/png", ".ico": "image/x-icon"}
@@ -37,6 +41,13 @@ class ApiError(Exception):
     def __init__(self, message: str, status: int = HTTPStatus.BAD_REQUEST) -> None:
         super().__init__(message)
         self.status = status
+
+
+class Download:
+    """An API answer that is a file instead of JSON."""
+
+    def __init__(self, body: bytes, filename: str, ctype: str) -> None:
+        self.body, self.filename, self.ctype = body, filename, ctype
 
 
 # ---------------------------------------------------------------------------------------------- simulation
@@ -118,9 +129,17 @@ class Simulation:
 class Job:
     """A design search (`rsx redesign`) in its own thread; frames come from `design.observe`."""
 
-    def __init__(self, path: Path, compact: int) -> None:
+    kind = "redesign"
+
+    def __init__(self, path: Path, compact: int = 100, constraints=None, time_limit: float | None = 60,
+                 outputs: str | None = None, top: int = 10) -> None:
         self.path = path
         self.compact = compact
+        self.constraints = constraints
+        self.time_limit = time_limit
+        self.outputs = outputs
+        self.top = top
+        self.title = path.stem
         self.frames: list[dict] = []
         self.log: list[str] = []
         self.done = False
@@ -144,7 +163,9 @@ class Job:
 
         try:
             with observe.observing(self._frame):
-                best, text, spec = run_redesign(self.path, compact=self.compact, steps=self.log)
+                best, text, spec = run_redesign(self.path, self.constraints, compact=self.compact,
+                                                 time_limit=self.time_limit, outputs=self.outputs,
+                                                 top=self.top, steps=self.log)
             result = gmodel.of_candidate(best, spec) if best is not None else {}
             result["summary"] = text
             with self._lock:
@@ -162,8 +183,57 @@ class Job:
 
     def snapshot(self, since: int) -> dict:
         with self._lock:
-            return {"done": self.done, "error": self.error, "frames": self.frames[max(since, 0):],
+            return {"kind": self.kind, "done": self.done, "error": self.error, "frames": self.frames[max(since, 0):],
                     "log": list(self.log), "result": self.result if self.done else None}
+
+
+class OracleJob:
+    """`rsx oracle`: run one scenario in the real game (Fabric server, takes a minute or more) and compare the
+    trace with the simulator. Only one at a time: the server uses one run directory and one port."""
+
+    kind = "oracle"
+    busy = threading.Lock()
+
+    def __init__(self, path: Path, golden: bool = False, timeout: float = 900) -> None:
+        if not OracleJob.busy.acquire(blocking=False):
+            raise ApiError("Es läuft schon eine Aufnahme im Spiel.", HTTPStatus.CONFLICT)
+        self.path, self.golden, self.timeout = path, golden, timeout
+        self.title = path.stem
+        self.done = False
+        self.error: str | None = None
+        self.result: dict | None = None
+        self.grid = None
+        threading.Thread(target=self._run, daemon=True, name=f"rsx-oracle-{path.stem}").start()
+
+    def _run(self) -> None:
+        from .. import oracle, sim
+        from ..verify import Trace, load_scenario, timing_diagram
+        from ..verify.trace import trace_svg
+
+        try:
+            trace = Trace.load(oracle.run([self.path], timeout=self.timeout)[0])
+            simulated, _ = sim.run(load_scenario(self.path))
+            result = {"name": trace.scenario, "ticks": trace.ticks, "diagram": timing_diagram(trace),
+                      "svg": trace_svg(trace, f"{trace.scenario} (im Spiel)"),
+                      "simulator": tools.compare(trace, simulated), "written": None}
+            if self.golden:
+                tools.GOLDEN_DIR.mkdir(parents=True, exist_ok=True)
+                dst = tools.GOLDEN_DIR / f"{trace.scenario}.trace.json"
+                trace.save(dst)
+                result["written"] = f"tests/golden/{dst.name}"
+            self.result = result
+        except oracle.OracleError as e:
+            self.error = f"Aufnahme im Spiel fehlgeschlagen: {e}"
+        except Exception as e:
+            traceback.print_exc()
+            self.error = f"Fehler bei der Aufnahme im Spiel: {type(e).__name__}: {e}"
+        finally:
+            self.done = True
+            OracleJob.busy.release()
+
+    def snapshot(self, since: int) -> dict:
+        return {"kind": self.kind, "done": self.done, "error": self.error, "frames": [], "log": [],
+                "result": self.result if self.done else None}
 
 
 # ---------------------------------------------------------------------------------------------- server state
@@ -171,8 +241,9 @@ class State:
     def __init__(self, root: Path = ROOT, extra: Path | None = None) -> None:
         self.root = root.resolve()
         self.extra = extra.resolve() if extra is not None else None
+        self.work = self.root / WORK_DIR
         self.sims: dict[str, Simulation] = {}
-        self.jobs: dict[str, Job] = {}
+        self.jobs: dict[str, Job | OracleJob] = {}
         self._ids = itertools.count(1)
         self._lock = threading.Lock()
 
@@ -203,10 +274,59 @@ class State:
         specs = list((self.root / "examples").rglob("*.yaml"))
         out = {"schematics": listed(schematics), "scenarios": listed((self.root / "scenarios").glob("*.yaml")),
                "specs": listed(specs)}
+        for p in sorted(self.work.glob("*/*"), key=lambda p: p.stat().st_mtime):  # newest first in its group
+            if p.suffix in SCHEMATIC_SUFFIXES:
+                out["schematics"].insert(0, self.rel(p))
+            elif p.suffix in (".yaml", ".yml"):
+                try:
+                    out[tools.yaml_kind(p.read_text(encoding="utf-8"))].insert(0, self.rel(p))
+                except (ValueError, OSError):
+                    pass
         if self.extra is not None:
             key = "schematics" if self.extra.suffix in SCHEMATIC_SUFFIXES else "scenarios"
             out[key].insert(0, self.rel(self.extra))
         return out
+
+    def store(self, folder: str, name: str, data: bytes) -> tuple[str, str]:
+        """Keep an uploaded file or a spec written in the GUI; returns (path for the client, group)."""
+        name = tools.safe_name(name)
+        suffix = Path(name).suffix.lower()
+        if suffix in (".yaml", ".yml"):
+            try:
+                group = tools.yaml_kind(data.decode("utf-8"))
+            except UnicodeDecodeError:
+                raise ApiError(f"{name} ist keine Textdatei (UTF-8)") from None
+            except ValueError as e:
+                raise ApiError(f"{name}: {e}") from e
+        elif suffix in SCHEMATIC_SUFFIXES:
+            group = "schematics"
+        else:
+            raise ApiError(f"{name}: unbekannter Dateityp (erlaubt: .litematic, .schem, .nbt, .yaml)")
+        target = self.work / folder / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        if group == "schematics":
+            from .. import io
+
+            try:
+                io.load(target)
+            except Exception as e:
+                target.unlink(missing_ok=True)
+                raise ApiError(f"{name} lässt sich nicht lesen: {e}") from e
+        return self.rel(target), group
+
+    def source(self, ref: dict) -> tuple[Grid, str, Path | None]:
+        """The circuit a request means: {"job": id} (result of a search) or {"path": P}. Grid, title, file."""
+        if ref.get("job") not in (None, ""):
+            job = self.jobs.get(str(ref["job"]))
+            if job is None or not job.done or job.grid is None:
+                raise ApiError("Die Suche ist unbekannt, läuft noch oder hat keinen Entwurf")
+            return job.grid, f"{job.title}-redesign", None
+        full = self.resolve(ref.get("path") or "")
+        try:
+            return gmodel.load(full)[0], full.stem, full
+        except (ValueError, KeyError) as e:
+            raise ApiError(f"{full.name} lässt sich nicht laden: {e}") from e
 
     def new_id(self) -> str:
         return str(next(self._ids))
@@ -219,7 +339,7 @@ class State:
             self.sims[sid] = sim
             return sid
 
-    def add_job(self, job: Job) -> str:
+    def add_job(self, job: Job | OracleJob) -> str:
         with self._lock:
             for k in [k for k, j in self.jobs.items() if j.done][: max(0, len(self.jobs) - MAX_JOBS + 1)]:
                 del self.jobs[k]
@@ -232,6 +352,41 @@ def _pos(value) -> Pos:
     if not (isinstance(value, list) and len(value) == 3 and all(isinstance(v, int) for v in value)):
         raise ApiError("Position muss [x, y, z] mit ganzen Zahlen sein")
     return Pos(*value)
+
+
+def _constraints(body: dict):
+    """Constraints of a design search from the request (all optional)."""
+    from ..design.evaluate import Constraints
+
+    def ids(key: str) -> set[str] | None:
+        v = body.get(key)
+        if v in (None, "", []):
+            return None
+        if isinstance(v, str):
+            v = v.replace(";", ",").split(",")
+        if not isinstance(v, list) or not all(isinstance(x, str) for x in v):
+            raise ApiError(f"{key} muss eine Liste von Block-IDs sein")
+        return {x.strip().removeprefix("minecraft:") for x in v if x.strip()} or None
+
+    size = body.get("max_size")
+    if size in ("", []):
+        size = None
+    if isinstance(size, str):
+        try:
+            size = [int(x) for x in re.split(r"[x×,;\s]+", size.strip()) if x]
+        except ValueError:
+            raise ApiError("max_size muss X,Y,Z sein") from None
+    if size is not None and not (isinstance(size, list) and len(size) == 3
+                                 and all(isinstance(v, int) and v > 0 for v in size)):
+        raise ApiError("max_size muss X,Y,Z mit ganzen Zahlen > 0 sein")
+    delay = body.get("max_delay")
+    if delay == "":
+        delay = None
+    if delay is not None and (not isinstance(delay, int) or isinstance(delay, bool) or delay < 0):
+        raise ApiError("max_delay muss eine ganze Zahl ≥ 0 sein (Gameticks)")
+    return Constraints(max_size=tuple(size) if size else None, allowed_blocks=ids("allow"),
+                       forbidden_blocks=ids("forbid") or set(), allow_qc=not body.get("no_qc", False),
+                       max_delay=delay)
 
 
 def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
@@ -271,7 +426,17 @@ def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
             try:
                 if method == "GET" and not url.path.startswith("/api/"):
                     return self._static(url.path)
-                self._json(self._api(method, url.path, parse_qs(url.query)))
+                answer = self._api(method, url.path, parse_qs(url.query))
+                if isinstance(answer, Download):
+                    self.send_response(HTTPStatus.OK)
+                    self.send_header("Content-Type", answer.ctype)
+                    self.send_header("Content-Length", str(len(answer.body)))
+                    self.send_header("Content-Disposition", f'attachment; filename="{answer.filename}"')
+                    self.send_header("Cache-Control", "no-store")
+                    self.end_headers()
+                    self.wfile.write(answer.body)
+                else:
+                    self._json(answer)
             except ApiError as e:
                 self._json({"error": str(e)}, e.status)
             except Exception as e:
@@ -292,8 +457,11 @@ def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
             self._send(HTTPStatus.OK, full.read_bytes(), CONTENT_TYPES.get(full.suffix, "application/octet-stream"))
 
         # -------------------------------------------------------------- API
-        def _api(self, method: str, path: str, query: dict) -> dict:
+        def _api(self, method: str, path: str, query: dict) -> dict | Download:
             parts = path.strip("/").split("/")[1:]  # without "api"
+            extra = self._more(method, parts, lambda key, default="": (query.get(key) or [default])[0])
+            if extra is not None:
+                return extra
             if method == "GET" and parts == ["files"]:
                 return state.files()
             if method == "GET" and parts == ["model"]:
@@ -322,7 +490,16 @@ def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
                 compact = body.get("compact", 100)
                 if not isinstance(compact, int) or compact < 0:
                     raise ApiError("compact muss eine ganze Zahl ≥ 0 sein")
-                return {"job": state.add_job(Job(full, compact))}
+                limit = body.get("time", 60)
+                if limit is not None and (not isinstance(limit, (int, float)) or limit <= 0):
+                    raise ApiError("time muss eine Zahl > 0 sein (Sekunden)")
+                top = body.get("top", 10)
+                if not isinstance(top, int) or top < 1:
+                    raise ApiError("top muss eine ganze Zahl ≥ 1 sein")
+                outputs = body.get("outputs") or None
+                if outputs is not None and not isinstance(outputs, str):
+                    raise ApiError("outputs muss Text sein (out1,out3 oder all)")
+                return {"job": state.add_job(Job(full, compact, _constraints(body), limit, outputs, top))}
             if method == "GET" and len(parts) == 2 and parts[0] == "job":
                 job = state.jobs.get(parts[1])
                 if job is None:
@@ -333,6 +510,88 @@ def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
                     raise ApiError("since muss eine ganze Zahl sein") from None
                 return job.snapshot(since)
             raise ApiError(f"Unbekannter Endpunkt: {method} {path}", HTTPStatus.NOT_FOUND)
+
+        def _more(self, method: str, parts: list[str], arg) -> dict | Download | None:
+            """The other `rsx` commands: explain, dump, sim, oracle, convert/compile (export), plus uploads."""
+            if method == "GET" and parts == ["info"]:
+                from ..sim import core
+
+                return {"core": core.active(), "rust": core.rust_available(), "rust_error": core.rust_error(),
+                        "formats": list(tools.SCHEMATIC_FORMATS)}
+            if method == "POST" and parts == ["core"]:
+                from ..sim import core
+
+                try:
+                    return {"core": core.use(str(self._body().get("core", "")))}
+                except (ValueError, RuntimeError) as e:
+                    raise ApiError(f"Simulatorkern lässt sich nicht wählen: {e}") from e
+            if method == "GET" and parts == ["text"]:
+                full = state.resolve(arg("path"))
+                if full.suffix not in (".yaml", ".yml", ".md", ".txt", ".json"):
+                    raise ApiError(f"{full.name} ist keine Textdatei")
+                return {"path": state.rel(full), "text": full.read_text(encoding="utf-8")}
+            if method == "POST" and parts == ["upload"]:
+                n = int(self.headers.get("Content-Length") or 0)
+                if not 0 < n <= MAX_UPLOAD:
+                    raise ApiError(f"Datei fehlt oder ist größer als {MAX_UPLOAD // 2 ** 20} MiB")
+                path, group = state.store("uploads", arg("name"), self.rfile.read(n))
+                return {"path": path, "group": group}
+            if method == "POST" and parts == ["spec"]:
+                body = self._body()
+                text, name = body.get("text"), tools.safe_name(str(body.get("name") or ""), "spezifikation")
+                if not isinstance(text, str) or not text.strip():
+                    raise ApiError("Die Spezifikation ist leer")
+                path, group = state.store("specs", Path(name).stem + ".yaml", text.encode("utf-8"))
+                return {"path": path, "group": group}
+            if method == "POST" and parts == ["explain"]:
+                grid, title, _ = state.source(self._body())
+                try:
+                    return tools.explain(grid, title)
+                except ValueError as e:
+                    raise ApiError(f"Analyse nicht möglich: {e}") from e
+            if method == "POST" and parts == ["dump"]:
+                body = self._body()
+                grid, title, _ = state.source(body)
+                layers = body.get("layers") or None
+                if layers is not None and not (isinstance(layers, list) and all(isinstance(v, int) for v in layers)):
+                    raise ApiError("layers muss eine Liste von Ebenen (y) sein")
+                return {"name": title, "text": tools.dump(grid, layers, bool(body.get("components", True)),
+                                                           bool(body.get("states", False)))}
+            if method == "POST" and parts == ["scenario"]:
+                full = state.resolve(self._body().get("path") or "")
+                try:
+                    return tools.run_scenario(full)
+                except (ValueError, KeyError) as e:
+                    raise ApiError(f"{full.name} ist kein lauffähiges Szenario: {e}") from e
+            if method == "POST" and parts == ["oracle"]:
+                body = self._body()
+                full = state.resolve(body.get("path") or "")
+                try:
+                    if tools.yaml_kind(full.read_text(encoding="utf-8")) != "scenarios":
+                        raise ValueError("kein Abschnitt `build`")
+                except (ValueError, UnicodeDecodeError) as e:
+                    raise ApiError(f"{full.name} ist kein Szenario: {e}") from e
+                return {"job": state.add_job(OracleJob(full, bool(body.get("golden", False))))}
+            if method == "GET" and parts == ["export"]:
+                fmt = arg("format", "litematic")
+                ref = {"job": arg("job"), "path": arg("path")}
+                if fmt == "report":
+                    job = state.jobs.get(ref["job"])
+                    if job is None or not job.done or not (job.result or {}).get("summary"):
+                        raise ApiError("Zu dieser Suche gibt es keinen Bericht")
+                    return Download(job.result["summary"].encode("utf-8"), f"{tools.safe_name(job.title)}-redesign.md",
+                                    "text/markdown; charset=utf-8")
+                if fmt == "scenario":
+                    full = state.resolve(ref["path"])
+                    try:
+                        return Download(*tools.compiled_scenario(full))
+                    except (ValueError, KeyError) as e:
+                        raise ApiError(f"{full.name} ist kein Szenario: {e}") from e
+                if fmt not in tools.SCHEMATIC_FORMATS + tools.TEXT_FORMATS:
+                    raise ApiError(f"Unbekanntes Format: {fmt}")
+                grid, title, _ = state.source(ref)
+                return Download(*tools.export(grid, fmt, title))
+            return None
 
         def _new_sim(self, body: dict) -> dict:
             if "job" in body:
