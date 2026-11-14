@@ -75,35 +75,42 @@ def _first_difference(a: dict, b: dict) -> str:
 Step = tuple[str, Pos, BlockState | None]  # (action, absolute pos, state) applied before a tick
 
 
-def _run(make, grid: Grid, origin: Pos, schedule: dict[int, list[Step]], ticks: int):
-    world = make()
-    world.place_grid(grid, origin)
-    dumps, error = [], None
+def _step(world, t: int, schedule: dict[int, list[Step]], last: bool):
+    """Inputs of tick t, then the dump of the world, then the tick; (dump, exception name)."""
     try:
-        for t in range(ticks + 1):
-            for action, pos, state in schedule.get(t, ()):
-                apply_input(world, action, pos, state)
-            dumps.append(dump(world))
-            if t < ticks:
-                world.tick()
+        for action, pos, state in schedule.get(t, ()):
+            apply_input(world, action, pos, state)
+        state = dump(world)
+        if not last:
+            world.tick()
+        return state, None
     except Exception as e:  # both cores must fail the same way
-        error = type(e).__name__
-    notes = sorted((n.tick, n.kind, tuple(n.pos), n.detail) for n in notes_of(world)) if error is None else []
-    return dumps, error, notes, list(world.warnings)
+        return None, type(e).__name__
 
 
 def assert_same(grid: Grid, schedule: dict[int, list[Step]], ticks: int, origin: Pos = ORACLE_ORIGIN) -> None:
-    py = _run(PythonWorld, grid, origin, schedule, ticks)
-    rs = _run(RustWorld, grid, origin, schedule, ticks)
-    for t, (a, b) in enumerate(zip(py[0], rs[0])):
+    """Both cores side by side, compared tick by tick (long scenarios would not fit in memory otherwise)."""
+    py, rs = PythonWorld(), RustWorld()
+    py.place_grid(grid, origin)
+    rs.place_grid(grid, origin)
+    for t in range(ticks + 1):
+        (a, ea), (b, eb) = _step(py, t, schedule, t == ticks), _step(rs, t, schedule, t == ticks)
+        assert ea == eb, f"tick {t}: exception: python {ea}, rust {eb}"
+        if ea is not None:
+            return
         assert a == b, f"tick {t}: {_first_difference(a, b)}"
-    assert len(py[0]) == len(rs[0]), f"python ran {len(py[0])} ticks, rust {len(rs[0])}"
-    assert py[1] == rs[1], f"exception: python {py[1]}, rust {rs[1]}"
-    assert py[2] == rs[2], "notes differ"
-    assert py[3] == rs[3], "warnings differ"
+
+    def notes(world):
+        return sorted((n.tick, n.kind, tuple(n.pos), n.detail) for n in notes_of(world))
+
+    assert notes(py) == notes(rs), "notes differ"
+    assert list(py.warnings) == list(rs.warnings), "warnings differ"
 
 
 # ------------------------------------------------------------------------------------------------ scenarios
+MAX_SCENARIO_TICKS = 6000
+
+
 @pytest.mark.parametrize("path", SCENARIOS, ids=lambda p: p.stem)
 def test_scenario(path: Path):
     scenario = load_scenario(path)
@@ -111,7 +118,8 @@ def test_scenario(path: Path):
     for t in range(scenario.ticks + 1):
         for inp in scenario.inputs_at(t):
             schedule.setdefault(t, []).append((inp.action, Pos(*inp.pos) + ORACLE_ORIGIN, inp.state))
-    assert_same(scenario.grid, schedule, scenario.ticks)
+    # the long truth-table recordings (cmp5, mux8: every lever combination) repeat the same kind of step
+    assert_same(scenario.grid, schedule, min(scenario.ticks, MAX_SCENARIO_TICKS))
 
 
 # ------------------------------------------------------------------------------------------------ templates

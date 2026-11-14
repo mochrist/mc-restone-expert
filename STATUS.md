@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-14, Session 18. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 97 %).
+Stand: 2026-11-14, Session 19. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 97 %).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
@@ -10,20 +10,40 @@ Stand: 2026-11-14, Session 18. Geschätzter Gesamtfortschritt: **ca. 96 %** (gew
 | M3 Analyse + Erklärung | 20 % | ~96 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
 | M4 Redesign | 25 % | ~92 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen; nicht-disjunkte Zerlegung mit gemeinsamen Eingängen über 8 Eingängen, z. B. 8:1-Multiplexer; Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
-| M6 GUI | 15 % | ~90 % | `rsx gui`: lokale Web-App (three.js), 3D- und Ebenen-Ansicht, Materialliste, Bauanleitung, Entwurfssuche live, Simulation; `rsx materials`. alle drei Modi im Browser geprüft (Session 17) |
+| M6 GUI | 15 % | ~95 % | `rsx gui`: lokale Web-App (three.js), 3D- und Ebenen-Ansicht, Materialliste, Bauanleitung, Entwurfssuche live, Simulation; `rsx materials`. Seit Session 19 alle `rsx`-Befehle in der Oberfläche (Analyse, Text-Ansicht, Szenario-Lauf, Oracle, Export, Upload, Spezifikations-Editor, Suchoptionen), im Browser geprüft |
 
-## Übergabe (aus Session 18)
+## Übergabe (aus Session 19)
 
-Alles committet, Suite grün (1582 Tests, 154 Golden Traces). Keine laufenden Worktrees, Oracle-Sperre frei.
+Alles committet, Suite grün (1589 Tests, ~3 min, 154 Golden Traces). Keine laufenden Worktrees, Oracle-Sperre frei.
 Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
 | M4: nicht-disjunkte Zerlegung auch für mehrere Ausgänge (`shared_splits` mit gemeinsamen Eingängen, z. B. Carry-Lookahead, Decoder/Demux über 8 Eingänge); danach Topologie per SAT/SMT (`docs/m4-search-and-performance.md`) | Opus | – |
 | M4: Größe der nicht-disjunkten Entwürfe (mux8: 782 Blöcke aus PLA → ansteuerbare PLA): Mux-Vorlagen als Teile (`mux2-comparator` verbindet sich als G bisher gar nicht, `chains` liefert 0 Layouts), Kaskade aus 2:1-Muxen | Opus | – |
-| M6: GUI weiter (Nutzerrückmeldung abwarten; z. B. Export der Bauanleitung, größere Entwürfe flüssig darstellen) | Sonnet | Nutzer |
+| M6: GUI weiter (Nutzerrückmeldung abwarten). Bekannt: leere 3D-Ansicht zeigt ein riesiges „N“-Schild, solange kein Modell geladen ist; Bauanleitung nur als Text exportierbar (kein Bild/PDF je Ebene); `rsx oracle --dump-blocks` gibt es nur auf der Kommandozeile; größere Entwürfe flüssig darstellen | Sonnet | Nutzer |
 
 ## Verlauf
+
+### Session 19 (2026-11-14): Oberfläche, „alle Funktionen auch in der GUI“ (Fable-5.2-Hauptsession, keine Agents)
+
+- Server (`gui/server.py`, neu `gui/tools.py`): Endpunkte für Analyse (`/api/explain`, Markdown plus SVGs),
+  Text-Ansicht (`/api/dump`), Szenario-Lauf mit Golden-Vergleich (`/api/scenario`), Aufnahme im Spiel als Job
+  (`/api/oracle`, höchstens eine zugleich, Vergleich Spiel ↔ Simulator, optional Golden schreiben), Download
+  (`/api/export`: litematic/schem/nbt, Material, Bauanleitung als Text, Ebenen, kompiliertes Szenario, Bericht),
+  Upload (`/api/upload`) und Spezifikationen aus dem Editor (`/api/spec`), beide nach `.cache/gui/`; Kernwahl
+  (`/api/info`, `/api/core`). `/api/redesign` nimmt alle Schalter von `rsx redesign`. Vertrag: `docs/gui-api.md`.
+- Oberfläche: Berichtsspalte mit Reitern (`static/docs.js`, eigener kleiner Markdown-Renderer),
+  Spezifikations-Editor mit Vorlagen (`static/speceditor.js`), Aktionen und Suchoptionen in der Seitenleiste,
+  Ein-/Ausgänge mit Namen in der Simulation (Eingänge anklickbar), Ziehen von Dateien ins Fenster, „Ergebnis
+  zeigen“ macht den besten Entwurf zur aktuellen Schaltung (analysieren, simulieren, herunterladen).
+  URL-Parameter `click=…` drückt Knöpfe der Reihe nach (für Screenshots ohne Erweiterung).
+- `design/evaluate.py`: bei `--allow`/`--forbid` zählt die Wandfackel als Fackel (vorher umging
+  `--forbid redstone_torch` die Wandfackel).
+- `tests/sim/test_core_equivalence.py`: Kerne laufen Tick für Tick nebeneinander (vorher alle Welt-Dumps im
+  Speicher: `cmp-mux8` mit 81 922 Ticks brauchte über 11 GB und hing), Szenarien dort bis 6000 Ticks.
+- Im Browser geprüft (Chrome-Erweiterung): Suche für `xor.yaml` mit `forbid: comparator`, Ergebnis simuliert,
+  Upload einer `.schem`, Analyse, Text-Ansicht, Editor; Oracle-Lauf über die GUI (`tpl-xor2-comparator`): identisch.
 
 ### Session 18 (2026-11-14): Übergabe aus Session 17 (Opus-Hauptsession, 2 Sonnet-Agents)
 

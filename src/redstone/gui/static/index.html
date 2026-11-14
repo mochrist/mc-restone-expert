@@ -19,10 +19,14 @@
   <h1>Redstone-Werkstatt</h1>
   <span id="modelName"></span>
   <span class="spacer"></span>
+  <label title="Simulatorkern für neue Simulationen, Analysen und Suchen">Kern
+    <select id="coreSel"><option value="rust">Rust (schnell)</option><option value="python">Python (Referenz)</option></select>
+  </label>
   <div class="seg" id="layoutSeg" role="group" aria-label="Ansicht">
     <button data-layout="split" class="on">3D + Ebenen</button>
     <button data-layout="3d">3D</button>
     <button data-layout="2d">Ebenen</button>
+    <button data-layout="doc" title="Nur Berichte und Editor">Bericht</button>
   </div>
 </header>
 
@@ -31,17 +35,67 @@
     <h2>Dateien</h2>
     <input id="fileFilter" type="search" placeholder="Filtern ...">
     <div id="fileList"></div>
-  </section>
-  <section id="selection">
-    <div id="selInfo">Keine Datei gewählt.</div>
-    <div class="row">
-      <button id="btnRedesign" disabled>Entwurf suchen</button>
-      <label>Kompaktieren <input id="compact" type="number" min="0" max="10000" value="100"></label>
+    <div class="row tight">
+      <button id="btnOpen" title="Schaltplan (.litematic, .schem, .nbt), Szenario oder Spezifikation (.yaml) vom Rechner laden; Dateien lassen sich auch ins Fenster ziehen">Datei öffnen …</button>
+      <input id="fileInput" type="file" accept=".litematic,.schem,.nbt,.yaml,.yml" multiple hidden>
+      <button id="btnNewSpec" title="Gewünschtes Verhalten beschreiben und dazu eine Schaltung entwerfen lassen">Neue Spezifikation</button>
     </div>
   </section>
-  <section id="summarySec" hidden>
-    <h2>Ergebnis</h2>
-    <pre id="summary"></pre>
+
+  <section id="selection">
+    <h2>Auswahl</h2>
+    <div id="selInfo">Keine Datei gewählt.</div>
+    <div class="row tight">
+      <button id="btnExplain" disabled title="Schaltung im Simulator untersuchen: Ein-/Ausgänge, Wahrheitstabelle, Zeitverhalten, erkannte Bausteine">Analysieren</button>
+      <button id="btnDump" disabled title="Schaltung Ebene für Ebene als Text, mit allen Bauteilen">Text-Ansicht</button>
+      <button id="btnScenario" hidden title="Ablauf des Szenarios im Simulator, Zeitdiagramm, Vergleich mit der Aufnahme aus dem Spiel">Szenario ablaufen</button>
+      <button id="btnSpecEdit" hidden>Spezifikation bearbeiten</button>
+    </div>
+    <div class="row tight" id="oracleRow" hidden>
+      <button id="btnOracle" title="Szenario im echten Spiel aufnehmen (startet den Fabric-Server, dauert ein bis drei Minuten) und mit dem Simulator vergleichen">Im Spiel prüfen</button>
+      <label title="Aufnahme nach tests/golden/ schreiben"><input id="oracleGolden" type="checkbox"> als Golden Trace speichern</label>
+    </div>
+    <div class="row tight">
+      <select id="exportFmt" title="Format des Downloads">
+        <option value="litematic">Litematica (.litematic)</option>
+        <option value="schem">WorldEdit (.schem)</option>
+        <option value="nbt">Konstruktionsblock (.nbt)</option>
+        <option value="guide">Bauanleitung (Text)</option>
+        <option value="materials">Materialliste (Text)</option>
+        <option value="dump">Ebenen und Blockzustände (Text)</option>
+        <option value="scenario" data-for="scenario">Szenario für das Oracle (.json)</option>
+        <option value="report" data-for="job">Bericht der Suche (.md)</option>
+      </select>
+      <button id="btnExport" disabled>Herunterladen</button>
+    </div>
+  </section>
+
+  <section id="searchSec">
+    <h2>Entwurfssuche</h2>
+    <div class="row tight">
+      <button id="btnRedesign" class="primary" disabled title="Kompakte Schaltung für die gewählte Spezifikation oder als Ersatz der gewählten Schaltung suchen">Entwurf suchen</button>
+      <button id="btnShowResult" hidden title="Besten Entwurf der letzten Suche anzeigen">Ergebnis zeigen</button>
+    </div>
+    <details id="searchOpts">
+      <summary>Optionen</summary>
+      <div class="form">
+        <label>Kompaktieren <input id="compact" type="number" min="0" max="10000" value="100" title="Höchstzahl der Versuche je Entwurf (0 = aus)"></label>
+        <label>Zeitlimit (s) <input id="optTime" type="number" min="1" max="3600" value="60" title="Zeitlimit für das Kompaktieren"></label>
+        <label>Max. Größe <input id="optSize" type="text" placeholder="X,Y,Z" title="Höchstmaße X,Y,Z; X und Z dürfen getauscht sein"></label>
+        <label>Max. Verzögerung <input id="optDelay" type="number" min="0" placeholder="gt" title="Höchste Verzögerung in Gameticks (leer: aus der Spezifikation)"></label>
+        <label>Nur Blöcke <input id="optAllow" type="text" placeholder="z. B. stone,redstone_wire" title="Erlaubte Block-IDs, durch Komma getrennt (Hebel und Lampe gehen immer); leer: alle"></label>
+        <label>Ohne Blöcke <input id="optForbid" type="text" placeholder="z. B. comparator,piston" title="Verbotene Block-IDs, durch Komma getrennt"></label>
+        <label>Ausgänge <input id="optOutputs" type="text" placeholder="out1,out3 oder all" title="Nur bei Bestandsschaltungen: welche Ausgänge der Entwurf behalten muss (Namen aus der Analyse)"></label>
+        <label>Kandidaten <input id="optTop" type="number" min="1" max="100" value="10" title="Anzahl der Kandidaten im Bericht"></label>
+        <label class="wide"><input id="optNoQc" type="checkbox"> ohne Quasi-Connectivity</label>
+      </div>
+    </details>
+  </section>
+
+  <section id="ioSec" hidden>
+    <h2>Ein- und Ausgänge</h2>
+    <div id="ioIn" class="chips"></div>
+    <div id="ioOut" class="chips"></div>
   </section>
   <section id="framesSec" hidden>
     <h2>Einzelbilder</h2>
@@ -73,7 +127,17 @@
     </div>
     <div class="canvasbox" id="box2d"></div>
   </div>
+  <div class="pane" id="paneDoc" hidden>
+    <div class="toolbar">
+      <div class="seg" id="docTabs"></div>
+      <span class="spacer"></span>
+      <button id="docSave" title="Diesen Bericht als Datei speichern">Speichern</button>
+      <button id="docClose" title="Berichte ausblenden">&#10005;</button>
+    </div>
+    <div id="docBody"></div>
+  </div>
   <div id="tip" hidden></div>
+  <div id="drop" hidden>Datei hier ablegen</div>
 </main>
 
 <footer id="play">

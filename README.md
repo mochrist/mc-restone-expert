@@ -17,6 +17,14 @@ uv sync --no-group rust    # ohne Rust: langsamerer Python-Kern
 Alle Befehle laufen als `uv run rsx <befehl>`. `--sim-core python|rust` wählt den Simulatorkern
 (Standard: Rust, wenn installiert).
 
+## Oberfläche
+
+`uv run rsx gui [datei]` (unter Windows auch `gui.bat`) startet eine lokale Web-App im Browser. Dort geht alles,
+was die Befehle unten können: Schaltpläne öffnen (auch per Ziehen ins Fenster) und in 3D oder Ebene für Ebene
+ansehen, analysieren, simulieren (Hebel anklicken), Material und Bauanleitung, Spezifikationen schreiben und
+Entwürfe suchen (mit Größen-, Block- und Verzögerungsgrenzen), Ergebnisse als `.litematic`/`.schem`/`.nbt`
+herunterladen, Szenarien ablaufen lassen und im echten Spiel prüfen. Aufbau und Schnittstelle: `docs/gui-api.md`.
+
 ## Typischer Ablauf
 
 1. **Ansehen:** `rsx dump schaltung.litematic` zeigt die Schaltung Ebene für Ebene als Text,

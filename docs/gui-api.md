@@ -14,7 +14,8 @@ höchstens 16 gleichzeitig (die älteste fällt weg).
 | Modell | `src/redstone/gui/model.py` | Grid → Modell-JSON (Blöcke, Ein-/Ausgänge, Material, Bau-Reihenfolge) |
 | Material, Bauen | `src/redstone/gui/materials.py` | `materials(grid)`, `build_order(grid)` |
 | Aufzeichnung | `src/redstone/design/observe.py` | Einzelbilder aus Komposition und Kompaktieren |
-| Oberfläche | `src/redstone/gui/static/` | `index.html`, `app.js`, `style.css`, weitere ES-Module |
+| Übrige Befehle | `src/redstone/gui/tools.py` | Analyse, Text-Ansicht, Szenario-Lauf, Export als Funktionen für den Server |
+| Oberfläche | `src/redstone/gui/static/` | `index.html`, `app.js`, `style.css`, weitere ES-Module (`docs.js` Berichte, `speceditor.js` Editor) |
 
 Die Oberfläche lädt three.js als ES-Modul per Import-Map von `https://unpkg.com/three@0.160.0/` (inkl.
 `examples/jsm/controls/OrbitControls.js`); weitere Bibliotheken gibt es nicht. Texte der Oberfläche auf Deutsch.
@@ -61,12 +62,41 @@ Alle Antworten sind JSON; Fehler als HTTP 4xx/5xx mit `{"error": "<deutscher Tex
 | `POST /api/sim` | `{"path": P}` oder `{"job": J}` (Ergebnis einer Suche) | `{"sim": id, "tick": 0, "model": Modell}` |
 | `POST /api/sim/<id>/use` | `{"p": [x, y, z]}` (Hebel umlegen, Knopf drücken) | `{"tick": t, "changed": [Block, ...]}` |
 | `POST /api/sim/<id>/tick` | `{"n": 1}` (1 … 1000 Ticks) | `{"tick": t, "changed": [Block, ...]}` |
-| `POST /api/redesign` | `{"path": P, "compact": 100}` (Spezifikation `.yaml` oder Schaltplan) | `{"job": id}` |
+| `POST /api/redesign` | `{"path": P, "compact": 100, …}` (Spezifikation `.yaml` oder Schaltplan; Optionen unten) | `{"job": id}` |
 | `GET /api/job/<id>?since=k` | – | Job (unten), nur Einzelbilder ab Nummer `k` |
+| `GET /api/info` | – | `{"core": "rust", "rust": true, "rust_error": null, "formats": [...]}` |
+| `POST /api/core` | `{"core": "rust"\|"python"\|"auto"}` | `{"core": name}`; gilt für neue Welten |
+| `GET /api/text?path=P` | Textdatei (`.yaml`, `.md`, `.txt`, `.json`) | `{"path": P, "text": "…"}` |
+| `POST /api/upload?name=N` | Dateiinhalt als Körper (bis 64 MiB; `.litematic`, `.schem`, `.nbt`, `.yaml`) | `{"path": P, "group": "schematics"\|"scenarios"\|"specs"}` |
+| `POST /api/spec` | `{"name": N, "text": YAML}` (Spezifikation aus dem Editor) | wie Upload |
+| `POST /api/explain` | Quelle | `{"markdown": "…", "svgs": {"in1.svg": "<svg…"}}` (`rsx explain`) |
+| `POST /api/dump` | Quelle plus `layers` (Liste), `components` (Standard an), `states` | `{"name": N, "text": "…"}` (`rsx dump`) |
+| `POST /api/scenario` | `{"path": P}` | Szenario-Lauf (unten; `rsx sim --diff`) |
+| `POST /api/oracle` | `{"path": P, "golden": false}` | `{"job": id}`; Aufnahme im Spiel, höchstens eine zugleich (sonst 409) |
+| `GET /api/export?path=P\|job=J&format=F` | – | Datei (`Content-Disposition: attachment`) |
 
 `changed` enthält alle Positionen, deren Zustand sich gegenüber der letzten Antwort dieser Sitzung geändert hat
 (Staubstärke, `powered`, `lit`, Kolben …), mit dem neuen Zustand. Ein Comparator bekommt im Zustand zusätzlich
 `|output=<0…15>` (wie die Probe-Werte im Trace-Format).
+
+**Quelle** heißt `{"path": P}` (Datei) oder `{"job": J}` (bester Entwurf einer fertigen Suche).
+
+Hochgeladene Dateien und Spezifikationen aus dem Editor liegen in `.cache/gui/uploads/` bzw. `.cache/gui/specs/`
+(nicht in Git) und erscheinen in `/api/files` in ihrer Gruppe vorn.
+
+Optionen von `/api/redesign` (alle optional, wie die Schalter von `rsx redesign`): `compact` (Versuche, 0 = aus),
+`time` (Sekunden), `top`, `max_size` (`[x, y, z]` oder `"X,Y,Z"`), `max_delay` (gt), `allow` und `forbid`
+(Block-IDs als Liste oder mit Komma getrennt; Wandfackel zählt als Fackel), `no_qc`, `outputs` (`"out1,out3"`
+oder `"all"`).
+
+Formate von `/api/export`: `litematic`, `schem`, `nbt` (`rsx convert`), `materials`, `dump`, `guide` (Material
+plus Ebenen als Text), `scenario` (kompiliertes Szenario-JSON, `rsx compile`; nur Szenario-Dateien), `report`
+(Markdown-Bericht einer Suche; nur `job`).
+
+Szenario-Lauf: `{"name", "description", "ticks", "diagram": ASCII, "svg", "warnings": [...], "golden": null |
+{"matches": bool, "count": n, "mismatches": [Text, ...]}}`. Ein Oracle-Job hat keine Einzelbilder; sein `result` ist
+`{"name", "ticks", "diagram", "svg", "simulator": Vergleich wie golden, "written": Pfad des Golden Trace oder null}`.
+Jeder Job nennt seine Art in `kind` (`redesign` oder `oracle`).
 
 ### Job (Entwurfssuche)
 
@@ -96,10 +126,17 @@ Modell des besten Entwurfs plus `"summary"` (deutscher Bericht von `rsx redesign
 - **2D / Ebenen**: Draufsicht einer y-Ebene (Schieberegler), Kacheln mit Symbol je Blockart, darunter die Ebene
   darunter blass; Tooltip mit Zustand.
 - **Material**: Tabelle aus `materials`, Summe, Stapel (64er) und Kisten.
+- **Bericht**: dritte Spalte (oder allein über „Bericht“) mit Reitern: Analyse, Text-Ansicht, Szenario, Im Spiel,
+  Entwurfsbericht (Markdown gerendert, Zeitdiagramme als SVG, „Speichern“ lädt den Bericht herunter) und der
+  Spezifikations-Editor mit Vorlagen.
+- **Seitenleiste**: Dateien (auch „Datei öffnen …“ und Ziehen ins Fenster), Aktionen zur Auswahl, Download,
+  Entwurfssuche mit Optionen, in der Simulation Ein- und Ausgänge mit Namen (Eingänge anklickbar).
 - **Abspielen**: Bau-Reihenfolge (`build_order`) Block für Block, Einzelbilder einer Entwurfssuche, Simulation
   (Ticks); jeweils Start/Pause/Schritt und Tempo-Regler.
 
 ### URL-Parameter (zum Testen und für Screenshots)
 
-`/?path=<Datei>&layout=3d|2d|split&y=<Ebene>&cam=px,py,pz,tx,ty,tz` – `path` wählt eine Datei vor, `layout` die Ansicht,
-`y` die Ebene der 2D-Ansicht, `cam` Kameraposition und Blickziel der 3D-Ansicht.
+`/?path=<Datei>&layout=3d|2d|split|doc&y=<Ebene>&cam=px,py,pz,tx,ty,tz&click=…` – `path` wählt eine Datei vor,
+`layout` die Ansicht, `y` die Ebene der 2D-Ansicht, `cam` Kameraposition und Blickziel der 3D-Ansicht. `click`
+drückt nacheinander Knöpfe (Element-IDs, je 1,2 s Abstand), `mode:sim|search|build` wechselt den Modus, eine Zahl
+wartet so viele Millisekunden, z. B. `click=btnExplain` oder `click=btnRedesign,6000,btnShowResult,mode:sim,sStart`.
