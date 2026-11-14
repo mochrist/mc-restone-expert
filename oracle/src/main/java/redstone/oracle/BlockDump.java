@@ -44,7 +44,7 @@ final class BlockDump {
 	private static final String[] KEYS = {
 		"conductor", "signal_source", "analog_output", "sturdy_full", "sturdy_rigid", "sturdy_center", "push",
 		"air", "replaceable", "block_entity", "full_collision", "solid", "solid_render", "wire_connect",
-		"trapdoor", "unstable_bottom_center", "unbreakable",
+		"trapdoor", "unstable_bottom_center", "unbreakable", "instrument",
 	};
 
 	private BlockDump() {
@@ -162,6 +162,8 @@ final class BlockDump {
 		m.put("unstable_bottom_center", new JsonPrimitive(s.is(BlockTags.UNSTABLE_BOTTOM_CENTER)));
 		// PistonBaseBlock.isPushable refuses blocks with destroy speed -1 (bedrock, barrier, command blocks, ...).
 		m.put("unbreakable", new JsonPrimitive(s.getDestroySpeed(level, pos) == -1.0F));
+		// BlockBehaviour.Properties#instrument: the note block sound of a block below (or above, for mob heads).
+		m.put("instrument", new JsonPrimitive(s.instrument().getSerializedName()));
 		return m;
 	}
 

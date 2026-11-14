@@ -421,3 +421,24 @@ def test_static_facts_of_all_states():
         if len(mismatches) > 20:
             break
     assert not mismatches, "\n".join(mismatches[:20])
+
+
+# ------------------------------------------------------------------------------------------------ note block instrument
+def test_note_block_instruments():
+    below = ["stone", "sand", "glass", "white_wool", "gold_block", "clay", "packed_ice", "bone_block", "iron_block",
+             "soul_sand", "pumpkin", "emerald_block", "hay_block", "glowstone", "copper_block", "oak_planks",
+             "air", "zombie_head[rotation=0]", "zombie_wall_head[facing=north]", "white_carpet"]
+    above = ["air", "zombie_head[rotation=0]", "player_head[rotation=4]", "creeper_wall_head[facing=east]", "stone"]
+    grid = Grid((len(below), 4, 2))
+    schedule: dict[int, list[Step]] = {}
+    for x, name in enumerate(below):
+        grid[Pos(x, 0, 0)] = BlockState.parse("minecraft:stone")
+        grid[Pos(x, 1, 0)] = BlockState.parse(f"minecraft:{name}")
+        grid[Pos(x, 2, 0)] = BlockState.parse("minecraft:note_block[instrument=harp,note=0,powered=false]")
+        grid[Pos(x, 0, 1)] = BlockState.parse("minecraft:redstone_block")
+        schedule.setdefault(2, []).append(("setblock", Pos(x, 3, 0) + ORACLE_ORIGIN,
+                                           BlockState.parse(f"minecraft:{above[x % len(above)]}")))
+        schedule.setdefault(4, []).append(("setblock", Pos(x, 1, 0) + ORACLE_ORIGIN,
+                                           BlockState.parse(f"minecraft:{below[(x + 3) % len(below)]}")))
+        schedule.setdefault(6, []).append(("use", Pos(x, 2, 0) + ORACLE_ORIGIN, None))
+    assert_same(grid, schedule, 10)

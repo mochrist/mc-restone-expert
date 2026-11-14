@@ -7,49 +7,9 @@ use crate::state::*;
 use crate::world::*;
 use rustc_hash::{FxHashMap, FxHashSet};
 
-/// `_MOB_HEADS`: head name prefix -> instrument.
-const MOB_HEADS: &[(&str, &str)] = &[
-    ("zombie", "zombie"),
-    ("skeleton", "skeleton"),
-    ("creeper", "creeper"),
-    ("dragon", "dragon"),
-    ("wither_skeleton", "wither_skeleton"),
-    ("piglin", "piglin"),
-    ("player", "custom_head"),
-];
-
-const INSTRUMENT_TABLE: &[(&[&str], &str)] = &[
-    (&["wool", "carpet"], "guitar"),
-    (&["glass", "sea_lantern", "beacon"], "hat"),
-    (&["concrete_powder", "sand", "gravel"], "snare"),
-    (&["clay"], "flute"),
-    (&["gold_block"], "bell"),
-    (&["packed_ice"], "chime"),
-    (&["bone_block"], "xylophone"),
-    (&["iron_block"], "iron_xylophone"),
-    (&["soul_sand"], "cow_bell"),
-    (&["pumpkin"], "didgeridoo"),
-    (&["emerald_block"], "bit"),
-    (&["hay_block"], "banjo"),
-    (&["glowstone"], "pling"),
-];
-
-const NOT_TRUMPET: &[&str] = &["bulb", "door", "grate", "bars", "chain", "lantern"];
-
-const BASS: &[&str] = &[
-    "planks", "_log", "_wood", "stem", "hyphae", "note_block", "bookshelf", "chest", "barrel", "crafting_table",
-    "lectern", "fence", "mushroom_block", "bamboo_block",
-];
-
-const BASEDRUM: &[&str] = &[
-    "stone", "cobble", "deepslate", "ore", "bricks", "obsidian", "netherrack", "terracotta", "concrete", "quartz",
-    "basalt", "blackstone", "tuff", "prismarine", "end_stone", "purpur", "andesite", "diorite", "granite", "calcite",
-    "dripstone", "observer", "dispenser", "dropper", "furnace", "bedrock",
-];
-
-/// `_WORKS_ABOVE`: the instruments of mob heads.
+/// `_WORKS_ABOVE`: NoteBlockInstrument#worksAboveNoteBlock() (mob heads and the custom head).
 fn works_above(instrument: &str) -> bool {
-    MOB_HEADS.iter().any(|(_, inst)| *inst == instrument)
+    matches!(instrument, "zombie" | "skeleton" | "creeper" | "dragon" | "wither_skeleton" | "piglin" | "custom_head")
 }
 
 /// Direction the oracle's FakePlayer looks at (yRot 0 = south), used by FenceGateBlock#useWithoutItem.
@@ -123,39 +83,9 @@ impl World {
     /// outputs._instrument(state)
     pub fn instrument(&self, state: StateId) -> String {
         let name = self.st.block_name(self.info(state).name);
-        let n = data::block_id(name);
-        for (head, inst) in MOB_HEADS {
-            if let Some(rest) = n.strip_prefix(head) {
-                if matches!(rest, "_head" | "_wall_head" | "_skull" | "_wall_skull") {
-                    return (*inst).to_owned();
-                }
-            }
-        }
-        for (keys, inst) in INSTRUMENT_TABLE {
-            if keys.iter().any(|k| n.contains(k)) && !n.contains("sandstone") {
-                return (*inst).to_owned();
-            }
-        }
-        if n.contains("copper") && !NOT_TRUMPET.iter().any(|k| n.contains(k)) {
-            for stage in ["exposed", "weathered", "oxidized"] {
-                if n.contains(stage) {
-                    return format!("trumpet_{stage}");
-                }
-            }
-            return "trumpet".to_owned();
-        }
-        if BASS.iter().any(|k| n.contains(k)) {
-            return "bass".to_owned();
-        }
-        if BASEDRUM.iter().any(|k| n.contains(k)) {
-            // blockdata.is_conductor(state): the table value without the overrides of the block classes.
-            let props: Vec<(&str, &str)> =
-                self.st.props(state).iter().map(|(k, v)| (self.st.sym_str(*k), self.st.sym_str(*v))).collect();
-            if data::lookup(name, &props).conductor {
-                return "basedrum".to_owned();
-            }
-        }
-        "harp".to_owned()
+        let props: Vec<(&str, &str)> =
+            self.st.props(state).iter().map(|(k, v)| (self.st.sym_str(*k), self.st.sym_str(*v))).collect();
+        data::lookup(name, &props).instrument.to_owned()
     }
 
     fn note_block_set_instrument(&mut self, pos: Pos, state: StateId) -> StateId {

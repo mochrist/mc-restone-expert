@@ -69,9 +69,39 @@ def test_lectern_signal():
     assert empty.redstone_signal() == 14  # only reachable with has_book=true and an empty block entity
 
 
-def test_instrument_heuristic():
-    assert _instrument(S("stone")) == "basedrum"
-    assert _instrument(S("oak_planks")) == "bass"
-    assert _instrument(S("sand")) == "snare"
-    assert _instrument(S("sandstone")) == "basedrum"
-    assert _instrument(S("air")) == "harp"
+_INSTRUMENTS = {
+    "stone": "basedrum", "sand": "snare", "glass": "hat", "white_wool": "guitar", "gold_block": "bell",
+    "clay": "flute", "packed_ice": "chime", "bone_block": "xylophone", "iron_block": "iron_xylophone",
+    "soul_sand": "cow_bell", "pumpkin": "didgeridoo", "emerald_block": "bit", "hay_block": "banjo",
+    "glowstone": "pling", "oak_planks": "bass", "sandstone": "basedrum", "copper_block": "trumpet",
+    "exposed_copper": "trumpet_exposed", "waxed_oxidized_cut_copper": "trumpet_oxidized",
+    "air": "harp", "dirt": "harp", "white_carpet": "harp", "copper_bulb": "harp", "oak_button": "harp",
+    "zombie_head": "zombie", "creeper_head": "creeper", "player_head": "custom_head",
+    "zombie_wall_head": "harp",  # wall variants start from Properties.of(): no instrument
+}
+
+
+def test_instrument_from_block_data():
+    for block, instrument in _INSTRUMENTS.items():
+        assert _instrument(S(block)) == instrument, block
+
+
+def _note_instrument(below: str, above: str = "air") -> str:
+    w = _world({(0, 1, 0): "note_block[instrument=harp,note=0,powered=false]"})
+    # a block change below/above makes the game call NoteBlock#updateShape on the note block
+    w.set_block(Pos(0, 0, 0), S(below), UPDATE_ALL)
+    w.set_block(Pos(0, 2, 0), S(above), UPDATE_ALL)
+    return w.get(Pos(0, 1, 0)).get("instrument")
+
+
+def test_note_block_instrument_below():
+    for block, instrument in _INSTRUMENTS.items():
+        if instrument not in ("zombie", "creeper", "custom_head"):
+            assert _note_instrument(block) == instrument, block
+
+
+def test_note_block_mob_head_above_wins_and_head_below_is_harp():
+    assert _note_instrument("stone", "zombie_head") == "zombie"
+    assert _note_instrument("gold_block", "player_head[rotation=0]") == "custom_head"
+    assert _note_instrument("stone", "zombie_wall_head[facing=north]") == "basedrum"
+    assert _note_instrument("creeper_head") == "harp"

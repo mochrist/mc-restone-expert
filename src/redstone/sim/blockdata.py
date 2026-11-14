@@ -7,7 +7,7 @@ It holds, for every state of every registered block, what ``BlockBehaviour.Block
 ``SupportType`` FULL, RIGID and CENTER), ``getPistonPushReaction``, ``isAir``, ``canBeReplaced()``,
 ``hasBlockEntity``, ``isCollisionShapeFullBlock``, ``isSolid``, ``isSolidRender``,
 ``shouldRedstoneWireConnectTo`` (per direction and for ``null``), ``getDestroySpeed == -1``, ``instanceof
-TrapDoorBlock`` and the ``#unstable_bottom_center`` tag. Level-dependent predicates were evaluated in an empty
+TrapDoorBlock``, the ``#unstable_bottom_center`` tag and ``instrument()`` (note block instrument). Level-dependent predicates were evaluated in an empty
 block getter at the origin.
 
 File format (see BlockDump.java): ``blocks[id] = {"props": {name: [values]}, "default": index, "v": {key: value
@@ -213,6 +213,13 @@ def is_unbreakable(state: BlockState) -> bool:
 def is_trapdoor(state: BlockState) -> bool:
     """``getBlock() instanceof TrapDoorBlock`` (redstone wire may climb onto any trapdoor)."""
     return _flag(state, "trapdoor", state.id.endswith("trapdoor"))
+
+
+def instrument(state: BlockState) -> str:
+    """``BlockState#instrument()`` (``BlockBehaviour.Properties#instrument``, default harp) as its serialized
+    name; the note block takes it from the block below (or from a mob head above)."""
+    v = _value(state, "instrument")
+    return "harp" if v is None else v
 
 
 def is_unstable_bottom_center(state: BlockState) -> bool:
