@@ -202,7 +202,11 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None, driven:
                           else "keine funktionierende Verbindung gefunden"))
         if found is not None:
             out.append(found)
-    if not out and not splits(spec):
+    # non-disjoint splits only where no PLA can be built: inside the parts (a PLA each) they multiplied the
+    # search time (mux8: 48 nested tries, 15 of 17 minutes) without a smaller result
+    from .synth import MAX_INPUTS
+
+    if not out and len(spec.inputs) > MAX_INPUTS and not splits(spec):
         out = _nondisjoint(spec, nondisjoint_splits(spec), depth, log, driven)
     return out
 
