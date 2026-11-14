@@ -15,7 +15,19 @@
       "PowerShell(Select-Object *)",
       "Bash(tasklist)",
       "Bash(tasklist *)",
-      "Bash(unzip -l *)"
+      "Bash(unzip -l *)",
+      "mcp__claude-in-chrome__read_console_messages",
+      "mcp__blockbench__list_formats",
+      "mcp__blockbench__get_status",
+      "mcp__blockbench__get_orientation",
+      "mcp__blockbench__get_reference",
+      "mcp__blockbench__list_outliner",
+      "mcp__blockbench__get_rig",
+      "PowerShell(Get-CimInstance *)",
+      "PowerShell(Format-List)",
+      "PowerShell(Format-List *)",
+      "PowerShell(Out-String)",
+      "PowerShell(Compare-Object *)"
     ]
   }
 }
