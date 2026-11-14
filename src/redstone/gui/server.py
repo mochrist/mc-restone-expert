@@ -132,13 +132,14 @@ class Job:
     kind = "redesign"
 
     def __init__(self, path: Path, compact: int = 100, constraints=None, time_limit: float | None = 60,
-                 outputs: str | None = None, top: int = 10) -> None:
+                 outputs: str | None = None, top: int = 10, output: str | None = None) -> None:
         self.path = path
         self.compact = compact
         self.constraints = constraints
         self.time_limit = time_limit
         self.outputs = outputs
         self.top = top
+        self.output = output
         self.title = path.stem
         self.frames: list[dict] = []
         self.log: list[str] = []
@@ -165,7 +166,7 @@ class Job:
             with observe.observing(self._frame):
                 best, text, spec = run_redesign(self.path, self.constraints, compact=self.compact,
                                                  time_limit=self.time_limit, outputs=self.outputs,
-                                                 top=self.top, steps=self.log)
+                                                 top=self.top, steps=self.log, output=self.output)
             result = gmodel.of_candidate(best, spec) if best is not None else {}
             result["summary"] = text
             with self._lock:
@@ -500,7 +501,12 @@ def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
                 outputs = body.get("outputs") or None
                 if outputs is not None and not isinstance(outputs, str):
                     raise ApiError("outputs muss Text sein (out1,out3 oder all)")
-                return {"job": state.add_job(Job(full, compact, _constraints(body), limit, outputs, top))}
+                output = body.get("output") or None
+                from ..design.actuators import ACTUATORS
+
+                if output is not None and output not in ACTUATORS:
+                    raise ApiError("output muss einer von " + ", ".join(ACTUATORS) + " sein")
+                return {"job": state.add_job(Job(full, compact, _constraints(body), limit, outputs, top, output))}
             if method == "GET" and len(parts) == 2 and parts[0] == "job":
                 job = state.jobs.get(parts[1])
                 if job is None:

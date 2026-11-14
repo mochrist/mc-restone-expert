@@ -313,11 +313,13 @@ class RedesignInputError(Exception):
 
 def run_redesign(file, constraints=None, *, compact: int = 100, time_limit: float | None = 60,
                  outputs: str | None = None, out: str | None = None, top: int = 10,
-                 steps: list[str] | None = None):
+                 steps: list[str] | None = None, output: str | None = None):
     """`rsx redesign` without the command line: returns (best candidate or None, German report, spec).
 
     file: spec .yaml, scenario .yaml or schematic. Raises RedesignInputError (German message) if no spec can be
-    derived from an existing circuit. steps: filled with the compaction log while the search runs."""
+    derived from an existing circuit. steps: filled with the compaction log while the search runs.
+    output: another block than a lamp at the outputs (key of design.actuators.ACTUATORS); the best design that
+    works with it is returned."""
     from pathlib import Path
 
     import yaml
@@ -359,15 +361,29 @@ def run_redesign(file, constraints=None, *, compact: int = 100, time_limit: floa
     orig_ev = evaluate_any(original, spec, constraints) if original is not None else None
     written = None
     ok = [r for r in results if r.ok]
-    if out and ok:
+    best = ok[0].candidate if ok else None
+    note = ""
+    if output and ok:
+        from .design.actuators import ACTUATORS, with_output
+
+        best, why = None, ""
+        for r in ok:
+            best, why = with_output(r.candidate, output)
+            if best is not None:
+                note = f"\n\n## Ausgang\n\n- Entwurf „{r.candidate.name}“. {why}\n"
+                break
+        else:
+            note = (f"\n\n## Ausgang\n\n- Kein funktionierender Entwurf ließ sich mit {ACTUATORS[output][0]} am "
+                    f"Ausgang bauen ({why}). Mit Lampe gibt es Entwürfe.\n")
+    if out and best is not None:
         target = Path(out)
         if target.suffix == "":
             target.mkdir(parents=True, exist_ok=True)
             target = target / f"{title}-redesign.litematic"
-        io.save(ok[0].candidate.grid, target)
+        io.save(best.grid, target)
         written = str(target)
-    text = report(spec, constraints, results, title, orig_ev, written, top=top, compact_log=steps)
-    return (ok[0].candidate if ok else None), text, spec
+    text = report(spec, constraints, results, title, orig_ev, written, top=top, compact_log=steps) + note
+    return best, text, spec
 
 
 def _cmd_redesign(args: argparse.Namespace) -> int:
@@ -384,7 +400,7 @@ def _cmd_redesign(args: argparse.Namespace) -> int:
     )
     try:
         best, text, _ = run_redesign(args.file, constraints, compact=args.compact, time_limit=args.time,
-                                  outputs=args.outputs, out=args.out, top=args.top)
+                                  outputs=args.outputs, out=args.out, top=args.top, output=args.output)
     except RedesignInputError as e:
         print(f"Fehler: {e}")
         return 2
@@ -473,6 +489,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--outputs", default=None, metavar="NAMES",
                    help="outputs of an existing circuit that the redesign must keep: names from `rsx explain` "
                         "(out1,out3) or 'all' (default: all for a truth table, only the lamps for behaviour)")
+    p.add_argument("--output", default=None, metavar="BLOCK",
+                   help="put this block at the outputs instead of a lamp: note_block, dispenser, dropper, "
+                        "iron_trapdoor, iron_door, piston, sticky_piston (checked in the simulator)")
     p.set_defaults(func=_cmd_redesign)
 
     p = sub.add_parser("gui", help="local web GUI: 3D/2D views, materials, build playback, search, simulation")

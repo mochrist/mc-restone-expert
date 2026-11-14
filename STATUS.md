@@ -14,11 +14,13 @@ Stand: 2026-11-14, Session 19. Geschätzter Gesamtfortschritt: **ca. 96 %** (gew
 
 ## Übergabe (aus Session 19)
 
-Alles committet, Suite grün (1589 Tests, ~3 min, 154 Golden Traces). Keine laufenden Worktrees, Oracle-Sperre frei.
+Alles committet; ganze Suite zuletzt vor dem GUI-Umbau grün (1589 Tests, ~3 min), danach `tests/gui` und `tests/design` grün. Keine laufenden Worktrees, Oracle-Sperre frei.
 Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
+| **Zuerst: Assistent in der GUI** (Wunsch des Nutzers, Session 19: Freitext → fertige Schaltung, Erklärungen in Alltagssprache, Ändern per Satz). Noch nicht begonnen außer Vorarbeit. Plan: `gui/assistant.py` mit dem Anthropic-SDK (`anthropic` ist in `pyproject.toml`/`uv.lock`, Modell `claude-opus-5-5`, Beta-Endpunkt mit `fallbacks="default"`, manuelle Werkzeug-Schleife), Werkzeuge: Entwurf suchen (YAML-Vorgabe + Grenzen + `output`, über `server.Job`), aktuelle Schaltung untersuchen (`tools.explain`), geladene verkleinern, Beispiel laden. Endpunkte `POST /api/chat` (Runde im Thread, Ereignisse status/job/load/text) und Abfrage per Polling; Schlüssel aus `ANTHROPIC_API_KEY` oder über die GUI nach `~/.rsx/` (nicht ins Repo). Oberfläche: Reiter „Assistent“ mit Chat und Ideen-Knöpfen (Codeschloss-Tür, Türklingel, Alarmanlage mit Reset, Leuchtturm-Blinker). Systemprompt: Laie, Deutsch, Vorgabeformat, nur baubare Werte (siehe `static/wizard.js`), ehrlich sagen, was nicht geht. Der Nutzer liefert den API-Schlüssel nach (nicht im Chat erfragen). | Fable/Opus | API-Schlüssel des Nutzers |
+| Danach: weitere Ein-/Ausgänge (Druckplatte, Tageslichtsensor als Auslöser; `output` auch in den Wunsch-Karten der GUI anbieten) und ein Katalog fertiger Bauwerke (Kolbentür, Itemsortierer) | Opus | Assistent |
 | M4: nicht-disjunkte Zerlegung auch für mehrere Ausgänge (`shared_splits` mit gemeinsamen Eingängen, z. B. Carry-Lookahead, Decoder/Demux über 8 Eingänge); danach Topologie per SAT/SMT (`docs/m4-search-and-performance.md`) | Opus | – |
 | M4: Größe der nicht-disjunkten Entwürfe (mux8: 782 Blöcke aus PLA → ansteuerbare PLA): Mux-Vorlagen als Teile (`mux2-comparator` verbindet sich als G bisher gar nicht, `chains` liefert 0 Layouts), Kaskade aus 2:1-Muxen | Opus | – |
 | M6: GUI weiter (Nutzerrückmeldung abwarten; Nutzer ist kein Redstone-Profi: einfache Sprache, wenig Fachbegriffe). Bekannt: Berichte von `rsx explain`/`redesign` sind noch fachsprachlich (Pulsfilter, Komparator …), eine laienverständliche Zusammenfassung fehlt; Bauanleitung nur als Text exportierbar (kein Bild/PDF je Ebene); `rsx oracle --dump-blocks` gibt es nur auf der Kommandozeile; größere Entwürfe flüssig darstellen | Sonnet | Nutzer |
@@ -49,6 +51,7 @@ Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). N�
   mit Klarnamen („Zum Einstieg“), Bedienhinweise in den Ansichten. Entwerfen über Wunsch-Karten statt YAML
   (`static/wizard.js`). Die Regler bieten nur Werte an, für die `rsx redesign` einen Entwurf findet (gemessen:
   Impuls 2–8, 12, 16, 20, 30, 40 gt; Blinker nur zehn Paare aus Periode/An-Zeit; andere Längen haben keine Vorlage).
+- `design/actuators.py`, `rsx redesign --output BLOCK` (auch `/api/redesign` mit `output`): Notenblock, Spender, Werfer, Eisenfalltür, Eisentür, Kolben oder klebriger Kolben statt Lampe am Ausgang, erst an Stelle der Lampe, sonst daneben hinter einem Verstärker; jede Fassung wird im Simulator gegen die Lampen-Fassung geprüft (Endzustand und Zahl der Einschaltungen je Eingabe), der beste passende Entwurf wird genommen. Stichprobe: bei sechs Entwürfen gehen fast alle Kombinationen, nur das Fackel-AND geht mit Tür/Kolben/Spender nicht. Nicht im Spiel aufgenommen, keine eigenen Tests. Simulation in der GUI läuft von selbst; Umrandung in 3D folgt der Blockform.
 - `design/evaluate.py`: bei `--allow`/`--forbid` zählt die Wandfackel als Fackel (vorher umging
   `--forbid redstone_torch` die Wandfackel).
 - `tests/sim/test_core_equivalence.py`: Kerne laufen Tick für Tick nebeneinander (vorher alle Welt-Dumps im
