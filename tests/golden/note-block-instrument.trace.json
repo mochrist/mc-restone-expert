@@ -1,0 +1,108 @@
+{
+ "format": 1,
+ "scenario": "note-block-instrument",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 8,
+ "probes": {
+  "skull": [
+   0,
+   1,
+   0
+  ],
+  "wall_skull": [
+   2,
+   1,
+   0
+  ],
+  "carpet": [
+   4,
+   1,
+   0
+  ],
+  "wool_stairs": [
+   6,
+   1,
+   0
+  ],
+  "oak_stairs": [
+   8,
+   1,
+   0
+  ],
+  "unchanged": [
+   10,
+   1,
+   0
+  ],
+  "wall_head_air": [
+   12,
+   1,
+   0
+  ]
+ },
+ "samples": {
+  "skull": [
+   [
+    0,
+    "minecraft:note_block[instrument=basedrum,note=0,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:note_block[instrument=skeleton,note=0,powered=false]"
+   ]
+  ],
+  "wall_skull": [
+   [
+    0,
+    "minecraft:note_block[instrument=basedrum,note=0,powered=false]"
+   ]
+  ],
+  "carpet": [
+   [
+    0,
+    "minecraft:note_block[instrument=basedrum,note=0,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:note_block[instrument=harp,note=0,powered=false]"
+   ]
+  ],
+  "wool_stairs": [
+   [
+    0,
+    "minecraft:note_block[instrument=basedrum,note=0,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:note_block[instrument=guitar,note=0,powered=false]"
+   ]
+  ],
+  "oak_stairs": [
+   [
+    0,
+    "minecraft:note_block[instrument=basedrum,note=0,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:note_block[instrument=bass,note=0,powered=false]"
+   ]
+  ],
+  "unchanged": [
+   [
+    0,
+    "minecraft:note_block[instrument=basedrum,note=0,powered=false]"
+   ]
+  ],
+  "wall_head_air": [
+   [
+    0,
+    "minecraft:note_block[instrument=basedrum,note=0,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:note_block[instrument=harp,note=0,powered=false]"
+   ]
+  ]
+ }
+}

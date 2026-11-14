@@ -1,0 +1,36 @@
+name: note-block-instrument
+description: >
+  Welches Instrument ein Notenblock nach einem Shape-Update annimmt (OUT-016, `BlockBehaviour.Properties#instrument`).
+  Alle sechs Notenblöcke starten mit `instrument=basedrum` über Stein; per `setblock` (Flags 3, also mit Shape-Update)
+  kommt ein Block darüber oder darunter. Erwartet: stehender Skelettkopf darüber -> skeleton; Wandkopf darüber ->
+  basedrum (der Wandkopf zählt nicht, der Stein darunter gilt); Teppich darunter -> harp; Wolltreppe darunter ->
+  guitar (alte Namensheuristik: harp); Eichentreppe darunter -> bass; Block bleibt unverändert (x=10) -> basedrum;
+  ohne Block darunter (x=12, Luft) mit `player_wall_head` darüber -> harp.
+build:
+  size: [13, 4, 1]
+  fill:
+    - [0, 0, 0, 10, 0, 0, "stone"]
+  blocks:
+    - [0, 1, 0, "note_block[instrument=basedrum,note=0,powered=false]"]
+    - [2, 1, 0, "note_block[instrument=basedrum,note=0,powered=false]"]
+    - [4, 1, 0, "note_block[instrument=basedrum,note=0,powered=false]"]
+    - [6, 1, 0, "note_block[instrument=basedrum,note=0,powered=false]"]
+    - [8, 1, 0, "note_block[instrument=basedrum,note=0,powered=false]"]
+    - [10, 1, 0, "note_block[instrument=basedrum,note=0,powered=false]"]
+    - [12, 1, 0, "note_block[instrument=basedrum,note=0,powered=false]"]
+ticks: 8
+inputs:
+  - {tick: 2, pos: [0, 2, 0], action: setblock, state: "skeleton_skull[rotation=0]"}
+  - {tick: 2, pos: [2, 2, 0], action: setblock, state: "skeleton_wall_skull[facing=north]"}
+  - {tick: 2, pos: [4, 0, 0], action: setblock, state: "white_carpet"}
+  - {tick: 2, pos: [6, 0, 0], action: setblock, state: "white_wool_stairs[facing=east,half=bottom,shape=straight]"}
+  - {tick: 2, pos: [8, 0, 0], action: setblock, state: "oak_stairs[facing=east,half=bottom,shape=straight]"}
+  - {tick: 2, pos: [12, 2, 0], action: setblock, state: "player_wall_head[facing=north]"}
+probes:
+  skull: [0, 1, 0]
+  wall_skull: [2, 1, 0]
+  carpet: [4, 1, 0]
+  wool_stairs: [6, 1, 0]
+  oak_stairs: [8, 1, 0]
+  unchanged: [10, 1, 0]
+  wall_head_air: [12, 1, 0]

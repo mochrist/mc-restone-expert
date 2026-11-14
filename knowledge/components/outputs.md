@@ -130,5 +130,5 @@ Leiter), reagieren also auf schwache und starke Ladung. Zeiten in Game-Ticks (gt
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `NoteBlock#setInstrument`, `NoteBlock#updateShape`, `NoteBlockInstrument`, `BlockBehaviour.Properties#instrument`, `Blocks`
 - Konfidenz: hoch
-- Status: belegt
+- Status: im-Spiel-verifiziert (scenarios/note-block-instrument.yaml)
 - Hinweise: Die Tabelle `src/redstone/sim/data/blocks_26.3.json` (Schlüssel `instrument`) wird mit `scripts/gen_note_block_instruments.py` aus `Blocks.java` abgeleitet; der Oracle (`BlockDump.java`) schreibt das Feld bei einem neuen Dump selbst (dann Abgleich mit dem Skript, `--check`). Beispiele: Stein basedrum, Sand snare, Glas hat, Wolle guitar, Goldblock bell, Ton flute, Packeis chime, Knochenblock xylophone, Eisenblock iron_xylophone, Seelensand cow_bell, Kürbis didgeridoo, Smaragdblock bit, Heuballen banjo, Glowstone pling, Holz bass, Kupferblöcke trumpet(_exposed/_weathered/_oxidized). Platzierung (`getStateForPlacement`) wird nicht modelliert; der Anfangszustand kommt aus dem Szenario.
