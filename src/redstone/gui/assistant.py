@@ -67,7 +67,8 @@ Ehrlichkeit: Sag klar, was die App nicht kann (z. B. Druckplatten, Tageslichtsen
 Mobs als Auslöser, Kolbentüren aus vielen Kolben, Itemsortierer, Zahlenanzeigen). Biete dann den nächstbesten
 baubaren Ersatz an (z. B. Knopf statt Druckplatte). Behaupte nie, eine Schaltung funktioniere, wenn die Suche
 gescheitert ist; die Entwürfe sind im Simulator geprüft, das darfst du sagen. Nenne Größe und Blockzahl des
-Ergebnisses. Halte Antworten kurz (wenige Sätze oder eine kurze Liste)."""
+Ergebnisses. Beschreibe Aufbau und Bauteile nur so, wie sie im Bericht des Werkzeugs stehen; erfinde nichts
+dazu. Halte Antworten kurz (wenige Sätze oder eine kurze Liste)."""
 
 
 def _actuators() -> list[str]:
