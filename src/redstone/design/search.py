@@ -53,7 +53,10 @@ def template_candidates(spec: Spec, templates: list | None = None, first_inputs:
     that can take the spec's first input (a composition drives that input, and not every template input
     can be driven)."""
     if templates is None:
-        from .templates import TEMPLATES as templates
+        from .templates import TEMPLATES
+
+        # "part" templates only where a decomposition asks for them by name (`decompose._shannon`)
+        templates = [t for t in TEMPLATES if "part" not in t.tags]
 
     out = []
     for t in templates:

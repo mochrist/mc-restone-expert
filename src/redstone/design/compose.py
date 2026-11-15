@@ -278,22 +278,46 @@ except ImportError:  # no Rust core built, or an older one without the router
 
 def _route(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], lo: Pos, hi: Pos,
            tight: bool = False) -> list[Pos] | None:
-    """Shortest dust path, see `_route_py`; in the Rust core when it is built (same path)."""
+    """Shortest dust path, see `_route_py`; in the Rust core when it is built (same path). A path that cuts
+    its own steps (`clashes`) is searched again without such steps (strict), so every other path stays as
+    it was."""
+    path = _route_once(start, goals, solid, keep_clear, lo, hi, tight, False)
+    if path is not None and clashes(path):
+        path = _route_once(start, goals, solid, keep_clear, lo, hi, tight, True)
+    return path
+
+
+def _route_once(start, goals, solid, keep_clear, lo, hi, tight: bool, strict: bool) -> list[Pos] | None:
     if _route_rust is None:
-        return _route_py(start, goals, solid, keep_clear, lo, hi, tight)
-    path = _route_rust(tuple(start), goals, solid, keep_clear, tuple(lo), tuple(hi), tight)
+        return _route_py(start, goals, solid, keep_clear, lo, hi, tight, strict)
+    path = _route_rust(tuple(start), goals, solid, keep_clear, tuple(lo), tuple(hi), tight, strict)
     return None if path is None else [Pos(*c) for c in path]
 
 
+def clashes(path: list[Pos]) -> list[Pos]:
+    """Floors of a dust path (one block below each cell) that stand in a cell of the path or in a cell a step
+    needs empty (above the lower dust of a step up or down): a line winding up over itself cuts its steps."""
+    cells = set(path)
+    floors = {c + DOWN for c in path}
+    need = set()
+    for a, b in zip(path, path[1:]):
+        if b.y > a.y:
+            need.add(a + UP)
+        elif b.y < a.y:
+            need.add(b + UP)
+    return sorted(floors & (cells | need))
+
+
 def _route_py(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos], lo: Pos, hi: Pos,
-              tight: bool = False) -> list[Pos] | None:
+              tight: bool = False, strict: bool = False) -> list[Pos] | None:
     """Shortest dust path (the cells the dust stands in) from `start` to one of `goals`, by breadth-first search.
 
     Moves: flat; one up (the block in front becomes the new floor, the cell above the current dust stays
     empty); one down (the cell in front stays empty). Goals are entered flat. Every cell and its floor keep
     one block of air (also diagonally) to `keep_clear`, except the goal cells; `solid` is never entered.
     The start cell is not checked (it is the joint at the output), but the line never passes under it (that
-    would take its floor)."""
+    would take its floor). strict: no step that cuts the path's own steps (`_over_itself`; then the first path
+    found, not always the shortest one)."""
     from collections import deque
 
     (x0, y0, z0), (x1, y1, z1) = lo, hi
@@ -335,10 +359,35 @@ def _route_py(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos]
             for n in steps:
                 if n in prev or (n.y != c.y and n in goals):
                     continue
-                if ok(n):
+                if ok(n) and not (strict and _over_itself(n, c, prev)):
                     prev[n] = c
                     queue.append(n)
     return None
+
+
+def _over_itself(n: Pos, c: Pos, prev: dict) -> bool:
+    """Whether the step from c to n clashes with the path so far (c and its ancestors in `prev`, the start's
+    parent is None): the new floor (n - 1) would stand in an earlier cell or in a cell that an earlier step needs
+    empty (above the lower dust of a step up or down), or n or the cell this step needs empty is an earlier
+    floor (see `clashes`)."""
+    floor = (n[0], n[1] - 1, n[2])
+    if n[1] > c[1]:
+        need = (c[0], c[1] + 1, c[2])
+    elif n[1] < c[1]:
+        need = (n[0], n[1] + 1, n[2])
+    else:
+        need = None
+    child = n
+    while c is not None:
+        parent = prev[c]
+        below = (c[0], c[1] - 1, c[2])
+        if floor == c or n == below or need == below:
+            return True
+        # the cell above c must stay empty when c steps up to its child or is entered by a step down
+        if floor == (c[0], c[1] + 1, c[2]) and (child[1] > c[1] or (parent is not None and parent[1] > c[1])):
+            return True
+        child, c = c, parent
+    return False
 
 
 def _direction(a: Pos, b: Pos) -> Direction:
@@ -481,7 +530,9 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
     source is an output lamp (it is replaced: output_mode "repeater" or "dust"; "stone": stone, with a
     repeater reading from it, for lamps powered from above; the output disappears) or an
     input lever (it stays; dust next to it is tapped, so one lever drives two parts). The target lever is
-    replaced by dust or a repeater (`input_mode`) and is no longer an input. None if there is no route."""
+    replaced by dust or a repeater (`input_mode`; "repeater+dust": dust fed by a repeater on the last cell
+    of a straight end of the line, so the dust has full strength like next to a lever) and is no longer an
+    input. None if there is no route."""
     a = dict(c.grid.items())
     src_state, tgt_state = a.get(source), a.get(target)
     if src_state is None or tgt_state is None or tgt_state.id != "lever" or source == target:
@@ -554,6 +605,11 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
     if stone:
         m[path[0]] = _repeater(d_out.opposite)
     d_in = _direction(path[-1], target)
+    if input_mode == "repeater+dust":  # full strength at the target dust (a comparator's side input)
+        if (len(path) < 2 or path[-2] == source or not path[-2].y == path[-1].y == target.y
+                or _direction(path[-2], path[-1]) != d_in):
+            return None
+        m[path[-1]] = _repeater(d_in.opposite)
     m[target] = _repeater(d_in.opposite) if input_mode == "repeater" else WIRE
     if target + DOWN not in m:
         m[target + DOWN] = STONE

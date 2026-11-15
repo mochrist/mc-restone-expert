@@ -206,6 +206,8 @@ def decomposed(spec: Spec, depth: int = 2, log: list[str] | None = None, driven:
     # search time (mux8: 48 nested tries, 15 of 17 minutes) without a smaller result
     from .synth import MAX_INPUTS
 
+    if not out:  # no disjoint split: a multiplexer of the two cofactors (the PLA competes in the ranking)
+        out = _shannon(spec, shannon_splits(spec), depth, log, driven)
     if not out and len(spec.inputs) > MAX_INPUTS and not splits(spec):
         out = _nondisjoint(spec, nondisjoint_splits(spec), depth, log, driven)
     return out
@@ -387,7 +389,10 @@ def _apart(sp: CommonSplit, gi: list[int], hi: list[int]) -> Spec:
                 care=None if len(table) == 2 ** n else set(table))
 
 
-def _tapped(cand: Candidate, labels: list[int], common):
+TAP_MODES = ("repeater", "dust")
+
+
+def _tapped(cand: Candidate, labels: list[int], common, modes=TAP_MODES):
     """Every way to feed H's common levers from G's (`compose.wire`, a tapped line, repeater or dust at the
     lever: a wall lever of a drivable PLA mostly needs the repeater), inputs in spec order."""
     from .compose import wire
@@ -397,10 +402,10 @@ def _tapped(cand: Candidate, labels: list[int], common):
         return
     i, rest = common[0], common[1:]
     t = len(labels) - 1 - labels[::-1].index(i)
-    for mode in ("repeater", "dust"):
+    for mode in modes:
         w = wire(cand, cand.inputs[labels.index(i)], cand.inputs[t], input_mode=mode)
         if w is not None:
-            yield from _tapped(w, labels[:t] + labels[t + 1:], rest)
+            yield from _tapped(w, labels[:t] + labels[t + 1:], rest, modes)
 
 
 # ---------------------------------------------------------------------- shared part of several outputs
@@ -512,6 +517,163 @@ def _combo(n: int, bound, sb, free, fb) -> tuple[bool, ...]:
     for i, v in zip(free, fb):
         x[i] = v
     return tuple(x)
+
+
+# ---------------------------------------------------------------------- Shannon expansion into a multiplexer
+@dataclass(frozen=True)
+class ShannonSplit:
+    """f = mux2(s, f|s=0, f|s=1): the select input s drives the select lever of a 2:1 multiplexer template
+    directly (its select input cannot take a line), the cofactors G0 and G1 drive its data inputs. Inputs of
+    both cofactors (`common`, at most MAX_COMMON) have one lever, its line tapped for the other part. An 8:1
+    multiplexer: two 4:1 multiplexers (each again two 2:1 multiplexers) and one 2:1 multiplexer."""
+    select: int
+    low: tuple[int, ...]  # spec inputs of G0 = f|s=0 (its support), spec order
+    high: tuple[int, ...]  # spec inputs of G1 = f|s=1
+    g0: Spec
+    g1: Spec
+
+    @property
+    def common(self) -> tuple[int, ...]:
+        return tuple(i for i in self.low if i in self.high)
+
+    def describe(self, names: list[str]) -> str:
+        lo, hi = (", ".join(names[i] for i in part) for part in (self.low, self.high))
+        return f"Multiplexer mit Auswahl {names[self.select]}: g0({lo}), g1({hi})"
+
+
+MUX_TEMPLATE = "mux2-comparator-select"  # inputs s, a, b: y = b if s else a; s may take a tapped line
+MAX_SHANNON_SPLITS = 2
+SHANNON_LOW = 3  # working G0 → multiplexer joints kept per G0 design
+# a tapped select lever of the multiplexer feeds a comparator's side input, which must be as strong as the data
+# signal behind it: dust fed by a repeater first
+SHANNON_TAP_MODES = ("repeater+dust", "dust", "repeater")
+
+
+def _cofactor(spec: Spec, out: int, s: int, value: bool) -> tuple[tuple[int, ...], Spec]:
+    """f with input s fixed, over the inputs it still depends on (spec order)."""
+    n = len(spec.inputs)
+    others = [i for i in range(n) if i != s]
+    table = {}
+    for combo in itertools.product([False, True], repeat=n - 1):
+        x = dict(zip(others, combo)) | {s: value}
+        table[combo] = (spec.table[tuple(x[i] for i in range(n))][out],)
+    full = Spec([spec.inputs[i] for i in others], [spec.outputs[out]], table, source="Zerlegung")
+    keep = tuple(others[k] for k in support(full, 0))
+    proj = _project(full, [others.index(i) for i in keep], [0])
+    return keep, replace(proj, source="Zerlegung")
+
+
+def shannon_splits(spec: Spec, out: int = 0) -> list[ShannonSplit]:
+    """Shannon expansions of a full single-output spec whose cofactors each depend on at least two inputs and
+    share at most MAX_COMMON of them; the smallest larger cofactor first, then fewer common inputs."""
+    n = len(spec.inputs)
+    if spec.partial or n < 4 or len(spec.outputs) != 1 or len(support(spec, out)) != n:
+        return []
+    found = []
+    for s in range(n):
+        (low, g0), (high, g1) = _cofactor(spec, out, s, False), _cofactor(spec, out, s, True)
+        if len(low) < 2 or len(high) < 2:
+            continue  # a constant or a single input: not worth a multiplexer
+        sp = ShannonSplit(s, low, high, g0, g1)
+        if len(sp.common) <= MAX_COMMON:
+            found.append(((max(len(low), len(high)), len(sp.common), s), sp))
+    found.sort(key=lambda f: f[0])
+    return [f[1] for f in found[:MAX_SHANNON_SPLITS]]
+
+
+def _chain_spec(n: int, fn, output: str) -> Spec:
+    """The spec of a composite with n separate levers computing fn(combo); wide ones only on a sample of
+    APART_SAMPLE combinations (all off, every single lever, the rest drawn with a fixed seed), like `_apart`."""
+    import random
+
+    if 2 ** n <= APART_SAMPLE:
+        combos = list(itertools.product([False, True], repeat=n))
+    else:
+        rng = random.Random(0)
+        picked = {(False,) * n} | {tuple(k == j for k in range(n)) for j in range(n)}
+        while len(picked) < APART_SAMPLE:
+            picked.add(tuple(rng.random() < 0.5 for _ in range(n)))
+        combos = sorted(picked)
+    table = {x: (fn(x),) for x in combos}
+    return Spec([f"i{k}" for k in range(n)], [output], table, source="Zerlegung",
+                care=None if len(table) == 2 ** n else set(table))
+
+
+def _shannon(spec: Spec, sps: list[ShannonSplit], depth: int, log: list[str] | None,
+             driven: bool) -> list[Candidate]:
+    """Candidates from `shannon_splits`: G0 → data input a of the multiplexer template (`compose.chains`),
+    then G1 → its data input b, then the common levers of G0 fed from G1's (`_tapped`). Each joint is checked
+    with separate levers before the next one is made."""
+    from .compose import chains
+    from .evaluate import evaluate_any
+    from .search import template_candidates
+    from .templates import TEMPLATES
+
+    mux_t = next(t for t in TEMPLATES if t.name == MUX_TEMPLATE)
+    mux = mux_t.build()
+
+    def parts(sub: Spec, drv: bool) -> list[Candidate]:
+        # a 2:1 multiplexer as a part is the select-drivable template first: its select lever is tapped for
+        # the other part here, and in a larger expansion the lever that stays may be tapped again; then the
+        # fewest blocks first (a cascade of small parts has much air in its box, but shrinks when compacted)
+        return (template_candidates(sub, [mux_t])
+                + sorted(_best(sub, depth, drv), key=lambda c: c.block_count))
+
+    out = []
+    for sp in sps:
+        if driven and (sp.select == 0 or 0 in sp.common):
+            continue  # the select lever and a tapped lever cannot take a line from another part
+        g0s, g1s = parts(sp.g0, driven and 0 in sp.low), parts(sp.g1, driven and 0 in sp.high)
+        nl, nh = len(sp.low), len(sp.high)
+        g0t, g1t = sp.g0.table, sp.g1.table
+        # stage 1: inputs low…, s, b
+        low_spec = _chain_spec(nl + 2, lambda x: x[nl + 1] if x[nl] else g0t[x[:nl]][0], "y")
+        # stage 2: inputs high…, low…, s
+        both_spec = _chain_spec(nh + nl + 1, lambda x: (g1t[x[:nh]][0] if x[nh + nl]
+                                                         else g0t[x[nh:nh + nl]][0]), "y")
+        lows: list[Candidate] = []
+        for g0 in g0s:
+            kept = 0
+            for k, (_, c) in enumerate(chains(g0, 0, mux, 1)):
+                if kept >= SHANNON_LOW or k >= CHAINS_SEEN:
+                    break
+                if evaluate_any(c, low_spec, quick=True).correct:
+                    lows.append(c)
+                    kept += 1
+        labels = list(sp.high) + list(sp.low) + [sp.select]
+        found = None
+        for g1, low in itertools.product(g1s, lows):  # in the order of the parts (see `parts`)
+            tries = 0
+            for k, (_, chained) in enumerate(chains(g1, 0, low, nl + 1)):
+                if tries >= TRIES or k >= CHAINS_SEEN:
+                    break
+                if not evaluate_any(chained, both_spec, quick=True).correct:
+                    continue
+                tries += 1
+                for cand in _tapped(chained, labels, sp.common, SHANNON_TAP_MODES):
+                    cand = replace(cand, name=f"mux2({spec.inputs[sp.select]}; {_g0_name(low)}, {g1.name})",
+                                   origin=f"zerlegt: {sp.describe(spec.inputs)}; {cand.origin}")
+                    if evaluate_any(cand, spec, quick=True).correct:
+                        found = cand
+                        break
+                if found is not None:
+                    break
+            if found is not None:
+                break
+        if log is not None:
+            from .report import COMPOSE_PREFIX
+
+            log.append(f"{COMPOSE_PREFIX}Zerlegung {sp.describe(spec.inputs)}: "
+                       + (f"{found.name}, {found.block_count} Blöcke" if found
+                          else "keine funktionierende Verbindung gefunden"))
+        if found is not None:
+            out.append(found)
+    return out
+
+
+def _g0_name(low: Candidate) -> str:
+    """Name of G0 in a stage-1 composition "G0 → mux2-comparator"."""
+    return low.name.rsplit(" → ", 1)[0]
 
 
 def _column_key(col) -> tuple:
