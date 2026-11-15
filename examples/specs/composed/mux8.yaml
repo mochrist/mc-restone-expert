@@ -1,6 +1,7 @@
 # 8:1-Multiplexer: s2 s1 s0 wählen einen von d0 … d7 (11 Eingänge, über dem PLA-Limit).
 # Nicht disjunkt zerlegbar: beide Hälften brauchen zwei Auswahlbits (gemeinsame Eingänge, angezapfte Leitung).
-# PLA → ansteuerbare PLA, kompaktiert 782 Blöcke, 14×10×23; Suche ~5 min (slow-Test); im Spiel aufgenommen (cmp-mux8), identisch.
+# Shannon-Zerlegung: mux2(s2, mux4, mux4), jeder mux4 wieder aus drei mux2 (Vorlage mux2-comparator-select, s1/s0
+# angezapft); kompaktiert 354 Blöcke, 15×10×17 (vorher PLA → ansteuerbare PLA, 782 Blöcke); Suche ~35 min (slow-Test).
 inputs: [s2, s1, s0, d0, d1, d2, d3, d4, d5, d6, d7]
 function:
   y: (not s2 and not s1 and not s0 and d0) or (not s2 and not s1 and s0 and d1) or (not s2 and s1 and not s0 and d2) or (not s2 and s1 and s0 and d3) or (s2 and not s1 and not s0 and d4) or (s2 and not s1 and s0 and d5) or (s2 and s1 and not s0 and d6) or (s2 and s1 and s0 and d7)

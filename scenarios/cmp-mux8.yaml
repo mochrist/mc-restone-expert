@@ -1,6948 +1,6540 @@
 name: cmp-mux8
-description: 'Zerlegung für examples/specs/composed/mux8.yaml: pla → pla-ansteuerbar-kompakt (kompaktiert aus zerlegt: g(s2,
-  s1, s0, d0, d1, d4, d5), h(g, s2, s1, d2, d3, d6, d7) mit gemeinsamen s2, s1; komponiert: synthese:pla → synthese:pla).
-  Alle Hebel-Kombinationen im Gray-Code, je 40 gt Abstand.'
+description: 'Zerlegung für examples/specs/composed/mux8.yaml: mux2(s2; mux2(s1; mux2-comparator-select, mux2-comparator-select),
+  mux2(s1; mux2-comparator-select, mux2-comparator-select))-kompakt (kompaktiert aus zerlegt: Multiplexer mit Auswahl s2:
+  g0(s1, s0, d0, d1, d2, d3), g1(s1, s0, d4, d5, d6, d7); komponiert: zerlegt: Multiplexer mit Auswahl s1: g0(s0, d4, d5),
+  g1(s0, d6, d7); komponiert: template:mux2-comparator-select (s0→s, d6→a, d7→b) → komponiert: template:mux2-comparator-select
+  (s0→s, d4→a, d5→b) → template:mux2-comparator-select → komponiert: zerlegt: Multiplexer mit Auswahl s1: g0(s0, d0, d1),
+  g1(s0, d2, d3); komponiert: template:mux2-comparator-select (s0→s, d2→a, d3→b) → komponiert: template:mux2-comparator-select
+  (s0→s, d0→a, d1→b) → template:mux2-comparator-select → template:mux2-comparator-select). Alle Hebel-Kombinationen im Gray-Code,
+  je 40 gt Abstand.'
 build:
-  size: [14, 10, 23]
+  size: [15, 10, 17]
   blocks:
-  - [0, 6, 2, stone]
-  - [0, 6, 3, stone]
-  - [0, 6, 4, stone]
-  - [0, 6, 5, stone]
-  - [0, 6, 6, stone]
-  - [0, 6, 7, stone]
-  - [0, 6, 8, stone]
-  - [0, 6, 9, stone]
-  - [0, 6, 10, stone]
-  - [0, 6, 11, stone]
-  - [0, 6, 12, stone]
-  - [0, 6, 13, stone]
-  - [0, 6, 14, stone]
-  - [0, 6, 15, stone]
-  - [0, 6, 16, stone]
-  - [0, 6, 17, stone]
-  - [0, 6, 18, stone]
-  - [0, 6, 19, stone]
-  - [0, 7, 1, stone]
-  - [0, 7, 2, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [0, 7, 3, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [0, 7, 4, 'repeater[delay=1,facing=south,locked=false,powered=true]']
-  - [0, 7, 5, 'redstone_wire[east=none,north=side,power=5,south=side,west=none]']
-  - [0, 7, 6, 'redstone_wire[east=none,north=side,power=6,south=side,west=none]']
-  - [0, 7, 7, 'redstone_wire[east=none,north=side,power=7,south=side,west=none]']
-  - [0, 7, 8, 'redstone_wire[east=none,north=side,power=8,south=side,west=none]']
-  - [0, 7, 9, 'redstone_wire[east=none,north=side,power=9,south=side,west=none]']
-  - [0, 7, 10, 'redstone_wire[east=none,north=side,power=10,south=side,west=none]']
-  - [0, 7, 11, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [0, 7, 12, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [0, 7, 13, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [0, 7, 14, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [0, 7, 15, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [0, 7, 16, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [0, 7, 17, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [0, 7, 18, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [0, 7, 19, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [0, 8, 2, stone]
-  - [0, 8, 3, 'redstone_wall_torch[facing=south,lit=true]']
-  - [0, 8, 15, 'redstone_wall_torch[facing=north,lit=true]']
-  - [0, 8, 16, stone]
-  - [0, 8, 19, 'redstone_wall_torch[facing=north,lit=true]']
-  - [0, 8, 20, stone]
-  - [0, 9, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [0, 9, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [0, 9, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [1, 6, 0, stone]
-  - [1, 7, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
-  - [1, 7, 1, 'redstone_wall_torch[facing=east,lit=false]']
-  - [1, 8, 2, stone]
-  - [1, 8, 16, stone]
-  - [1, 8, 20, stone]
-  - [1, 9, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [1, 9, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [1, 9, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [2, 6, 0, stone]
-  - [2, 6, 2, stone]
-  - [2, 6, 3, stone]
-  - [2, 6, 4, stone]
-  - [2, 6, 5, stone]
-  - [2, 6, 6, stone]
-  - [2, 6, 7, stone]
-  - [2, 6, 8, stone]
-  - [2, 6, 9, stone]
-  - [2, 6, 10, stone]
-  - [2, 6, 11, stone]
-  - [2, 6, 12, stone]
-  - [2, 6, 13, stone]
-  - [2, 6, 14, stone]
-  - [2, 6, 15, stone]
-  - [2, 6, 16, stone]
-  - [2, 6, 17, stone]
-  - [2, 6, 18, stone]
-  - [2, 6, 19, stone]
-  - [2, 7, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [2, 7, 1, stone]
-  - [2, 7, 2, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [2, 7, 3, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [2, 7, 4, 'repeater[delay=1,facing=south,locked=false,powered=true]']
-  - [2, 7, 5, 'redstone_wire[east=none,north=side,power=1,south=side,west=none]']
-  - [2, 7, 6, 'redstone_wire[east=none,north=side,power=2,south=side,west=none]']
-  - [2, 7, 7, 'redstone_wire[east=none,north=side,power=3,south=side,west=none]']
-  - [2, 7, 8, 'redstone_wire[east=none,north=side,power=4,south=side,west=none]']
-  - [2, 7, 9, 'redstone_wire[east=none,north=side,power=5,south=side,west=none]']
-  - [2, 7, 10, 'redstone_wire[east=none,north=side,power=6,south=side,west=none]']
-  - [2, 7, 11, 'redstone_wire[east=none,north=side,power=7,south=side,west=none]']
-  - [2, 7, 12, 'redstone_wire[east=none,north=side,power=8,south=side,west=none]']
-  - [2, 7, 13, 'redstone_wire[east=none,north=side,power=9,south=side,west=none]']
-  - [2, 7, 14, 'redstone_wire[east=none,north=side,power=10,south=side,west=none]']
-  - [2, 7, 15, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [2, 7, 16, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [2, 7, 17, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [2, 7, 18, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [2, 7, 19, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [2, 8, 2, stone]
-  - [2, 8, 9, 'redstone_wall_torch[facing=north,lit=false]']
-  - [2, 8, 10, stone]
-  - [2, 8, 16, stone]
-  - [2, 8, 19, 'redstone_wall_torch[facing=north,lit=true]']
-  - [2, 8, 20, stone]
-  - [2, 9, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [2, 9, 10, 'redstone_wire[east=side,north=none,power=7,south=none,west=side]']
-  - [2, 9, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [2, 9, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [3, 6, 0, stone]
-  - [3, 7, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
-  - [3, 7, 1, 'redstone_wall_torch[facing=east,lit=false]']
-  - [3, 8, 2, stone]
-  - [3, 8, 10, stone]
-  - [3, 8, 16, stone]
-  - [3, 8, 20, stone]
-  - [3, 9, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [3, 9, 10, 'redstone_wire[east=side,north=none,power=8,south=none,west=side]']
-  - [3, 9, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [3, 9, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [4, 6, 0, stone]
-  - [4, 6, 2, stone]
-  - [4, 6, 3, stone]
-  - [4, 6, 4, stone]
-  - [4, 6, 5, stone]
-  - [4, 6, 6, stone]
-  - [4, 6, 7, stone]
-  - [4, 6, 8, stone]
-  - [4, 6, 9, stone]
-  - [4, 6, 10, stone]
-  - [4, 6, 11, stone]
-  - [4, 6, 12, stone]
-  - [4, 6, 13, stone]
-  - [4, 6, 14, stone]
-  - [4, 6, 15, stone]
-  - [4, 6, 16, stone]
-  - [4, 6, 17, stone]
-  - [4, 6, 18, stone]
-  - [4, 6, 19, stone]
-  - [4, 7, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [4, 7, 1, stone]
-  - [4, 7, 2, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [4, 7, 3, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [4, 7, 4, 'repeater[delay=1,facing=south,locked=false,powered=true]']
-  - [4, 7, 5, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [4, 7, 6, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [4, 7, 7, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [4, 7, 8, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [4, 7, 9, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [4, 7, 10, 'redstone_wire[east=none,north=side,power=10,south=side,west=none]']
-  - [4, 7, 11, 'redstone_wire[east=none,north=side,power=9,south=side,west=none]']
-  - [4, 7, 12, 'redstone_wire[east=none,north=side,power=8,south=side,west=none]']
-  - [4, 7, 13, 'redstone_wire[east=none,north=side,power=9,south=side,west=none]']
-  - [4, 7, 14, 'redstone_wire[east=none,north=side,power=10,south=side,west=none]']
-  - [4, 7, 15, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [4, 7, 16, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [4, 7, 17, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [4, 7, 18, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [4, 7, 19, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [4, 8, 2, stone]
-  - [4, 8, 5, 'redstone_wall_torch[facing=north,lit=true]']
-  - [4, 8, 6, stone]
-  - [4, 8, 10, stone]
-  - [4, 8, 13, 'redstone_wall_torch[facing=north,lit=false]']
-  - [4, 8, 14, stone]
-  - [4, 8, 16, stone]
-  - [4, 8, 19, 'redstone_wall_torch[facing=north,lit=true]']
-  - [4, 8, 20, stone]
-  - [4, 9, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [4, 9, 6, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [4, 9, 10, 'redstone_wire[east=side,north=none,power=9,south=none,west=side]']
-  - [4, 9, 14, 'redstone_wire[east=side,north=none,power=9,south=none,west=side]']
-  - [4, 9, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [4, 9, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [5, 0, 3, stone]
-  - [5, 0, 4, stone]
-  - [5, 0, 5, stone]
-  - [5, 0, 6, stone]
-  - [5, 0, 7, stone]
+  - [0, 0, 6, stone]
+  - [0, 0, 7, stone]
+  - [0, 0, 8, stone]
+  - [0, 1, 6, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [0, 1, 7, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [0, 1, 8, 'redstone_wire[east=side,north=side,power=0,south=none,west=none]']
+  - [1, 0, 6, stone]
+  - [1, 0, 8, stone]
+  - [1, 1, 6, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [1, 1, 8, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [1, 3, 8, stone]
+  - [1, 3, 9, stone]
+  - [1, 3, 10, stone]
+  - [1, 4, 7, stone]
+  - [1, 4, 8, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [1, 4, 9, 'lever[face=floor,facing=west,powered=false]']
+  - [1, 4, 10, 'redstone_wire[east=up,north=side,power=0,south=none,west=none]']
+  - [1, 5, 9, stone]
+  - [1, 6, 8, stone]
+  - [1, 6, 9, 'redstone_wire[east=side,north=up,power=0,south=none,west=none]']
+  - [1, 7, 8, 'redstone_wire[east=up,north=none,power=0,south=side,west=none]']
+  - [2, 0, 6, stone]
+  - [2, 0, 8, stone]
+  - [2, 0, 9, stone]
+  - [2, 1, 6, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [2, 1, 8, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [2, 1, 9, 'repeater[delay=1,facing=south,locked=false,powered=true]']
+  - [2, 1, 10, 'redstone_wall_torch[facing=north,lit=true]']
+  - [2, 1, 11, stone]
+  - [2, 3, 2, stone]
+  - [2, 3, 5, stone]
+  - [2, 3, 9, stone]
+  - [2, 3, 11, stone]
+  - [2, 4, 2, 'redstone_wire[east=side,north=none,power=0,south=up,west=none]']
+  - [2, 4, 3, stone]
+  - [2, 4, 5, 'lever[face=floor,facing=north,powered=false]']
+  - [2, 4, 7, 'redstone_wall_torch[facing=east,lit=true]']
+  - [2, 4, 9, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [2, 4, 10, stone]
+  - [2, 4, 11, 'lever[face=floor,facing=south,powered=false]']
+  - [2, 5, 3, 'redstone_wire[east=up,north=side,power=0,south=none,west=none]']
+  - [2, 5, 9, stone]
+  - [2, 5, 10, 'redstone_wire[east=none,north=up,power=0,south=none,west=side]']
+  - [2, 6, 9, 'redstone_wire[east=up,north=none,power=0,south=side,west=side]']
+  - [2, 7, 8, stone]
+  - [2, 8, 8, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
+  - [3, 0, 6, stone]
+  - [3, 0, 11, stone]
+  - [3, 1, 6, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [3, 1, 8, 'redstone_lamp[lit=false]']
+  - [3, 1, 11, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [3, 3, 0, stone]
+  - [3, 3, 1, stone]
+  - [3, 3, 2, stone]
+  - [3, 3, 3, stone]
+  - [3, 3, 4, stone]
+  - [3, 3, 5, stone]
+  - [3, 3, 7, stone]
+  - [3, 3, 9, stone]
+  - [3, 3, 11, stone]
+  - [3, 3, 12, stone]
+  - [3, 4, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [3, 4, 1, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 4, 2, 'lever[face=floor,facing=north,powered=false]']
+  - [3, 4, 3, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [3, 4, 4, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 4, 5, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [3, 4, 7, 'repeater[delay=1,facing=west,locked=false,powered=true]']
+  - [3, 4, 9, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [3, 4, 11, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [3, 4, 12, 'repeater[delay=1,facing=south,locked=false,powered=true]']
+  - [3, 4, 13, 'redstone_wall_torch[facing=north,lit=true]']
+  - [3, 4, 14, stone]
+  - [3, 5, 3, stone]
+  - [3, 5, 4, stone]
+  - [3, 5, 5, stone]
+  - [3, 5, 6, stone]
+  - [3, 5, 7, stone]
+  - [3, 5, 16, stone]
+  - [3, 6, 3, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [3, 6, 4, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 6, 5, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 6, 6, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 6, 7, 'redstone_wire[east=none,north=side,power=0,south=up,west=none]']
+  - [3, 6, 8, stone]
+  - [3, 6, 9, stone]
+  - [3, 6, 10, stone]
+  - [3, 6, 11, stone]
+  - [3, 6, 12, stone]
+  - [3, 6, 13, stone]
+  - [3, 6, 14, stone]
+  - [3, 6, 15, stone]
+  - [3, 6, 16, 'redstone_wire[east=side,north=up,power=0,south=none,west=none]']
+  - [3, 7, 8, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 7, 9, 'redstone_wire[east=none,north=side,power=0,south=side,west=side]']
+  - [3, 7, 10, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [3, 7, 11, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 7, 12, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 7, 13, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 7, 14, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 7, 15, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [3, 8, 8, stone]
+  - [3, 9, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [4, 0, 6, stone]
+  - [4, 0, 8, stone]
+  - [4, 0, 9, stone]
+  - [4, 0, 10, stone]
+  - [4, 0, 11, stone]
+  - [4, 1, 6, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
+  - [4, 1, 8, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [4, 1, 9, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [4, 1, 10, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [4, 1, 11, 'lever[face=floor,facing=south,powered=false]']
+  - [4, 3, 0, stone]
+  - [4, 3, 2, stone]
+  - [4, 3, 5, stone]
+  - [4, 3, 6, stone]
+  - [4, 3, 7, stone]
+  - [4, 3, 9, stone]
+  - [4, 3, 10, stone]
+  - [4, 3, 11, stone]
+  - [4, 3, 14, stone]
+  - [4, 4, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [4, 4, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [4, 4, 5, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
+  - [4, 4, 6, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [4, 4, 7, 'comparator[facing=north,mode=subtract,powered=false]']
+  - [4, 4, 8, stone]
+  - [4, 4, 9, 'comparator[facing=south,mode=subtract,powered=false]']
+  - [4, 4, 10, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [4, 4, 11, 'redstone_wire[east=side,north=side,power=0,south=none,west=side]']
+  - [4, 4, 14, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [4, 4, 16, stone]
+  - [4, 5, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
+  - [4, 8, 8, stone]
+  - [4, 9, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
   - [5, 0, 8, stone]
-  - [5, 0, 9, stone]
-  - [5, 0, 10, stone]
-  - [5, 0, 11, stone]
-  - [5, 0, 12, stone]
-  - [5, 0, 13, stone]
-  - [5, 0, 14, stone]
-  - [5, 0, 15, stone]
-  - [5, 0, 16, stone]
-  - [5, 0, 17, stone]
-  - [5, 0, 18, stone]
-  - [5, 1, 3, 'redstone_wire[east=none,north=side,power=5,south=side,west=none]']
-  - [5, 1, 4, 'redstone_wire[east=none,north=side,power=6,south=side,west=none]']
-  - [5, 1, 5, 'redstone_wire[east=none,north=side,power=7,south=side,west=none]']
-  - [5, 1, 6, 'redstone_wire[east=none,north=side,power=8,south=side,west=none]']
-  - [5, 1, 7, 'redstone_wire[east=none,north=side,power=9,south=side,west=none]']
-  - [5, 1, 8, 'redstone_wire[east=none,north=side,power=10,south=side,west=none]']
-  - [5, 1, 9, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [5, 1, 10, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [5, 1, 11, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [5, 1, 12, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [5, 1, 13, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [5, 1, 14, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [5, 1, 15, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [5, 1, 16, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [5, 1, 17, 'repeater[delay=1,facing=north,locked=false,powered=true]']
-  - [5, 1, 18, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [5, 1, 19, stone]
-  - [5, 1, 20, 'redstone_wall_torch[facing=south,lit=false]']
-  - [5, 2, 2, stone]
-  - [5, 2, 3, 'redstone_wall_torch[facing=south,lit=false]']
-  - [5, 2, 6, stone]
-  - [5, 2, 7, 'redstone_wall_torch[facing=south,lit=false]']
-  - [5, 2, 10, stone]
-  - [5, 2, 11, 'redstone_wall_torch[facing=south,lit=false]']
-  - [5, 2, 12, stone]
-  - [5, 2, 13, 'redstone_wall_torch[facing=south,lit=true]']
-  - [5, 3, 2, 'redstone_wire[east=side,north=none,power=12,south=none,west=side]']
+  - [5, 1, 6, stone]
+  - [5, 1, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [5, 2, 6, 'redstone_wire[east=none,north=none,power=0,south=up,west=side]']
+  - [5, 2, 7, stone]
+  - [5, 3, 0, stone]
   - [5, 3, 4, stone]
-  - [5, 3, 6, 'redstone_wire[east=side,north=none,power=12,south=none,west=side]']
-  - [5, 3, 10, 'redstone_wire[east=side,north=none,power=12,south=none,west=side]']
-  - [5, 3, 12, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [5, 4, 4, 'redstone_wire[east=side,north=none,power=0,south=up,west=none]']
-  - [5, 4, 5, stone]
-  - [5, 4, 6, stone]
-  - [5, 4, 7, stone]
-  - [5, 4, 8, stone]
-  - [5, 4, 9, stone]
-  - [5, 4, 10, stone]
-  - [5, 4, 11, stone]
-  - [5, 4, 12, stone]
-  - [5, 4, 13, stone]
-  - [5, 4, 14, stone]
-  - [5, 4, 15, stone]
-  - [5, 4, 16, stone]
-  - [5, 5, 5, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [5, 5, 6, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [5, 5, 7, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [5, 5, 8, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [5, 5, 9, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [5, 5, 10, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [5, 5, 11, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [5, 5, 12, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [5, 5, 13, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [5, 5, 14, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [5, 5, 15, 'repeater[delay=1,facing=north,locked=false,powered=false]']
-  - [5, 5, 16, 'redstone_wire[east=side,north=side,power=0,south=none,west=none]']
-  - [5, 6, 0, 'redstone_lamp[lit=false]']
-  - [5, 7, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
-  - [5, 7, 1, 'redstone_wall_torch[facing=east,lit=false]']
-  - [5, 8, 2, stone]
-  - [5, 8, 6, stone]
-  - [5, 8, 10, stone]
-  - [5, 8, 14, stone]
-  - [5, 8, 16, stone]
-  - [5, 8, 20, stone]
-  - [5, 9, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [5, 9, 6, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [5, 9, 10, 'redstone_wire[east=side,north=none,power=10,south=none,west=side]']
-  - [5, 9, 14, 'redstone_wire[east=side,north=none,power=10,south=none,west=side]']
-  - [5, 9, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [5, 9, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [6, 0, 20, stone]
-  - [6, 1, 19, 'redstone_wall_torch[facing=west,lit=false]']
-  - [6, 1, 20, 'redstone_wire[east=side,north=side,power=0,south=none,west=side]']
-  - [6, 2, 2, stone]
-  - [6, 2, 4, stone]
-  - [6, 2, 6, stone]
-  - [6, 2, 10, stone]
-  - [6, 2, 12, stone]
-  - [6, 2, 14, stone]
+  - [5, 3, 5, stone]
+  - [5, 3, 7, 'redstone_wire[east=up,north=side,power=0,south=none,west=none]']
+  - [5, 3, 8, stone]
+  - [5, 3, 11, stone]
+  - [5, 3, 12, stone]
+  - [5, 3, 13, stone]
+  - [5, 3, 14, stone]
+  - [5, 3, 15, stone]
+  - [5, 3, 16, stone]
+  - [5, 4, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [5, 4, 2, stone]
+  - [5, 4, 3, 'redstone_wall_torch[facing=south,lit=true]']
+  - [5, 4, 4, 'repeater[delay=1,facing=north,locked=false,powered=true]']
+  - [5, 4, 5, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [5, 4, 8, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [5, 4, 11, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [5, 4, 12, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [5, 4, 13, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [5, 4, 14, 'redstone_wire[east=none,north=side,power=0,south=side,west=side]']
+  - [5, 4, 15, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [5, 4, 16, 'redstone_wire[east=none,north=side,power=0,south=none,west=up]']
+  - [5, 8, 8, stone]
+  - [5, 9, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [6, 0, 5, stone]
+  - [6, 0, 8, stone]
+  - [6, 0, 11, stone]
+  - [6, 1, 5, 'lever[face=floor,facing=north,powered=false]']
+  - [6, 1, 8, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [6, 1, 11, 'lever[face=floor,facing=south,powered=false]']
   - [6, 3, 0, stone]
-  - [6, 3, 2, 'redstone_wire[east=side,north=none,power=13,south=none,west=side]']
-  - [6, 3, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
-  - [6, 3, 6, 'redstone_wire[east=side,north=none,power=13,south=none,west=side]']
-  - [6, 3, 10, 'redstone_wire[east=side,north=none,power=13,south=none,west=side]']
-  - [6, 3, 12, 'lever[face=floor,facing=east,powered=false]']
-  - [6, 3, 14, 'lever[face=floor,facing=east,powered=false]']
-  - [6, 3, 16, stone]
-  - [6, 4, 0, 'redstone_wire[east=side,north=none,power=0,south=up,west=none]']
-  - [6, 4, 1, stone]
-  - [6, 4, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
-  - [6, 5, 1, 'redstone_wire[east=side,north=side,power=0,south=none,west=none]']
-  - [6, 6, 0, stone]
-  - [6, 6, 2, stone]
-  - [6, 6, 3, stone]
-  - [6, 6, 4, stone]
-  - [6, 6, 5, stone]
-  - [6, 6, 6, stone]
-  - [6, 6, 7, stone]
-  - [6, 6, 8, stone]
-  - [6, 6, 9, stone]
-  - [6, 6, 10, stone]
-  - [6, 6, 11, stone]
-  - [6, 6, 12, stone]
-  - [6, 6, 13, stone]
-  - [6, 6, 14, stone]
-  - [6, 6, 15, stone]
-  - [6, 6, 16, stone]
-  - [6, 6, 17, stone]
-  - [6, 7, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [6, 7, 1, stone]
-  - [6, 7, 2, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [6, 7, 3, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [6, 7, 4, 'repeater[delay=1,facing=south,locked=false,powered=true]']
-  - [6, 7, 5, 'redstone_wire[east=none,north=side,power=9,south=side,west=none]']
-  - [6, 7, 6, 'redstone_wire[east=none,north=side,power=10,south=side,west=none]']
-  - [6, 7, 7, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [6, 7, 8, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [6, 7, 9, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [6, 7, 10, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [6, 7, 11, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [6, 7, 12, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [6, 7, 13, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [6, 7, 14, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [6, 7, 15, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [6, 7, 16, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [6, 7, 17, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [6, 8, 2, stone]
-  - [6, 8, 3, 'redstone_wall_torch[facing=north,lit=true]']
-  - [6, 8, 4, stone]
-  - [6, 8, 6, stone]
-  - [6, 8, 10, stone]
-  - [6, 8, 11, 'redstone_wall_torch[facing=north,lit=true]']
-  - [6, 8, 12, stone]
-  - [6, 8, 14, stone]
-  - [6, 8, 15, 'redstone_wall_torch[facing=north,lit=true]']
-  - [6, 8, 16, stone]
-  - [6, 8, 17, 'redstone_wall_torch[facing=north,lit=false]']
-  - [6, 8, 18, stone]
-  - [6, 8, 20, stone]
-  - [6, 9, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [6, 9, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [6, 9, 6, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [6, 9, 10, 'redstone_wire[east=side,north=none,power=11,south=none,west=side]']
-  - [6, 9, 12, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [6, 9, 14, 'redstone_wire[east=side,north=none,power=11,south=none,west=side]']
-  - [6, 9, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [6, 9, 18, 'redstone_wire[east=side,north=none,power=11,south=none,west=side]']
-  - [6, 9, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [6, 3, 5, stone]
+  - [6, 3, 7, stone]
+  - [6, 3, 8, stone]
+  - [6, 3, 11, stone]
+  - [6, 4, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [6, 4, 5, 'lever[face=floor,facing=north,powered=false]']
+  - [6, 4, 7, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [6, 4, 8, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  - [6, 4, 11, 'lever[face=floor,facing=south,powered=false]']
+  - [6, 8, 7, stone]
+  - [6, 8, 8, stone]
+  - [6, 9, 7, 'redstone_wire[east=side,north=none,power=0,south=side,west=none]']
+  - [6, 9, 8, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  - [7, 0, 0, stone]
+  - [7, 0, 1, stone]
+  - [7, 0, 2, stone]
   - [7, 0, 3, stone]
   - [7, 0, 4, stone]
   - [7, 0, 5, stone]
-  - [7, 0, 6, stone]
-  - [7, 0, 7, stone]
   - [7, 0, 8, stone]
-  - [7, 0, 9, stone]
-  - [7, 0, 10, stone]
   - [7, 0, 11, stone]
   - [7, 0, 12, stone]
-  - [7, 0, 13, stone]
-  - [7, 0, 14, stone]
-  - [7, 0, 15, stone]
-  - [7, 0, 16, stone]
-  - [7, 0, 17, stone]
-  - [7, 0, 18, stone]
-  - [7, 0, 20, stone]
-  - [7, 0, 21, stone]
-  - [7, 0, 22, stone]
-  - [7, 1, 3, 'redstone_wire[east=none,north=side,power=9,south=side,west=none]']
-  - [7, 1, 4, 'redstone_wire[east=none,north=side,power=10,south=side,west=none]']
-  - [7, 1, 5, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [7, 1, 6, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [7, 1, 7, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [7, 1, 8, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [7, 1, 9, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [7, 1, 10, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [7, 1, 11, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [7, 1, 12, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [7, 1, 13, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [7, 1, 14, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [7, 1, 15, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [7, 1, 16, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [7, 1, 17, 'repeater[delay=1,facing=north,locked=false,powered=true]']
-  - [7, 1, 18, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [7, 1, 19, stone]
-  - [7, 1, 20, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
-  - [7, 1, 21, 'repeater[delay=1,facing=north,locked=false,powered=false]']
-  - [7, 1, 22, 'redstone_wire[east=up,north=side,power=0,south=none,west=none]']
-  - [7, 2, 0, stone]
-  - [7, 2, 2, stone]
-  - [7, 2, 3, 'redstone_wall_torch[facing=south,lit=false]']
-  - [7, 2, 4, stone]
-  - [7, 2, 6, stone]
-  - [7, 2, 8, stone]
-  - [7, 2, 9, 'redstone_wall_torch[facing=south,lit=true]']
-  - [7, 2, 10, stone]
-  - [7, 2, 14, stone]
-  - [7, 2, 15, 'redstone_wall_torch[facing=south,lit=true]']
-  - [7, 3, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
-  - [7, 3, 2, 'redstone_wire[east=side,north=none,power=14,south=none,west=side]']
-  - [7, 3, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [7, 3, 6, 'redstone_wire[east=side,north=none,power=14,south=none,west=side]']
-  - [7, 3, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [7, 3, 10, 'redstone_wire[east=side,north=none,power=14,south=none,west=side]']
-  - [7, 3, 14, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [7, 3, 16, stone]
-  - [7, 4, 1, stone]
-  - [7, 4, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [7, 5, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [7, 6, 0, stone]
-  - [7, 7, 0, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
-  - [7, 7, 1, 'redstone_wall_torch[facing=east,lit=false]']
-  - [7, 8, 2, stone]
-  - [7, 8, 4, stone]
-  - [7, 8, 6, stone]
-  - [7, 8, 10, stone]
-  - [7, 8, 12, stone]
-  - [7, 8, 14, stone]
-  - [7, 8, 16, stone]
-  - [7, 8, 18, stone]
-  - [7, 8, 20, stone]
-  - [7, 9, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [7, 9, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [7, 9, 6, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [7, 9, 10, 'redstone_wire[east=side,north=none,power=12,south=none,west=side]']
-  - [7, 9, 12, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [7, 9, 14, 'redstone_wire[east=side,north=none,power=12,south=none,west=side]']
-  - [7, 9, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [7, 9, 18, 'redstone_wire[east=side,north=none,power=12,south=none,west=side]']
-  - [7, 9, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [8, 0, 20, stone]
-  - [8, 1, 19, 'redstone_wall_torch[facing=west,lit=false]']
-  - [8, 1, 20, 'redstone_wire[east=side,north=side,power=0,south=none,west=side]']
-  - [8, 1, 22, stone]
-  - [8, 2, 0, stone]
-  - [8, 2, 1, 'redstone_wall_torch[facing=south,lit=true]']
-  - [8, 2, 2, stone]
-  - [8, 2, 4, stone]
-  - [8, 2, 5, 'redstone_wall_torch[facing=south,lit=true]']
-  - [8, 2, 6, stone]
-  - [8, 2, 8, stone]
-  - [8, 2, 9, 'redstone_wall_torch[facing=south,lit=true]']
-  - [8, 2, 10, stone]
-  - [8, 2, 22, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
-  - [8, 3, 0, 'lever[face=floor,facing=east,powered=false]']
-  - [8, 3, 1, stone]
-  - [8, 3, 2, 'redstone_wire[east=side,north=none,power=15,south=none,west=side]']
-  - [8, 3, 4, 'lever[face=floor,facing=east,powered=false]']
-  - [8, 3, 5, stone]
-  - [8, 3, 6, 'redstone_wire[east=side,north=none,power=15,south=none,west=side]']
-  - [8, 3, 8, 'lever[face=floor,facing=east,powered=false]']
-  - [8, 3, 9, stone]
-  - [8, 3, 10, 'redstone_wire[east=side,north=none,power=15,south=none,west=side]']
-  - [8, 3, 16, stone]
-  - [8, 4, 1, stone]
-  - [8, 4, 16, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
-  - [8, 5, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [8, 6, 2, stone]
-  - [8, 6, 3, stone]
-  - [8, 6, 4, stone]
-  - [8, 6, 5, stone]
-  - [8, 6, 6, stone]
-  - [8, 6, 7, stone]
-  - [8, 6, 8, stone]
-  - [8, 6, 9, stone]
-  - [8, 6, 10, stone]
-  - [8, 6, 11, stone]
-  - [8, 6, 12, stone]
-  - [8, 6, 13, stone]
-  - [8, 6, 14, stone]
-  - [8, 6, 15, stone]
-  - [8, 6, 16, stone]
-  - [8, 6, 17, stone]
-  - [8, 7, 0, 'redstone_wall_torch[facing=north,lit=false]']
-  - [8, 7, 1, stone]
-  - [8, 7, 2, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [8, 7, 3, 'repeater[delay=1,facing=south,locked=false,powered=true]']
-  - [8, 7, 4, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [8, 7, 5, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [8, 7, 6, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [8, 7, 7, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [8, 7, 8, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [8, 7, 9, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [8, 7, 10, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [8, 7, 11, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [8, 7, 12, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [8, 7, 13, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [8, 7, 14, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [8, 7, 15, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [8, 7, 16, 'redstone_wire[east=none,north=side,power=10,south=side,west=none]']
-  - [8, 7, 17, 'redstone_wire[east=none,north=side,power=9,south=side,west=none]']
-  - [8, 8, 2, stone]
-  - [8, 8, 4, stone]
-  - [8, 8, 6, stone]
-  - [8, 8, 7, 'redstone_wall_torch[facing=north,lit=true]']
-  - [8, 8, 8, stone]
-  - [8, 8, 10, stone]
-  - [8, 8, 11, 'redstone_wall_torch[facing=north,lit=true]']
-  - [8, 8, 12, stone]
-  - [8, 8, 13, 'redstone_wall_torch[facing=north,lit=false]']
-  - [8, 8, 14, stone]
-  - [8, 8, 16, stone]
-  - [8, 8, 17, 'redstone_wall_torch[facing=north,lit=false]']
-  - [8, 8, 18, stone]
-  - [8, 8, 20, stone]
-  - [8, 9, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [8, 9, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [8, 9, 6, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [8, 9, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [8, 9, 10, 'redstone_wire[east=side,north=none,power=13,south=none,west=side]']
-  - [8, 9, 12, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [8, 9, 14, 'redstone_wire[east=side,north=none,power=13,south=none,west=side]']
-  - [8, 9, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [8, 9, 18, 'redstone_wire[east=side,north=none,power=13,south=none,west=side]']
-  - [8, 9, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [7, 1, 0, 'redstone_wire[east=up,north=none,power=0,south=side,west=none]']
+  - [7, 1, 1, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [7, 1, 2, 'redstone_wire[east=side,north=side,power=0,south=side,west=none]']
+  - [7, 1, 3, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [7, 1, 4, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [7, 1, 5, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [7, 1, 8, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [7, 1, 11, 'comparator[facing=west,mode=subtract,powered=false]']
+  - [7, 1, 12, 'repeater[delay=1,facing=south,locked=false,powered=true]']
+  - [7, 1, 13, 'redstone_wall_torch[facing=north,lit=true]']
+  - [7, 1, 14, stone]
+  - [7, 3, 0, stone]
+  - [7, 4, 0, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
+  - [7, 8, 7, stone]
+  - [7, 9, 7, 'repeater[delay=1,facing=west,locked=false,powered=false]']
+  - [8, 0, 2, stone]
+  - [8, 0, 5, stone]
+  - [8, 0, 6, stone]
+  - [8, 0, 7, stone]
+  - [8, 0, 9, stone]
+  - [8, 0, 10, stone]
+  - [8, 0, 11, stone]
+  - [8, 0, 14, stone]
+  - [8, 1, 0, stone]
+  - [8, 1, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [8, 1, 5, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
+  - [8, 1, 6, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 1, 7, 'comparator[facing=north,mode=subtract,powered=false]']
+  - [8, 1, 8, stone]
+  - [8, 1, 9, 'comparator[facing=south,mode=subtract,powered=false]']
+  - [8, 1, 10, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 1, 11, 'redstone_wire[east=side,north=side,power=0,south=none,west=side]']
+  - [8, 1, 14, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [8, 1, 16, stone]
+  - [8, 2, 0, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
+  - [8, 2, 15, stone]
+  - [8, 2, 16, 'redstone_wire[east=side,north=up,power=0,south=none,west=none]']
+  - [8, 3, 14, stone]
+  - [8, 3, 15, 'redstone_wire[east=none,north=up,power=0,south=side,west=none]']
+  - [8, 4, 0, stone]
+  - [8, 4, 13, stone]
+  - [8, 4, 14, 'redstone_wire[east=none,north=up,power=0,south=side,west=none]']
+  - [8, 5, 0, 'redstone_wire[east=none,north=none,power=0,south=up,west=side]']
+  - [8, 5, 1, stone]
+  - [8, 5, 2, stone]
+  - [8, 5, 3, stone]
+  - [8, 5, 4, stone]
+  - [8, 5, 5, stone]
+  - [8, 5, 6, stone]
+  - [8, 5, 7, stone]
+  - [8, 5, 8, stone]
+  - [8, 5, 9, stone]
+  - [8, 5, 10, stone]
+  - [8, 5, 11, stone]
+  - [8, 5, 12, stone]
+  - [8, 5, 13, 'redstone_wire[east=none,north=up,power=0,south=side,west=none]']
+  - [8, 6, 1, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 6, 2, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 6, 3, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 6, 4, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 6, 5, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 6, 6, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 6, 7, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 6, 8, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 6, 9, 'repeater[delay=1,facing=north,locked=false,powered=false]']
+  - [8, 6, 10, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 6, 11, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 6, 12, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [8, 8, 7, stone]
+  - [8, 9, 7, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [9, 0, 4, stone]
   - [9, 0, 5, stone]
-  - [9, 0, 6, stone]
   - [9, 0, 7, stone]
-  - [9, 0, 8, stone]
   - [9, 0, 9, stone]
-  - [9, 0, 10, stone]
   - [9, 0, 11, stone]
   - [9, 0, 12, stone]
   - [9, 0, 13, stone]
   - [9, 0, 14, stone]
   - [9, 0, 15, stone]
   - [9, 0, 16, stone]
-  - [9, 0, 17, stone]
-  - [9, 0, 18, stone]
-  - [9, 0, 20, stone]
-  - [9, 1, 5, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [9, 1, 6, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [9, 1, 7, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [9, 1, 8, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [9, 1, 9, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [9, 1, 10, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [9, 1, 11, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [9, 1, 12, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [9, 1, 13, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [9, 1, 14, 'redstone_wire[east=none,north=side,power=10,south=side,west=none]']
-  - [9, 1, 15, 'redstone_wire[east=none,north=side,power=9,south=side,west=none]']
-  - [9, 1, 16, 'redstone_wire[east=none,north=side,power=8,south=side,west=none]']
-  - [9, 1, 17, 'redstone_wire[east=none,north=side,power=7,south=side,west=none]']
-  - [9, 1, 18, 'redstone_wire[east=none,north=side,power=6,south=side,west=none]']
-  - [9, 1, 19, stone]
-  - [9, 1, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [9, 1, 2, stone]
+  - [9, 1, 3, 'redstone_wall_torch[facing=south,lit=true]']
+  - [9, 1, 4, 'repeater[delay=1,facing=north,locked=false,powered=true]']
+  - [9, 1, 5, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [9, 1, 7, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
+  - [9, 1, 9, 'repeater[delay=1,facing=east,locked=false,powered=true]']
+  - [9, 1, 11, 'comparator[facing=east,mode=subtract,powered=false]']
+  - [9, 1, 12, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [9, 1, 13, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [9, 1, 14, 'redstone_wire[east=up,north=side,power=0,south=side,west=side]']
+  - [9, 1, 15, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [9, 1, 16, 'redstone_wire[east=none,north=side,power=0,south=none,west=up]']
   - [9, 2, 0, stone]
-  - [9, 2, 4, stone]
-  - [9, 2, 5, 'redstone_wall_torch[facing=south,lit=true]']
-  - [9, 2, 6, stone]
-  - [9, 2, 8, stone]
-  - [9, 2, 9, 'redstone_wall_torch[facing=south,lit=true]']
-  - [9, 2, 10, stone]
-  - [9, 2, 22, stone]
-  - [9, 3, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [9, 3, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [9, 3, 6, 'redstone_wire[east=side,north=none,power=14,south=none,west=side]']
-  - [9, 3, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [9, 3, 10, 'redstone_wire[east=side,north=none,power=14,south=none,west=side]']
-  - [9, 3, 22, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
-  - [9, 4, 1, stone]
-  - [9, 4, 16, stone]
-  - [9, 5, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [9, 5, 16, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
-  - [9, 8, 2, stone]
-  - [9, 8, 4, stone]
-  - [9, 8, 6, stone]
-  - [9, 8, 8, stone]
-  - [9, 8, 10, stone]
-  - [9, 8, 12, stone]
-  - [9, 8, 14, stone]
-  - [9, 8, 16, stone]
-  - [9, 8, 18, stone]
-  - [9, 8, 20, stone]
-  - [9, 9, 2, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [9, 9, 4, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [9, 9, 6, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [9, 9, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [9, 9, 10, 'redstone_wire[east=side,north=none,power=14,south=none,west=side]']
-  - [9, 9, 12, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [9, 9, 14, 'redstone_wire[east=side,north=none,power=14,south=none,west=side]']
-  - [9, 9, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [9, 9, 18, 'redstone_wire[east=side,north=none,power=14,south=none,west=side]']
-  - [9, 9, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [10, 0, 20, stone]
-  - [10, 1, 19, 'redstone_wall_torch[facing=west,lit=false]']
-  - [10, 1, 20, 'redstone_wire[east=side,north=side,power=0,south=none,west=side]']
-  - [10, 2, 0, stone]
-  - [10, 2, 6, stone]
-  - [10, 2, 8, stone]
-  - [10, 2, 10, stone]
-  - [10, 2, 16, stone]
-  - [10, 3, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [10, 3, 6, 'redstone_wire[east=side,north=none,power=13,south=none,west=side]']
-  - [10, 3, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [10, 3, 10, 'redstone_wire[east=side,north=none,power=13,south=none,west=side]']
-  - [10, 3, 16, 'lever[face=floor,facing=east,powered=false]']
-  - [10, 3, 22, stone]
-  - [10, 4, 1, stone]
-  - [10, 4, 22, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
-  - [10, 5, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [10, 5, 14, stone]
-  - [10, 5, 15, stone]
-  - [10, 5, 16, stone]
-  - [10, 6, 13, stone]
-  - [10, 6, 14, 'redstone_wire[east=none,north=up,power=0,south=side,west=none]']
-  - [10, 6, 15, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [10, 6, 16, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
-  - [10, 7, 13, 'redstone_wire[east=up,north=none,power=0,south=side,west=none]']
-  - [10, 8, 10, stone]
-  - [10, 8, 14, stone]
-  - [10, 8, 18, stone]
-  - [10, 9, 2, stone]
-  - [10, 9, 4, stone]
-  - [10, 9, 6, stone]
-  - [10, 9, 8, stone]
-  - [10, 9, 10, 'redstone_wire[east=none,north=none,power=15,south=side,west=side]']
-  - [10, 9, 11, 'redstone_wall_torch[facing=north,lit=true]']
-  - [10, 9, 12, stone]
-  - [10, 9, 14, 'redstone_wire[east=none,north=none,power=15,south=side,west=side]']
-  - [10, 9, 15, 'redstone_wall_torch[facing=north,lit=true]']
-  - [10, 9, 16, stone]
-  - [10, 9, 18, 'redstone_wire[east=none,north=none,power=15,south=side,west=side]']
-  - [10, 9, 19, 'redstone_wall_torch[facing=north,lit=true]']
-  - [10, 9, 20, stone]
-  - [11, 0, 1, stone]
-  - [11, 0, 2, stone]
-  - [11, 0, 3, stone]
-  - [11, 0, 4, stone]
-  - [11, 0, 5, stone]
-  - [11, 0, 6, stone]
+  - [9, 3, 0, 'redstone_wire[east=none,north=none,power=0,south=up,west=side]']
+  - [9, 3, 1, stone]
+  - [9, 3, 2, stone]
+  - [9, 3, 3, stone]
+  - [9, 3, 4, stone]
+  - [9, 3, 5, stone]
+  - [9, 3, 6, stone]
+  - [9, 3, 7, stone]
+  - [9, 3, 8, stone]
+  - [9, 3, 9, stone]
+  - [9, 4, 1, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [9, 4, 2, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [9, 4, 3, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [9, 4, 4, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [9, 4, 5, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [9, 4, 6, 'repeater[delay=1,facing=south,locked=false,powered=false]']
+  - [9, 4, 7, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [9, 4, 8, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [9, 4, 9, 'redstone_wire[east=side,north=side,power=0,south=none,west=none]']
+  - [9, 5, 8, stone]
+  - [9, 7, 7, stone]
+  - [9, 8, 7, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
+  - [10, 0, 5, stone]
+  - [10, 0, 7, stone]
+  - [10, 0, 11, stone]
+  - [10, 1, 5, 'lever[face=floor,facing=north,powered=false]']
+  - [10, 1, 7, 'repeater[delay=1,facing=east,locked=false,powered=false]']
+  - [10, 1, 9, 'redstone_wall_torch[facing=west,lit=true]']
+  - [10, 1, 11, 'lever[face=floor,facing=south,powered=false]']
+  - [10, 1, 14, stone]
+  - [10, 2, 13, stone]
+  - [10, 2, 14, 'redstone_wire[east=none,north=up,power=0,south=none,west=side]']
+  - [10, 3, 9, stone]
+  - [10, 3, 10, stone]
+  - [10, 3, 11, stone]
+  - [10, 3, 12, stone]
+  - [10, 3, 13, 'redstone_wire[east=none,north=up,power=0,south=side,west=none]']
+  - [10, 4, 8, stone]
+  - [10, 4, 9, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [10, 4, 10, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [10, 4, 11, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [10, 4, 12, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [10, 6, 7, stone]
+  - [10, 7, 7, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
   - [11, 0, 7, stone]
   - [11, 0, 8, stone]
-  - [11, 0, 9, stone]
-  - [11, 0, 10, stone]
-  - [11, 0, 11, stone]
-  - [11, 0, 12, stone]
-  - [11, 0, 13, stone]
-  - [11, 0, 14, stone]
-  - [11, 0, 15, stone]
-  - [11, 0, 16, stone]
-  - [11, 0, 17, stone]
-  - [11, 0, 18, stone]
-  - [11, 0, 20, stone]
-  - [11, 1, 1, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [11, 1, 2, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [11, 1, 3, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [11, 1, 4, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [11, 1, 5, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [11, 1, 6, 'redstone_wire[east=none,north=side,power=10,south=side,west=none]']
-  - [11, 1, 7, 'redstone_wire[east=none,north=side,power=9,south=side,west=none]']
-  - [11, 1, 8, 'redstone_wire[east=none,north=side,power=8,south=side,west=none]']
-  - [11, 1, 9, 'redstone_wire[east=none,north=side,power=7,south=side,west=none]']
-  - [11, 1, 10, 'redstone_wire[east=none,north=side,power=6,south=side,west=none]']
-  - [11, 1, 11, 'redstone_wire[east=none,north=side,power=5,south=side,west=none]']
-  - [11, 1, 12, 'redstone_wire[east=none,north=side,power=4,south=side,west=none]']
-  - [11, 1, 13, 'redstone_wire[east=none,north=side,power=3,south=side,west=none]']
-  - [11, 1, 14, 'redstone_wire[east=none,north=side,power=2,south=side,west=none]']
-  - [11, 1, 15, 'redstone_wire[east=none,north=side,power=1,south=side,west=none]']
-  - [11, 1, 16, 'repeater[delay=1,facing=north,locked=false,powered=true]']
-  - [11, 1, 17, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [11, 1, 18, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [11, 1, 19, stone]
-  - [11, 1, 20, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [11, 2, 0, stone]
-  - [11, 2, 1, 'redstone_wall_torch[facing=south,lit=true]']
-  - [11, 2, 6, stone]
-  - [11, 2, 7, 'redstone_wall_torch[facing=south,lit=false]']
-  - [11, 2, 8, stone]
-  - [11, 2, 10, stone]
-  - [11, 2, 11, 'redstone_wall_torch[facing=south,lit=false]']
-  - [11, 2, 16, stone]
-  - [11, 2, 17, 'redstone_wall_torch[facing=south,lit=true]']
-  - [11, 3, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [11, 3, 6, 'redstone_wire[east=side,north=none,power=12,south=none,west=side]']
-  - [11, 3, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [11, 3, 10, 'redstone_wire[east=side,north=none,power=12,south=none,west=side]']
-  - [11, 3, 16, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [11, 4, 1, stone]
-  - [11, 4, 22, stone]
-  - [11, 5, 1, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [11, 5, 22, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
-  - [11, 7, 13, stone]
-  - [11, 8, 12, stone]
-  - [11, 8, 13, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
-  - [11, 8, 16, stone]
-  - [11, 8, 20, stone]
-  - [11, 9, 2, 'lever[face=wall,facing=east,powered=false]']
-  - [11, 9, 4, 'lever[face=wall,facing=east,powered=false]']
-  - [11, 9, 6, 'lever[face=wall,facing=east,powered=false]']
-  - [11, 9, 8, 'lever[face=wall,facing=east,powered=false]']
-  - [11, 9, 12, 'repeater[delay=1,facing=east,locked=false,powered=false]']
-  - [11, 9, 16, 'repeater[delay=1,facing=east,locked=false,powered=false]']
-  - [11, 9, 20, 'repeater[delay=1,facing=east,locked=false,powered=false]']
-  - [12, 0, 20, stone]
-  - [12, 1, 19, 'redstone_wall_torch[facing=west,lit=false]']
-  - [12, 1, 20, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
-  - [12, 2, 0, stone]
-  - [12, 2, 8, stone]
-  - [12, 2, 18, stone]
-  - [12, 3, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [12, 3, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [12, 3, 18, 'lever[face=floor,facing=east,powered=false]']
-  - [12, 4, 1, stone]
-  - [12, 4, 2, stone]
-  - [12, 4, 3, stone]
-  - [12, 4, 4, stone]
-  - [12, 4, 5, stone]
-  - [12, 4, 6, stone]
+  - [11, 1, 7, 'redstone_wire[east=side,north=none,power=0,south=side,west=side]']
+  - [11, 1, 8, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
+  - [11, 1, 9, stone]
+  - [11, 5, 7, stone]
+  - [11, 6, 7, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
+  - [12, 0, 7, stone]
+  - [12, 1, 7, 'repeater[delay=1,facing=east,locked=false,powered=false]']
   - [12, 4, 7, stone]
-  - [12, 5, 1, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
-  - [12, 5, 2, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [12, 5, 3, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [12, 5, 4, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [12, 5, 5, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [12, 5, 6, 'repeater[delay=1,facing=north,locked=false,powered=false]']
-  - [12, 5, 7, 'redstone_wire[east=none,north=side,power=0,south=up,west=none]']
-  - [12, 5, 8, stone]
-  - [12, 5, 9, stone]
-  - [12, 5, 10, stone]
-  - [12, 5, 11, stone]
-  - [12, 5, 12, stone]
-  - [12, 5, 13, stone]
-  - [12, 5, 22, stone]
-  - [12, 6, 8, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [12, 6, 9, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [12, 6, 10, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [12, 6, 11, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [12, 6, 12, 'redstone_wire[east=none,north=side,power=0,south=side,west=none]']
-  - [12, 6, 13, 'redstone_wire[east=none,north=side,power=0,south=up,west=none]']
-  - [12, 6, 14, stone]
-  - [12, 6, 22, 'redstone_wire[east=up,north=none,power=0,south=none,west=side]']
-  - [12, 7, 14, 'redstone_wire[east=none,north=side,power=0,south=up,west=none]']
-  - [12, 7, 15, stone]
-  - [12, 8, 12, stone]
-  - [12, 8, 13, stone]
-  - [12, 8, 15, 'redstone_wire[east=none,north=side,power=0,south=up,west=none]']
-  - [12, 8, 16, stone]
-  - [12, 8, 20, stone]
-  - [12, 8, 21, stone]
-  - [12, 9, 12, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
-  - [12, 9, 13, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
-  - [12, 9, 16, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
-  - [12, 9, 20, 'repeater[delay=1,facing=east,locked=false,powered=false]']
-  - [12, 9, 21, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [13, 0, 1, stone]
-  - [13, 0, 2, stone]
-  - [13, 0, 3, stone]
-  - [13, 0, 4, stone]
-  - [13, 0, 5, stone]
+  - [12, 5, 7, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
   - [13, 0, 6, stone]
   - [13, 0, 7, stone]
-  - [13, 0, 8, stone]
-  - [13, 0, 9, stone]
-  - [13, 0, 10, stone]
-  - [13, 0, 11, stone]
-  - [13, 0, 12, stone]
-  - [13, 0, 13, stone]
-  - [13, 0, 14, stone]
-  - [13, 0, 15, stone]
-  - [13, 0, 16, stone]
-  - [13, 0, 17, stone]
-  - [13, 0, 18, stone]
-  - [13, 1, 1, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [13, 1, 2, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [13, 1, 3, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [13, 1, 4, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [13, 1, 5, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [13, 1, 6, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [13, 1, 7, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [13, 1, 8, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [13, 1, 9, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [13, 1, 10, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [13, 1, 11, 'redstone_wire[east=none,north=side,power=13,south=side,west=none]']
-  - [13, 1, 12, 'redstone_wire[east=none,north=side,power=12,south=side,west=none]']
-  - [13, 1, 13, 'redstone_wire[east=none,north=side,power=11,south=side,west=none]']
-  - [13, 1, 14, 'redstone_wire[east=none,north=side,power=10,south=side,west=none]']
-  - [13, 1, 15, 'redstone_wire[east=none,north=side,power=9,south=side,west=none]']
-  - [13, 1, 16, 'repeater[delay=1,facing=north,locked=false,powered=true]']
-  - [13, 1, 17, 'redstone_wire[east=none,north=side,power=15,south=side,west=none]']
-  - [13, 1, 18, 'redstone_wire[east=none,north=side,power=14,south=side,west=none]']
-  - [13, 1, 19, stone]
-  - [13, 2, 0, stone]
-  - [13, 2, 1, 'redstone_wall_torch[facing=south,lit=true]']
-  - [13, 2, 8, stone]
-  - [13, 2, 9, 'redstone_wall_torch[facing=south,lit=true]']
-  - [13, 2, 17, 'redstone_wall_torch[facing=north,lit=true]']
-  - [13, 2, 18, stone]
-  - [13, 3, 0, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [13, 3, 8, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [13, 3, 18, 'redstone_wire[east=side,north=none,power=0,south=none,west=side]']
-  - [13, 6, 22, stone]
-  - [13, 7, 21, stone]
-  - [13, 7, 22, 'redstone_wire[east=none,north=up,power=0,south=none,west=side]']
-  - [13, 8, 20, stone]
-  - [13, 8, 21, 'redstone_wire[east=none,north=up,power=0,south=side,west=up]']
-  - [13, 9, 20, 'redstone_wire[east=none,north=none,power=0,south=side,west=side]']
+  - [13, 1, 6, 'redstone_wire[east=up,north=none,power=0,south=side,west=none]']
+  - [13, 1, 7, 'redstone_wire[east=none,north=side,power=0,south=none,west=side]']
+  - [13, 3, 7, stone]
+  - [13, 4, 7, 'redstone_wire[east=side,north=none,power=0,south=none,west=up]']
+  - [14, 1, 6, stone]
+  - [14, 1, 7, stone]
+  - [14, 2, 6, 'redstone_wire[east=none,north=none,power=0,south=up,west=side]']
+  - [14, 2, 7, stone]
+  - [14, 3, 7, 'redstone_wire[east=none,north=side,power=0,south=none,west=up]']
+  block_entities:
+  - [2, 1, 8, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [3, 4, 5, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [3, 4, 11, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [4, 1, 8, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [4, 4, 7, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [4, 4, 9, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [5, 4, 5, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [5, 4, 11, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [7, 1, 5, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [7, 1, 11, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [8, 1, 7, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [8, 1, 9, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [9, 1, 5, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [9, 1, 11, '{id: "minecraft:comparator", OutputSignal: 0}']
 ticks: 81922
 inputs:
 - tick: 2
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 82
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 122
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 282
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 442
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 602
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 762
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 922
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 1042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1082
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 1122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 1202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1242
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 1282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 1362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1402
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 1442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 1522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1562
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 1602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 1682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1722
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 1762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 1842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1882
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 1922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 1962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 2002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2042
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 2082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 2162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2202
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 2242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 2322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2362
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 2402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 2482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2522
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 2562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 2642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2682
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 2722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 2802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2842
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 2882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 2922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 2962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3002
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 3042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 3122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3162
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 3202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 3282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3322
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 3362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 3442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3482
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 3522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 3602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3642
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 3682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 3762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3802
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 3842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 3922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 3962
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 4002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 4082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4122
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 4162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 4242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4282
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 4322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 4402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4442
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 4482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 4562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4602
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 4642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 4722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4762
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 4802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 4882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 4922
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 4962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 5042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5082
-  pos: [10, 3, 16]
+  pos: [6, 4, 11]
   action: use
 - tick: 5122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 5202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5242
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 5282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 5362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5402
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 5442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 5522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5562
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 5602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 5682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5722
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 5762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 5842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5882
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 5922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 5962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 6002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6042
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 6082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 6162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6202
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 6242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 6322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6362
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 6402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 6482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6522
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 6562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 6642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6682
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 6722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 6802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6842
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 6882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 6922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 6962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7002
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 7042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 7122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7162
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 7202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 7282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7322
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 7362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 7442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7482
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 7522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 7602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7642
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 7682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 7762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7802
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 7842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 7922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 7962
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 8002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 8082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8122
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 8162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 8242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8282
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 8322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 8402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8442
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 8482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 8562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8602
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 8642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 8722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8762
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 8802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 8882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 8922
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 8962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 9042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9082
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 9122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 9202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9242
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 9282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 9362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9402
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 9442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 9522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9562
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 9602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 9682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9722
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 9762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 9842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9882
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 9922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 9962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 10002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10042
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 10082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 10162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10202
-  pos: [12, 3, 18]
+  pos: [2, 4, 11]
   action: use
 - tick: 10242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 10322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10362
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 10402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 10482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10522
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 10562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 10642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10682
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 10722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 10802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10842
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 10882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 10922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 10962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11002
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 11042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 11122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11162
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 11202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 11282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11322
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 11362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 11442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11482
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 11522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 11602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11642
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 11682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 11762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11802
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 11842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 11922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 11962
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 12002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 12082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12122
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 12162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 12242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12282
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 12322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 12402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12442
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 12482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 12562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12602
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 12642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 12722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12762
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 12802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 12882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 12922
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 12962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 13042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13082
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 13122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 13202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13242
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 13282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 13362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13402
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 13442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 13522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13562
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 13602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 13682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13722
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 13762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 13842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13882
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 13922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 13962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 14002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14042
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 14082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 14162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14202
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 14242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 14322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14362
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 14402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 14482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14522
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 14562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 14642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14682
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 14722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 14802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14842
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 14882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 14922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 14962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15002
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 15042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 15122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15162
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 15202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 15282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15322
-  pos: [10, 3, 16]
+  pos: [6, 4, 11]
   action: use
 - tick: 15362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 15442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15482
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 15522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 15602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15642
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 15682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 15762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15802
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 15842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 15922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 15962
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 16002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 16082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16122
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 16162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 16242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16282
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 16322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 16402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16442
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 16482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 16562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16602
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 16642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 16722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16762
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 16802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 16882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 16922
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 16962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 17042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17082
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 17122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 17202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17242
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 17282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 17362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17402
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 17442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 17522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17562
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 17602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 17682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17722
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 17762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 17842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17882
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 17922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 17962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 18002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18042
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 18082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 18162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18202
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 18242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 18322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18362
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 18402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 18482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18522
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 18562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 18642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18682
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 18722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 18802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18842
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 18882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 18922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 18962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19002
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 19042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 19122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19162
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 19202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 19282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19322
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 19362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 19442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19482
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 19522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 19602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19642
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 19682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 19762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19802
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 19842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 19922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 19962
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 20002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 20082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20122
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 20162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 20242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20282
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 20322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 20402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20442
-  pos: [11, 9, 4]
+  pos: [2, 4, 5]
   action: use
 - tick: 20482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 20562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20602
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 20642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 20722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20762
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 20802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 20882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 20922
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 20962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 21042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21082
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 21122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 21202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21242
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 21282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 21362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21402
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 21442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 21522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21562
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 21602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 21682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21722
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 21762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 21842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21882
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 21922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 21962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 22002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22042
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 22082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 22162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22202
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 22242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 22322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22362
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 22402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 22482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22522
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 22562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 22642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22682
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 22722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 22802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22842
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 22882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 22922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 22962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23002
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 23042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 23122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23162
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 23202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 23282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23322
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 23362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 23442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23482
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 23522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 23602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23642
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 23682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 23762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23802
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 23842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 23922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 23962
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 24002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 24082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24122
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 24162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 24242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24282
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 24322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 24402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24442
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 24482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 24562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24602
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 24642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 24722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24762
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 24802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 24882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 24922
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 24962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 25042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25082
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 25122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 25202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25242
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 25282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 25362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25402
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 25442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 25522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25562
-  pos: [10, 3, 16]
+  pos: [6, 4, 11]
   action: use
 - tick: 25602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 25682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25722
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 25762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 25842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25882
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 25922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 25962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 26002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26042
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 26082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 26162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26202
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 26242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 26322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26362
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 26402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 26482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26522
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 26562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 26642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26682
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 26722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 26802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26842
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 26882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 26922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 26962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27002
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 27042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 27122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27162
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 27202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 27282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27322
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 27362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 27442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27482
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 27522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 27602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27642
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 27682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 27762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27802
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 27842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 27922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 27962
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 28002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 28082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28122
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 28162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 28242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28282
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 28322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 28402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28442
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 28482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 28562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28602
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 28642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 28722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28762
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 28802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 28882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 28922
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 28962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 29042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29082
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 29122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 29202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29242
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 29282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 29362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29402
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 29442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 29522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29562
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 29602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 29682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29722
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 29762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 29842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29882
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 29922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 29962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 30002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30042
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 30082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 30162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30202
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 30242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 30322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30362
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 30402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 30482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30522
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 30562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 30642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30682
-  pos: [12, 3, 18]
+  pos: [2, 4, 11]
   action: use
 - tick: 30722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 30802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30842
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 30882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 30922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 30962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31002
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 31042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 31122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31162
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 31202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 31282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31322
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 31362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 31442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31482
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 31522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 31602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31642
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 31682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 31762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31802
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 31842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 31922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 31962
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 32002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 32082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32122
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 32162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 32242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32282
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 32322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 32402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32442
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 32482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 32562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32602
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 32642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 32722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32762
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 32802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 32882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 32922
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 32962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 33042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33082
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 33122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 33202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33242
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 33282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 33362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33402
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 33442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 33522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33562
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 33602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 33682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33722
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 33762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 33842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33882
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 33922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 33962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 34002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34042
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 34082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 34162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34202
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 34242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 34322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34362
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 34402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 34482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34522
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 34562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 34642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34682
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 34722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 34802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34842
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 34882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 34922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 34962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35002
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 35042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 35122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35162
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 35202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 35282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35322
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 35362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 35442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35482
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 35522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 35602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35642
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 35682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 35762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35802
-  pos: [10, 3, 16]
+  pos: [6, 4, 11]
   action: use
 - tick: 35842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 35922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 35962
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 36002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 36082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36122
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 36162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 36242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36282
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 36322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 36402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36442
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 36482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 36562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36602
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 36642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 36722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36762
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 36802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 36882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 36922
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 36962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 37042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37082
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 37122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 37202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37242
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 37282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 37362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37402
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 37442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 37522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37562
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 37602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 37682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37722
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 37762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 37842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37882
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 37922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 37962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 38002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38042
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 38082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 38162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38202
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 38242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 38322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38362
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 38402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 38482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38522
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 38562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 38642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38682
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 38722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 38802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38842
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 38882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 38922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 38962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39002
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 39042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 39122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39162
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 39202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 39282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39322
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 39362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 39442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39482
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 39522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 39602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39642
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 39682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 39762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39802
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 39842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 39922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 39962
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 40002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 40082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40122
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 40162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 40242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40282
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 40322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 40402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40442
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 40482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 40562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40602
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 40642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 40722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40762
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 40802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 40882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 40922
-  pos: [11, 9, 2]
+  pos: [6, 4, 5]
   action: use
 - tick: 40962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 41042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41082
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 41122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 41202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41242
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 41282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 41362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41402
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 41442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 41522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41562
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 41602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 41682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41722
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 41762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 41842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41882
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 41922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 41962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 42002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42042
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 42082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 42162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42202
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 42242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 42322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42362
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 42402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 42482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42522
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 42562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 42642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42682
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 42722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 42802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42842
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 42882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 42922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 42962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43002
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 43042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 43122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43162
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 43202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 43282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43322
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 43362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 43442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43482
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 43522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 43602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43642
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 43682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 43762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43802
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 43842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 43922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 43962
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 44002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 44082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44122
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 44162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 44242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44282
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 44322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 44402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44442
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 44482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 44562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44602
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 44642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 44722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44762
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 44802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 44882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 44922
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 44962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 45042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45082
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 45122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 45202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45242
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 45282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 45362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45402
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 45442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 45522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45562
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 45602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 45682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45722
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 45762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 45842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45882
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 45922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 45962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 46002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46042
-  pos: [10, 3, 16]
+  pos: [6, 4, 11]
   action: use
 - tick: 46082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 46162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46202
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 46242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 46322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46362
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 46402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 46482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46522
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 46562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 46642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46682
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 46722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 46802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46842
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 46882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 46922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 46962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47002
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 47042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 47122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47162
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 47202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 47282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47322
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 47362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 47442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47482
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 47522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 47602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47642
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 47682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 47762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47802
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 47842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 47922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 47962
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 48002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 48082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48122
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 48162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 48242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48282
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 48322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 48402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48442
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 48482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 48562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48602
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 48642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 48722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48762
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 48802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 48882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 48922
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 48962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 49042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49082
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 49122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 49202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49242
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 49282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 49362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49402
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 49442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 49522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49562
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 49602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 49682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49722
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 49762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 49842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49882
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 49922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 49962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 50002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50042
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 50082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 50162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50202
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 50242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 50322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50362
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 50402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 50482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50522
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 50562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 50642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50682
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 50722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 50802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50842
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 50882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 50922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 50962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51002
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 51042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 51122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51162
-  pos: [12, 3, 18]
+  pos: [2, 4, 11]
   action: use
 - tick: 51202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 51282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51322
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 51362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 51442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51482
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 51522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 51602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51642
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 51682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 51762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51802
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 51842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 51922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 51962
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 52002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 52082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52122
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 52162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 52242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52282
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 52322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 52402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52442
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 52482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 52562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52602
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 52642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 52722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52762
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 52802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 52882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 52922
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 52962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 53042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53082
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 53122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 53202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53242
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 53282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 53362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53402
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 53442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 53522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53562
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 53602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 53682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53722
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 53762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 53842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53882
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 53922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 53962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 54002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54042
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 54082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 54162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54202
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 54242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 54322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54362
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 54402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 54482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54522
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 54562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 54642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54682
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 54722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 54802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54842
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 54882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 54922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 54962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55002
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 55042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 55122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55162
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 55202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 55282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55322
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 55362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 55442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55482
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 55522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 55602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55642
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 55682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 55762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55802
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 55842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 55922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 55962
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 56002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 56082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56122
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 56162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 56242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56282
-  pos: [10, 3, 16]
+  pos: [6, 4, 11]
   action: use
 - tick: 56322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 56402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56442
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 56482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 56562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56602
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 56642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 56722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56762
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 56802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 56882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 56922
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 56962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 57042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57082
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 57122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 57202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57242
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 57282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 57362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57402
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 57442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 57522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57562
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 57602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 57682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57722
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 57762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 57842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57882
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 57922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 57962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 58002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58042
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 58082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 58162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58202
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 58242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 58322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58362
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 58402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 58482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58522
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 58562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 58642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58682
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 58722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 58802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58842
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 58882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 58922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 58962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59002
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 59042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 59122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59162
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 59202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 59282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59322
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 59362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 59442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59482
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 59522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 59602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59642
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 59682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 59762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59802
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 59842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 59922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 59962
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 60002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 60082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60122
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 60162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 60242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60282
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 60322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 60402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60442
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 60482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 60562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60602
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 60642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 60722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60762
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 60802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 60882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 60922
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 60962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 61042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61082
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 61122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 61202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61242
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 61282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 61362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61402
-  pos: [11, 9, 4]
+  pos: [2, 4, 5]
   action: use
 - tick: 61442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 61522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61562
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 61602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 61682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61722
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 61762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 61842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61882
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 61922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 61962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 62002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62042
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 62082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 62162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62202
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 62242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 62322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62362
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 62402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 62482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62522
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 62562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 62642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62682
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 62722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 62802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62842
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 62882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 62922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 62962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63002
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 63042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 63122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63162
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 63202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 63282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63322
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 63362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 63442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63482
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 63522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 63602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63642
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 63682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 63762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63802
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 63842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 63922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 63962
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 64002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 64082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64122
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 64162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 64242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64282
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 64322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 64402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64442
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 64482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 64562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64602
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 64642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 64722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64762
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 64802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 64882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 64922
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 64962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 65042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65082
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 65122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 65202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65242
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 65282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 65362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65402
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 65442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 65522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65562
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 65602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 65682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65722
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 65762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 65842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65882
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 65922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 65962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 66002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66042
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 66082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 66162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66202
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 66242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 66322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66362
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 66402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 66482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66522
-  pos: [10, 3, 16]
+  pos: [6, 4, 11]
   action: use
 - tick: 66562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 66642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66682
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 66722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 66802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66842
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 66882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 66922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 66962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67002
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 67042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 67122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67162
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 67202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 67282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67322
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 67362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 67442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67482
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 67522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 67602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67642
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 67682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 67762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67802
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 67842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 67922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 67962
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 68002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 68082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68122
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 68162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 68242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68282
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 68322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 68402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68442
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 68482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 68562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68602
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 68642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 68722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68762
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 68802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 68882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 68922
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 68962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 69042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69082
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 69122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 69202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69242
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 69282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 69362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69402
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 69442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 69522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69562
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 69602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 69682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69722
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 69762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 69842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69882
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 69922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 69962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 70002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70042
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 70082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 70162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70202
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 70242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 70322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70362
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 70402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 70482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70522
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 70562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 70642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70682
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 70722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 70802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70842
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 70882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 70922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 70962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71002
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 71042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 71122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71162
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 71202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 71282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71322
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 71362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 71442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71482
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 71522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 71602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71642
-  pos: [12, 3, 18]
+  pos: [2, 4, 11]
   action: use
 - tick: 71682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 71762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71802
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 71842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 71922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 71962
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 72002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 72082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72122
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 72162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 72242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72282
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 72322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 72402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72442
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 72482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 72562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72602
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 72642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 72722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72762
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 72802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 72882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 72922
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 72962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 73042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73082
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 73122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 73202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73242
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 73282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 73362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73402
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 73442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 73522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73562
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 73602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 73682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73722
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 73762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 73842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73882
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 73922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 73962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 74002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74042
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 74082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 74162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74202
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 74242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 74322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74362
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 74402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 74482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74522
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 74562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 74642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74682
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 74722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 74802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74842
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 74882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 74922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 74962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75002
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 75042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 75122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75162
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 75202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 75282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75322
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 75362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 75442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75482
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 75522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 75602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75642
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 75682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 75762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75802
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 75842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 75922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 75962
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 76002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 76082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76122
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 76162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 76242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76282
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 76322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 76402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76442
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 76482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 76562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76602
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 76642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 76722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76762
-  pos: [10, 3, 16]
+  pos: [6, 4, 11]
   action: use
 - tick: 76802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 76882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 76922
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 76962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 77042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77082
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 77122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 77202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77242
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 77282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 77362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77402
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 77442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 77522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77562
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 77602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 77682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77722
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 77762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 77842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77882
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 77922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 77962
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 78002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78042
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 78082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78122
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 78162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78202
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 78242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78282
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 78322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78362
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 78402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78442
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 78482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78522
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 78562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78602
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 78642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78682
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 78722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78762
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 78802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78842
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 78882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 78922
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 78962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79002
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 79042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79082
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 79122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79162
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 79202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79242
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 79282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79322
-  pos: [11, 9, 6]
+  pos: [6, 1, 11]
   action: use
 - tick: 79362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79402
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 79442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79482
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 79522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79562
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 79602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79642
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 79682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79722
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 79762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79802
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 79842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79882
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 79922
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 79962
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 80002
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80042
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 80082
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80122
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 80162
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80202
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 80242
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80282
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 80322
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80362
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 80402
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80442
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 80482
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80522
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 80562
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80602
-  pos: [11, 9, 8]
+  pos: [10, 1, 11]
   action: use
 - tick: 80642
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80682
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 80722
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80762
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 80802
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80842
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 80882
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 80922
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 80962
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81002
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 81042
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81082
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 81122
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81162
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 81202
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81242
-  pos: [6, 3, 14]
+  pos: [10, 1, 5]
   action: use
 - tick: 81282
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81322
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 81362
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81402
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 81442
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81482
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 81522
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81562
-  pos: [6, 3, 12]
+  pos: [6, 1, 5]
   action: use
 - tick: 81602
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81642
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 81682
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81722
-  pos: [8, 3, 8]
+  pos: [3, 4, 2]
   action: use
 - tick: 81762
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81802
-  pos: [8, 3, 4]
+  pos: [1, 4, 9]
   action: use
 - tick: 81842
-  pos: [8, 3, 0]
+  pos: [4, 1, 11]
   action: use
 - tick: 81882
-  pos: [11, 9, 2]
+  pos: [6, 4, 5]
   action: use
 probes:
-  s2: [8, 3, 0]
-  s1: [8, 3, 4]
-  s0: [8, 3, 8]
-  d0: [6, 3, 12]
-  d1: [6, 3, 14]
-  d2: [11, 9, 8]
-  d3: [11, 9, 6]
-  d4: [10, 3, 16]
-  d5: [12, 3, 18]
-  d6: [11, 9, 4]
-  d7: [11, 9, 2]
-  y: [5, 6, 0]
+  s2: [4, 1, 11]
+  s1: [1, 4, 9]
+  s0: [3, 4, 2]
+  d0: [6, 1, 5]
+  d1: [10, 1, 5]
+  d2: [10, 1, 11]
+  d3: [6, 1, 11]
+  d4: [6, 4, 11]
+  d5: [2, 4, 11]
+  d6: [2, 4, 5]
+  d7: [6, 4, 5]
+  y: [3, 1, 8]
