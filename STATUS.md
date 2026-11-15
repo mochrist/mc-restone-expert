@@ -22,7 +22,7 @@ Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). N�
 | **Assistent in der GUI: mit echtem Schlüssel ausprobieren** (Session 20 gebaut, nur mit gemocktem Client getestet). Prüfen: Ideen-Knöpfe (Codeschloss-Tür, Türklingel, Alarmanlage, Leuchtturm) ergeben baubare Vorgaben, Antworten laienverständlich, Systemprompt in `gui/assistant.py` nachschärfen; danach Antworten streamen statt „denkt nach …“, Abbrechen einer Runde, Chat überlebt kein Neuladen der Seite | Fable/Opus | API-Schlüssel des Nutzers |
 | Danach: weitere Ein-/Ausgänge (Druckplatte, Tageslichtsensor als Auslöser; `output` auch in den Wunsch-Karten der GUI anbieten) und ein Katalog fertiger Bauwerke (Kolbentür, Itemsortierer) | Opus | Assistent |
 | M4: nicht-disjunkte Zerlegung auch für mehrere Ausgänge (`shared_splits` mit gemeinsamen Eingängen, z. B. Carry-Lookahead, Decoder/Demux über 8 Eingänge); danach Topologie per SAT/SMT (`docs/m4-search-and-performance.md`) | Opus | – |
-| M4: Größe der nicht-disjunkten Entwürfe (mux8: 782 Blöcke aus PLA → ansteuerbare PLA): Mux-Vorlagen als Teile (`mux2-comparator` verbindet sich als G bisher gar nicht, `chains` liefert 0 Layouts), Kaskade aus 2:1-Muxen | Opus | – |
+| M4: Größe der nicht-disjunkten Entwürfe (mux8: 782 Blöcke aus PLA → ansteuerbare PLA): Mux-Vorlagen als Teile (`mux2-comparator` verbindet sich als G doch: 32 von 40 Layouts; als H am Auswahleingang s nie; Plan in Session 20b), Kaskade aus 2:1-Muxen | Opus | – |
 | M6: GUI weiter (Nutzerrückmeldung abwarten; Nutzer ist kein Redstone-Profi: einfache Sprache, wenig Fachbegriffe). Bekannt: Berichte von `rsx explain`/`redesign` sind noch fachsprachlich (Pulsfilter, Komparator …), eine laienverständliche Zusammenfassung fehlt; Bauanleitung nur als Text exportierbar (kein Bild/PDF je Ebene); `rsx oracle --dump-blocks` gibt es nur auf der Kommandozeile; größere Entwürfe flüssig darstellen | Sonnet | Nutzer |
 
 ## Verlauf
@@ -41,6 +41,20 @@ Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). N�
   Assistenten gestartete Suchen laufen wie im Reiter „Entwerfen“ live in der Ansicht (`followJob`).
 - Tests: `tests/gui/test_assistant.py` (ohne Schlüssel klare Meldung, Schlüsselablage, ganze Schleife mit gemocktem
   Client inkl. echter Entwurfssuche). `tests/gui` und `tests/design` grün. Mit echtem Schlüssel noch nicht gelaufen.
+
+### Session 20b (2026-11-15): M4-Agent (Opus, Worktree), auf Wunsch des Nutzers vorzeitig beendet
+
+- Keine Code-Änderung, nur Analyse. Befund zu `mux2-comparator`: als G verbindet er sich doch
+  (`chains(mux2, 0, buffer-dust, 0)`: 32 von 40 Layouts korrekt, Lampe → Staub nach Süden), als H an den
+  Dateneingängen a/b ebenfalls (23 bzw. 24 von 40), am Auswahleingang s nie (0 von 40).
+- Plan für kleinere Multiplexer (offen): Shannon-Zerlegung f = mux2(s, f|s=0, f|s=1) mit zwei G-Teilen, wenn
+  die Kofaktoren höchstens `MAX_COMMON` gemeinsame Eingänge haben: G0 → mux2.a (`chains`), G1 → Eingang b der
+  Komposition (`chains` mit `in_index`), gemeinsame Hebel per `_tapped`. mux8 wäre dann 7 × mux2 (je 19 Blöcke)
+  plus Leitungen statt 782 Blöcke; Tiefe 2 reicht (mux8 → mux4 → mux2-Vorlage).
+- Plan für mehrere Ausgänge mit gemeinsamen Eingängen (offen): `shared_splits` mit C wie in `_common_split`
+  (je Belegung von C höchstens zwei Mehrausgangs-Spalten), Verbindung wie `_nondisjoint`. Gutes Beispiel:
+  Addierer/Subtrahierer (op, a0..a3, b0..b3; 9 Eingänge), op ist in jeder Stufe gemeinsam. Carry-Lookahead ist
+  als Funktion ohnehin Ripple-zerlegbar und braucht das nicht.
 
 ### Session 19 (2026-11-14): Oberfläche, „alle Funktionen auch in der GUI“ (Fable-5.2-Hauptsession, keine Agents)
 
