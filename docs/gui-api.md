@@ -15,6 +15,7 @@ höchstens 16 gleichzeitig (die älteste fällt weg).
 | Material, Bauen | `src/redstone/gui/materials.py` | `materials(grid)`, `build_order(grid)` |
 | Aufzeichnung | `src/redstone/design/observe.py` | Einzelbilder aus Komposition und Kompaktieren |
 | Übrige Befehle | `src/redstone/gui/tools.py` | Analyse, Text-Ansicht, Szenario-Lauf, Export als Funktionen für den Server |
+| Assistent | `src/redstone/gui/assistant.py` | Chat mit Claude (`claude-opus-5-5`, Beta-Endpunkt mit `fallbacks="default"`, eigene Werkzeug-Schleife): Entwurf suchen, Schaltung erklären, verkleinern, Beispiele suchen/laden |
 | Oberfläche | `src/redstone/gui/static/` | `index.html`, `app.js`, `style.css`, weitere ES-Module (`docs.js` Berichte, `speceditor.js` Editor) |
 
 Die Oberfläche lädt three.js als ES-Modul per Import-Map von `https://unpkg.com/three@0.160.0/` (inkl.
@@ -73,6 +74,10 @@ Alle Antworten sind JSON; Fehler als HTTP 4xx/5xx mit `{"error": "<deutscher Tex
 | `POST /api/dump` | Quelle plus `layers` (Liste), `components` (Standard an), `states` | `{"name": N, "text": "…"}` (`rsx dump`) |
 | `POST /api/scenario` | `{"path": P}` | Szenario-Lauf (unten; `rsx sim --diff`) |
 | `POST /api/oracle` | `{"path": P, "golden": false}` | `{"job": id}`; Aufnahme im Spiel, höchstens eine zugleich (sonst 409) |
+| `GET /api/assistant` | – | `{"configured": bool, "source": "env"\|"file"\|null, "key_file": P}` |
+| `POST /api/assistant/key` | `{"key": "sk-…"}` (leer: löschen) | wie oben; Schlüssel nach `~/.rsx/anthropic_api_key`, nie ins Repo |
+| `POST /api/chat` | `{"chat": id?, "message": T, "current": {path}\|{job}\|null}` | `{"chat": id, "since": k}`; Runde läuft im Thread, 409 solange die vorige läuft |
+| `GET /api/chat/<id>?since=k` | – | `{"busy": bool, "events": [{"i", "type": status\|job\|load\|text\|error, …}]}`; `job`: `{job, path, title}` (Suche verfolgen), `load`: `{path, group}` (Datei öffnen) |
 | `GET /api/export?path=P\|job=J&format=F` | – | Datei (`Content-Disposition: attachment`) |
 
 `changed` enthält alle Positionen, deren Zustand sich gegenüber der letzten Antwort dieser Sitzung geändert hat

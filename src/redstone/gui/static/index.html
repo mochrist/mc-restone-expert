@@ -124,6 +124,7 @@
     <button data-task="sim" title="Hebel umlegen und zusehen, was passiert"><i data-icon="zap"></i>Ausprobieren</button>
     <button data-task="analyze" title="Herausfinden, was die Schaltung tut"><i data-icon="eye"></i>Verstehen</button>
     <button data-task="design" title="Neue oder kleinere Schaltung suchen lassen"><i data-icon="sparkles"></i>Entwerfen</button>
+    <button data-task="chat" title="In eigenen Worten sagen, was du brauchst"><i data-icon="chat"></i>Assistent</button>
   </nav>
 
   <section class="task" id="taskBuild">
@@ -228,6 +229,19 @@
     </details>
     <div class="docbar"><div class="seg" id="deDocTabs"></div><span class="spacer"></span><button id="deDocSave" class="ghost" hidden><i data-icon="download"></i>Speichern</button></div>
     <div class="doc" id="deDocBody"></div>
+  </section>
+  <section class="task" id="taskChat" hidden>
+    <div id="chatKey" hidden>
+      <p class="hint">Der Assistent nutzt Claude von Anthropic. Dafür braucht es einen eigenen API-Schlüssel (von console.anthropic.com). Er wird nur auf diesem Rechner gespeichert: <span class="mono" id="chatKeyFile">~/.rsx</span>.</p>
+      <div class="row"><input id="chatKeyIn" type="password" placeholder="sk-ant-…" autocomplete="off"><button id="chatKeySave" class="primary">Speichern</button></div>
+    </div>
+    <p class="hint">Beschreibe in eigenen Worten, was deine Schaltung tun soll. Der Assistent sucht einen geprüften Bauplan, zeigt ihn an und erklärt ihn.</p>
+    <div class="chips ideas" id="chatIdeas"></div>
+    <div id="chatLog"></div>
+    <div class="chatbox">
+      <textarea id="chatIn" rows="3" placeholder="z. B. Eine Tür, die nur aufgeht, wenn zwei bestimmte Hebel an sind"></textarea>
+      <button id="chatSend" class="primary">Senden</button>
+    </div>
   </section>
 </aside>
 

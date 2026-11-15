@@ -36,7 +36,7 @@ body.nolib #lib { display: none; }
 .ic { width: 16px; height: 16px; flex: none; }
 
 /* --- controls ------------------------------------------------------------------------------------------------- */
-button, select, textarea, input[type=number], input[type=search], input[type=text] {
+button, select, textarea, input[type=number], input[type=search], input[type=text], input[type=password] {
   font: inherit; color: var(--fg); background: var(--raise); border: 1px solid var(--border);
   border-radius: var(--r-ctl); padding: 6px 12px; outline: none; transition: background .12s, border-color .12s, color .12s, transform .06s;
 }
@@ -53,7 +53,7 @@ button.icon, summary.icon { padding: 7px; border-radius: 10px; }
 button.round { width: 34px; height: 34px; padding: 0; }
 button.big { width: 100%; padding: 12px; font-size: 15px; margin-top: 16px; border-radius: 14px; }
 :is(button, select, input, textarea, summary):focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-input[type=text], input[type=search], input[type=number], textarea, select { background: var(--bg); }
+input[type=text], input[type=search], input[type=number], input[type=password], textarea, select { background: var(--bg); }
 select { border-radius: var(--r-ctl); padding-right: 8px; }
 input[type=number] { width: 84px; }
 input[type=range] { accent-color: var(--accent); vertical-align: middle; height: 18px; }
@@ -283,3 +283,17 @@ footer:has(#status.err) .dot { background: var(--err); box-shadow: 0 0 8px var(-
   aside#work { min-height: 60vh; }
   .viewhint { display: none; }
 }
+
+/* --- assistant ------------------------------------------------------------------------------------------------ */
+#chatLog { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+.msg { padding: 9px 12px; border-radius: 14px; border: 1px solid var(--border); font-size: 13.5px; max-width: 92%; }
+.msg.user { align-self: flex-end; background: var(--accent-soft); border-color: transparent; white-space: pre-wrap; }
+.msg.bot { align-self: flex-start; background: var(--raise); }
+.msg.bot .md > :first-child { margin-top: 0; } .msg.bot .md > :last-child { margin-bottom: 0; }
+.msg.note { align-self: flex-start; color: var(--muted); font-size: 12.5px; border-style: dashed; }
+.msg.err { align-self: flex-start; color: var(--err); }
+.chatbox { display: flex; gap: 8px; align-items: flex-end; position: sticky; bottom: 0; background: var(--panel); padding-top: 6px; }
+.chatbox textarea { flex: 1; resize: vertical; border-radius: 12px; }
+.ideas > button::before { display: none; }
+.ideas > button { font: 500 12.5px/1.2 var(--sans); padding: 7px 12px; }
+#chatKey input { flex: 1; }

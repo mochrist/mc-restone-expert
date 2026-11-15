@@ -55,5 +55,9 @@ export const api = {
     const m = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '');
     return { blob: await res.blob(), name: m ? m[1] : 'download' };
   },
+  assistant: () => req('/api/assistant'),
+  saveKey: (key) => req('/api/assistant/key', { key }),
+  chat: (chat, message, current) => req('/api/chat', { chat, message, current }),
+  chatEvents: (id, since) => req(`/api/chat/${id}?since=${since}`),
   demo: () => req('demo/model.json'),
 };

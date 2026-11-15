@@ -246,6 +246,8 @@ class State:
         self.work = self.root / WORK_DIR
         self.sims: dict[str, Simulation] = {}
         self.jobs: dict[str, Job | OracleJob] = {}
+        self.chats: dict = {}  # id -> assistant.Chat
+        self.client_factory = None  # assistant client (None: assistant.default_client); tests put a mock here
         self._ids = itertools.count(1)
         self._lock = threading.Lock()
 
@@ -532,6 +534,9 @@ def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
                     return {"core": core.use(str(self._body().get("core", "")))}
                 except (ValueError, RuntimeError) as e:
                     raise ApiError(f"Simulatorkern lässt sich nicht wählen: {e}") from e
+            chat = self._chat(method, parts, arg)
+            if chat is not None:
+                return chat
             if method == "GET" and parts == ["text"]:
                 full = state.resolve(arg("path"))
                 if full.suffix not in (".yaml", ".yml", ".md", ".txt", ".json"):
@@ -598,6 +603,51 @@ def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
                     raise ApiError(f"Unbekanntes Format: {fmt}")
                 grid, title, _ = state.source(ref)
                 return Download(*tools.export(grid, fmt, title))
+            return None
+
+        def _chat(self, method: str, parts: list[str], arg) -> dict | None:
+            """The assistant (gui/assistant.py): key status and storage, chat turns, events by polling."""
+            from . import assistant
+
+            if method == "GET" and parts == ["assistant"]:
+                return {"configured": assistant.key_source() is not None or state.client_factory is not None,
+                        "source": assistant.key_source(), "key_file": str(assistant.KEY_FILE)}
+            if method == "POST" and parts == ["assistant", "key"]:
+                key = self._body().get("key")
+                if not isinstance(key, str):
+                    raise ApiError("key muss Text sein")
+                if key.strip() and not key.strip().startswith("sk-"):
+                    raise ApiError("Das sieht nicht wie ein API-Schlüssel von Anthropic aus (beginnt mit sk-).")
+                assistant.save_key(key)
+                return {"configured": assistant.key_source() is not None, "source": assistant.key_source()}
+            if method == "POST" and parts == ["chat"]:
+                body = self._body()
+                text = body.get("message")
+                if not isinstance(text, str) or not text.strip():
+                    raise ApiError("Die Nachricht ist leer")
+                current = body.get("current")
+                if current is not None and not isinstance(current, dict):
+                    raise ApiError("current muss {path} oder {job} sein")
+                cid = str(body.get("chat") or "")
+                chat = state.chats.get(cid)
+                if chat is None:
+                    cid = state.new_id()
+                    chat = state.chats[cid] = assistant.Chat(
+                        state, state.client_factory or assistant.default_client)
+                since = len(chat.events)
+                try:
+                    chat.start(text.strip(), current)
+                except RuntimeError as e:
+                    raise ApiError(str(e), HTTPStatus.CONFLICT) from e
+                return {"chat": cid, "since": since}
+            if method == "GET" and len(parts) == 2 and parts[0] == "chat":
+                chat = state.chats.get(parts[1])
+                if chat is None:
+                    raise ApiError("Unterhaltung unbekannt", HTTPStatus.NOT_FOUND)
+                try:
+                    return chat.snapshot(int(arg("since", "0")))
+                except ValueError:
+                    raise ApiError("since muss eine ganze Zahl sein") from None
             return None
 
         def _new_sim(self, body: dict) -> dict:

@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-14, Session 19. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 97 %).
+Stand: 2026-11-15, Session 20. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 97 %).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
@@ -19,13 +19,28 @@ Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). N�
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| **Zuerst: Assistent in der GUI** (Wunsch des Nutzers, Session 19: Freitext → fertige Schaltung, Erklärungen in Alltagssprache, Ändern per Satz). Noch nicht begonnen außer Vorarbeit. Plan: `gui/assistant.py` mit dem Anthropic-SDK (`anthropic` ist in `pyproject.toml`/`uv.lock`, Modell `claude-opus-5-5`, Beta-Endpunkt mit `fallbacks="default"`, manuelle Werkzeug-Schleife), Werkzeuge: Entwurf suchen (YAML-Vorgabe + Grenzen + `output`, über `server.Job`), aktuelle Schaltung untersuchen (`tools.explain`), geladene verkleinern, Beispiel laden. Endpunkte `POST /api/chat` (Runde im Thread, Ereignisse status/job/load/text) und Abfrage per Polling; Schlüssel aus `ANTHROPIC_API_KEY` oder über die GUI nach `~/.rsx/` (nicht ins Repo). Oberfläche: Reiter „Assistent“ mit Chat und Ideen-Knöpfen (Codeschloss-Tür, Türklingel, Alarmanlage mit Reset, Leuchtturm-Blinker). Systemprompt: Laie, Deutsch, Vorgabeformat, nur baubare Werte (siehe `static/wizard.js`), ehrlich sagen, was nicht geht. Der Nutzer liefert den API-Schlüssel nach (nicht im Chat erfragen). | Fable/Opus | API-Schlüssel des Nutzers |
+| **Assistent in der GUI: mit echtem Schlüssel ausprobieren** (Session 20 gebaut, nur mit gemocktem Client getestet). Prüfen: Ideen-Knöpfe (Codeschloss-Tür, Türklingel, Alarmanlage, Leuchtturm) ergeben baubare Vorgaben, Antworten laienverständlich, Systemprompt in `gui/assistant.py` nachschärfen; danach Antworten streamen statt „denkt nach …“, Abbrechen einer Runde, Chat überlebt kein Neuladen der Seite | Fable/Opus | API-Schlüssel des Nutzers |
 | Danach: weitere Ein-/Ausgänge (Druckplatte, Tageslichtsensor als Auslöser; `output` auch in den Wunsch-Karten der GUI anbieten) und ein Katalog fertiger Bauwerke (Kolbentür, Itemsortierer) | Opus | Assistent |
 | M4: nicht-disjunkte Zerlegung auch für mehrere Ausgänge (`shared_splits` mit gemeinsamen Eingängen, z. B. Carry-Lookahead, Decoder/Demux über 8 Eingänge); danach Topologie per SAT/SMT (`docs/m4-search-and-performance.md`) | Opus | – |
 | M4: Größe der nicht-disjunkten Entwürfe (mux8: 782 Blöcke aus PLA → ansteuerbare PLA): Mux-Vorlagen als Teile (`mux2-comparator` verbindet sich als G bisher gar nicht, `chains` liefert 0 Layouts), Kaskade aus 2:1-Muxen | Opus | – |
 | M6: GUI weiter (Nutzerrückmeldung abwarten; Nutzer ist kein Redstone-Profi: einfache Sprache, wenig Fachbegriffe). Bekannt: Berichte von `rsx explain`/`redesign` sind noch fachsprachlich (Pulsfilter, Komparator …), eine laienverständliche Zusammenfassung fehlt; Bauanleitung nur als Text exportierbar (kein Bild/PDF je Ebene); `rsx oracle --dump-blocks` gibt es nur auf der Kommandozeile; größere Entwürfe flüssig darstellen | Sonnet | Nutzer |
 
 ## Verlauf
+
+### Session 20 (2026-11-15): Assistent in der GUI (Opus-Agent im Worktree)
+
+- `src/redstone/gui/assistant.py`: Chat mit Claude (`claude-opus-5-5`, Beta-Endpunkt mit `fallbacks="default"`,
+  Effort medium, eigene Werkzeug-Schleife, höchstens 12 Modellaufrufe je Runde). Werkzeuge: `design_circuit`
+  (YAML-Vorgabe + Höchstmaße/verbotene Blöcke + `output`, über `server.Job`, Vorgabe landet in `.cache/gui/specs`),
+  `explain_circuit` (`tools.explain`), `shrink_circuit` (auch für Suchergebnisse, als `.litematic` zwischengespeichert),
+  `find_examples`/`load_example`. Systemprompt: Laie, Deutsch, Vorgabeformat, nur baubare Werte (wie `wizard.js`),
+  ehrlich sagen, was nicht geht.
+- Server: `GET /api/assistant`, `POST /api/assistant/key` (nach `~/.rsx/anthropic_api_key`), `POST /api/chat`,
+  `GET /api/chat/<id>?since=k` (Ereignisse status/job/load/text/error; `docs/gui-api.md`).
+- Oberfläche: Reiter „Assistent“ mit Schlüsselfeld (nur ohne Schlüssel sichtbar), Ideen-Knöpfen, Chat; vom
+  Assistenten gestartete Suchen laufen wie im Reiter „Entwerfen“ live in der Ansicht (`followJob`).
+- Tests: `tests/gui/test_assistant.py` (ohne Schlüssel klare Meldung, Schlüsselablage, ganze Schleife mit gemocktem
+  Client inkl. echter Entwurfssuche). `tests/gui` und `tests/design` grün. Mit echtem Schlüssel noch nicht gelaufen.
 
 ### Session 19 (2026-11-14): Oberfläche, „alle Funktionen auch in der GUI“ (Fable-5.2-Hauptsession, keine Agents)
 

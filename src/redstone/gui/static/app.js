@@ -14,7 +14,7 @@ applyIcons();
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
-const TASKS = { build: 'taskBuild', sim: 'taskSim', analyze: 'taskAnalyze', design: 'taskDesign' };
+const TASKS = { build: 'taskBuild', sim: 'taskSim', analyze: 'taskAnalyze', design: 'taskDesign', chat: 'taskChat' };
 const GROUP_TITLES = { schematics: 'Schaltpläne', scenarios: 'Beispiele', specs: 'Vorgaben' };
 // a few examples with plain names on top of the long list
 const FEATURED = [
@@ -337,7 +337,7 @@ function updateActions() {
   const hasResult = !!(S.job && S.job.result && S.job.result.blocks);
   $('resultActions').hidden = !hasResult;
   $('btnShowResult').disabled = hasResult && S.fromJob && S.mode !== 'search';
-  $('welcome').hidden = !!m || !!(S.job && S.task === 'design');
+  $('welcome').hidden = !!m || !!(S.job && (S.task === 'design' || S.task === 'chat'));
 }
 
 // upload: button, file dialog, drag and drop
@@ -392,7 +392,7 @@ function applyTask({ fit = false, forceModel = false } = {}) {
   if (S.task === 'sim') {
     setMode('sim', { fit });
     if (!S.simId && !S.simStarting && currentRef() && !S.demo) startSim();
-  } else if (S.task === 'design' && S.job && !forceModel && !(S.fromJob && S.job.finalShown)) setMode('search', { fit });
+  } else if ((S.task === 'design' || S.task === 'chat') && S.job && !forceModel && !(S.fromJob && S.job.finalShown)) setMode('search', { fit });
   else setMode('build', { fit });
   updateActions();
 }
@@ -756,6 +756,16 @@ async function startRedesign(path) {
   try {
     setStatus('Starte Entwurfssuche ...');
     const { job } = await api.redesign(path, searchOptions());
+    followJob(job, path);
+  } catch (e) { fail(e); }
+  updateActions();
+}
+
+/** Show a running design search (started here or by the assistant); its result becomes the current circuit. */
+function followJob(job, path, task = 'design') {
+  if (S.job && S.job.timer) clearInterval(S.job.timer);
+  setPlaying(false);
+  try {
     if (S.fromJob) { // the old result is gone: back to the file, or to nothing
       S.fromJob = false;
       if (!S.modelPath) S.model = null;
@@ -767,9 +777,9 @@ async function startRedesign(path) {
     $('framesSec').hidden = false;
     $('designState').textContent = `Suche für „${stem(path)}“ läuft ...`;
     $('designState').className = 'hint';
-    setTimeout(() => $('btnRedesign').scrollIntoView({ block: 'start', behavior: 'smooth' }), 50);
+    if (task === 'design') setTimeout(() => $('btnRedesign').scrollIntoView({ block: 'start', behavior: 'smooth' }), 50);
     deDocs.clear();
-    setTask('design');
+    if (S.task !== task) setTask(task); else applyTask();
     S.job.timer = setInterval(pollJob, 500);
     pollJob();
   } catch (e) { fail(e); }
@@ -991,4 +1001,88 @@ async function init() {
     }
   } catch (e) { fail(e); }
 }
+// --- assistant ---------------------------------------------------------------------------------------------------------
+
+const IDEAS = [
+  ['Codeschloss-Tür', 'Ich möchte eine Eisentür, die nur aufgeht, wenn von vier Hebeln genau der erste und der dritte an sind.'],
+  ['Türklingel', 'Eine Türklingel: Wenn man einen Knopf drückt, soll ein Notenblock einen Ton spielen.'],
+  ['Alarmanlage mit Reset', 'Eine Alarmanlage: Ein Knopf löst den Alarm aus, eine Lampe bleibt an, bis man einen zweiten Knopf zum Zurücksetzen drückt.'],
+  ['Leuchtturm-Blinker', 'Ein Leuchtturm: Eine Lampe soll von selbst blinken, etwa jede Sekunde kurz aufleuchten.'],
+];
+const chat = { id: null, since: 0, timer: null, busy: false, note: null };
+
+function chatAdd(cls, content) {
+  const d = node('div', undefined, 'msg ' + cls);
+  if (content instanceof Node) d.appendChild(content); else d.textContent = content;
+  $('chatLog').appendChild(d);
+  d.scrollIntoView({ block: 'nearest' });
+  return d;
+}
+function chatNote(t) {
+  if (!chat.note) chat.note = chatAdd('note', t); else chat.note.textContent = t;
+}
+function chatBusy(b) {
+  chat.busy = b;
+  $('chatSend').disabled = b;
+  for (const x of $('chatIdeas').children) x.disabled = b;
+  if (!b && chat.note) { chat.note.remove(); chat.note = null; }
+}
+async function chatKeyState() {
+  try {
+    const a = await api.assistant();
+    $('chatKey').hidden = a.configured;
+    $('chatKeyFile').textContent = a.key_file || '~/.rsx';
+  } catch (e) { fail(e); }
+}
+$('chatKeySave').addEventListener('click', () => busyWith($('chatKeySave'), 'Speichere den Schlüssel ...', async () => {
+  const r = await api.saveKey($('chatKeyIn').value);
+  $('chatKeyIn').value = '';
+  $('chatKey').hidden = r.configured;
+  setStatus(r.configured ? 'Schlüssel gespeichert. Der Assistent ist bereit.' : 'Schlüssel entfernt.');
+}));
+async function chatSend(text) {
+  text = (text || '').trim();
+  if (!text || chat.busy || S.demo) return;
+  chatAdd('user', text);
+  $('chatIn').value = '';
+  chatBusy(true);
+  chatNote('Der Assistent denkt nach …');
+  try {
+    const r = await api.chat(chat.id, text, currentRef());
+    chat.id = r.chat; chat.since = r.since;
+    chat.timer = setInterval(chatPoll, 700);
+  } catch (e) { chatAdd('err', e.message); chatBusy(false); }
+}
+let chatPolling = false;
+async function chatPoll() {
+  if (chatPolling || !chat.id) return;
+  chatPolling = true;
+  try {
+    const d = await api.chatEvents(chat.id, chat.since);
+    for (const ev of d.events) {
+      chat.since = ev.i + 1;
+      if (ev.type === 'text') { chat.note?.remove(); chat.note = null; chatAdd('bot', renderMarkdown(ev.text)); }
+      else if (ev.type === 'status') chatNote(ev.text);
+      else if (ev.type === 'error') { chatAdd('err', ev.text); if (/API-Schlüssel/.test(ev.text)) chatKeyState(); }
+      else if (ev.type === 'job') followJob(ev.job, ev.path, 'chat');
+      else if (ev.type === 'load') { await refreshFiles().catch(() => {}); await selectFile(ev.path, ev.group || 'scenarios'); }
+    }
+    if (!d.busy) { clearInterval(chat.timer); chat.timer = null; chatBusy(false); }
+  } catch (e) {
+    clearInterval(chat.timer); chat.timer = null; chatAdd('err', e.message); chatBusy(false);
+  } finally { chatPolling = false; }
+}
+for (const [title, text] of IDEAS) {
+  const b = node('button', title);
+  b.type = 'button';
+  b.title = text;
+  b.addEventListener('click', () => chatSend(text));
+  $('chatIdeas').appendChild(b);
+}
+$('chatSend').addEventListener('click', () => chatSend($('chatIn').value));
+$('chatIn').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); chatSend($('chatIn').value); }
+});
+if (!S.demo) chatKeyState();
+
 init();
