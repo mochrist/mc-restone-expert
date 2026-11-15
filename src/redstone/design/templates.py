@@ -27,7 +27,8 @@ class Template:
     function: dict[str, str]  # output -> Python bool expression over the inputs, e.g. {"y": "a and not b"}
     description: str  # German, 1-2 sentences: construction, delay
     build: Callable[[], Candidate] = field(compare=False)  # builds a fresh Candidate
-    tags: frozenset[str] = frozenset()  # e.g. {"qc"} if the design relies on quasi-connectivity
+    tags: frozenset[str] = frozenset()  # e.g. {"qc"} if the design relies on quasi-connectivity; {"part"}: not
+    # offered on its own (`search.template_candidates`), only as a part of a decomposition
 
     def evaluate(self, values: dict[str, bool]) -> dict[str, bool]:
         """Expected output values for the given input values."""
@@ -328,6 +329,27 @@ _register(
     "Zwei Komparatoren im Subtraktionsmodus zeigen auf die Lampe: a minus s und b minus (nicht s); nicht s kommt "
     "von einer Fackel am Block unter Hebel s über einen Verstärker. Verzögerung 2 gt (a, b), bis 6 gt (s).",
     _mux2)
+
+
+def _mux2_select() -> _Layout:
+    """mux2 whose select lever may be replaced by dust fed from a line (`compose.wire`): nothing next to it
+    is powered by the torch (in mux2-comparator the torch's block would feed the dust back), and the side
+    input of the a comparator comes from a repeater, at full strength whatever the dust carries."""
+    return _Layout(_supported({
+        (0, 0, 1): LEVER(), (1, 0, 1): COMPARATOR("west"), (2, 0, 1): LAMP, (3, 0, 1): COMPARATOR("east"),
+        (4, 0, 1): LEVER(),
+        (1, 0, -2): LEVER(), (1, 0, -1): REPEATER("north"), (1, 0, 0): WIRE,  # s -> repeater -> a comparator
+        (2, 0, -2): WIRE, (3, 0, -2): STONE,  # s -> dust into a block, a torch hangs on its other side
+        (3, 0, -1): WALL_TORCH("south"), (3, 0, 0): REPEATER("north"),  # not s -> repeater -> b comparator
+    }), ((1, 0, -2), (0, 0, 1), (4, 0, 1)), ((2, 0, 1),))
+
+
+_register(
+    "mux2-comparator-select", "s a b", "y", {"y": "(a and not s) or (b and s)"},
+    "Wie mux2-comparator, aber s erreicht den a-Komparator über einen Verstärker und schaltet über Staub in einen "
+    "Block die Fackel für nicht s; der Hebel s darf deshalb durch eine Leitung ersetzt werden (gemeinsame "
+    "Auswahl mehrerer Multiplexer). Verzögerung 2 gt (a, b), bis 6 gt (s).",
+    _mux2_select, frozenset({"part"}))  # only as a part of a Shannon expansion: the designs found so far stay
 
 
 # --- magnitude comparison ---------------------------------------------------------------------------------------

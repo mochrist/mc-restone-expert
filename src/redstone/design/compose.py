@@ -293,7 +293,8 @@ def _route_py(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos]
     empty); one down (the cell in front stays empty). Goals are entered flat. Every cell and its floor keep
     one block of air (also diagonally) to `keep_clear`, except the goal cells; `solid` is never entered.
     The start cell is not checked (it is the joint at the output), but the line never passes under it (that
-    would take its floor)."""
+    would take its floor), and it never runs one or two blocks straight above or below itself (`_over_itself`;
+    the first path found that way, not always the shortest one)."""
     from collections import deque
 
     (x0, y0, z0), (x1, y1, z1) = lo, hi
@@ -335,10 +336,21 @@ def _route_py(start: Pos, goals: set[Pos], solid: set[Pos], keep_clear: set[Pos]
             for n in steps:
                 if n in prev or (n.y != c.y and n in goals):
                     continue
-                if ok(n):
+                if ok(n) and not _over_itself(n, c, prev):
                     prev[n] = c
                     queue.append(n)
     return None
+
+
+def _over_itself(n: Pos, c: Pos | None, prev: dict) -> bool:
+    """Whether cell n would lie one or two blocks straight above or below a cell of the path so far (c and
+    its ancestors in `prev`): its floor would cut the lower dust's step up or stand in an earlier cell (a line
+    winding up over itself)."""
+    while c is not None:
+        if c[0] == n[0] and c[2] == n[2] and 1 <= abs(c[1] - n[1]) <= 2:
+            return True
+        c = prev[c]
+    return False
 
 
 def _direction(a: Pos, b: Pos) -> Direction:
@@ -481,7 +493,9 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
     source is an output lamp (it is replaced: output_mode "repeater" or "dust"; "stone": stone, with a
     repeater reading from it, for lamps powered from above; the output disappears) or an
     input lever (it stays; dust next to it is tapped, so one lever drives two parts). The target lever is
-    replaced by dust or a repeater (`input_mode`) and is no longer an input. None if there is no route."""
+    replaced by dust or a repeater (`input_mode`; "repeater+dust": dust fed by a repeater on the last cell
+    of a straight end of the line, so the dust has full strength like next to a lever) and is no longer an
+    input. None if there is no route."""
     a = dict(c.grid.items())
     src_state, tgt_state = a.get(source), a.get(target)
     if src_state is None or tgt_state is None or tgt_state.id != "lever" or source == target:
@@ -554,6 +568,11 @@ def wire(c: Candidate, source: Pos, target: Pos, output_mode: str = "repeater",
     if stone:
         m[path[0]] = _repeater(d_out.opposite)
     d_in = _direction(path[-1], target)
+    if input_mode == "repeater+dust":  # full strength at the target dust (a comparator's side input)
+        if (len(path) < 2 or path[-2] == source or not path[-2].y == path[-1].y == target.y
+                or _direction(path[-2], path[-1]) != d_in):
+            return None
+        m[path[-1]] = _repeater(d_in.opposite)
     m[target] = _repeater(d_in.opposite) if input_mode == "repeater" else WIRE
     if target + DOWN not in m:
         m[target + DOWN] = STONE

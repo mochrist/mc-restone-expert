@@ -316,3 +316,59 @@ def test_nondisjoint_split_needs_inputs_of_the_bound_set():
         gi = sorted(sp.common + sp.bound)
         from redstone.design.decompose import support
         assert {gi.index(i) for i in sp.bound} <= set(support(sp.g, 0))
+
+
+# ---------------------------------------------------------------------- Shannon expansion into multiplexers
+def _mux_spec(k: int):
+    sel = [f"s{i}" for i in reversed(range(k))]
+    data = [f"d{i}" for i in range(2 ** k)]
+    return from_functions(sel + data, {"y": _mux(sel, data)})
+
+
+def test_shannon_split_of_a_multiplexer():
+    from redstone.design.decompose import shannon_splits
+
+    spec = _mux_spec(3)
+    sp = shannon_splits(spec)[0]
+    names = spec.inputs
+    assert names[sp.select] == "s2" and [names[i] for i in sp.common] == ["s1", "s0"]
+    assert [names[i] for i in sp.low] == ["s1", "s0", "d0", "d1", "d2", "d3"]
+    for combo, row in spec.table.items():
+        part, ins = (sp.g1, sp.high) if combo[sp.select] else (sp.g0, sp.low)
+        assert part.table[tuple(combo[i] for i in ins)] == row
+    # cofactors sharing more than MAX_COMMON inputs (XOR of four) give no expansion
+    assert shannon_splits(from_functions(list("abcd"), {"y": "a != (b != (c != d))"})) == []
+
+
+def test_select_template_is_only_a_part():
+    """The select-drivable mux2 is not offered on its own, so the designs found so far stay as they are."""
+    spec = from_functions(["s", "a", "b"], {"y": "(a and not s) or (b and s)"})
+    assert [c.name for c in template_candidates(spec)] == ["mux2-comparator"]
+
+
+def test_mux4_from_three_mux2():
+    """mux4 = mux2(s1, mux2(s0, d0, d1), mux2(s0, d2, d3)), s0 tapped: far fewer blocks than the PLA."""
+    from redstone.design.decompose import decomposed
+    from redstone.design.synth import pla
+
+    spec = _mux_spec(2)
+    found = decomposed(spec)
+    assert found and found[0].name.startswith("mux2(")
+    c = found[0]
+    assert evaluate_any(c, spec).ok
+    assert c.block_count <= 120 < pla(spec).block_count  # 111 blocks against 190
+
+
+def test_mux8_from_seven_mux2():
+    """mux8 = mux2(s2, mux4, mux4), both mux4 again from mux2 (was PLA → drivable PLA, 782 blocks compacted)."""
+    from redstone.design.decompose import decomposed
+
+    spec = _mux_spec(3)
+    found = decomposed(spec)
+    assert found
+    c = found[0]
+    assert c.name.count("mux2") == 7
+    assert c.block_count <= 400  # 371 before compacting
+    # every combination (the transitions of all 2048 combinations take a minute; the slow test of
+    # examples/specs/composed/mux8.yaml checks them on the compacted design)
+    assert evaluate_any(c, spec, quick=True).correct

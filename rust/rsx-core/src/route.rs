@@ -66,6 +66,28 @@ impl<'a> Set<'a> {
     }
 }
 
+/// See `compose._over_itself`: n one or two blocks straight above or below c (in `slot`, START for the
+/// start) or one of its ancestors, the start included.
+fn over_itself(n: P3, c: P3, slot: u32, start: P3, cells: &[P3], prev: &[u32], field: &Field) -> bool {
+    const START: u32 = u32::MAX - 1;
+    let (mut p, mut s) = (c, slot);
+    loop {
+        if p.0 == n.0 && p.2 == n.2 && (1..=2).contains(&(p.1 - n.1).abs()) {
+            return true;
+        }
+        if s == START {
+            return false;
+        }
+        let parent = prev[field.index(p).unwrap()];
+        if parent == START {
+            p = start;
+        } else {
+            p = cells[parent as usize];
+        }
+        s = parent;
+    }
+}
+
 /// See `compose._route`: the cells of the shortest dust path from `start` to one of `goals`, or None.
 #[allow(clippy::too_many_arguments)]
 pub fn route(start: P3, goals: &[P3], solid: &[P3], keep_clear: &[P3], lo: P3, hi: P3, tight: bool) -> Option<Vec<P3>> {
@@ -164,7 +186,7 @@ pub fn route(start: P3, goals: &[P3], solid: &[P3], keep_clear: &[P3], lo: P3, h
                 if seen(&prev, n) || (n.1 != c.1 && goal.contains(n)) {
                     continue;
                 }
-                if ok(n) {
+                if ok(n) && !over_itself(n, c, slot, start, &cells, &prev, &field) {
                     // ok(n) implies n inside the box, so it has a field index
                     let i = field.index(n).unwrap();
                     prev[i] = slot;
