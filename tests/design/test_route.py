@@ -29,31 +29,39 @@ def test_rust_router_matches_python(tight):
     for _ in range(3000):
         start, goals, solid, keep, lo, hi = _case(rng)
         want = compose._route_py(start, goals, solid, keep, lo, hi, tight)
-        got = compose._route(start, goals, solid, keep, lo, hi, tight)
+        got = compose._route_once(start, goals, solid, keep, lo, hi, tight, False)
         assert got == want, (start, goals, solid, keep, lo, hi, tight)
         found += want is not None
     assert found > 100  # the cases are not all unroutable
 
 
-@pytest.mark.parametrize("router", ["_route_py", "_route"])
-def test_path_never_runs_straight_over_itself(router):
-    """A line winding up over itself would put a floor block on its own dust (it cuts the step up)."""
+@pytest.mark.parametrize("core", ["python", "rust"])
+def test_path_never_cuts_its_own_steps(core, monkeypatch):
+    """A line winding up over itself would put a floor block on its own dust or above a step; such paths are
+    searched again strictly. Paths without that stay exactly as the plain search finds them."""
+    if core == "python":
+        monkeypatch.setattr(compose, "_route_rust", None)
+    elif compose._route_rust is None:
+        pytest.skip("Rust core without the router")
     rng = random.Random(11)
-    found = 0
-    for _ in range(1500):
+    found = redone = 0
+    for _ in range(3000):
         start, goals, solid, keep, lo, hi = _case(rng)
-        path = getattr(compose, router)(start, goals, solid, keep, lo, hi, True)
+        plain = compose._route_once(start, goals, solid, keep, lo, hi, True, False)
+        path = compose._route(start, goals, solid, keep, lo, hi, True)
         found += path is not None
-        for k, a in enumerate(path or []):
-            for b in path[k + 1:]:
-                assert not (a.x == b.x and a.z == b.z and 1 <= abs(a.y - b.y) <= 2), path
-    assert found > 50
+        assert not compose.clashes(path or []), path
+        if plain is not None and not compose.clashes(plain):
+            assert path == plain
+        redone += plain is not None and path != plain
+    assert found > 50 and redone > 0
 
 
-@pytest.mark.parametrize("router", ["_route_py", "_route"])
-def test_winding_line_is_refused(router):
-    """In a 2x2 shaft the only way three blocks up is a spiral, whose floors would cut its own steps."""
-    solid = {Pos(x, y, z) for x in range(-1, 3) for y in range(0, 6) for z in range(-1, 3)
-             if not (0 <= x <= 1 and 0 <= z <= 1)} | {Pos(x, 0, z) for x in (0, 1) for z in (0, 1)}
-    lo, hi = Pos(-1, 0, -1), Pos(2, 5, 2)
-    assert getattr(compose, router)(Pos(0, 1, 0), {Pos(1, 4, 0)}, solid, set(), lo, hi, True) is None
+@needs_rust
+def test_strict_rust_router_matches_python():
+    rng = random.Random(5)
+    for _ in range(2000):
+        start, goals, solid, keep, lo, hi = _case(rng)
+        want = compose._route_py(start, goals, solid, keep, lo, hi, True, True)
+        got = compose._route_rust(tuple(start), goals, solid, keep, tuple(lo), tuple(hi), True, True)
+        assert (None if got is None else [Pos(*c) for c in got]) == want

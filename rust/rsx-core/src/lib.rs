@@ -780,7 +780,7 @@ fn item_max_stack_size(item: &str) -> i32 {
 
 /// compose._route: the shortest dust path, or None. The position collections are any iterables of triples.
 #[pyfunction]
-#[pyo3(name = "route", signature = (start, goals, solid, keep_clear, lo, hi, tight=false))]
+#[pyo3(name = "route", signature = (start, goals, solid, keep_clear, lo, hi, tight=false, strict=false))]
 fn route_dust(
     start: P3,
     goals: &Bound<'_, PyAny>,
@@ -789,12 +789,13 @@ fn route_dust(
     lo: P3,
     hi: P3,
     tight: bool,
+    strict: bool,
 ) -> PyResult<Option<Vec<P3>>> {
     fn triples(items: &Bound<'_, PyAny>) -> PyResult<Vec<P3>> {
         items.try_iter()?.map(|p| p?.extract::<P3>()).collect()
     }
     let (goals, solid, keep_clear) = (triples(goals)?, triples(solid)?, triples(keep_clear)?);
-    Ok(route::route(start, &goals, &solid, &keep_clear, lo, hi, tight))
+    Ok(route::route(start, &goals, &solid, &keep_clear, lo, hi, tight, strict))
 }
 
 #[pymodule]

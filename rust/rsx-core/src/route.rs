@@ -66,31 +66,51 @@ impl<'a> Set<'a> {
     }
 }
 
-/// See `compose._over_itself`: n one or two blocks straight above or below c (in `slot`, START for the
-/// start) or one of its ancestors, the start included.
+/// See `compose._over_itself`: the step from c (in `slot`, START for the start) to n clashes with the path so
+/// far (c and its ancestors, the start included).
 fn over_itself(n: P3, c: P3, slot: u32, start: P3, cells: &[P3], prev: &[u32], field: &Field) -> bool {
     const START: u32 = u32::MAX - 1;
-    let (mut p, mut s) = (c, slot);
+    let floor = (n.0, n.1 - 1, n.2);
+    let need = if n.1 > c.1 {
+        Some((c.0, c.1 + 1, c.2))
+    } else if n.1 < c.1 {
+        Some((n.0, n.1 + 1, n.2))
+    } else {
+        None
+    };
+    let (mut child, mut p, mut s) = (n, c, slot);
     loop {
-        if p.0 == n.0 && p.2 == n.2 && (1..=2).contains(&(p.1 - n.1).abs()) {
+        let parent = if s == START {
+            None
+        } else {
+            let ps = prev[field.index(p).unwrap()];
+            Some((if ps == START { start } else { cells[ps as usize] }, ps))
+        };
+        let below = (p.0, p.1 - 1, p.2);
+        if floor == p || n == below || need == Some(below) {
             return true;
         }
-        if s == START {
-            return false;
+        let entered_down = parent.is_some_and(|(q, _)| q.1 > p.1);
+        if floor == (p.0, p.1 + 1, p.2) && (child.1 > p.1 || entered_down) {
+            return true;
         }
-        let parent = prev[field.index(p).unwrap()];
-        if parent == START {
-            p = start;
-        } else {
-            p = cells[parent as usize];
+        match parent {
+            None => return false,
+            Some((q, ps)) => {
+                child = p;
+                p = q;
+                s = ps;
+            }
         }
-        s = parent;
     }
 }
 
-/// See `compose._route`: the cells of the shortest dust path from `start` to one of `goals`, or None.
+/// See `compose._route_py`: the cells of the shortest dust path from `start` to one of `goals`, or None;
+/// strict: no step that clashes with the path so far (`over_itself`).
 #[allow(clippy::too_many_arguments)]
-pub fn route(start: P3, goals: &[P3], solid: &[P3], keep_clear: &[P3], lo: P3, hi: P3, tight: bool) -> Option<Vec<P3>> {
+pub fn route(
+    start: P3, goals: &[P3], solid: &[P3], keep_clear: &[P3], lo: P3, hi: P3, tight: bool, strict: bool,
+) -> Option<Vec<P3>> {
     let field = Field { lo: add(lo, (-1, -1, -1)), dims: (hi.0 - lo.0 + 3, hi.1 - lo.1 + 3, hi.2 - lo.2 + 3) };
     if field.dims.0 <= 0 || field.dims.1 <= 0 || field.dims.2 <= 0 {
         return None;
@@ -186,7 +206,7 @@ pub fn route(start: P3, goals: &[P3], solid: &[P3], keep_clear: &[P3], lo: P3, h
                 if seen(&prev, n) || (n.1 != c.1 && goal.contains(n)) {
                     continue;
                 }
-                if ok(n) && !over_itself(n, c, slot, start, &cells, &prev, &field) {
+                if ok(n) && !(strict && over_itself(n, c, slot, start, &cells, &prev, &field)) {
                     // ok(n) implies n inside the box, so it has a field index
                     let i = field.index(n).unwrap();
                     prev[i] = slot;
