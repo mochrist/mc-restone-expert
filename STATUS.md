@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: 2026-11-15, Session 20. Geschätzter Gesamtfortschritt: **ca. 96 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 97 %).
+Stand: 2026-11-15, Session 21. Geschätzter Gesamtfortschritt: **ca. 97 %** (gewichtet nach Aufwand der Meilensteine; seit Session 16 zählt die GUI M6 mit 15 % zusätzlich, ohne sie ca. 97 %).
 
 | Meilenstein | Gewicht | Stand | Kurz |
 |---|---|---|---|
@@ -8,24 +8,42 @@ Stand: 2026-11-15, Session 20. Geschätzter Gesamtfortschritt: **ca. 96 %** (gew
 | M1 Parser + Textdump | 10 % | 100 % | `.litematic`, `.schem` (v1–3), `.nbt` lesen und schreiben; `rsx dump`, `rsx convert` |
 | M2 Oracle + Simulator | 35 % | ~97 % | Oracle läuft; Simulator (Python-Referenz und Rust-Kern, ~150× schneller) stimmt mit allen 154 Golden Traces tick-genau überein; Truhen, Crafter, Tageslichtsensor, Kuchen, Sculk-Sensoren, Notenblock-Instrument aus Block-Daten (im Spiel bestätigt) |
 | M3 Analyse + Erklärung | 20 % | ~96 % | `rsx explain`: Experimente, Klassifikation, Wahrheitstabelle (Teiltabellen mit Paar- und Stichproben-Abhängigkeiten), Pulsantwort (auch hinter Logik), RS-Latch, Decoder, Logik vor T-FF/Pulsgeber/Set-only-Speicher/Zeitglied, Sonderfall-Notizen |
-| M4 Redesign | 25 % | ~92 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen; nicht-disjunkte Zerlegung mit gemeinsamen Eingängen über 8 Eingängen, z. B. 8:1-Multiplexer; Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
+| M4 Redesign | 25 % | ~93 % | Vorlagen (Logik inkl. Volladdierer, Zeitverhalten/Speicher), Fackel-PLA (bis 8 Eingänge, auch mit ansteuerbaren Eingängen, gleiche Ausgänge auf einer Leitung), Komposition mit Router (Logik vor Speicher, Zerlegung auch mit einem oder zwei gemeinsamen Signalen mehrerer Ausgänge, z. B. Ripple-Carry-Addierer bis 4 Bit, Komparator bis 5 Bit, mit Komparator-Vorlagen; nicht-disjunkte Zerlegung mit gemeinsamen Eingängen über 8 Eingängen, Shannon-Zerlegung in 2:1-Muxe (8:1-Multiplexer 354 statt 782 Blöcke); Ausgänge nebeneinander), Kompaktieren; alles im Spiel geprüft |
 | M5 Export-Mod, Screenshot | optional | 0 % | — |
-| M6 GUI | 15 % | ~95 % | `rsx gui`: lokale Web-App (three.js), 3D- und Ebenen-Ansicht, Materialliste, Bauanleitung, Entwurfssuche live, Simulation; `rsx materials`. Seit Session 19 alle `rsx`-Befehle in der Oberfläche (Analyse, Text-Ansicht, Szenario-Lauf, Oracle, Export, Upload, Spezifikations-Editor, Suchoptionen), im Browser geprüft |
+| M6 GUI | 15 % | ~97 % | `rsx gui`: lokale Web-App (three.js), 3D- und Ebenen-Ansicht, Materialliste, Bauanleitung, Entwurfssuche live, Simulation; `rsx materials`. Seit Session 19 alle `rsx`-Befehle in der Oberfläche (Analyse, Text-Ansicht, Szenario-Lauf, Oracle, Export, Upload, Spezifikations-Editor, Suchoptionen), im Browser geprüft. Assistent (Text → Schaltung) mit echtem Schlüssel: 10 von 10 Testwünschen gelungen (Session 21) |
 
-## Übergabe (aus Session 19)
+## Übergabe (aus Session 21)
 
-Alles committet; ganze Suite zuletzt vor dem GUI-Umbau grün (1589 Tests, ~3 min), danach `tests/gui` und `tests/design` grün. Keine laufenden Worktrees, Oracle-Sperre frei.
+Alles committet und zusammengeführt; keine laufenden Worktrees außer dem erledigten Agent-Worktree (kann weg), Oracle-Sperre frei.
+API-Schlüssel des Nutzers liegt in `.env` (gitignored), der Assistent liest ihn von dort.
 Rechtefreigaben des Nutzers in `.claude/settings.local.json` (nicht im Repo). Nächste Aufgaben:
 
 | Aufgabe | Modell | Hängt ab von |
 |---|---|---|
-| **Assistent in der GUI: mit echtem Schlüssel ausprobieren** (Session 20 gebaut, nur mit gemocktem Client getestet). Prüfen: Ideen-Knöpfe (Codeschloss-Tür, Türklingel, Alarmanlage, Leuchtturm) ergeben baubare Vorgaben, Antworten laienverständlich, Systemprompt in `gui/assistant.py` nachschärfen; danach Antworten streamen statt „denkt nach …“, Abbrechen einer Runde, Chat überlebt kein Neuladen der Seite | Fable/Opus | API-Schlüssel des Nutzers |
-| Danach: weitere Ein-/Ausgänge (Druckplatte, Tageslichtsensor als Auslöser; `output` auch in den Wunsch-Karten der GUI anbieten) und ein Katalog fertiger Bauwerke (Kolbentür, Itemsortierer) | Opus | Assistent |
-| M4: nicht-disjunkte Zerlegung auch für mehrere Ausgänge (`shared_splits` mit gemeinsamen Eingängen, z. B. Carry-Lookahead, Decoder/Demux über 8 Eingänge); danach Topologie per SAT/SMT (`docs/m4-search-and-performance.md`) | Opus | – |
-| M4: Größe der nicht-disjunkten Entwürfe (mux8: 782 Blöcke aus PLA → ansteuerbare PLA): Mux-Vorlagen als Teile (`mux2-comparator` verbindet sich als G doch: 32 von 40 Layouts; als H am Auswahleingang s nie; Plan in Session 20b), Kaskade aus 2:1-Muxen | Opus | – |
-| M6: GUI weiter (Nutzerrückmeldung abwarten; Nutzer ist kein Redstone-Profi: einfache Sprache, wenig Fachbegriffe). Bekannt: Berichte von `rsx explain`/`redesign` sind noch fachsprachlich (Pulsfilter, Komparator …), eine laienverständliche Zusammenfassung fehlt; Bauanleitung nur als Text exportierbar (kein Bild/PDF je Ebene); `rsx oracle --dump-blocks` gibt es nur auf der Kommandozeile; größere Entwürfe flüssig darstellen | Sonnet | Nutzer |
+| Assistent im Browser durchklicken (Streaming, Stopp, „Neue Unterhaltung“, Chat nach Neuladen; Session 21 nur per Tests und Skript geprüft); Rückmeldung des Nutzers abwarten | Sonnet | Nutzer |
+| Weitere Ein-/Ausgänge (Druckplatte, Tageslichtsensor als Auslöser; `output` auch in den Wunsch-Karten der GUI anbieten) und ein Katalog fertiger Bauwerke (Kolbentür, Itemsortierer); danach `scripts/assistant_eval.py` um passende Fälle erweitern | Opus | – |
+| M4: Größe: Mehrheit von 3 hat 58 Blöcke, XOR 28; mux8 kaum kompaktiert (371 → 354, 10 hoch), mux2-Teile in Reihe anordnen; `drivable-pla` könnte `mux2-comparator-select` nutzen (ändert einen im Spiel geprüften Entwurf); mux8-Erzeugung dauert ~34 min (volle Bewertung aller Übergänge bei 2048 Kombinationen) | Opus | – |
+| M4: nicht-disjunkte Zerlegung für mehrere Ausgänge (`shared_splits` mit gemeinsamen Eingängen, z. B. Addierer/Subtrahierer mit op); danach Topologie per SAT/SMT (`docs/m4-search-and-performance.md`) | Opus | – |
+| M6: Berichte von `rsx explain`/`redesign` sind fachsprachlich (der Assistent übersetzt sie, die Reiter nicht); Bauanleitung nur als Text (kein Bild/PDF je Ebene); `rsx oracle --dump-blocks` nur auf der Kommandozeile; größere Entwürfe flüssig darstellen | Sonnet | Nutzer |
 
 ## Verlauf
+
+### Session 21 (2026-11-15): Assistent mit echtem Schlüssel, Shannon-Zerlegung (Opus-Hauptsession, 1 Opus-Agent)
+
+- Assistent (`gui/assistant.py`): Antworten werden gestreamt (`client.beta.messages.stream`, Ereignis `delta` je
+  Textblock mit `key`, `text` ersetzt die Stücke), Runde abbrechen (`POST /api/chat/<id>/cancel`, Knopf „Stopp“;
+  abgebrochene Antwort bleibt nicht in der Historie, offene `tool_use` bekommen ein Fehler-Ergebnis), Chat übersteht
+  Neuladen der Seite (Ereignis `user`, Chat-ID in localStorage, Wiedergabe ab since=0 ohne neue Suchen), Knopf
+  „Neue Unterhaltung“. Schlüssel auch aus `.env` im Projektordner. Systemprompt: nur beschreiben, was im Bericht steht.
+- `scripts/assistant_eval.py`: 10 Wünsche in Alltagssprache gegen die echte API (Codeschloss, Türklingel,
+  Alarmanlage, Leuchtturm, Treppenlicht, Wechselschalter, Mehrheit, Kolben-Umschalter, Druckplatte → ehrlicher
+  Ersatz, Itemsortierer → ehrlich abgelehnt). Alle 10 richtig übersetzt, Entwürfe gefunden, je 7–15 s;
+  Bericht in `.cache/assistant-eval/report.md`.
+- M4 (Agent): Shannon-Zerlegung f = mux2(s, f|s=0, f|s=1) in `design/decompose.py`, neue Teil-Vorlage
+  `mux2-comparator-select` (s per Leitung ansteuerbar, Markierung `part`: nur in Zerlegungen), `wire` auch mit
+  Verstärker vor Staub, Router: Wege, die ihre eigenen Stufen unterbrechen, werden streng neu gesucht (Python und
+  Rust, `strict`). mux4 111 statt 190 Blöcke, mux8 354 statt 782 (im Spiel geprüft, `cmp-mux8`). Durch den
+  Router änderte sich `cmp-cmp5` (vorher 533 Blöcke, Weg unterbrach sich selbst, lief aber): neu erzeugt, im Spiel aufgenommen, Wahrheitstabelle und Simulator = Spiel. Ganze Suite: 1609 grün, 11 übersprungen.
 
 ### Session 20 (2026-11-15): Assistent in der GUI (Opus-Agent im Worktree)
 
