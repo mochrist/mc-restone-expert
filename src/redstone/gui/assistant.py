@@ -1,9 +1,12 @@
 """Chat assistant of the GUI: plain German request -> design search, explanation, examples (Claude via the
-Anthropic SDK, manual tool loop). One turn runs in its own thread; the browser polls the chat's events:
-status (what happens right now), job (a design search was started, follow it), load (open this file),
-text (answer of the assistant), error.
+Anthropic SDK, manual tool loop, streamed). One turn runs in its own thread; the browser polls the chat's events:
+user (the user's message), status (what happens right now), job (a design search was started, follow it),
+load (open this file), delta (a piece of answer text while it streams, keyed by `key`), text (a finished answer
+block; replaces the deltas with the same `key`), error, cancelled. The whole event list can be fetched again
+(since=0), so a reloaded page shows the chat as it was.
 
-The API key comes from ANTHROPIC_API_KEY or from KEY_FILE (written by the GUI, never into the repository)."""
+The API key comes from ANTHROPIC_API_KEY (environment, then the project's .env) or from KEY_FILE (written by the
+GUI, never into the repository)."""
 
 from __future__ import annotations
 
@@ -19,9 +22,10 @@ KEY_FILE = Path.home() / ".rsx" / "anthropic_api_key"
 MAX_STEPS = 12  # model calls per turn
 JOB_WAIT = 900  # seconds a design search may take inside a turn
 MAX_RESULT = 6000  # characters of a report handed back to the model
+DELTA_EVERY = 0.2  # seconds between streamed text events (fewer, larger pieces)
 
 NO_KEY = ("Für den Assistenten fehlt noch ein API-Schlüssel von Anthropic. Er lässt sich oben im Reiter "
-          "„Assistent“ eintragen oder als Umgebungsvariable ANTHROPIC_API_KEY setzen.")
+          "„Assistent“ eintragen oder als ANTHROPIC_API_KEY in die Datei .env im Projektordner schreiben.")
 
 SYSTEM = """Du bist der Assistent der „Redstone-Werkstatt“, einer Desktop-App für Minecraft Java 26.3. Die Nutzer sind
 Laien: Sie wissen, was sie in ihrer Welt haben möchten, kennen aber kaum Redstone-Begriffe. Antworte immer auf
@@ -109,20 +113,46 @@ def tools_schema() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------------------------- API key
+ENV_FILE = Path(__file__).resolve().parents[3] / ".env"  # project root, ignored by git
+
+
+def _dotenv_key() -> str | None:
+    """ANTHROPIC_API_KEY from the project's .env (KEY=value lines, optional quotes, # comments)."""
+    try:
+        lines = ENV_FILE.read_text(encoding="utf-8-sig").splitlines()
+    except OSError:
+        return None
+    for line in lines:
+        line = line.strip()
+        if line.startswith("export "):
+            line = line[7:].lstrip()
+        name, sep, value = line.partition("=")
+        if sep and name.strip() == "ANTHROPIC_API_KEY":
+            value = value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in "'\"":
+                value = value[1:-1]
+            return value.strip() or None
+    return None
+
+
+def _file_key() -> str | None:
+    if KEY_FILE.is_file():
+        return KEY_FILE.read_text(encoding="utf-8").strip() or None
+    return None
+
+
 def key_source() -> str | None:
     if os.environ.get("ANTHROPIC_API_KEY"):
         return "env"
-    if KEY_FILE.is_file() and KEY_FILE.read_text(encoding="utf-8").strip():
+    if _dotenv_key():
+        return "dotenv"
+    if _file_key():
         return "file"
     return None
 
 
 def api_key() -> str | None:
-    if os.environ.get("ANTHROPIC_API_KEY"):
-        return os.environ["ANTHROPIC_API_KEY"]
-    if KEY_FILE.is_file():
-        return KEY_FILE.read_text(encoding="utf-8").strip() or None
-    return None
+    return os.environ.get("ANTHROPIC_API_KEY") or _dotenv_key() or _file_key()
 
 
 def save_key(key: str) -> None:
@@ -162,6 +192,8 @@ class Chat:
         self.busy = False
         self.current: dict | None = None  # {"path": P} or {"job": id}
         self._lock = threading.Lock()
+        self._cancel = threading.Event()
+        self._step = 0  # model calls so far (keys of streamed text blocks)
 
     # -- events
     def emit(self, kind: str, **data) -> None:
@@ -178,9 +210,19 @@ class Chat:
             if self.busy:
                 raise RuntimeError("Der Assistent antwortet noch.")
             self.busy = True
+        self._cancel.clear()
+        self.emit("user", text=text)
         if current:
             self.current = current
         threading.Thread(target=self._turn, args=(text,), daemon=True, name="rsx-chat").start()
+
+    def cancel(self) -> bool:
+        """Stop the running turn as soon as possible (a running design search keeps running in the app)."""
+        with self._lock:
+            if not self.busy:
+                return False
+        self._cancel.set()
+        return True
 
     def _context(self) -> str:
         if not self.current:
@@ -193,6 +235,8 @@ class Chat:
     def _turn(self, text: str) -> None:
         try:
             self.run_turn(text)
+        except Cancelled:
+            self.emit("cancelled", text="Abgebrochen.")
         except Exception as e:  # never lose the thread silently
             traceback.print_exc()
             self.emit("error", text=_api_error(e))
@@ -210,14 +254,11 @@ class Chat:
         tools = tools_schema()
         for _ in range(MAX_STEPS):
             self.emit("status", text="Der Assistent denkt nach …")
-            response = client.beta.messages.create(
-                model=MODEL, max_tokens=16000, system=SYSTEM, tools=tools, messages=self.messages,
-                output_config={"effort": "medium"}, cache_control={"type": "ephemeral"},
-                betas=[FALLBACK_BETA], fallbacks="default")
+            response = self._call(client, tools)
             self.messages.append({"role": "assistant", "content": response.content})
-            for block in response.content:
+            for i, block in enumerate(response.content):
                 if block.type == "text" and block.text.strip():
-                    self.emit("text", text=block.text)
+                    self.emit("text", text=block.text, key=f"{self._step}:{i}")
             if response.stop_reason == "pause_turn":
                 continue
             if response.stop_reason == "refusal":
@@ -231,16 +272,57 @@ class Chat:
                 return
             results = []
             for use in uses:
-                try:
-                    out, error = self.run_tool(use.name, dict(use.input or {})), False
-                except ToolError as e:
-                    out, error = str(e), True
-                except Exception as e:
-                    traceback.print_exc()
-                    out, error = f"Interner Fehler: {type(e).__name__}: {e}", True
+                if self._cancel.is_set():  # every tool_use still needs its result in the history
+                    out, error = "Vom Nutzer abgebrochen.", True
+                else:
+                    try:
+                        out, error = self.run_tool(use.name, dict(use.input or {})), False
+                    except Cancelled:
+                        out, error = "Vom Nutzer abgebrochen.", True
+                    except ToolError as e:
+                        out, error = str(e), True
+                    except Exception as e:
+                        traceback.print_exc()
+                        out, error = f"Interner Fehler: {type(e).__name__}: {e}", True
                 results.append({"type": "tool_result", "tool_use_id": use.id, "content": out, "is_error": error})
             self.messages.append({"role": "user", "content": results})
+            if self._cancel.is_set():
+                raise Cancelled
         self.emit("error", text="Der Assistent hat zu viele Schritte gebraucht und hört hier auf.")
+
+    def _call(self, client, tools):
+        """One streamed model call; text pieces go out as delta events. A cancelled call leaves no trace in the
+        history (the user's message stays; the next one follows it directly)."""
+        self._step += 1
+        step = self._step
+        with client.beta.messages.stream(
+                model=MODEL, max_tokens=64000, system=SYSTEM, tools=tools, messages=self.messages,
+                output_config={"effort": "medium"}, cache_control={"type": "ephemeral"},
+                betas=[FALLBACK_BETA], fallbacks="default") as stream:
+            pending, key, last = "", None, time.monotonic()
+
+            def flush():
+                nonlocal pending
+                if pending:
+                    self.emit("delta", text=pending, key=key)
+                    pending = ""
+
+            for event in stream:
+                if self._cancel.is_set():
+                    raise Cancelled
+                if event.type == "content_block_delta" and getattr(event.delta, "type", "") == "text_delta":
+                    k = f"{step}:{event.index}"
+                    if k != key:
+                        flush()
+                        key = k
+                    pending += event.delta.text
+                    if time.monotonic() - last > DELTA_EVERY:
+                        flush()
+                        last = time.monotonic()
+            flush()
+            if self._cancel.is_set():
+                raise Cancelled
+            return stream.get_final_message()
 
     # -- tools
     def run_tool(self, name: str, args: dict) -> str:
@@ -307,6 +389,8 @@ class Chat:
         self.emit("status", text=f"Suche einen Bauplan für „{title}“ …")
         start = time.monotonic()
         while not job.done:
+            if self._cancel.is_set():
+                raise Cancelled
             if time.monotonic() - start > JOB_WAIT:
                 raise ToolError("Die Suche dauert zu lange; sie läuft in der App weiter.")
             time.sleep(0.5)
@@ -369,6 +453,10 @@ class Chat:
 
 class ToolError(Exception):
     """A tool failed for a reason the model should see (German)."""
+
+
+class Cancelled(Exception):
+    """The user stopped the turn."""
 
 
 def _api_error(e: Exception) -> str:

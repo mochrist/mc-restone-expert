@@ -23,24 +23,52 @@ def tool(i, name, inp):
     return SimpleNamespace(type="tool_use", id=i, name=name, input=inp)
 
 
+class FakeStream:
+    """Context manager like `client.beta.messages.stream(...)`: text deltas as events, then the final message."""
+
+    def __init__(self, content, stop, gate=None):
+        self.message = SimpleNamespace(content=content, stop_reason=stop)
+        self.gate = gate
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def __iter__(self):
+        for i, block in enumerate(self.message.content):
+            if block.type == "text":
+                for piece in (block.text[: len(block.text) // 2], block.text[len(block.text) // 2:]):
+                    if self.gate is not None:
+                        self.gate.wait(10)
+                    yield SimpleNamespace(type="content_block_delta", index=i,
+                                          delta=SimpleNamespace(type="text_delta", text=piece))
+
+    def get_final_message(self):
+        return self.message
+
+
 class FakeClient:
     """Answers with scripted responses and records every request."""
 
-    def __init__(self, script):
+    def __init__(self, script, gate=None):
         self.script = list(script)
         self.calls = []
-        self.beta = SimpleNamespace(messages=SimpleNamespace(create=self._create))
+        self.gate = gate
+        self.beta = SimpleNamespace(messages=SimpleNamespace(stream=self._stream))
 
-    def _create(self, **kw):
+    def _stream(self, **kw):
         self.calls.append({**kw, "messages": list(kw["messages"])})
         content, stop = self.script.pop(0)
-        return SimpleNamespace(content=content, stop_reason=stop)
+        return FakeStream(content, stop, self.gate)
 
 
 @pytest.fixture()
 def server(tmp_path, monkeypatch):
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.setattr(assistant, "KEY_FILE", tmp_path / "key")
+    monkeypatch.setattr(assistant, "ENV_FILE", tmp_path / ".env")
     srv = make_server(0)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     port = srv.server_address[1]
@@ -132,5 +160,41 @@ def test_tool_loop(server):
     status, r2 = call("/api/chat", {"chat": r["chat"], "message": "Danke"})
     assert r2["chat"] == r["chat"]
     events = wait(call, r["chat"], r2["since"])
-    assert events[-1] == {"i": events[-1]["i"], "type": "text", "text": "Gern."}
+    assert events[0]["type"] == "user" and events[0]["text"] == "Danke"
+    assert "".join(e["text"] for e in events if e["type"] == "delta") == "Gern."
+    assert events[-1] == {"i": events[-1]["i"], "type": "text", "text": "Gern.", "key": events[-1]["key"]}
+    assert all(e["key"] == events[-1]["key"] for e in events if e["type"] == "delta")
+    # the whole chat can be fetched again (reloaded page)
+    _, again = call(f"/api/chat/{r['chat']}?since=0")
+    assert [e["text"] for e in again["events"] if e["type"] == "user"] == ["Eine Tür mit zwei Hebeln", "Danke"]
     assert len(fake.calls[-1]["messages"]) == 11
+
+
+def test_cancel(server):
+    call, state = server
+    gate = threading.Event()
+    fake = FakeClient([([text("Das dauert lange …")], "end_turn"), ([text("Neu.")], "end_turn")], gate)
+    state.client_factory = lambda: fake
+    _, r = call("/api/chat", {"message": "Hallo"})
+    status, c = call(f"/api/chat/{r['chat']}/cancel", {})
+    assert status == 200 and c["cancelled"] is True
+    gate.set()
+    events = wait(call, r["chat"])
+    assert events[-1]["type"] == "cancelled"
+    assert not any(e["type"] == "text" for e in events)
+    assert call(f"/api/chat/{r['chat']}/cancel", {})[1]["cancelled"] is False
+    assert call("/api/chat/999/cancel", {})[0] == 404
+    # the cancelled answer is not in the history; the next message follows the first one
+    _, r2 = call("/api/chat", {"chat": r["chat"], "message": "Nochmal"})
+    events = wait(call, r["chat"], r2["since"])
+    assert events[-1]["type"] == "text" and events[-1]["text"] == "Neu."
+    assert [m["role"] for m in fake.calls[-1]["messages"]] == ["user", "user"]
+
+
+def test_dotenv_key(server, monkeypatch):
+    call, _ = server
+    assistant.ENV_FILE.write_text('# Schlüssel\nOTHER=1\nANTHROPIC_API_KEY="sk-ant-env"\n', encoding="utf-8")
+    assert assistant.api_key() == "sk-ant-env" and assistant.key_source() == "dotenv"
+    assert call("/api/assistant")[1]["configured"] is True
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-proc")
+    assert assistant.api_key() == "sk-ant-proc" and assistant.key_source() == "env"

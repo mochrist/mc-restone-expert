@@ -59,5 +59,6 @@ export const api = {
   saveKey: (key) => req('/api/assistant/key', { key }),
   chat: (chat, message, current) => req('/api/chat', { chat, message, current }),
   chatEvents: (id, since) => req(`/api/chat/${id}?since=${since}`),
+  chatCancel: (id) => req(`/api/chat/${id}/cancel`, {}),
   demo: () => req('demo/model.json'),
 };

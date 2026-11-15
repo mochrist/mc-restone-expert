@@ -1009,12 +1009,12 @@ const IDEAS = [
   ['Alarmanlage mit Reset', 'Eine Alarmanlage: Ein Knopf löst den Alarm aus, eine Lampe bleibt an, bis man einen zweiten Knopf zum Zurücksetzen drückt.'],
   ['Leuchtturm-Blinker', 'Ein Leuchtturm: Eine Lampe soll von selbst blinken, etwa jede Sekunde kurz aufleuchten.'],
 ];
-const chat = { id: null, since: 0, timer: null, busy: false, note: null };
+const chat = { id: null, since: 0, timer: null, busy: false, note: null, live: new Map() };
 
 function chatAdd(cls, content) {
   const d = node('div', undefined, 'msg ' + cls);
   if (content instanceof Node) d.appendChild(content); else d.textContent = content;
-  $('chatLog').appendChild(d);
+  $('chatLog').insertBefore(d, chat.note && chat.note.isConnected ? chat.note : null);
   d.scrollIntoView({ block: 'nearest' });
   return d;
 }
@@ -1024,8 +1024,17 @@ function chatNote(t) {
 function chatBusy(b) {
   chat.busy = b;
   $('chatSend').disabled = b;
+  $('chatStop').hidden = !b;
+  $('chatNew').disabled = b;
   for (const x of $('chatIdeas').children) x.disabled = b;
   if (!b && chat.note) { chat.note.remove(); chat.note = null; }
+}
+function chatReset() {
+  if (chat.timer) clearInterval(chat.timer);
+  Object.assign(chat, { id: null, since: 0, timer: null, note: null, live: new Map() });
+  $('chatLog').replaceChildren();
+  store.set('chat', '');
+  chatBusy(false);
 }
 async function chatKeyState() {
   try {
@@ -1043,15 +1052,40 @@ $('chatKeySave').addEventListener('click', () => busyWith($('chatKeySave'), 'Spe
 async function chatSend(text) {
   text = (text || '').trim();
   if (!text || chat.busy || S.demo) return;
-  chatAdd('user', text);
   $('chatIn').value = '';
   chatBusy(true);
-  chatNote('Der Assistent denkt nach …');
   try {
     const r = await api.chat(chat.id, text, currentRef());
     chat.id = r.chat; chat.since = r.since;
-    chat.timer = setInterval(chatPoll, 700);
-  } catch (e) { chatAdd('err', e.message); chatBusy(false); }
+    store.set('chat', chat.id);
+    chatNote('Der Assistent denkt nach …');
+    chat.timer = setInterval(chatPoll, 500);
+  } catch (e) { chatAdd('user', text); chatAdd('err', e.message); chatBusy(false); }
+}
+/** One chat event. `replay`: shown again after reloading the page (no new searches or files are opened). */
+async function chatEvent(ev, replay) {
+  if (ev.type === 'user') chatAdd('user', ev.text);
+  else if (ev.type === 'delta') {
+    let d = chat.live.get(ev.key);
+    if (!d) { d = chatAdd('bot live', ''); d._raw = ''; chat.live.set(ev.key, d); }
+    d._raw += ev.text;
+    d.textContent = d._raw;
+    d.scrollIntoView({ block: 'nearest' });
+  } else if (ev.type === 'text') {
+    const d = chat.live.get(ev.key);
+    const md = renderMarkdown(ev.text);
+    if (d) { d.classList.remove('live'); d.replaceChildren(md); chat.live.delete(ev.key); } else chatAdd('bot', md);
+  } else if (ev.type === 'status') { if (!replay) chatNote(ev.text); }
+  else if (ev.type === 'error') { chatAdd('err', ev.text); if (!replay && /API-Schlüssel/.test(ev.text)) chatKeyState(); }
+  else if (ev.type === 'cancelled') chatAdd('note', ev.text);
+  else if (ev.type === 'job') { if (!replay) followJob(ev.job, ev.path, 'chat'); }
+  else if (ev.type === 'load') {
+    if (!replay) { await refreshFiles().catch(() => {}); await selectFile(ev.path, ev.group || 'scenarios'); }
+  }
+}
+function chatDropLive() { // deltas of an answer that never finished (cancelled or failed)
+  for (const d of chat.live.values()) d.classList.remove('live');
+  chat.live.clear();
 }
 let chatPolling = false;
 async function chatPoll() {
@@ -1059,19 +1093,29 @@ async function chatPoll() {
   chatPolling = true;
   try {
     const d = await api.chatEvents(chat.id, chat.since);
-    for (const ev of d.events) {
-      chat.since = ev.i + 1;
-      if (ev.type === 'text') { chat.note?.remove(); chat.note = null; chatAdd('bot', renderMarkdown(ev.text)); }
-      else if (ev.type === 'status') chatNote(ev.text);
-      else if (ev.type === 'error') { chatAdd('err', ev.text); if (/API-Schlüssel/.test(ev.text)) chatKeyState(); }
-      else if (ev.type === 'job') followJob(ev.job, ev.path, 'chat');
-      else if (ev.type === 'load') { await refreshFiles().catch(() => {}); await selectFile(ev.path, ev.group || 'scenarios'); }
-    }
-    if (!d.busy) { clearInterval(chat.timer); chat.timer = null; chatBusy(false); }
+    for (const ev of d.events) { chat.since = ev.i + 1; await chatEvent(ev, false); }
+    if (!d.busy) { clearInterval(chat.timer); chat.timer = null; chatDropLive(); chatBusy(false); }
   } catch (e) {
     clearInterval(chat.timer); chat.timer = null; chatAdd('err', e.message); chatBusy(false);
   } finally { chatPolling = false; }
 }
+async function chatRestore() {
+  const id = store.get('chat');
+  if (!id) return;
+  try {
+    const d = await api.chatEvents(id, 0);
+    chat.id = id;
+    for (const ev of d.events) { chat.since = ev.i + 1; await chatEvent(ev, true); }
+    if (d.busy) { chatBusy(true); chatNote('Der Assistent arbeitet noch …'); chat.timer = setInterval(chatPoll, 500); }
+    else chatDropLive();
+  } catch { store.set('chat', ''); } // the app was restarted: the conversation is gone
+}
+$('chatStop').addEventListener('click', async () => {
+  if (!chat.id) return;
+  chatNote('Breche ab …');
+  try { await api.chatCancel(chat.id); } catch (e) { fail(e); }
+});
+$('chatNew').addEventListener('click', () => { if (!chat.busy) chatReset(); });
 for (const [title, text] of IDEAS) {
   const b = node('button', title);
   b.type = 'button';
@@ -1083,6 +1127,6 @@ $('chatSend').addEventListener('click', () => chatSend($('chatIn').value));
 $('chatIn').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); chatSend($('chatIn').value); }
 });
-if (!S.demo) chatKeyState();
+if (!S.demo) { chatKeyState(); chatRestore(); }
 
 init();

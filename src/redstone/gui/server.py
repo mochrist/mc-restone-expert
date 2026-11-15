@@ -640,6 +640,11 @@ def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
                 except RuntimeError as e:
                     raise ApiError(str(e), HTTPStatus.CONFLICT) from e
                 return {"chat": cid, "since": since}
+            if method == "POST" and len(parts) == 3 and parts[0] == "chat" and parts[2] == "cancel":
+                chat = state.chats.get(parts[1])
+                if chat is None:
+                    raise ApiError("Unterhaltung unbekannt", HTTPStatus.NOT_FOUND)
+                return {"cancelled": chat.cancel()}
             if method == "GET" and len(parts) == 2 and parts[0] == "chat":
                 chat = state.chats.get(parts[1])
                 if chat is None:

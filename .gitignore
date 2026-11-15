@@ -11,3 +11,5 @@ tests/fixtures/external/
 rust/rsx-core/target/
 .claude/worktrees/
 .claude/settings.local.json
+.env
+

@@ -297,3 +297,5 @@ footer:has(#status.err) .dot { background: var(--err); box-shadow: 0 0 8px var(-
 .ideas > button::before { display: none; }
 .ideas > button { font: 500 12.5px/1.2 var(--sans); padding: 7px 12px; }
 #chatKey input { flex: 1; }
+.msg.bot.live { white-space: pre-wrap; }
+.chatfoot { justify-content: flex-end; margin-top: 6px; }
