@@ -1,6 +1,9 @@
 # Plan: Redstone-Analyse- und Design-Assistent
 
-Stand: 2026-10-28, aktualisiert 2026-11-04 · Grundlage: `idea.md` · aktueller Fortschritt: `STATUS.md`
+Stand: 2026-10-28, aktualisiert 2026-11-04 · Grundlage: `idea.md`
+
+> **Historisch.** Dieser Plan beschreibt den Aufbau der Meilensteine M0–M5 vom Projektstart. Rust-Kern, GUI (M6)
+> und Assistent kamen später dazu. Aktueller Stand: `STATUS.md`, offene Aufträge: `docs/tasks/`.
 
 > **Erkenntnisse seit Projektstart (Kurzfassung)**
 > - Der 26.3-Server ist unobfuskiert (Mojang-Namen). Der dekompilierte Spielcode ist die Hauptquelle der Wissensbasis.

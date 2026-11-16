@@ -5,7 +5,8 @@ untersuchen und erklären, und kompakter neu entwerfen. Jede Aussage und jeder E
 geprüft; der Simulator ist tick-genau gegen das echte Spiel validiert (Golden Traces aus einem
 Fabric-Server, siehe `oracle/`).
 
-Aktueller Stand und offene Punkte: `STATUS.md`. Ursprüngliche Idee und Plan: `idea.md`, `plan.md`.
+Aktueller Stand: `STATUS.md`, offene Aufträge: `docs/tasks/`, Verlauf: `docs/history.md`.
+Ursprüngliche Idee und Plan (historisch): `idea.md`, `plan.md`.
 
 ## Installation
 
@@ -75,8 +76,9 @@ Weitere Beispiele in `examples/specs/` (auch Teiltabellen mit `others: dont_care
 - Ergebnisse gelten an der Position, an der Oracle und Simulator rechnen (Min-Ecke 0, 200, 0): Die
   Update-Reihenfolge von Redstone-Staub hängt in Java von den Koordinaten ab. An anderer Stelle kann eine
   Schaltung mit knappem Timing anders laufen.
-- Keine Entities (Pfeile, Loren, Spieler); Druckplatten werden nur nachgebildet.
-- Tageslichtsensor nur bei fester Tageszeit; Detektorschiene und Sculk fehlen.
+- Keine Entities (Pfeile, Loren, Spieler); Druckplatten werden nur nachgebildet, Sculk-Sensoren reagieren nur auf
+  Blöcke (Hebel, Kolben, Notenblock …).
+- Tageslichtsensor nur bei fester Tageszeit; die Detektorschiene fehlt.
 
 ## Für Entwicklung
 
