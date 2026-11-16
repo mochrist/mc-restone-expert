@@ -361,6 +361,9 @@ def run_redesign(file, constraints=None, *, compact: int = 100, time_limit: floa
     orig_ev = evaluate_any(original, spec, constraints) if original is not None else None
     written = None
     ok = [r for r in results if r.ok]
+    ok, robust_note = _position_proof_first(ok, spec, constraints)
+    if ok:
+        results = [ok[0]] + [r for r in results if r is not ok[0]]  # the report names the chosen design first
     best = ok[0].candidate if ok else None
     note = ""
     if output and ok:
@@ -375,6 +378,7 @@ def run_redesign(file, constraints=None, *, compact: int = 100, time_limit: floa
         else:
             note = (f"\n\n## Ausgang\n\n- Kein funktionierender Entwurf ließ sich mit {ACTUATORS[output][0]} am "
                     f"Ausgang bauen ({why}). Mit Lampe gibt es Entwürfe.\n")
+    note = robust_note + note
     if out and best is not None:
         target = Path(out)
         if target.suffix == "":
@@ -384,6 +388,40 @@ def run_redesign(file, constraints=None, *, compact: int = 100, time_limit: floa
         written = str(target)
     text = report(spec, constraints, results, title, orig_ev, written, top=top, compact_log=steps) + note
     return best, text, spec
+
+
+ROBUST_TRIES = 5  # working designs checked for position robustness, best first
+ROBUST_BIG = 8  # more inputs: quick check at 12 origins
+
+
+def _position_proof_first(ok: list, spec, constraints) -> tuple[list, str]:
+    """Check the best working designs at many origins and in four rotations (design/robust.py, DUST-018) and
+    move the first position-proof one to the front. Returns (reordered list, report section)."""
+    import time
+
+    from .design.robust import check, summary
+
+    if not ok:
+        return ok, ""
+    lines = []
+    for i, r in enumerate(ok[:ROBUST_TRIES]):
+        big = len(r.candidate.inputs) > ROBUST_BIG
+        t0 = time.perf_counter()
+        res = check(r.candidate, spec, constraints, quick=big, sample=12 if big else None, stop_early=i > 0)
+        took = time.perf_counter() - t0
+        if res.ok:
+            if i:
+                lines.append(f"- Die {i} besser bewerteten Entwürfe hängen vom Bauort ab; gewählt ist "
+                             f"„{r.candidate.name}“.")
+            lines.append(f"- {summary(res, took)}")
+            if big:
+                lines.append("- Großer Entwurf: nur Stichprobe (12 Positionen, je Kombination aus frischer Welt).")
+            return [r] + ok[:i] + ok[i + 1:], "\n\n## Ortsfestigkeit\n\n" + "\n".join(lines) + "\n"
+        if i == 0:
+            lines.append(f"- „{r.candidate.name}“: {summary(res, took)}")
+    lines.append(f"- **Warnung:** Keiner der {min(len(ok), ROBUST_TRIES)} besten Entwürfe verhält sich überall "
+                 "gleich. Die Schaltung kann je nach Bauort oder Drehung anders reagieren.")
+    return ok, "\n\n## Ortsfestigkeit\n\n" + "\n".join(lines) + "\n"
 
 
 def _cmd_redesign(args: argparse.Namespace) -> int:
