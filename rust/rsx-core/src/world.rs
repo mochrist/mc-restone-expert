@@ -3,6 +3,7 @@
 
 use crate::common::*;
 use crate::state::*;
+use crate::outputs::daylight_sky_darken_at;
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, VecDeque};
@@ -323,6 +324,10 @@ pub struct World {
     pub st: States,
     pub store: Store,
     pub game_time: i64,
+    /// Overworld clock (/time set; frozen in the oracle) and Level#skyDarken, which follows it only at the start
+    /// of the next tick (ServerLevel#tick -> updateSkyBrightness); see redstone/sim/blocks/daylight.py.
+    pub day_time: i64,
+    pub sky_darken: i32,
     /// ServerLevel#handlingTick: block ticks through block events
     pub handling_tick: bool,
     sub_tick: u64,
@@ -373,6 +378,8 @@ impl World {
             st: States::new(),
             store: Store::default(),
             game_time: 0,
+            day_time: 0,
+            sky_darken: 0,
             handling_tick: false,
             sub_tick: 0,
             ticks: BinaryHeap::new(),
@@ -1008,6 +1015,9 @@ impl World {
             match &be.data {
                 // A detector whose next update would not change the power.
                 BeData::Daylight => {
+                    if self.sky_darken != daylight_sky_darken_at(self.day_time) {
+                        return false; // refreshed at the next tick
+                    }
                     let pos = be.pos;
                     let state = self.get(pos);
                     if self.info(state).kind == Kind::DaylightDetector
@@ -1045,6 +1055,7 @@ impl World {
     /// One game tick (ServerLevel#tick, redstone-relevant phases only).
     pub fn tick(&mut self) {
         self.handling_tick = true;
+        self.sky_darken = if self.day_time != 0 { daylight_sky_darken_at(self.day_time) } else { 0 };
         self.game_time += 1;
         self.run_block_ticks();
         self.run_block_events();

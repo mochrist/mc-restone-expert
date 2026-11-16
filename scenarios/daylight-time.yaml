@@ -1,0 +1,46 @@
+name: daylight-time
+description: >
+  Tageslichtsensor über den Tag: Aktion "time" (wie /time set) stellt die Weltuhr, die Sensoren rechnen beim
+  nächsten 20-gt-Takt neu (game_time 0: Takt bei Tick 20, 40, ...). Zeiten 0 (Anfang), 6000, 12000, 12500,
+  13000, 13500, 18000, 22500, 23000, 23500, jeweils einen Tick nach dem Takt gesetzt. N/I: normal und
+  invertiert unter freiem Himmel (mit Lampe), S/T: normal und invertiert unter einem Stein (Himmelslicht 14).
+  U/V: Rechtsklick im selben Tick wie "time" (Tick 205): der Sonnenwinkel gilt sofort, skyDarken erst ab dem
+  nächsten Tick (Level#updateSkyBrightness am Tickanfang).
+build:
+  size: [2, 3, 11]
+  fill:
+    - [0, 0, 0, 1, 0, 10, "stone"]
+  blocks:
+    - [0, 1, 0, "daylight_detector[inverted=false,power=0]"]
+    - [1, 1, 0, "redstone_lamp[lit=false]"]
+    - [0, 1, 2, "daylight_detector[inverted=true,power=0]"]
+    - [1, 1, 2, "redstone_lamp[lit=false]"]
+    - [0, 1, 4, "daylight_detector[inverted=false,power=0]"]
+    - [0, 2, 4, "stone"]
+    - [0, 1, 6, "daylight_detector[inverted=true,power=0]"]
+    - [0, 2, 6, "stone"]
+    - [0, 1, 8, "daylight_detector[inverted=false,power=0]"]
+    - [0, 1, 10, "daylight_detector[inverted=true,power=0]"]
+ticks: 225
+inputs:
+  - {tick: 21, action: time, time: 6000}
+  - {tick: 41, action: time, time: 12000}
+  - {tick: 61, action: time, time: 12500}
+  - {tick: 81, action: time, time: 13000}
+  - {tick: 101, action: time, time: 13500}
+  - {tick: 121, action: time, time: 18000}
+  - {tick: 141, action: time, time: 22500}
+  - {tick: 161, action: time, time: 23000}
+  - {tick: 181, action: time, time: 23500}
+  - {tick: 205, action: time, time: 6000}
+  - {tick: 205, pos: [0, 1, 8], action: use}
+  - {tick: 205, pos: [0, 1, 10], action: use}
+probes:
+  n_detector: [0, 1, 0]
+  n_lamp: [1, 1, 0]
+  i_detector: [0, 1, 2]
+  i_lamp: [1, 1, 2]
+  s_detector: [0, 1, 4]
+  t_detector: [0, 1, 6]
+  u_detector: [0, 1, 8]
+  v_detector: [0, 1, 10]

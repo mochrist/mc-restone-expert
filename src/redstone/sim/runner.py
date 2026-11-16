@@ -22,8 +22,12 @@ def probe_value(world: World, pos: Pos) -> str:
     return value
 
 
-def apply_input(world: World, action: str, pos: Pos, state: BlockState | None) -> None:
-    if action == "use":
+def apply_input(world: World, action: str, pos: Pos, state: BlockState | None, time: int | None = None) -> None:
+    if action == "time":
+        # /time set: the overworld clock; skyDarken follows at the next tick (sim/blocks/daylight.py)
+        assert time is not None
+        world.day_time = time
+    elif action == "use":
         use_at = getattr(world, "use_at", None)  # Rust core
         if use_at is not None:
             use_at(pos)
@@ -59,7 +63,7 @@ def run(scenario: Scenario, origin: Pos | None = None) -> tuple[Trace, World]:
     trace = Trace(scenario.name, "sim", scenario.ticks, dict(scenario.probes))
     for t in range(scenario.ticks + 1):
         for inp in scenario.inputs_at(t):
-            apply_input(world, inp.action, Pos(*inp.pos) + origin, inp.state)
+            apply_input(world, inp.action, Pos(*inp.pos) + origin, inp.state, inp.time)
         for name, pos in scenario.probes.items():
             trace.record(name, t, probe_value(world, Pos(*pos) + origin))
         if t < scenario.ticks:

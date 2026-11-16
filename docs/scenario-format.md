@@ -40,6 +40,7 @@ Koordinaten sind relativ zur Schematic (Min-Ecke = `(0,0,0)`).
 | `use` | Rechtsklick eines Spielers ohne Item auf den Block (Hebel umlegen, Knopf drücken, Repeater-Delay weiterschalten, Comparator-Modus wechseln) | `BlockState#useWithoutItem` mit einem Fake-Player, Trefferpunkt Blockmitte, Seite `up` |
 | `step` | **nur Simulator** (kein Oracle: dort fehlen Entities): ein Entity betritt eine Druckplatte und verlässt sie sofort wieder (löst die Platte aus, der geplante Tick löst sie wieder). `use` auf einer Druckplatte tut wie im Spiel nichts. Die Analyse (`Experiment.run`) setzt für Platten automatisch `step` statt `use` ein | – |
 | `setblock` | wie `/setblock <pos> <state>` (ersetzt den Block, Flags `UPDATE_ALL` = 3) | `ServerLevel#setBlock(pos, state, 3)` |
+| `time` | wie `/time set <ticks>`: stellt die Weltuhr `minecraft:overworld` auf `time` (Feld `time`, ganze Zahl ≥ 0; `pos` entfällt), z. B. `{tick: 21, action: time, time: 13000}`. Wirkt auf den Tageslichtsensor (Abschnitt „Spielzeit und Tageslichtsensor“) | `ServerClockManager#setTotalTicks` |
 
 ## 2. Ablauf (für Simulator und Oracle identisch)
 
@@ -60,10 +61,15 @@ von Tick `t`. Eingaben liegen damit „zwischen" zwei Game-Ticks, genau wie Spie
 
 ### Spielzeit und Tageslichtsensor
 
-- Das Oracle läuft in einer eingefrorenen Welt (`advance_time` aus, Weltuhr `minecraft:overworld` bei
-  `total_ticks = 0`, klares Wetter). Der Tageslichtsensor sieht daher immer denselben Himmel: Sonnenwinkel
-  282,37 Grad, `skyDarken` 0 (normaler Sensor unter freiem Himmel 7, invertierter 0). Der Simulator nimmt
-  genau diese Welt an (`sim/blocks/daylight.py`); andere Tageszeiten sind nicht modelliert.
+- Das Oracle läuft in einer eingefrorenen Welt (`advance_time` aus, klares Wetter). Die Weltuhr
+  `minecraft:overworld` steht zu Beginn jedes Szenarios auf 0 (das Oracle setzt sie beim Aufbau zurück und
+  aktualisiert `skyDarken`); nur die Aktion `time` verstellt sie. Bei 0 steht die Sonne bei 282,37 Grad,
+  `skyDarken` ist 0 (normaler Sensor unter freiem Himmel 7, invertierter 0).
+- Der Simulator rechnet Sonnenwinkel und Himmelslicht aus der Timeline `minecraft:day` in float wie das Spiel
+  (`sim/blocks/daylight.py`, `outputs.rs`; Weltfeld `day_time`). Wie im Spiel gilt nach `time` der neue
+  Sonnenwinkel sofort, `skyDarken` aber erst ab dem nächsten Tick (`Level#updateSkyBrightness` am Tickanfang):
+  ein Rechtsklick auf den Sensor im selben Tick sieht die alte Helligkeit. Der Sensor selbst rechnet erst beim
+  nächsten 20-gt-Takt neu (`scenarios/daylight-time.yaml`).
 - Die Spielzeit (`gameTime`) läuft im Oracle über Szenarien hinweg weiter. Das Oracle setzt sie beim Aufbau
   deterministisch: nur die Phase `gameTime % 20` des Szenarios zählt (der 20-gt-Takt des Sensors), die Uhr springt
   dafür um mindestens 100 Ticks **vorwärts** (nie zurück, damit Fackel-Ausbrenn-Buchführung früherer Szenarien
