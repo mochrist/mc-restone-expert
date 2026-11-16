@@ -513,6 +513,13 @@ class RustWorld:
         """``(pos - origin, probe value)`` of all non-air blocks inside ``lo..hi``, in ``blocks`` order."""
         return self._c.snapshot(lo, hi, origin)
 
+    def run_recording(self, actions: list[tuple[int, Pos]], max_ticks: int, quiet: int, lo: Pos, hi: Pos,
+                      origin: Pos) -> tuple[list[tuple[Pos, str]], list[tuple[int, Pos, str, str]], int, int | None]:
+        """analysis.experiment.Circuit.run in the core: right clicks (steps on plates) at absolute positions,
+        returns (snapshot before the first tick, changes (tick, pos - origin, old, new), ticks, settled_at)."""
+        self._dirty.clear()
+        return self._c.run_recording(actions, max_ticks, quiet, lo, hi, origin)
+
     def comparator_positions(self) -> list[Pos]:
         """Positions of comparators with a block entity, in ``block_entities`` order."""
         return self._c.comparator_positions()

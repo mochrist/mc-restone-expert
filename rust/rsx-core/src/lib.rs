@@ -476,6 +476,99 @@ impl World {
         Ok(out)
     }
 
+    /// analysis.experiment.Circuit.run in one call: apply `actions` (`(tick, absolute position)`, a right click,
+    /// on a pressure plate a step) and tick until the world has been idle for `quiet` ticks after the last
+    /// action, or until `max_ticks`. Every tick the blocks changed since the last tick and all comparators inside
+    /// `lo..=hi` are probed and compared with their last value.
+    ///
+    /// Returns `(snapshot, changes, ticks, settled_at)`: the probe values of all non-air blocks in the box
+    /// before the first tick (as `snapshot`), the changes as `(tick, pos - origin, old, new)` (within a tick in
+    /// the order of the first change, then comparators), the last tick and the first idle tick (None if the
+    /// world did not come to rest).
+    #[allow(clippy::type_complexity)]
+    fn run_recording(
+        &mut self,
+        py: Python<'_>,
+        actions: Vec<(i64, P3)>,
+        max_ticks: i64,
+        quiet: i64,
+        lo: P3,
+        hi: P3,
+        origin: P3,
+    ) -> PyResult<(Vec<(Py<PyAny>, String)>, Vec<(i64, Py<PyAny>, String, String)>, i64, Option<i64>)> {
+        let inside = |p: Pos| lo.0 <= p.x && p.x <= hi.0 && lo.1 <= p.y && p.y <= hi.1 && lo.2 <= p.z && p.z <= hi.2;
+        let rel = |p: Pos| Pos::new(p.x - origin.0, p.y - origin.1, p.z - origin.2);
+        const AIR_TEXT: &str = "minecraft:air";
+        let mut current: FxHashMap<Pos, String> = FxHashMap::default();
+        let mut snapshot = Vec::new();
+        for (p, _) in self.w.store.items() {
+            if inside(p) {
+                let v = self.probe(p);
+                snapshot.push((self.pos_out(py, rel(p))?, v.clone()));
+                current.insert(p, v);
+            }
+        }
+        self.w.take_dirty();
+        let last_action = actions.iter().map(|a| a.0).max().unwrap_or(0);
+        let mut changes = Vec::new();
+        let mut idle_since: Option<i64> = None;
+        let mut settled_at = None;
+        let mut seen: rustc_hash::FxHashSet<Pos> = rustc_hash::FxHashSet::default();
+        let mut t: i64 = 0;
+        loop {
+            for &(at, p) in &actions {
+                if at == t {
+                    let p = pos(p);
+                    let state = self.w.get(p);
+                    let name = self.w.st.str(state).split('[').next().unwrap_or("");
+                    if name.ends_with("_pressure_plate") {
+                        self.w.step_on(p, state);
+                    } else {
+                        self.w.use_without_item(p, state);
+                    }
+                }
+            }
+            seen.clear();
+            let mut positions = self.w.take_dirty();
+            for (p, _) in self.w.block_entity_items() {
+                if self.w.info_at(p).kind == state::Kind::Comparator {
+                    positions.push(p);
+                }
+            }
+            for p in positions {
+                if !inside(p) || !seen.insert(p) {
+                    continue;
+                }
+                let v = if self.w.get(p) == AIR { AIR_TEXT.to_owned() } else { self.probe(p) };
+                let old = current.get(&p).map(String::as_str).unwrap_or(AIR_TEXT);
+                if old != v {
+                    changes.push((t, self.pos_out(py, rel(p))?, old.to_owned(), v.clone()));
+                    if v == AIR_TEXT {
+                        current.remove(&p);
+                    } else {
+                        current.insert(p, v);
+                    }
+                }
+            }
+            let idle = self.w.is_idle();
+            if t >= last_action && idle {
+                let since = *idle_since.get_or_insert(t);
+                if t - since >= quiet {
+                    settled_at = Some(since);
+                    break;
+                }
+            } else {
+                idle_since = None;
+            }
+            if t >= max_ticks {
+                break;
+            }
+            self.w.tick();
+            t += 1;
+        }
+        Ok((snapshot, changes, t, settled_at))
+    }
+
     // ------------------------------------------------------------------ block entities
     /// `block_entities.get(pos)`: the raw entry (may be a removed block entity).
     fn raw_block_entity(&self, p: P3) -> Option<BeId> {

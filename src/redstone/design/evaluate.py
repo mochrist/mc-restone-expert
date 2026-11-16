@@ -21,6 +21,7 @@ from .spec import Spec
 
 MAX_TICKS = 200
 QUIET = 12
+TRANSITIONS = "half"  # "all": every lever from every combination; "half": only levers that are off (see _check_transitions)
 GAP = 40  # minimum ticks between successive lever changes in a transition run (see _check_transitions)
 
 # Blocks that form the interface of a candidate; not subject to the allowed/forbidden block lists.
@@ -59,6 +60,7 @@ class Evaluation:
     max_delay: int | None = None
     mechanics: set[str] = field(default_factory=set)  # note kinds seen during the runs (qc, bud, ...)
     runs: int = 0
+    ticks: int = 0  # simulated ticks over all runs
 
     @property
     def ok(self) -> bool:
@@ -133,6 +135,7 @@ def evaluate(candidate: Candidate, spec: Spec, constraints: Constraints | None =
     world = circuit.new_world()
     rec = circuit.run([], max_ticks=MAX_TICKS, quiet=QUIET, world=world)
     ev.runs += 1
+    ev.ticks += rec.ticks
     stored = _stored(candidate)
     zero = stored
     if rec.settled_at is None:
@@ -150,6 +153,7 @@ def evaluate(candidate: Candidate, spec: Spec, constraints: Constraints | None =
         world = circuit.new_world()
         rec = circuit.run(actions, max_ticks=MAX_TICKS, quiet=QUIET, world=world)
         ev.runs += 1
+        ev.ticks += rec.ticks
         ev.mechanics |= {n.kind for n in notes_of(world)}
         if rec.settled_at is None:
             ev.errors.append(f"kommt bei {_fmt(spec.inputs, combo)} nicht zur Ruhe")
@@ -177,9 +181,14 @@ def evaluate(candidate: Candidate, spec: Spec, constraints: Constraints | None =
 
 def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: Evaluation,
                        delays: list[int]) -> None:
-    """From every combination, toggle each lever and back, one after another in a single run, and check
-    the settled outputs after every change."""
+    """From every combination, toggle each lever that is off there and back, one after another in a single run,
+    and check the settled outputs after every change.
+
+    Every directed transition "combination c, lever i switched" is checked exactly once: the way there from the
+    combination with lever i off, the way back from the one with lever i on (reached by that very switch). Toggling
+    the levers that are on as well (TRANSITIONS = "all") checks each transition twice and costs twice the ticks."""
     n = len(spec.inputs)
+    half = TRANSITIONS == "half"
     stored = _stored(candidate)
     # slow designs (long chains of parts) get more time per change: twice their delay from a fresh world
     gap = max(GAP, 2 * max(delays, default=0) + QUIET)
@@ -188,6 +197,8 @@ def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: E
         phases = []  # (start tick, expected combination, label)
         t = 1
         for i in range(n):
+            if half and combo[i]:
+                continue  # checked from the combination with lever i off
             flipped = tuple(not b if j == i else b for j, b in enumerate(combo))
             if flipped not in spec.table:
                 continue  # a combination that does not matter (partial spec)
@@ -195,9 +206,12 @@ def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: E
                 t += gap
                 actions.append((t, candidate.inputs[i], "use"))
                 phases.append((t, want, spec.inputs[i]))
+        if not phases and half:
+            continue  # nothing to switch (all levers on); the fresh world was checked in evaluate
         world = circuit.new_world()
         rec = circuit.run(actions, max_ticks=t + MAX_TICKS, quiet=QUIET, world=world)
         ev.runs += 1
+        ev.ticks += rec.ticks
         ev.mechanics |= {k.kind for k in notes_of(world)}
         ends = [p[0] - 1 for p in phases[1:]] + [rec.ticks]
         for (start, want, name), end in zip(phases, ends):

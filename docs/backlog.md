@@ -46,6 +46,11 @@ daraus (Ziel, Einstieg, Abnahme, Abbruch). Vorgeschichte je Punkt: `docs/history
 - Router (`compose._route`) in Python ist nach dem Simulator der nächste Engpass bei kleinen Entwürfen (Rust-Fassung
   `rust/rsx-core/src/route.rs` gibt es für den BFS-Kern).
 - Kompaktieren: es fehlen größere Züge (ganze Kaskadenstufen neu anordnen); Budget ist kein Engpass.
+- Kompaktieren großer Entwürfe: `compact.relocations` (`_dust_path`, Python) ist nach Auftrag 03 der Engpass (mux8:
+  354 s von 449 s) und prüft das Zeitlimit nicht, `--time` wird deutlich überzogen. Kandidaten: Zeitlimit in der
+  Suche prüfen, Liste lazy erzeugen, `_dust_path` nach Rust.
+- Schnellprüfung: je Lauf kosten Welt aufbauen (`place_grid`, Block-Entities laden) und der Anfangszustand als
+  `Pos`-Objekte mehr als die Ticks (mux8: 1,4 s für 2048 Läufe); eine geklonte Rust-Welt je `Circuit` spart das.
 
 ## M6 Oberfläche
 

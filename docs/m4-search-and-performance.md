@@ -126,3 +126,47 @@ damit wieder die Suche selbst, nicht die Bewertung.
 
 Hinweis: Session 5 maß für xor4 mit Python 26 s; heute 70 s (Pipeline seither erweitert, andere Last auf dem
 Rechner möglich). Die Faktoren oben stammen aus Läufen direkt nacheinander.
+
+## Entwurfssuche großer Funktionen (2026-11-16, Auftrag 03)
+
+Messung vorher (`python -m cProfile`, Rust-Kern, Rechner nicht ruhig: weitere Agents liefen):
+
+| Lauf | gesamt | Teile suchen | Bewertungen (davon Übergänge) | Kompaktieren | `Circuit.run` (davon Rust `tick`) |
+|---|---|---|---|---|---|
+| mux4 (6 Eingänge), `--time 60` | 61 s | 1 s | 32 s (22 s) | 54 s (Bewertung 26 s, `relocations` 27 s) | 29 s (2,8 s) |
+| mux8 (11 Eingänge), `--time 300` | 913 s | 27 s | 869 s (788 s in 5 vollen Prüfungen) | 379 s (8 Varianten) | 846 s (24 s) |
+
+Der Simulator selbst kostete fast nichts; **85–90 % der Bewertung lag in der Python-Schleife von `Circuit.run`**
+(`_snapshot_changed`: jeden Tick alle geänderten Blöcke und alle Komparatoren als `Pos` nach Python holen, filtern,
+vergleichen). Eine volle Prüfung des unkompaktierten mux8 (371 Blöcke) dauerte 78 s, die Schnellprüfung 2,5 s.
+
+Umgesetzt:
+- **(a) Übergänge ohne Doppelarbeit** (`evaluate._check_transitions`, `TRANSITIONS = "half"`): je Kombination nur
+  die Hebel umlegen, die dort aus sind, und zurück; jeder gerichtete Übergang genau einmal. Simulierte Ticks der
+  Beispiele −20 bis −45 %. Gegenprobe mit `scripts/bench_redesign.py --compare-transitions` (jede volle Prüfung
+  zusätzlich mit allen Übergängen): über alle Beispiele außer cmp5/mux8 **kein Kandidat mit anderem Urteil oder
+  anderer Verzögerung**. `tests/design/test_evaluate_cost.py` hält Läufe (31 statt 32 bei 4 Eingängen: mit allen
+  Hebeln an gibt es nichts umzulegen) und Ticks (etwa die Hälfte der Übergangsticks) fest.
+- **(c) Aufzeichnungsschleife im Rust-Kern** (`World.run_recording`; `Circuit.run` nutzt sie, wenn alle Aktionen
+  Klicks sind; `Circuit.run_python` bleibt Referenz, Vergleich in `tests/analysis/test_run_loop.py` auf allen Logik-
+  und Zeitvorlagen).
+- (b) Stichprobe beim Kompaktieren und (d) Teile-Cache über Prozesse **nicht nötig**: mux8 liegt ohne sie weit unter
+  10 min, die Teilesuche kostet 14 s. (b) hätte zudem die eingefrorenen `cmp-mux8`/`cmp-cmp5` verändern können.
+
+Nachher:
+
+| Lauf | vorher | nachher |
+|---|---|---|
+| eine volle Prüfung mux8 (371 Blöcke) | 78 s, 4 096 Läufe | 8,8 s, 4 095 Läufe, 1,44 Mio. Ticks |
+| Schnellprüfung mux8 | 2,5 s | 1,4 s (Rest: Welt aufbauen, Anfangszustand nach Python) |
+| `rsx redesign mux4` (Profil) | 61 s, Bewertungen 32 s | 36 s, Bewertungen 7 s |
+| `rsx redesign mux8` (Standard `--time 60`) | 3 min 44 s; nichts kompaktiert (erste volle Prüfung > 60 s): 22×8×17, 371 Blöcke | 2 min 16 s; kompaktiert: 19×8×17, 350 Blöcke |
+| mux8 ohne Zeitlimit (Budget 100, wie `scripts/compose_scenarios.py` und der slow-Test) | ~34 min | 12–13 min, unverändert 15×10×17, 354 Blöcke |
+| cmp5 ohne Zeitlimit | ~15 min | 6 min, unverändert 16×8×23, 502 Blöcke |
+
+Alle Beispiele (`scripts/bench_redesign.py`, ohne Zeitlimit, `PYTHONHASHSEED=0`): gleiche Kandidaten, gleiche
+Maße, Blockzahlen und Verzögerungen wie vorher; `cmp-*`-Szenarien und Goldens unverändert (slow-Tests grün).
+
+Neuer Engpass: die Suche beim Kompaktieren in Python (`compact.relocations` → `_dust_path`), bei mux8 mit
+`--time 300` 354 s von 449 s. Sie prüft das Zeitlimit nicht, deshalb überzieht das Kompaktieren großer Entwürfe
+es deutlich (449 s bei 300 s Limit).
