@@ -1,6 +1,6 @@
 # Projektstatus
 
-Stand: 2026-11-16, Session 23 (01, 02, 06, 10 erledigt; 03 läuft). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
+Stand: 2026-11-16, Session 23 (01, 02, 03, 06, 10 erledigt; 04 Teil 1 läuft). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
 Vorgeschichte: `docs/history.md`. Zurückgestelltes: `docs/backlog.md`.
 
 ## Wo das Projekt steht
@@ -8,12 +8,11 @@ Vorgeschichte: `docs/history.md`. Zurückgestelltes: `docs/backlog.md`.
 Werkzeug für Redstone in Minecraft Java 26.3: Schaltungen lesen, tick-genau simulieren (Python-Referenz und
 Rust-Kern, 154 Golden Traces aus dem echten Spiel identisch), erklären (`rsx explain`), neu entwerfen
 (`rsx redesign`: Vorlagen, Fackel-PLA bis 8 Eingänge, Zerlegung bis 11 Eingänge, Kompaktieren) und eine lokale
-Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1600 Tests grün. Wissensbasis: 296 Aussagen, keine offen.
+Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1740 Tests grün. Wissensbasis: 296 Aussagen, keine offen.
 
 Was dem eigentlichen Ziel (ein Laie bekommt einen Bauplan, der in seiner Welt funktioniert) noch fehlt:
 
-1. Große Funktionen brauchen bis zu einer halben Stunde (03).
-2. Druckplatten, Sensoren und fertige Bauwerke (Kolbentür, Itemsortierer) gehen nicht (04, 05).
+1. Druckplatten, Sensoren und fertige Bauwerke (Kolbentür, Itemsortierer) gehen nicht (04, 05).
 
 ## Aufträge
 
@@ -21,14 +20,13 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
-| 03 | Entwurfssuche für große Funktionen beschleunigen | Opus | – | `docs/tasks/03-search-speed.md` |
 | 04 | Druckplatte als Auslöser, danach Tageslichtsensor | Sonnet, Teil 2 Opus | – | `docs/tasks/04-trigger-inputs.md` |
 | 05 | Katalog fertiger Bauwerke | Opus | 01 (Prüfung), nach 04 | `docs/tasks/05-catalog.md` |
 | 07 | Kleinere Grundbausteine per Offline-Suche | Opus | – (besser nach 01, 03) | `docs/tasks/07-smaller-gates.md` |
 | 08 | Zerlegung: mehrere Ausgänge mit gemeinsamen Eingängen | Opus | 03 | `docs/tasks/08-multi-output-common-inputs.md` |
 | 09 | Assistent im Browser durchklicken | Sonnet | Nutzer | `docs/tasks/09-assistant-walkthrough.md` |
 
-Gleichzeitig möglich (getrennte Dateibereiche): 03 + 04; dann 05, 07, 08.
+Gleichzeitig möglich (getrennte Dateibereiche): 04 + 07 + 08 (07/08 beide in `design/`, nacheinander zusammenführen); 05 nach 04.
 Nicht gleichzeitig: 01/02/04 ändern alle `cli.run_redesign` (nacheinander zusammenführen), 04 und 05 beide
 `gui/assistant.py`, 03 und 07/08 beide `design/evaluate.py` bzw. `design/decompose.py`.
 

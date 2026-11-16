@@ -3,8 +3,12 @@
 Neueste zuerst. Neue Sessions tragen hier 3–6 Zeilen ein (was geändert wurde, Befunde, Messwerte).
 Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tasks/`.
 
-## Session 23 (2026-11-16): Aufträge 02, 06, 10 (Sonnet-Agents), 01 (Opus)
+## Session 23 (2026-11-16): Aufträge 02, 06, 10 (Sonnet-Agents), 01 (Opus), 03 (Opus-Agent)
 
+- 03 Suche (Opus-Agent): Übergänge nur noch je Richtung einmal (`evaluate.TRANSITIONS="half"`), Aufzeichnungsschleife
+  im Rust-Kern (`World.run_recording`). Volle Prüfung mux8 78 s → 8,8 s; mux8 ohne Zeitlimit ~34 → 12–13 min
+  (Rechner belastet), mit `--time 60` 3:44 → 2:16 und jetzt kompaktiert; cmp5 ~15 → 6 min. Kein Beispielentwurf
+  geändert. Neuer Engpass: `compact.relocations`/`_dust_path` (prüft das Zeitlimit nicht), im Backlog.
 - 01 Ortsfestigkeit: `design/robust.py` (`origins`, `check`, `robust`, `plan`), `evaluate*`/`observe` mit
   `origin`. Messung (`docs/robustness.md`): 125 Entwürfe × 48 Ursprünge × 4 Drehungen, **0 ortsabhängig**.
   Szenariofeld `origin` (Simulator und Oracle); `piston_race` an x=5/x=7 im Spiel aufgenommen: Gewinner wechselt
