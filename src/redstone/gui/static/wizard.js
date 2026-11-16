@@ -5,6 +5,12 @@ import { icon } from './icons.js';
 const LETTERS = ['a', 'b', 'c', 'd'];
 const secs = (gt) => `${(gt / 20).toLocaleString('de-DE', { maximumFractionDigits: 2 })} s`;
 
+// What is switched at the end (key of design/actuators.py: ACTUATORS; '' = redstone lamp)
+const OUTPUTS = [
+  ['', 'Lampe'], ['iron_door', 'Eisentür'], ['iron_trapdoor', 'Falltür aus Eisen'], ['piston', 'Kolben'],
+  ['sticky_piston', 'Klebriger Kolben'], ['note_block', 'Notenblock'], ['dispenser', 'Spender'], ['dropper', 'Werfer'],
+];
+
 const RULES = {
   and: { label: 'alle Hebel an sind', op: ' and ', text: 'nur, wenn alle Hebel an sind' },
   or: { label: 'mindestens ein Hebel an ist', op: ' or ', text: 'sobald mindestens ein Hebel an ist' },
@@ -129,6 +135,7 @@ export function initWizard({ mount, onSpec, onCustom }) {
   mount.append(grid, detail);
   const values = Object.fromEntries(WISHES.map((w) => [w.id, Object.fromEntries(w.fields.map((f) => [f.key, f.value]))]));
   let current = null;
+  let output = '';
 
   function emit() {
     const w = current, v = values[w.id];
@@ -174,6 +181,19 @@ export function initWizard({ mount, onSpec, onCustom }) {
       label.appendChild(inp);
       detail.appendChild(label);
     }
+    if (w.id !== 'adder') {  // adders have several lamps; everything else can switch another block
+      const label = document.createElement('label');
+      label.className = 'field';
+      const head = document.createElement('span');
+      head.textContent = 'Was soll geschaltet werden?';
+      const sel = document.createElement('select');
+      sel.dataset.key = 'output';
+      for (const [val, text] of OUTPUTS) { const o = document.createElement('option'); o.value = val; o.textContent = text; sel.appendChild(o); }
+      sel.value = output;
+      sel.addEventListener('input', () => { output = sel.value; });
+      label.append(head, sel);
+      detail.appendChild(label);
+    }
     const say = document.createElement('p');
     say.className = 'say';
     detail.appendChild(say);
@@ -190,5 +210,10 @@ export function initWizard({ mount, onSpec, onCustom }) {
     b.addEventListener('click', () => select(w.id));
     grid.appendChild(b);
   }
-  return { select, get current() { return current && current.id; } };
+  return {
+    select,
+    get current() { return current && current.id; },
+    /** Key of the chosen block instead of the lamp, or undefined for the lamp. */
+    get output() { return output && current && current.id !== 'adder' && !current.custom ? output : undefined; },
+  };
 }

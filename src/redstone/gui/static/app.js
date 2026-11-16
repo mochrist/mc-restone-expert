@@ -742,6 +742,7 @@ function searchOptions() {
     compact: Math.max(0, Math.round(num('compact') ?? 100)), time: num('optTime') ?? 60, top: Math.max(1, Math.round(num('optTop') ?? 10)),
     max_size: txt('optSize'), max_delay: num('optDelay'), allow: txt('optAllow'), forbid: txt('optForbid'),
     outputs: S.goal === 'file' ? txt('optOutputs') : undefined, no_qc: $('optNoQc').checked,
+    output: S.goal === 'spec' ? wizard.output : undefined,
   };
 }
 
@@ -996,6 +997,11 @@ async function init() {
     // task:sim / task:design ... switch the task, a number waits that many milliseconds
     for (const step of (params.get('click') || '').split(',').filter(Boolean)) {
       if (step.startsWith('task:')) setTask(step.slice(5));
+      else if (step.startsWith('set:')) { // set:key=value sets a field of the wish card (select or range)
+        const [k, val] = step.slice(4).split('=');
+        const el = document.querySelector(`#wizard [data-key="${k}"]`);
+        if (el) { el.value = val; el.dispatchEvent(new Event('input')); }
+      }
       else if (/^\d+$/.test(step)) await new Promise((r) => setTimeout(r, +step));
       else { $(step)?.click(); await new Promise((r) => setTimeout(r, 1200)); }
     }
