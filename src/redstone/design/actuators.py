@@ -41,8 +41,10 @@ class _Fit(Exception):
     """The block does not fit this way (German reason)."""
 
 
-def _built(cand: Candidate, cells: dict[tuple[int, int, int], str], outputs: list[tuple[int, int, int]]) -> Candidate:
-    """Candidate from loose cells (any coordinates): grid at their min corner, ports moved along."""
+def _built(cand: Candidate, cells: dict[tuple[int, int, int], str], outputs: list[tuple[int, int, int]],
+           inputs: list[tuple[int, int, int]] | None = None) -> Candidate:
+    """Candidate from loose cells (any coordinates): grid at their min corner, ports moved along. `inputs`: new
+    input cells (default: the old ones)."""
     lo = [min(c[i] for c in cells) for i in range(3)]
     hi = [max(c[i] for c in cells) for i in range(3)]
     grid = Grid(tuple(h - l + 1 for l, h in zip(lo, hi)))
@@ -50,7 +52,7 @@ def _built(cand: Candidate, cells: dict[tuple[int, int, int], str], outputs: lis
         if s != "air":
             grid.set(Pos(c[0] - lo[0], c[1] - lo[1], c[2] - lo[2]), s)
     move = lambda c: Pos(c[0] - lo[0], c[1] - lo[1], c[2] - lo[2])  # noqa: E731
-    return replace(cand, grid=grid, inputs=[move(tuple(p)) for p in cand.inputs], outputs=[move(c) for c in outputs],
+    return replace(cand, grid=grid, inputs=[move(tuple(p)) for p in (cand.inputs if inputs is None else inputs)], outputs=[move(c) for c in outputs],
                    assembly=None)
 
 

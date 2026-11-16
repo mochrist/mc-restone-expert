@@ -132,7 +132,8 @@ class Job:
     kind = "redesign"
 
     def __init__(self, path: Path, compact: int = 100, constraints=None, time_limit: float | None = 60,
-                 outputs: str | None = None, top: int = 10, output: str | None = None) -> None:
+                 outputs: str | None = None, top: int = 10, output: str | None = None,
+                 input: str | None = None) -> None:
         self.path = path
         self.compact = compact
         self.constraints = constraints
@@ -140,6 +141,7 @@ class Job:
         self.outputs = outputs
         self.top = top
         self.output = output
+        self.input = input
         self.title = path.stem
         self.frames: list[dict] = []
         self.log: list[str] = []
@@ -166,7 +168,8 @@ class Job:
             with observe.observing(self._frame):
                 best, text, spec = run_redesign(self.path, self.constraints, compact=self.compact,
                                                  time_limit=self.time_limit, outputs=self.outputs,
-                                                 top=self.top, steps=self.log, output=self.output)
+                                                 top=self.top, steps=self.log, output=self.output,
+                                                 input=self.input)
             result = gmodel.of_candidate(best, spec) if best is not None else {}
             result["summary"] = text
             result["plain"] = self._plain(best, spec)
@@ -527,7 +530,13 @@ def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
 
                 if output is not None and output not in ACTUATORS:
                     raise ApiError("output muss einer von " + ", ".join(ACTUATORS) + " sein")
-                return {"job": state.add_job(Job(full, compact, _constraints(body), limit, outputs, top, output))}
+                sensor = body.get("input") or None
+                from ..design.sensors import SENSORS
+
+                if sensor is not None and sensor not in SENSORS:
+                    raise ApiError("input muss einer von " + ", ".join(SENSORS) + " sein")
+                return {"job": state.add_job(Job(full, compact, _constraints(body), limit, outputs, top, output,
+                                                 sensor))}
             if method == "GET" and len(parts) == 2 and parts[0] == "job":
                 job = state.jobs.get(parts[1])
                 if job is None:

@@ -35,7 +35,8 @@ CASES = [
     ("kolben-toggle", "Ein Kolben soll mit einem Knopf ausfahren und beim nächsten Druck wieder einfahren.",
      [["t-flip-flop"], ["piston"]], "T-Flipflop mit Knopf, Kolben"),
     ("druckplatte", "Eine Tür, die aufgeht, wenn ich auf eine Druckplatte trete.",
-     [], "ehrlich: Druckplatte nicht möglich, Ersatz Knopf anbieten (oder Entwurf mit Knopf)"),
+     [["monostable", "pulse-extender"], ["pressure_plate"]],
+     "Impuls (Monoflop/Pulsverlängerer) mit Druckplatte als input, Tür; Hinweis: nur im Simulator geprüft"),
     ("itemsortierer", "Bau mir einen Itemsortierer, der Diamanten aus meiner Truhe aussortiert.",
      [], "ehrlich: nicht möglich, keine Suche"),
 ]

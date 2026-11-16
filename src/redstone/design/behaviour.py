@@ -117,7 +117,7 @@ def evaluate_behaviour(candidate: Candidate, spec: BehaviourSpec, constraints: C
         return ev
     for p, kind in zip(candidate.inputs, spec.input_kinds):
         sid = candidate.grid.get(p).id
-        if (kind == "button") != sid.endswith("_button"):
+        if (kind == "button") != sid.endswith(("_button", "_pressure_plate")):  # a plate is pressed like a button
             ev.errors.append(f"Eingang bei {p} ist {sid}, erwartet {kind}")
             return ev
     circuit = Circuit(candidate.grid, origin) if origin is not None else Circuit(candidate.grid)

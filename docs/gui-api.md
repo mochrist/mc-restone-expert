@@ -93,7 +93,9 @@ Optionen von `/api/redesign` (alle optional, wie die Schalter von `rsx redesign`
 `time` (Sekunden), `top`, `max_size` (`[x, y, z]` oder `"X,Y,Z"`), `max_delay` (gt), `allow` und `forbid`
 (Block-IDs als Liste oder mit Komma getrennt; Wandfackel zählt als Fackel), `no_qc`, `outputs` (`"out1,out3"`
 oder `"all"`), `output` (statt der Lampe ein anderer Block am Ausgang: `iron_door`, `iron_trapdoor`, `piston`,
-`sticky_piston`, `note_block`, `dispenser`, `dropper`; Schlüssel aus `design/actuators.py`).
+`sticky_piston`, `note_block`, `dispenser`, `dropper`; Schlüssel aus `design/actuators.py`), `input` (statt Hebel/Knopf eine
+Druckplatte, nur bei Impuls-Wünschen: `stone_pressure_plate`, `oak_pressure_plate`; Schlüssel aus `design/sensors.py`; der
+Bericht hat dann den Abschnitt „Eingang“, das Ergebnis die Fassung mit Platte).
 
 Formate von `/api/export`: `litematic`, `schem`, `nbt` (`rsx convert`), `materials`, `dump`, `guide-html` (druckbare Seite, ein Bild je Ebene), `guide` (Material
 plus Ebenen als Text), `scenario` (kompiliertes Szenario-JSON, `rsx compile`; nur Szenario-Dateien), `report`
