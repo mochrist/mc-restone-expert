@@ -285,7 +285,7 @@ def plain_analysis(analysis) -> str:
     if not know:
         know.append("- Nichts Besonderes: Die Schaltung wurde im Simulator durchprobiert.")
 
-    lines = ["# Was diese Schaltung macht", ""]
+    lines = []
     lines += _section("Was es tut", what)
     lines += _section("So bedienst du es", use)
     lines += _section("Größe und Material", _size_lines(grid, tuple(grid.size), len(grid)))

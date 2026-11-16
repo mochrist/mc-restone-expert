@@ -31,6 +31,15 @@ COLOURS = {"white": 0xe9ecec, "orange": 0xf07613, "magenta": 0xbd44b3, "light_bl
            "black": 0x141519}
 
 
+# legend entries of blocks that are drawn as symbols: name, swatch colour
+LEGEND = {
+    "redstone_wire": ("Redstone-Staub (rote Linie)", 0xc0200c), "redstone_torch": ("Redstone-Fackel", 0xff3b1f),
+    "redstone_wall_torch": ("Redstone-Fackel an der Wand", 0xff3b1f), "repeater": ("Verstärker (Pfeil = Richtung)", 0x8e8a80),
+    "comparator": ("Komparator (Pfeil = Richtung)", 0xa7a39a), "lever": ("Hebel (H)", 0xb0b0b0),
+    "redstone_lamp": ("Redstone-Lampe", 0x7a4a26),
+}
+
+
 def base_color(sid: str, props: dict) -> int:
     if sid in FIXED:
         return FIXED[sid]
@@ -168,8 +177,8 @@ def guide_html(grid: Grid, title: str) -> str:
         ids = sorted({s.id for p, s in grid.items() if p.y == y and s.id not in AIR})
         if not ids:
             continue
-        legend = "".join(f'<li><span class="sw" style="background:{_hex(base_color(i, {}))}"></span>'
-                         f'{e(label_for(i))}</li>' for i in ids)
+        legend = "".join(f'<li><span class="sw" style="background:{_hex(LEGEND.get(i, (0, base_color(i, {})))[1])}">'
+                         f'</span>{e(LEGEND[i][0] if i in LEGEND else label_for(i))}</li>' for i in ids)
         n = sum(1 for p, s in grid.items() if p.y == y and s.id not in AIR)
         sections.append(f'<section class="layer"><h2>Ebene {y + 1} von {sy} (von unten)</h2>'
                         f'<p class="meta">{n} Blöcke. Blick von oben, Norden (N) ist oben. Blasse Blöcke gehören zur '

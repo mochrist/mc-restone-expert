@@ -375,6 +375,81 @@ class Pool {
   }
 }
 
+// Special shapes (dust, repeaters, torches ...) are baked once per block state into a few geometries (one per
+// part and material) and drawn as instances, so a circuit of 900 blocks needs a few dozen draw calls.
+const templateCache = new Map(); // state string -> {parts: [{geom, material}], box}
+function objTemplate(st) {
+  let t = templateCache.get(st.raw);
+  if (t) return t;
+  const root = buildObject(st);
+  root.updateMatrixWorld(true);
+  const parts = [];
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const geom = o.geometry.clone();
+    geom.applyMatrix4(o.matrixWorld);
+    parts.push({ geom, material: o.material });
+  });
+  t = { parts, box: new THREE.Box3().setFromObject(root) };
+  templateCache.set(st.raw, t);
+  return t;
+}
+
+class ObjPool {
+  constructor(parent, template, cap = 8) {
+    this.parent = parent; this.template = template;
+    this.cap = 0; this.n = 0; this.free = []; this.keys = []; this.meshes = [];
+    this._alloc(cap);
+  }
+
+  _alloc(cap) {
+    const zero = new THREE.Matrix4().makeScale(0, 0, 0);
+    const meshes = this.template.parts.map(({ geom, material }, k) => {
+      const mesh = new THREE.InstancedMesh(geom, material, cap);
+      mesh.frustumCulled = false;
+      mesh.count = this.n;
+      for (let i = 0; i < cap; i++) mesh.setMatrixAt(i, zero);
+      const old = this.meshes[k];
+      if (old) {
+        mesh.instanceMatrix.array.set(old.instanceMatrix.array);
+        this.parent.remove(old);
+        old.dispose();
+      }
+      mesh.userData.pool = this;
+      this.parent.add(mesh);
+      return mesh;
+    });
+    this.meshes = meshes;
+    this.cap = cap;
+  }
+
+  alloc(key) {
+    let i;
+    if (this.free.length) i = this.free.pop();
+    else {
+      if (this.n >= this.cap) this._alloc(this.cap * 2);
+      i = this.n++;
+      for (const m of this.meshes) m.count = this.n;
+    }
+    this.keys[i] = key;
+    return i;
+  }
+
+  release(i) { this.free.push(i); this.keys[i] = null; this.set(i, 0, 0, 0, false); }
+
+  set(i, x, y, z, visible) {
+    _p.set(x + 0.5, y + 0.5, z + 0.5);
+    const sc = visible ? 1 : 0;
+    _s.set(sc, sc, sc);
+    _m.compose(_p, _q.identity(), _s);
+    for (const mesh of this.meshes) {
+      mesh.setMatrixAt(i, _m);
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.boundingSphere = null;
+    }
+  }
+}
+
 function makeLabel(text, color = '#fff', bg = 'rgba(0,0,0,0.6)', scale = 1) {
   const c = document.createElement('canvas');
   const ctx = c.getContext('2d');
@@ -425,6 +500,7 @@ export class Scene3D {
     this.scene.add(this.root);
     this.objRoot = new THREE.Group();
     this.root.add(this.objRoot);
+    this.objPools = new Map(); // state string -> ObjPool
     this.cubes = new Pool(this.root, new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }));
     this.glass = new Pool(this.root, new THREE.BoxGeometry(1, 1, 1),
       new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, depthWrite: false }), 256);
@@ -515,7 +591,6 @@ export class Scene3D {
     const e = this.entries.get(key);
     if (!e) return;
     if (e.pool) e.pool.release(e.idx);
-    if (e.obj) this.objRoot.remove(e.obj);
     this.entries.delete(key);
   }
 
@@ -529,8 +604,7 @@ export class Scene3D {
     const v = this._visible(e);
     if (v === e.visible) return;
     e.visible = v;
-    if (e.pool) e.pool.set(e.idx, e.p[0], e.p[1], e.p[2], v);
-    else e.obj.visible = v;
+    e.pool.set(e.idx, e.p[0], e.p[1], e.p[2], v);
   }
 
   _setBlock(p, s) {
@@ -541,13 +615,20 @@ export class Scene3D {
     if (old) this._remove(key);
     const st = parseState(s);
     const kind = classify(st);
-    const e = { key, p, s, st, kind, pool: null, idx: -1, obj: null, visible: false };
+    const e = { key, p, s, st, kind, pool: null, idx: -1, box: null, visible: false };
     if (kind === 'obj') {
-      const obj = buildObject(st);
-      obj.position.set(p[0] + 0.5, p[1] + 0.5, p[2] + 0.5);
-      obj.traverse((o) => { o.userData.key = key; });
-      this.objRoot.add(obj);
-      e.obj = obj;
+      let pool = this.objPools.get(st.raw);
+      if (!pool) {
+        pool = new ObjPool(this.objRoot, objTemplate(st));
+        this.objPools.set(st.raw, pool);
+      }
+      e.pool = pool;
+      e.box = pool.template.box;
+      e.idx = pool.alloc(key);
+      e.visible = this._visible(e);
+      pool.set(e.idx, p[0], p[1], p[2], e.visible);
+      this.entries.set(key, e);
+      return;
     } else {
       e.pool = kind === 'glass' ? this.glass : this.cubes;
       e.idx = e.pool.alloc(key);
@@ -622,8 +703,10 @@ export class Scene3D {
     for (const h of hits) {
       let key = null;
       if (h.instanceId !== undefined && h.object.isInstancedMesh) {
-        key = (h.object === this.cubes.mesh ? this.cubes : this.glass).keys[h.instanceId];
-      } else key = h.object.userData.key;
+        if (h.object === this.cubes.mesh) key = this.cubes.keys[h.instanceId];
+        else if (h.object === this.glass.mesh) key = this.glass.keys[h.instanceId];
+        else key = h.object.userData.pool?.keys[h.instanceId];
+      }
       const e = key && this.entries.get(key);
       if (e && e.visible) return e;
     }
@@ -634,8 +717,8 @@ export class Scene3D {
    *  beyond the cell) for small ones like dust, levers, buttons and torches. */
   _highlight(e) {
     const lo = new THREE.Vector3(e.p[0], e.p[1], e.p[2]), hi = lo.clone().addScalar(1);
-    if (e.obj) {
-      const box = new THREE.Box3().setFromObject(e.obj);
+    if (e.box) {
+      const box = e.box.clone().translate(new THREE.Vector3(e.p[0] + 0.5, e.p[1] + 0.5, e.p[2] + 0.5));
       if (!box.isEmpty()) {
         box.expandByScalar(0.04);
         lo.max(box.min); hi.min(box.max);

@@ -75,6 +75,14 @@ def test_analysis():
     _check(text)
 
 
+def test_job_plain():
+    from redstone.gui.server import Job
+
+    spec, ev = _design("examples/specs/xor.yaml")
+    text = Job._plain(ev.candidate, spec)
+    assert "## Was es tut" in text
+
+
 # ---------------------------------------------------------------- printable guide
 def test_guide_html():
     from redstone.gui.guide_html import guide_html
