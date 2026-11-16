@@ -1,6 +1,6 @@
 # Projektstatus
 
-Stand: 2026-11-16, Session 22 (Planung). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
+Stand: 2026-11-16, Session 23 (01, 02, 06, 10 erledigt; 03 läuft). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
 Vorgeschichte: `docs/history.md`. Zurückgestelltes: `docs/backlog.md`.
 
 ## Wo das Projekt steht
@@ -12,9 +12,8 @@ Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1600 Tests grün. Wissensbasi
 
 Was dem eigentlichen Ziel (ein Laie bekommt einen Bauplan, der in seiner Welt funktioniert) noch fehlt:
 
-1. Entwürfe sind nur an einer Position und in einer Drehung geprüft (Auftrag 01).
-3. Große Funktionen brauchen bis zu einer halben Stunde (03).
-4. Druckplatten, Sensoren und fertige Bauwerke (Kolbentür, Itemsortierer) gehen nicht (04, 05).
+1. Große Funktionen brauchen bis zu einer halben Stunde (03).
+2. Druckplatten, Sensoren und fertige Bauwerke (Kolbentür, Itemsortierer) gehen nicht (04, 05).
 
 ## Aufträge
 
@@ -22,7 +21,6 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
-| 01 | Ortsfestigkeit messen und absichern | Opus | – | `docs/tasks/01-position-robustness.md` |
 | 03 | Entwurfssuche für große Funktionen beschleunigen | Opus | – | `docs/tasks/03-search-speed.md` |
 | 04 | Druckplatte als Auslöser, danach Tageslichtsensor | Sonnet, Teil 2 Opus | – | `docs/tasks/04-trigger-inputs.md` |
 | 05 | Katalog fertiger Bauwerke | Opus | 01 (Prüfung), nach 04 | `docs/tasks/05-catalog.md` |
@@ -30,7 +28,7 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 | 08 | Zerlegung: mehrere Ausgänge mit gemeinsamen Eingängen | Opus | 03 | `docs/tasks/08-multi-output-common-inputs.md` |
 | 09 | Assistent im Browser durchklicken | Sonnet | Nutzer | `docs/tasks/09-assistant-walkthrough.md` |
 
-Gleichzeitig möglich (getrennte Dateibereiche): 01 + 02 + 06 + 10; danach 03 + 04; dann 05, 07, 08.
+Gleichzeitig möglich (getrennte Dateibereiche): 03 + 04; dann 05, 07, 08.
 Nicht gleichzeitig: 01/02/04 ändern alle `cli.run_redesign` (nacheinander zusammenführen), 04 und 05 beide
 `gui/assistant.py`, 03 und 07/08 beide `design/evaluate.py` bzw. `design/decompose.py`.
 
@@ -41,7 +39,7 @@ Stand der Arbeitskopie: alles committet; API-Schlüssel des Nutzers in `.env` (g
 
 - Ziel: Java **26.3**, DataVersion 5023. Der Server ist unobfuskiert (Mojang-Namen). Dekompilierter Code (Vineflower) liegt in `.cache/mcsrc/`, `.cache/tmp-pis/` und `.cache/bas-*`. `.cache/` ist nicht im Repo und lässt sich neu erzeugen (siehe unten).
 - Oracle: Fabric-Mod in `oracle/` (Loom 1.19, Loader 0.20.1, Fabric API 0.165.0+26.3). Er platziert Szenarien bei (0, 200, 0) mit Flags 818 (wie `/setblock … strict`) und läuft eingefroren, mit `stepGameIfPaused(1)` pro Tick. EULA für den lokalen Testserver vom Nutzer akzeptiert.
-- **Der Simulator läuft an derselben absoluten Position (0, 200, 0)**, weil die Update-Reihenfolge von Redstone-Staub koordinatenabhängig ist (Java-HashSet-Reihenfolge, DUST-018). Siehe `sim/runner.py: ORACLE_ORIGIN`.
+- **Der Simulator läuft an derselben absoluten Position (0, 200, 0)**, weil die Update-Reihenfolge von Redstone-Staub koordinatenabhängig ist (Java-HashSet-Reihenfolge, DUST-018). Siehe `sim/runner.py: ORACLE_ORIGIN`. Szenariofeld `origin: [x, y, z]` verschiebt beides; Ortsfestigkeit: `design/robust.py`, `docs/robustness.md` (alle Vorlagen ortsfest).
 - Blockeigenschaften (Leiter, stabile Flächen FULL/RIGID/CENTER, Push-Reaktion …) stammen aus einem Dump des echten Spiels: `src/redstone/sim/data/blocks_26.3.json`, neu erzeugen mit `uv run rsx oracle --dump-blocks`. Überraschungen: Redstone-Block, Observer, TNT und Kupferbirnen sind **keine** Leiter.
 - Quasi-Connectivity gibt es in 26.3 nur bei Kolben, Dispenser und Dropper. Die Liste in `idea.md` war falsch.
 - Rust-Kern bauen: `uv sync` (Gruppe `rust`, Standard); ohne Rust `uv sync --no-group rust` (dann Python-Kern).

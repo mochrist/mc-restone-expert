@@ -5,6 +5,11 @@ Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tas
 
 ## Session 23 (2026-11-16): Aufträge 02, 06, 10 (Sonnet-Agents), 01 (Opus)
 
+- 01 Ortsfestigkeit: `design/robust.py` (`origins`, `check`, `robust`, `plan`), `evaluate*`/`observe` mit
+  `origin`. Messung (`docs/robustness.md`): 125 Entwürfe × 48 Ursprünge × 4 Drehungen, **0 ortsabhängig**.
+  Szenariofeld `origin` (Simulator und Oracle); `piston_race` an x=5/x=7 im Spiel aufgenommen: Gewinner wechselt
+  wie vorhergesagt, Hash-Nachbildung bestätigt. `rsx redesign` prüft den besten Entwurf (~5 s Budget, XOR +0,9 s)
+  und hat einen Abschnitt „Ortsfestigkeit“. Suite: Rust 1690, Python 1675 grün.
 - 02 Aktoren: `tests/design/test_actuators.py` (32 Tests, 7 Aktoren × 4 Entwürfe; Fackel-AND geht nur mit
   Notenblock und Eisenfalltür), `scripts/actuator_scenarios.py`, sieben Szenarien `act-*` mit XOR im Spiel
   aufgenommen, alle identisch zum Simulator. Wunsch-Karten haben das Feld „Was soll geschaltet werden?“.

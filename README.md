@@ -73,9 +73,10 @@ Weitere Beispiele in `examples/specs/` (auch Teiltabellen mit `others: dont_care
 
 ## Grenzen
 
-- Ergebnisse gelten an der Position, an der Oracle und Simulator rechnen (Min-Ecke 0, 200, 0): Die
-  Update-Reihenfolge von Redstone-Staub hängt in Java von den Koordinaten ab. An anderer Stelle kann eine
-  Schaltung mit knappem Timing anders laufen.
+- Bauort und Drehung: Die Update-Reihenfolge von Redstone-Staub hängt in Java von den Koordinaten ab. Gemessen
+  (`docs/robustness.md`): alle 125 Vorlagen und Beispielentwürfe verhalten sich an 48 Positionen und in 4
+  Drehungen gleich; `rsx redesign` prüft jeden ausgegebenen Entwurf so (große Entwürfe stichprobenartig) und
+  warnt sonst. Gespiegelt gebaute Schaltungen sind nicht geprüft.
 - Keine Entities (Pfeile, Loren, Spieler); Druckplatten werden nur nachgebildet, Sculk-Sensoren reagieren nur auf
   Blöcke (Hebel, Kolben, Notenblock …).
 - Tageslichtsensor nur bei fester Tageszeit; die Detektorschiene fehlt.

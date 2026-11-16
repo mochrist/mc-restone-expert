@@ -37,8 +37,14 @@ def _jobs() -> list[tuple[str, str, str]]:
 
 
 def _example_of(path: Path) -> Path | None:
-    m = re.search(r"examples/[\w/.-]+\.yaml", path.read_text(encoding="utf-8")[:3000])
-    return ROOT / m.group(0) if m else None
+    text = path.read_text(encoding="utf-8")[:3000]
+    m = re.search(r"examples/[\w/.-]+\.yaml", text)
+    if m:
+        return ROOT / m.group(0)
+    m = re.search(r"(?:für|for) ([\w.-]+\.yaml)", text)  # behaviour compositions name only the file
+    if m and (ROOT / "examples" / "behaviour" / m.group(1)).exists():
+        return ROOT / "examples" / "behaviour" / m.group(1)
+    return None
 
 
 def _resolve(key: str):

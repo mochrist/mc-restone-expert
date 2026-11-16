@@ -132,3 +132,19 @@ def piston_race() -> Candidate:
     return Candidate(name="piston-race", grid=_settle(grid), inputs=ins, outputs=outs,
                      description="Zwei Kolben am selben Staub schieben dieselbe Lampe (absichtlich ortsabhängig).",
                      origin="test")
+
+
+def plan(candidate: Candidate, spec, constraints: Constraints | None = None, budget: float = 5.0,
+         quick_inputs: int = 6) -> tuple[bool, int | None]:
+    """(quick, sample) so that `check` takes about `budget` seconds: one timed evaluation at the oracle origin
+    decides how many origins fit (at least 4, all four rotations always). Designs with more than
+    `quick_inputs` inputs get the quick check (each combination from a fresh world)."""
+    import time
+
+    quick = len(candidate.inputs) > quick_inputs
+    t0 = time.perf_counter()
+    evaluate_any(candidate, spec, constraints, quick=quick)
+    per = max(time.perf_counter() - t0, 1e-4)
+    fit = int(budget / (4 * per))
+    total = len(origins())
+    return quick, None if fit >= total else max(4, fit)

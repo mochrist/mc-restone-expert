@@ -391,7 +391,7 @@ def run_redesign(file, constraints=None, *, compact: int = 100, time_limit: floa
 
 
 ROBUST_TRIES = 5  # working designs checked for position robustness, best first
-ROBUST_BIG = 8  # more inputs: quick check at 12 origins
+ROBUST_BUDGET = 5.0  # seconds per design (more origins for small designs, fewer for large ones)
 
 
 def _position_proof_first(ok: list, spec, constraints) -> tuple[list, str]:
@@ -399,23 +399,24 @@ def _position_proof_first(ok: list, spec, constraints) -> tuple[list, str]:
     move the first position-proof one to the front. Returns (reordered list, report section)."""
     import time
 
-    from .design.robust import check, summary
+    from .design.robust import check, plan, summary
 
     if not ok:
         return ok, ""
     lines = []
     for i, r in enumerate(ok[:ROBUST_TRIES]):
-        big = len(r.candidate.inputs) > ROBUST_BIG
         t0 = time.perf_counter()
-        res = check(r.candidate, spec, constraints, quick=big, sample=12 if big else None, stop_early=i > 0)
+        quick, sample = plan(r.candidate, spec, constraints, ROBUST_BUDGET)
+        res = check(r.candidate, spec, constraints, quick=quick, sample=sample, stop_early=i > 0)
         took = time.perf_counter() - t0
         if res.ok:
             if i:
                 lines.append(f"- Die {i} besser bewerteten Entwürfe hängen vom Bauort ab; gewählt ist "
                              f"„{r.candidate.name}“.")
             lines.append(f"- {summary(res, took)}")
-            if big:
-                lines.append("- Großer Entwurf: nur Stichprobe (12 Positionen, je Kombination aus frischer Welt).")
+            if quick or sample is not None:
+                lines.append("- Großer Entwurf: nur Stichprobe" + (" der Positionen" if sample is not None else "")
+                             + (", jede Hebelstellung aus frischer Welt (ohne Übergänge)" if quick else "") + ".")
             return [r] + ok[:i] + ok[i + 1:], "\n\n## Ortsfestigkeit\n\n" + "\n".join(lines) + "\n"
         if i == 0:
             lines.append(f"- „{r.candidate.name}“: {summary(res, took)}")
