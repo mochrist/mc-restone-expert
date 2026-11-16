@@ -5,6 +5,9 @@ Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tas
 
 ## Session 23 (2026-11-16): Aufträge 02, 06, 10 (Sonnet-Agents), 01 (Opus), 03 (Opus-Agent)
 
+- 04 Teil 1 Druckplatte (Sonnet-Agent): `design/sensors.py`, `rsx redesign --input stone_pressure_plate`, API,
+  Assistent (Absage für Platten entfällt), Wunsch-Karten; Plattenentwürfe ortsfest (48 × 4). Nur im Simulator
+  geprüft. `assistant_eval --only druckplatte` gelungen (Pulsverlängerer + Platte + Eisentür, 61 Blöcke).
 - 03 Suche (Opus-Agent): Übergänge nur noch je Richtung einmal (`evaluate.TRANSITIONS="half"`), Aufzeichnungsschleife
   im Rust-Kern (`World.run_recording`). Volle Prüfung mux8 78 s → 8,8 s; mux8 ohne Zeitlimit ~34 → 12–13 min
   (Rechner belastet), mit `--time 60` 3:44 → 2:16 und jetzt kompaktiert; cmp5 ~15 → 6 min. Kein Beispielentwurf

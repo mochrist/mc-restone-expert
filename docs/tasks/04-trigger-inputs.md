@@ -23,35 +23,22 @@ Fall `druckplatte` in `scripts/assistant_eval.py`). Für Laien sind das die nahe
   (`lever[face=floor,…]`), ansteuerbare PLAs Wandhebel (`face=wall`).
 - `cli.run_redesign(..., output=…)` zeigt, wie eine nachträgliche Änderung in Bericht und Ergebnis kommt.
 
-## Teil 1: Druckplatte (Sonnet)
+## Teil 1: Druckplatte – erledigt (Session 23)
 
-1. `src/redstone/design/sensors.py` mit `SENSORS` (Schlüssel `stone_pressure_plate`, `oak_pressure_plate`;
-   deutsches Etikett) und `with_input(cand, kind) -> (Candidate | None, Begründung)`:
-   - Nur für Entwürfe, deren Eingänge Knöpfe sind oder deren Verhalten ein Impuls ist (`monostable`,
-     `pulse-extender`, `t-flip-flop`, `rs-latch` mit `kind: button`). Eine Platte ist ein Taster, kein Schalter;
-     für Hebel-Logik („bleibt an“) gibt die Funktion `None` mit Begründung zurück.
-   - Boden-Knopf oder Boden-Hebel: Platte in dieselbe Zelle (der Block darunter ist da). Wand-Eingang: Platte
-     auf einen freien Platz neben dem Block, an dem der Eingang hängt, mit Stein darunter; passt das nicht, `None`.
-   - Prüfung: dieselbe Folge von Betätigungen einmal mit der Ausgangsfassung (Knopf, `use`) und einmal mit Platte
-     (`step`); Ausgänge müssen am Ende jeder Phase gleich sein und gleich oft einschalten. Die Pulslänge der
-     Platte weicht vom Knopf ab (Steinknopf 20 gt, Holzknopf 30 gt, Platte prüft alle 20 gt): deshalb nur
-     Endzustand und Zahl der Einschaltungen vergleichen, nicht die Zeitpunkte.
-2. `cli.run_redesign(..., input=…)`, `rsx redesign --input BLOCK`, `/api/redesign` Feld `input`
-   (`gui/server.py`, `docs/gui-api.md`), Berichtsabschnitt „Eingang“ analog zu „Ausgang“.
-3. Assistent: `tools_schema` (Parameter `input` bei `design_circuit` und `shrink_circuit`), Systemprompt: Platte
-   ist möglich für Impuls-Wünsche; ehrlich sagen, dass die Platte nur im Simulator geprüft ist, nicht im echten
-   Spiel. Wunsch-Karten (`wizard.js`): bei Wünschen mit Knopf die Auswahl „Knopf / Druckplatte“.
-4. `tests/design/test_sensors.py` (Monoflop 8 gt mit Platte geht; AND mit zwei Hebeln gibt `None`);
-   `scripts/assistant_eval.py`: Fall `druckplatte` erwartet jetzt `[["monostable", "pulse-extender"], ["pressure_plate"]]`.
-
-Abnahme Teil 1: Tests grün; `uv run rsx redesign examples/behaviour/monoflop.yaml --input stone_pressure_plate
---output iron_door -o .cache/tuer.litematic` liefert einen Entwurf; `uv run python scripts/assistant_eval.py`
-(braucht den Schlüssel in `.env`, kostet API-Aufrufe: einmal am Ende) zeigt den Fall als gelungen; Screenshot
-der Wunsch-Karte an den Nutzer.
+`design/sensors.py` (`SENSORS`, `with_input(cand, kind, spec)`, `button_spec`), `rsx redesign --input`, Feld
+`input` in `/api/redesign` und im Assistenten, Wunsch-Karten. Nur im Simulator geprüft (Oracle kennt kein `step`).
+Hinweise für Teil 2 vom Bearbeiter:
+- Sensor: Python `sim/blocks/daylight.py` (`if world.game_time % 20 == 0`), Rust `outputs.rs`.
+- `Circuit.run` setzt bei Platten `step` statt `use` (`analysis/experiment.py`); eine Aktion `time` braucht eine
+  Stelle in `runner.apply_input` mit Rust-Gegenstück (wie `step_at` in `sim/rust_world.py`).
+- `sensors.py`: Sensor = weiterer Eintrag in `SENSORS` plus eigene Variante; `_traces` unterscheidet die
+  Betätigung schon nach Blockart. „An, wenn Nacht“ ist ein Zustand, kein Druck: eigene Spec-Variante nötig
+  (`button_spec` passt nicht). Neue Eingangsarten in `evaluate_behaviour` zulassen (Zeile mit
+  `_button`/`_pressure_plate`) und mit `robust.check` prüfen.
 
 ## Teil 2: Tageslichtsensor (Opus)
 
-Erst beginnen, wenn Teil 1 abgenommen ist. Der Simulator kennt nur eine feste Tageszeit
+Der Simulator kennt nur eine feste Tageszeit
 (`sim/blocks/daylight.py`, Rust `outputs.rs`; Szenariofeld `game_time`).
 
 1. Aktion `time <ticks>` im Szenarioformat: setzt die Tageszeit; Simulator in beiden Kernen (der Sensor rechnet

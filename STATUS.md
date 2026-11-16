@@ -1,6 +1,6 @@
 # Projektstatus
 
-Stand: 2026-11-16, Session 23 (01, 02, 03, 06, 10 erledigt; 04 Teil 1 läuft). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
+Stand: 2026-11-16, Session 23 (01, 02, 03, 04 Teil 1, 06, 10 erledigt; 07 und 08 laufen). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
 Vorgeschichte: `docs/history.md`. Zurückgestelltes: `docs/backlog.md`.
 
 ## Wo das Projekt steht
@@ -12,7 +12,8 @@ Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1740 Tests grün. Wissensbasi
 
 Was dem eigentlichen Ziel (ein Laie bekommt einen Bauplan, der in seiner Welt funktioniert) noch fehlt:
 
-1. Druckplatten, Sensoren und fertige Bauwerke (Kolbentür, Itemsortierer) gehen nicht (04, 05).
+1. Tageslichtsensor und fertige Bauwerke (Kolbentür, Itemsortierer) gehen nicht (04, 05); die Druckplatte geht,
+   ist aber nur im Simulator geprüft.
 
 ## Aufträge
 
@@ -20,7 +21,7 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
-| 04 | Druckplatte als Auslöser, danach Tageslichtsensor | Sonnet, Teil 2 Opus | – | `docs/tasks/04-trigger-inputs.md` |
+| 04 | Tageslichtsensor als Auslöser (Teil 2; Druckplatte erledigt) | Opus | – | `docs/tasks/04-trigger-inputs.md` |
 | 05 | Katalog fertiger Bauwerke | Opus | 01 (Prüfung), nach 04 | `docs/tasks/05-catalog.md` |
 | 07 | Kleinere Grundbausteine per Offline-Suche | Opus | – (besser nach 01, 03) | `docs/tasks/07-smaller-gates.md` |
 | 08 | Zerlegung: mehrere Ausgänge mit gemeinsamen Eingängen | Opus | 03 | `docs/tasks/08-multi-output-common-inputs.md` |
