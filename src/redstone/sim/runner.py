@@ -49,7 +49,10 @@ def apply_input(world: World, action: str, pos: Pos, state: BlockState | None) -
 ORACLE_ORIGIN = Pos(0, 200, 0)
 
 
-def run(scenario: Scenario, origin: Pos = ORACLE_ORIGIN) -> tuple[Trace, World]:
+def run(scenario: Scenario, origin: Pos | None = None) -> tuple[Trace, World]:
+    """Simulate a scenario with its min corner at `origin`, else at the scenario's own origin, else at the
+    oracle origin (the dust update order depends on absolute coordinates, DUST-018)."""
+    origin = origin or scenario.origin or ORACLE_ORIGIN
     world = World()
     world.place_grid(scenario.grid, origin)
     world.game_time = scenario.game_time

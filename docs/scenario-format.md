@@ -72,6 +72,15 @@ von Tick `t`. Eingaben liegen damit „zwischen" zwei Game-Ticks, genau wie Spie
   geschrieben; das Oracle nutzt davon `game_time mod 20`. Wetter wird beim Aufbau auf klar gesetzt (zusätzlich
   zu `advance_weather` aus). Aktionen `use` am Sensor sind phasenunabhängig (sofortige Aktualisierung).
 
+### Ursprung
+
+Simulator und Oracle setzen die Min-Ecke des Aufbaus standardmäßig auf (0, 200, 0). Das optionale Feld
+`origin: [x, y, z]` verschiebt sie für dieses Szenario (beide Seiten; wird als `origin` ins kompilierte JSON
+geschrieben). Gebraucht wird es, weil die Update-Reihenfolge von Redstone-Staub von den absoluten Koordinaten
+abhängt (DUST-018, `docs/robustness.md`). Das Oracle lädt und forciert die Chunks um den Ursprung; in der Nähe
+bleiben (wenige Chunks vom Weltursprung). Die System-Properties `rsx.originX/Y/Z` verschieben den Standard für
+einen ganzen Lauf.
+
 ## 3. Kompiliertes Szenario (JSON, Eingabe für das Oracle)
 
 `rsx compile <szenario.yaml>` löst Schematic-Datei bzw. Inline-Aufbau auf. Das Oracle muss nur dieses

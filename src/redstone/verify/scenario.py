@@ -44,6 +44,8 @@ class Scenario:
     description: str = ""
     # Game time at the start (simulator and oracle; see docs/scenario-format.md, "Game time")
     game_time: int = 0
+    # Absolute position of the min corner (simulator and oracle); None = the oracle origin (0, 200, 0)
+    origin: Pos | None = None
 
     def __post_init__(self) -> None:
         if not _NAME.match(self.name):
@@ -80,6 +82,7 @@ class Scenario:
             "inputs": [i.to_json() for i in self.inputs],
             "probes": [{"name": n, "pos": list(p)} for n, p in self.probes.items()],
             "game_time": self.game_time,
+            **({"origin": list(self.origin)} if self.origin is not None else {}),
         }
 
 
@@ -119,7 +122,7 @@ def from_dict(data: dict, base_dir: Path | None = None) -> Scenario:
     ]
     probes = {str(k): _pos(v) for k, v in (data.get("probes") or {}).items()}
     return Scenario(data["name"], grid, int(data["ticks"]), inputs, probes, data.get("description", ""),
-                    int(data.get("game_time", 0)))
+                    int(data.get("game_time", 0)), _pos(data["origin"]) if data.get("origin") is not None else None)
 
 
 def load(path: str | Path) -> Scenario:

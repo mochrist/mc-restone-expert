@@ -113,3 +113,22 @@ def summary(r: Robustness, seconds: float | None = None) -> str:
         parts.append(f"{r.timing} nur mit anderer Verzögerung")
     return (f"Achtung: an {r.origins} Positionen und {turns} geprüft, {r.placements} Lagen, davon "
             f"{', '.join(parts)}. Der Entwurf hängt vom Bauort ab{took}. Erste Abweichung: {r.findings[0]}")
+
+
+def piston_race() -> Candidate:
+    """A deliberately position-dependent design (tests, docs/robustness.md, scenarios/pos-race-*): two pistons
+    powered by the same dust push the same lamp, east next to a redstone block (lamp lights) or down (lamp
+    stays dark). Which piston fires first follows the dust's HashSet order, i.e. the absolute position."""
+    from .templates import _grid_from_layout, _Layout, _settle
+
+    wire = "redstone_wire[east=side,north=side,power=0,south=side,west=side]"
+    blocks = {
+        (-2, 0, 0): "stone", (-1, 0, 0): "stone", (-2, 1, 0): "lever[face=floor,facing=east,powered=false]",
+        (-1, 1, 0): wire, (0, 1, 0): wire,
+        (0, 0, 0): "piston[facing=east,extended=false]", (1, 1, 0): "piston[facing=down,extended=false]",
+        (1, 0, 0): "redstone_lamp[lit=false]", (2, 0, 0): "air", (3, 0, 0): "redstone_block",
+    }
+    grid, ins, outs = _grid_from_layout(_Layout(blocks, ((-2, 1, 0),), ((2, 0, 0),)))
+    return Candidate(name="piston-race", grid=_settle(grid), inputs=ins, outputs=outs,
+                     description="Zwei Kolben am selben Staub schieben dieselbe Lampe (absichtlich ortsabhängig).",
+                     origin="test")

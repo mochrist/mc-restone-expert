@@ -55,8 +55,10 @@ final class ScenarioRun {
 	private static final Logger LOG = LoggerFactory.getLogger("rsx-oracle");
 	private static final String P = "[rsx-oracle] ";
 
-	/** Min corner of every scenario; chunk aligned, high above the flat world surface. */
-	static final BlockPos ORIGIN = new BlockPos(0, Integer.getInteger("rsx.originY", 200), 0);
+	/** Default min corner of every scenario; chunk aligned, high above the flat world surface. A scenario may
+	 * name its own ("origin"); system properties rsx.originX/Y/Z move the default. */
+	static final BlockPos ORIGIN = new BlockPos(Integer.getInteger("rsx.originX", 0),
+			Integer.getInteger("rsx.originY", 200), Integer.getInteger("rsx.originZ", 0));
 	/** Air margin cleared around the circuit before each run. */
 	static final int MARGIN = 16;
 	/**
@@ -77,6 +79,7 @@ final class ScenarioRun {
 	private final Scenario scenario;
 	private final Path out;
 	private final BoundingBox area;
+	private final BlockPos origin;
 	private final Map<String, List<Object[]>> samples = new LinkedHashMap<>();
 	private final List<Long> deltas = new ArrayList<>();
 	private Phase phase = Phase.LOADING_CHUNKS;
@@ -91,11 +94,13 @@ final class ScenarioRun {
 		this.scenario = scenario;
 		this.out = out;
 		int[] s = scenario.size();
+		int[] o = scenario.origin();
+		this.origin = o != null ? new BlockPos(o[0], o[1], o[2]) : ORIGIN;
 		this.area = new BoundingBox(
-				ORIGIN.getX() - MARGIN, ORIGIN.getY() - MARGIN, ORIGIN.getZ() - MARGIN,
-				ORIGIN.getX() + s[0] - 1 + MARGIN, ORIGIN.getY() + s[1] - 1 + MARGIN, ORIGIN.getZ() + s[2] - 1 + MARGIN);
+				origin.getX() - MARGIN, origin.getY() - MARGIN, origin.getZ() - MARGIN,
+				origin.getX() + s[0] - 1 + MARGIN, origin.getY() + s[1] - 1 + MARGIN, origin.getZ() + s[2] - 1 + MARGIN);
 		if (area.minY() < level.getMinY() || area.maxY() >= level.getMaxY()) {
-			throw new IllegalArgumentException("scenario does not fit the world height at y=" + ORIGIN.getY());
+			throw new IllegalArgumentException("scenario does not fit the world height at y=" + origin.getY());
 		}
 	}
 
@@ -231,7 +236,7 @@ final class ScenarioRun {
 		target += Math.floorMod(phase - target, 20L);
 		((ServerLevelData) level.getLevelData()).setGameTime(target);
 		server.setWeatherParameters(0, 0, false, false);
-		LOG.info(P + "{}: built at {}, game time {}", scenario.name(), ORIGIN.toShortString(), level.getGameTime());
+		LOG.info(P + "{}: built at {}, game time {}", scenario.name(), origin.toShortString(), level.getGameTime());
 	}
 
 	private void clearScheduledTicks() {
@@ -330,7 +335,7 @@ final class ScenarioRun {
 	}
 
 	private BlockPos at(int[] p) {
-		return ORIGIN.offset(p[0], p[1], p[2]);
+		return origin.offset(p[0], p[1], p[2]);
 	}
 
 	private boolean chunksReady() {

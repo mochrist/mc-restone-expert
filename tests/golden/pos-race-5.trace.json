@@ -1,0 +1,63 @@
+{
+ "format": 1,
+ "scenario": "pos-race-5",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 20,
+ "probes": {
+  "lever": [
+   0,
+   1,
+   0
+  ],
+  "lamp": [
+   4,
+   0,
+   0
+  ],
+  "east": [
+   2,
+   0,
+   0
+  ],
+  "down": [
+   3,
+   1,
+   0
+  ]
+ },
+ "samples": {
+  "lever": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=east,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=floor,facing=east,powered=true]"
+   ]
+  ],
+  "lamp": [
+   [
+    0,
+    "minecraft:air"
+   ]
+  ],
+  "east": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=east]"
+   ]
+  ],
+  "down": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=down]"
+   ],
+   [
+    3,
+    "minecraft:piston[extended=true,facing=down]"
+   ]
+  ]
+ }
+}
