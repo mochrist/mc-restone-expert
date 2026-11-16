@@ -13,6 +13,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ..analysis.experiment import Circuit, Recording
+from ..model import Pos
+from ..sim.runner import ORACLE_ORIGIN
 from ..sim.notes import notes_of
 from .candidate import Candidate
 from .spec import Spec
@@ -116,7 +118,7 @@ def _fmt(names: list[str], combo: tuple[bool, ...]) -> str:
 
 
 def evaluate(candidate: Candidate, spec: Spec, constraints: Constraints | None = None,
-             full: bool = True, stop_early: bool = False) -> Evaluation:
+             full: bool = True, stop_early: bool = False, origin: Pos = ORACLE_ORIGIN) -> Evaluation:
     """Simulate the candidate. With full=False only the fresh-world truth table is checked (cheap prefilter);
     with stop_early the checks end at the first wrong output (enough to reject a candidate)."""
     constraints = constraints or Constraints()
@@ -124,7 +126,7 @@ def evaluate(candidate: Candidate, spec: Spec, constraints: Constraints | None =
     if len(candidate.inputs) != len(spec.inputs) or len(candidate.outputs) != len(spec.outputs):
         ev.errors.append("Anzahl der Ein- oder Ausgänge passt nicht zur Spezifikation")
         return ev
-    circuit = Circuit(candidate.grid)
+    circuit = Circuit(candidate.grid, origin)
     delays: list[int] = []
 
     # Idle: the stored state must be at rest (no clock) and show the row for all levers off.
@@ -216,10 +218,11 @@ def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: E
             return
 
 
-def observe(candidate: Candidate, combos: list[tuple[bool, ...]]) -> dict[tuple[bool, ...], tuple[bool, ...]]:
+def observe(candidate: Candidate, combos: list[tuple[bool, ...]],
+            origin: Pos = ORACLE_ORIGIN) -> dict[tuple[bool, ...], tuple[bool, ...]]:
     """Settled outputs of the candidate for each lever combination, each from a fresh world (like `evaluate`).
     Raises ValueError if a combination does not come to rest."""
-    circuit = Circuit(candidate.grid)
+    circuit = Circuit(candidate.grid, origin)
     stored = _stored(candidate)
     out = {}
     for combo in combos:
@@ -231,12 +234,13 @@ def observe(candidate: Candidate, combos: list[tuple[bool, ...]]) -> dict[tuple[
     return out
 
 
-def evaluate_any(candidate: Candidate, spec, constraints: Constraints | None = None, quick: bool = False) -> Evaluation:
+def evaluate_any(candidate: Candidate, spec, constraints: Constraints | None = None, quick: bool = False,
+                 origin: Pos = ORACLE_ORIGIN) -> Evaluation:
     """Evaluate against a truth-table Spec or a BehaviourSpec. quick = cheap rejection run."""
     from .behaviour import BehaviourSpec, evaluate_behaviour
 
     if isinstance(spec, BehaviourSpec):
-        return evaluate_behaviour(candidate, spec, constraints, stop_early=True)
+        return evaluate_behaviour(candidate, spec, constraints, stop_early=True, origin=origin)
     if quick:
-        return evaluate(candidate, spec, constraints, full=False, stop_early=True)
-    return evaluate(candidate, spec, constraints)
+        return evaluate(candidate, spec, constraints, full=False, stop_early=True, origin=origin)
+    return evaluate(candidate, spec, constraints, origin=origin)

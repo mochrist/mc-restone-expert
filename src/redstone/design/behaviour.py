@@ -109,7 +109,7 @@ def _periodic(iv: list[Interval]) -> tuple[int, int] | None:
 
 
 def evaluate_behaviour(candidate: Candidate, spec: BehaviourSpec, constraints: Constraints | None = None,
-                       stop_early: bool = True) -> Evaluation:
+                       stop_early: bool = True, origin=None) -> Evaluation:
     constraints = constraints or Constraints()
     ev = Evaluation(candidate, violations=check_constraints(candidate, constraints))
     if len(candidate.inputs) != len(spec.inputs) or len(candidate.outputs) != len(spec.outputs):
@@ -120,7 +120,7 @@ def evaluate_behaviour(candidate: Candidate, spec: BehaviourSpec, constraints: C
         if (kind == "button") != sid.endswith("_button"):
             ev.errors.append(f"Eingang bei {p} ist {sid}, erwartet {kind}")
             return ev
-    circuit = Circuit(candidate.grid)
+    circuit = Circuit(candidate.grid, origin) if origin is not None else Circuit(candidate.grid)
     worst = 0
     for trial in spec.trials:
         actions = [(t, candidate.inputs[i], "use") for t, i in trial.actions]
