@@ -15,7 +15,6 @@ Was dem eigentlichen Ziel (ein Laie bekommt einen Bauplan, der in seiner Welt fu
 1. Entwürfe sind nur an einer Position und in einer Drehung geprüft (Auftrag 01).
 3. Große Funktionen brauchen bis zu einer halben Stunde (03).
 4. Druckplatten, Sensoren und fertige Bauwerke (Kolbentür, Itemsortierer) gehen nicht (04, 05).
-5. Berichte sind fachsprachlich, die Bauanleitung ist nur Text (06).
 
 ## Aufträge
 
@@ -27,7 +26,6 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 | 03 | Entwurfssuche für große Funktionen beschleunigen | Opus | – | `docs/tasks/03-search-speed.md` |
 | 04 | Druckplatte als Auslöser, danach Tageslichtsensor | Sonnet, Teil 2 Opus | – | `docs/tasks/04-trigger-inputs.md` |
 | 05 | Katalog fertiger Bauwerke | Opus | 01 (Prüfung), nach 04 | `docs/tasks/05-catalog.md` |
-| 06 | Berichte in Alltagssprache, Bauanleitung als Bild, große Entwürfe | Sonnet | – | `docs/tasks/06-plain-reports.md` |
 | 07 | Kleinere Grundbausteine per Offline-Suche | Opus | – (besser nach 01, 03) | `docs/tasks/07-smaller-gates.md` |
 | 08 | Zerlegung: mehrere Ausgänge mit gemeinsamen Eingängen | Opus | 03 | `docs/tasks/08-multi-output-common-inputs.md` |
 | 09 | Assistent im Browser durchklicken | Sonnet | Nutzer | `docs/tasks/09-assistant-walkthrough.md` |
