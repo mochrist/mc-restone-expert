@@ -14,6 +14,7 @@ from ..sim.core import World
 from ..verify.trace import _is_on
 
 Action = tuple[int, Pos, str]  # (tick, position relative to the grid, "use")
+FAST_RUN = True  # Circuit.run: loop in the Rust core when it is in use (False: always the Python loop)
 
 
 @dataclass
@@ -98,7 +99,29 @@ class Circuit:
 
     def run(self, actions: list[Action], max_ticks: int, kick: bool = False, quiet: int = 10,
             world: World | None = None) -> Recording:
-        """Apply actions and simulate until the world has been idle for `quiet` ticks after the last action."""
+        """Apply actions and simulate until the world has been idle for `quiet` ticks after the last action.
+
+        With the Rust core the loop runs in the core (`run_recording`) when every action is a right click;
+        `run_python` is the reference (same series, settled_at and ticks; within a tick the changes may come in
+        another order)."""
+        world = world or self.new_world(kick)
+        fast = getattr(world, "run_recording", None) if FAST_RUN else None
+        if fast is None or any(a != "use" for _, _, a in actions):
+            return self.run_python(actions, max_ticks, quiet=quiet, world=world)
+        rec = Recording(0, warnings=list(world.warnings))
+        origin = self.origin
+        snapshot, changes, rec.ticks, rec.settled_at = fast(
+            [(t, p + origin) for t, p, _ in actions], max_ticks, quiet,
+            origin - (1, 1, 1), origin + tuple(self.grid.size), origin)
+        series = rec.series = {p: [(0, v)] for p, v in snapshot}
+        rec.changes = [Change(t, p, old, new) for t, p, old, new in changes]
+        for t, p, old, new in changes:
+            series.setdefault(p, [(0, old)]).append((t, new))
+        return rec
+
+    def run_python(self, actions: list[Action], max_ticks: int, kick: bool = False, quiet: int = 10,
+                   world: World | None = None) -> Recording:
+        """`run` with the loop in Python (the reference; the only way with the Python core)."""
         world = world or self.new_world(kick)
         rec = Recording(0, warnings=list(world.warnings))
         last_action = max((t for t, _, _ in actions), default=0)
