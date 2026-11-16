@@ -18,7 +18,7 @@ Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tas
   `/api/redesign`, Reiter zeigen „Kurz erklärt“ oben; Bauanleitung als druckbare HTML-Seite (`gui/guide_html.py`,
   `/api/export?format=guide-html`); 3D-Ansicht zeichnet Sonderformen instanziert: Zeichenaufrufe seg7 677 → 62,
   cmp5 459 → 75 (Bilder je Sekunde headless nicht aussagekräftig, ~50 vorher wie nachher).
-- 10 Aufräumen: alter Agent-Worktree entfernt; `.cache`-Zwischenstände (~9 MB) aufgelistet, Löschen wartet auf den Nutzer.
+- 10 Aufräumen: alter Agent-Worktree entfernt; `.cache`-Zwischenstände (~9 MB, bas-/dec-/ge-/mcsrc-in*, Logs) nach Freigabe gelöscht.
 
 ## Session 22 (2026-11-16): Umplanung (Fable-5.2-Hauptsession, kein Programmcode)
 
