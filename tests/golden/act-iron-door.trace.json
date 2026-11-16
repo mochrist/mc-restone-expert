@@ -1,0 +1,103 @@
+{
+  "format": 1,
+  "scenario": "act-iron-door",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 122,
+  "probes": {
+    "a": [
+      3,
+      1,
+      0
+    ],
+    "b": [
+      1,
+      1,
+      4
+    ],
+    "out": [
+      2,
+      1,
+      2
+    ],
+    "oben": [
+      2,
+      2,
+      2
+    ]
+  },
+  "samples": {
+    "a": [
+      [
+        0,
+        "minecraft:lever[face=floor,facing=north,powered=false]"
+      ],
+      [
+        2,
+        "minecraft:lever[face=floor,facing=north,powered=true]"
+      ],
+      [
+        62,
+        "minecraft:lever[face=floor,facing=north,powered=false]"
+      ]
+    ],
+    "b": [
+      [
+        0,
+        "minecraft:lever[face=floor,facing=north,powered=false]"
+      ],
+      [
+        32,
+        "minecraft:lever[face=floor,facing=north,powered=true]"
+      ],
+      [
+        92,
+        "minecraft:lever[face=floor,facing=north,powered=false]"
+      ]
+    ],
+    "out": [
+      [
+        0,
+        "minecraft:iron_door[facing=north,half=lower,hinge=left,open=false,powered=false]"
+      ],
+      [
+        4,
+        "minecraft:iron_door[facing=north,half=lower,hinge=left,open=true,powered=true]"
+      ],
+      [
+        34,
+        "minecraft:iron_door[facing=north,half=lower,hinge=left,open=false,powered=false]"
+      ],
+      [
+        64,
+        "minecraft:iron_door[facing=north,half=lower,hinge=left,open=true,powered=true]"
+      ],
+      [
+        94,
+        "minecraft:iron_door[facing=north,half=lower,hinge=left,open=false,powered=false]"
+      ]
+    ],
+    "oben": [
+      [
+        0,
+        "minecraft:iron_door[facing=north,half=upper,hinge=left,open=false,powered=false]"
+      ],
+      [
+        4,
+        "minecraft:iron_door[facing=north,half=upper,hinge=left,open=true,powered=true]"
+      ],
+      [
+        34,
+        "minecraft:iron_door[facing=north,half=upper,hinge=left,open=false,powered=false]"
+      ],
+      [
+        64,
+        "minecraft:iron_door[facing=north,half=upper,hinge=left,open=true,powered=true]"
+      ],
+      [
+        94,
+        "minecraft:iron_door[facing=north,half=upper,hinge=left,open=false,powered=false]"
+      ]
+    ]
+  }
+}

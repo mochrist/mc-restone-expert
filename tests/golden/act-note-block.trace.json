@@ -1,0 +1,76 @@
+{
+  "format": 1,
+  "scenario": "act-note-block",
+  "source": "oracle",
+  "version": "26.3",
+  "ticks": 122,
+  "probes": {
+    "a": [
+      3,
+      1,
+      0
+    ],
+    "b": [
+      1,
+      1,
+      4
+    ],
+    "out": [
+      2,
+      1,
+      2
+    ]
+  },
+  "samples": {
+    "a": [
+      [
+        0,
+        "minecraft:lever[face=floor,facing=north,powered=false]"
+      ],
+      [
+        2,
+        "minecraft:lever[face=floor,facing=north,powered=true]"
+      ],
+      [
+        62,
+        "minecraft:lever[face=floor,facing=north,powered=false]"
+      ]
+    ],
+    "b": [
+      [
+        0,
+        "minecraft:lever[face=floor,facing=north,powered=false]"
+      ],
+      [
+        32,
+        "minecraft:lever[face=floor,facing=north,powered=true]"
+      ],
+      [
+        92,
+        "minecraft:lever[face=floor,facing=north,powered=false]"
+      ]
+    ],
+    "out": [
+      [
+        0,
+        "minecraft:note_block[instrument=harp,note=12,powered=false]"
+      ],
+      [
+        4,
+        "minecraft:note_block[instrument=harp,note=12,powered=true]"
+      ],
+      [
+        34,
+        "minecraft:note_block[instrument=harp,note=12,powered=false]"
+      ],
+      [
+        64,
+        "minecraft:note_block[instrument=harp,note=12,powered=true]"
+      ],
+      [
+        94,
+        "minecraft:note_block[instrument=harp,note=12,powered=false]"
+      ]
+    ]
+  }
+}
