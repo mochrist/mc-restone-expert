@@ -324,7 +324,7 @@ def test_shared_common_split_of_an_adder_subtractor():
     from redstone.design.decompose import shared_common_splits, shared_splits
     from redstone.design.spec import load
 
-    spec = load(ROOT / "examples/specs/composed/addsub2.yaml")
+    spec = load(ROOT / "examples/specs/composed/pending/addsub2.yaml")
     assert shared_splits(spec) == []
     sp = shared_common_splits(spec)[0]
     names, outs = spec.inputs, spec.outputs
@@ -344,7 +344,7 @@ def test_adder_subtractor_from_shared_common_split():
     from redstone.design.decompose import _shared_common, shared_common_splits
     from redstone.design.spec import load
 
-    spec = load(ROOT / "examples/specs/composed/addsub2.yaml")
+    spec = load(ROOT / "examples/specs/composed/pending/addsub2.yaml")
     found = _shared_common(spec, shared_common_splits(spec), 3, None, False)
     assert found and found[0].block_count < 1000
     assert evaluate_any(found[0], spec).ok

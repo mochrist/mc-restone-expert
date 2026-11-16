@@ -738,10 +738,13 @@ def shared(spec: Spec, depth: int = 3, log: list[str] | None = None, driven: boo
     # a partial spec is the H of a split with two signals (a stage of a cascade): only two signals again,
     # one signal there merges G's signals and the free inputs into a PLA that is never smaller
     out = [] if spec.partial else _shared(spec, shared_splits(spec), depth, log, driven)
-    if not out:
-        out = _shared(spec, shared_splits(spec, width=2), depth, log, driven)
+    # one signal with common inputs before two signals: an adder/subtractor with two signals passes the
+    # operation through every stage's PLA as a second signal (4 bits: 2919 blocks, 10 min) instead of tapping
+    # its lever (no split of the comparators or adders so far gets here)
     if not out and not spec.partial:
         out = _shared_common(spec, shared_common_splits(spec), depth, log, driven)
+    if not out:
+        out = _shared(spec, shared_splits(spec, width=2), depth, log, driven)
     return out
 
 
