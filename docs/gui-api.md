@@ -92,7 +92,8 @@ Hochgeladene Dateien und Spezifikationen aus dem Editor liegen in `.cache/gui/up
 Optionen von `/api/redesign` (alle optional, wie die Schalter von `rsx redesign`): `compact` (Versuche, 0 = aus),
 `time` (Sekunden), `top`, `max_size` (`[x, y, z]` oder `"X,Y,Z"`), `max_delay` (gt), `allow` und `forbid`
 (Block-IDs als Liste oder mit Komma getrennt; Wandfackel zählt als Fackel), `no_qc`, `outputs` (`"out1,out3"`
-oder `"all"`).
+oder `"all"`), `output` (statt der Lampe ein anderer Block am Ausgang: `iron_door`, `iron_trapdoor`, `piston`,
+`sticky_piston`, `note_block`, `dispenser`, `dropper`; Schlüssel aus `design/actuators.py`).
 
 Formate von `/api/export`: `litematic`, `schem`, `nbt` (`rsx convert`), `materials`, `dump`, `guide` (Material
 plus Ebenen als Text), `scenario` (kompiliertes Szenario-JSON, `rsx compile`; nur Szenario-Dateien), `report`
