@@ -16,7 +16,8 @@ from ..io.nbtutil import to_nbt
 from ..model import BlockState, Grid, Pos
 
 FORMAT = 1
-Action = Literal["use", "setblock", "step"]
+Action = Literal["use", "setblock", "step", "time"]
+ACTIONS = ("use", "setblock", "step", "time")
 _NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 
@@ -26,11 +27,15 @@ class Input:
     pos: Pos
     action: Action
     state: BlockState | None = None
+    # action "time": the new overworld clock time (like /time set; the position is ignored)
+    time: int | None = None
 
     def to_json(self) -> dict:
         d: dict = {"tick": self.tick, "pos": list(self.pos), "action": self.action}
         if self.state is not None:
             d["state"] = str(self.state)
+        if self.time is not None:
+            d["time"] = self.time
         return d
 
 
@@ -59,8 +64,10 @@ class Scenario:
                 raise ValueError(f"input position {inp.pos} outside the circuit")
             if inp.action == "setblock" and inp.state is None:
                 raise ValueError("setblock needs a state")
-            if inp.action not in ("use", "setblock", "step"):
+            if inp.action not in ACTIONS:
                 raise ValueError(f"unknown action {inp.action!r}")
+            if inp.action == "time" and (inp.time is None or inp.time < 0):
+                raise ValueError("time needs a value >= 0")
         for name, pos in self.probes.items():
             if not self.grid.in_bounds(pos):
                 raise ValueError(f"probe {name} at {pos} outside the circuit")
@@ -117,7 +124,9 @@ def from_dict(data: dict, base_dir: Path | None = None) -> Scenario:
             grid.block_entities[_pos(xyz)] = nbtlib.parse_nbt(snbt)
     grid.meta.name = data["name"]
     inputs = [
-        Input(int(i["tick"]), _pos(i["pos"]), i["action"], BlockState.parse(i["state"]) if "state" in i else None)
+        Input(int(i["tick"]), _pos(i.get("pos", (0, 0, 0))), i["action"],
+              BlockState.parse(i["state"]) if "state" in i else None,
+              int(i["time"]) if i.get("time") is not None else None)
         for i in data.get("inputs", [])
     ]
     probes = {str(k): _pos(v) for k, v in (data.get("probes") or {}).items()}

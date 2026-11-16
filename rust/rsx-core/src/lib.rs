@@ -265,6 +265,21 @@ impl World {
     }
 
     #[getter]
+    fn get_day_time(&self) -> i64 {
+        self.w.day_time
+    }
+
+    #[setter]
+    fn set_day_time(&mut self, value: i64) {
+        self.w.day_time = value;
+    }
+
+    #[getter]
+    fn get_sky_darken(&self) -> i32 {
+        self.w.sky_darken
+    }
+
+    #[getter]
     fn get_handling_tick(&self) -> bool {
         self.w.handling_tick
     }

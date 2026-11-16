@@ -70,6 +70,10 @@ class World:
         # Game event listeners (sculk sensors): block entities with ``listens``; see sim/blocks/sculk.py.
         self.listeners: dict[Pos, Any] = {}
         self.game_time = 0
+        # Overworld clock (``/time set``; frozen in the oracle) and Level#skyDarken, which follows it only at
+        # the start of the next tick (ServerLevel#tick -> updateSkyBrightness); see sim/blocks/daylight.py.
+        self.day_time = 0
+        self.sky_darken = 0
         self.handling_tick = False
         self._sub_tick = 0
         self._ticks: list[ScheduledTick] = []  # heap
@@ -486,11 +490,21 @@ class World:
     def tick(self) -> None:
         """One game tick (ServerLevel#tick, redstone-relevant phases only)."""
         self.handling_tick = True  # ServerLevel#handlingTick: block ticks through block events
+        if self.day_time:
+            self.sky_darken = _sky_darken_at(self.day_time)
+        else:
+            self.sky_darken = 0
         self.game_time += 1
         self._run_block_ticks()
         self._run_block_events()
         self.handling_tick = False
         self._tick_block_entities()
+
+
+def _sky_darken_at(day_time: int) -> int:
+    from .blocks.daylight import sky_darken_at
+
+    return sky_darken_at(day_time)
 
 
 class _TickerWrapper:

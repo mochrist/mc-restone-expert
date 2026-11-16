@@ -672,10 +672,103 @@ impl World {
 }
 
 // ---------------------------------------------------------------------------------- daylight detector
-/// Sun angle in degrees at overworld clock time 0 (docs: redstone/sim/blocks/daylight.py).
-const DAYLIGHT_SUN_ANGLE: f64 = 282.3711;
-/// Level#skyDarken at that time (clear weather).
-const DAYLIGHT_SKY_DARKEN: i32 = 0;
+// Timeline minecraft:day in float like KeyframeTrackSampler / EasingType.CubicBezier (Java float = f32, no FMA);
+// docs and the Python twin: redstone/sim/blocks/daylight.py.
+const DAY_PERIOD: i64 = 24000;
+
+#[derive(Clone, Copy)]
+struct Curve(f32, f32, f32);
+
+impl Curve {
+    fn from_controls(v1: f32, v2: f32) -> Curve {
+        Curve(3.0 * v1 - 3.0 * v2 + 1.0, -6.0 * v1 + 3.0 * v2, 3.0 * v1)
+    }
+    fn sample(self, t: f32) -> f32 {
+        ((self.0 * t + self.1) * t + self.2) * t
+    }
+    fn gradient(self, t: f32) -> f32 {
+        (3.0 * self.0 * t + 2.0 * self.1) * t + self.2
+    }
+}
+
+/// EasingType.CubicBezier#apply for visual/sun_angle: cubic_bezier [0.362, 0.241, 0.638, 0.759]
+fn sun_ease(x: f32) -> f32 {
+    let xc = Curve::from_controls(0.362, 0.638);
+    let yc = Curve::from_controls(0.241, 0.759);
+    let eps = 1.0e-5f32;
+    let mut t = x;
+    for _ in 0..4 {
+        let error = xc.sample(t) - x;
+        if error.abs() < eps {
+            return yc.sample(t);
+        }
+        let gradient = xc.gradient(t);
+        if gradient < eps {
+            break;
+        }
+        t -= (error / gradient).clamp(-0.25, 0.25);
+    }
+    let (mut t0, mut t1) = (0.0f32, 1.0f32);
+    while t0 < t1 {
+        let error = xc.sample(t) - x;
+        if error.abs() < eps {
+            break;
+        }
+        if error < 0.0 {
+            t0 = t;
+        } else {
+            t1 = t;
+        }
+        t = (t1 + t0) / 2.0;
+    }
+    yc.sample(t)
+}
+
+fn lerp_f(alpha: f32, a: f32, b: f32) -> f32 {
+    a + alpha * (b - a)
+}
+
+/// visual/sun_angle in degrees at overworld clock `day_time` (0 at 6000, 360 at 30000).
+pub fn daylight_sun_angle(day_time: i64) -> f32 {
+    let t = day_time.rem_euclid(DAY_PERIOD);
+    let start = if t >= 6000 { 6000 } else { 6000 - DAY_PERIOD };
+    if t <= start {
+        return 0.0;
+    }
+    let alpha = (t - start) as f32 / DAY_PERIOD as f32;
+    lerp_f(sun_ease(alpha), 0.0, 360.0)
+}
+
+/// Level#updateSkyBrightness: (int)(15 - 15 * gameplay/sky_light_level track) at overworld clock `day_time`.
+pub fn daylight_sky_darken_at(day_time: i64) -> i32 {
+    const KEYS: [(i64, f32); 4] = [(133, 1.0), (11867, 1.0), (13670, 0.26666668), (22330, 0.26666668)];
+    let t = day_time.rem_euclid(DAY_PERIOD);
+    let keys = [(KEYS[3].0 - DAY_PERIOD, KEYS[3].1), KEYS[0], KEYS[1], KEYS[2], KEYS[3], (KEYS[0].0 + DAY_PERIOD, KEYS[0].1)];
+    let mut seg = (keys[4], keys[5]);
+    for w in keys.windows(2) {
+        if t < w[1].0 {
+            seg = (w[0], w[1]);
+            break;
+        }
+    }
+    let ((t0, v0), (t1, v1)) = seg;
+    let value = if t <= t0 {
+        v0
+    } else if t >= t1 {
+        v1
+    } else {
+        lerp_f((t - t0) as f32 / (t1 - t0) as f32, v0, v1)
+    };
+    let level = (15.0f32 * value).clamp(0.0, 15.0);
+    (15.0f32 - level) as i32
+}
+
+/// Mth.cos: lookup in the 65536-entry float sine table.
+fn mth_cos(x: f64) -> f32 {
+    let i = ((x * 10430.378350470453 + 16384.0) as i64 & 65535) as f64;
+    (i / 10430.378350470453).sin() as f32
+}
+
 const DAYLIGHT_MAX_Y: i32 = 319;
 
 impl World {
@@ -716,14 +809,15 @@ impl World {
 
     /// The strength DaylightDetectorBlock#updateSignalStrength would set.
     pub fn daylight_target(&self, pos: Pos, state: StateId) -> i32 {
-        let mut target = (self.daylight_sky_light(pos) - DAYLIGHT_SKY_DARKEN).max(0);
+        let mut target = (self.daylight_sky_light(pos) - self.sky_darken).max(0);
         if self.st.get(state, sym::INVERTED) == Some(sym::TRUE) {
             target = 15 - target;
         } else if target > 0 {
-            let mut sun = DAYLIGHT_SUN_ANGLE * (std::f64::consts::PI / 180.0);
-            let offset = if sun < std::f64::consts::PI { 0.0 } else { std::f64::consts::PI * 2.0 };
-            sun += (offset - sun) * 0.2;
-            target = (target as f64 * sun.cos() + 0.5).floor() as i32;
+            let mut sun = daylight_sun_angle(self.day_time) * (std::f64::consts::PI / 180.0) as f32;
+            let offset = if sun < std::f64::consts::PI as f32 { 0.0 } else { (std::f64::consts::PI * 2.0) as f32 };
+            sun += (offset - sun) * 0.2f32;
+            // Math.round(float)
+            target = ((target as f32 * mth_cos(sun as f64)) as f64 + 0.5).floor() as i32;
         }
         target.clamp(0, 15)
     }

@@ -30,7 +30,8 @@ public record Scenario(
 
 	public record BlockEntity(int[] pos, String snbt) {}
 
-	public record Input(int tick, int[] pos, String action, String state) {}
+	/** {@code time} is the new overworld clock time of action "time" (else 0). */
+	public record Input(int tick, int[] pos, String action, String state, long time) {}
 
 	public record Probe(String name, int[] pos) {}
 
@@ -54,14 +55,19 @@ public record Scenario(
 		for (JsonElement e : array(o, "inputs")) {
 			JsonObject i = e.getAsJsonObject();
 			String action = i.get("action").getAsString();
-			if (!action.equals("use") && !action.equals("setblock")) {
+			if (!action.equals("use") && !action.equals("setblock") && !action.equals("time")) {
 				throw new IllegalArgumentException("unknown action " + action);
 			}
 			String state = i.has("state") ? i.get("state").getAsString() : null;
 			if (action.equals("setblock") && state == null) {
 				throw new IllegalArgumentException("setblock needs a state");
 			}
-			inputs.add(new Input(i.get("tick").getAsInt(), pos(i.get("pos")), action, state));
+			if (action.equals("time") && !i.has("time")) {
+				throw new IllegalArgumentException("time needs a value");
+			}
+			long time = i.has("time") ? i.get("time").getAsLong() : 0L;
+			int[] pos = i.has("pos") ? pos(i.get("pos")) : new int[] {0, 0, 0};
+			inputs.add(new Input(i.get("tick").getAsInt(), pos, action, state, time));
 		}
 		List<Probe> probes = new ArrayList<>();
 		for (JsonElement e : array(o, "probes")) {

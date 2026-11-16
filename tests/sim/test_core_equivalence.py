@@ -72,14 +72,14 @@ def _first_difference(a: dict, b: dict) -> str:
     return ""
 
 
-Step = tuple[str, Pos, BlockState | None]  # (action, absolute pos, state) applied before a tick
+Step = tuple  # (action, absolute pos, state[, time]) applied before a tick
 
 
 def _step(world, t: int, schedule: dict[int, list[Step]], last: bool):
     """Inputs of tick t, then the dump of the world, then the tick; (dump, exception name)."""
     try:
-        for action, pos, state in schedule.get(t, ()):
-            apply_input(world, action, pos, state)
+        for action, pos, state, *time in schedule.get(t, ()):
+            apply_input(world, action, pos, state, *time)
         state = dump(world)
         if not last:
             world.tick()
@@ -117,9 +117,22 @@ def test_scenario(path: Path):
     schedule: dict[int, list[Step]] = {}
     for t in range(scenario.ticks + 1):
         for inp in scenario.inputs_at(t):
-            schedule.setdefault(t, []).append((inp.action, Pos(*inp.pos) + ORACLE_ORIGIN, inp.state))
+            schedule.setdefault(t, []).append((inp.action, Pos(*inp.pos) + ORACLE_ORIGIN, inp.state, inp.time))
     # the long truth-table recordings (cmp5, mux8: every lever combination) repeat the same kind of step
     assert_same(scenario.grid, schedule, min(scenario.ticks, MAX_SCENARIO_TICKS))
+
+
+def test_daylight_over_the_day():
+    """Sun angle and skyDarken (float timeline sampling) agree at every 7th clock time of a day."""
+    grid = Grid((5, 3, 1))
+    grid.set((0, 0, 0), BlockState.parse("daylight_detector[inverted=false,power=0]"))
+    grid.set((2, 0, 0), BlockState.parse("daylight_detector[inverted=true,power=0]"))
+    grid.set((4, 0, 0), BlockState.parse("daylight_detector[inverted=false,power=0]"))
+    grid.set((4, 1, 0), BlockState.parse("stone"))
+    schedule: dict[int, list[Step]] = {}
+    for i, day_time in enumerate(range(0, 24000, 7)):
+        schedule[20 * i + 1] = [("time", ORACLE_ORIGIN, None, day_time)]
+    assert_same(grid, schedule, 20 * len(schedule) + 1)
 
 
 # ------------------------------------------------------------------------------------------------ templates

@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -16,6 +17,7 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
@@ -236,6 +238,10 @@ final class ScenarioRun {
 		target += Math.floorMod(phase - target, 20L);
 		((ServerLevelData) level.getLevelData()).setGameTime(target);
 		server.setWeatherParameters(0, 0, false, false);
+		// The overworld clock starts every scenario at 0 (action "time" moves it); skyDarken follows at once
+		// here (the game itself updates it at the start of each tick).
+		server.clockManager().setTotalTicks(overworldClock(), 0L);
+		level.updateSkyBrightness();
 		LOG.info(P + "{}: built at {}, game time {}", scenario.name(), origin.toShortString(), level.getGameTime());
 	}
 
@@ -257,8 +263,17 @@ final class ScenarioRun {
 				level.setBlock(pos, parseState(level.holderLookup(Registries.BLOCK), input.state()), Block.UPDATE_ALL);
 				LOG.info(P + "{}: tick {} setblock {} {}", scenario.name(), t, pos.toShortString(), input.state());
 			}
+			case "time" -> {
+				// like /time set <ticks>: ServerClockManager#setTotalTicks (skyDarken follows at the next tick)
+				server.clockManager().setTotalTicks(overworldClock(), input.time());
+				LOG.info(P + "{}: tick {} time {}", scenario.name(), t, input.time());
+			}
 			default -> throw new IllegalArgumentException("unknown action " + input.action());
 		}
+	}
+
+	private Holder<WorldClock> overworldClock() {
+		return level.dimensionType().defaultClock().orElseThrow(() -> new IllegalStateException("no overworld clock"));
 	}
 
 	private String sample(BlockPos pos) {

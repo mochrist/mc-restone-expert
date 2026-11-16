@@ -368,6 +368,19 @@ class RustWorld:
         self._c.game_time = value
 
     @property
+    def day_time(self) -> int:
+        """Overworld clock (action ``time``); see sim/blocks/daylight.py."""
+        return self._c.day_time
+
+    @day_time.setter
+    def day_time(self, value: int) -> None:
+        self._c.day_time = value
+
+    @property
+    def sky_darken(self) -> int:
+        return self._c.sky_darken
+
+    @property
     def handling_tick(self) -> bool:
         return self._c.handling_tick
 
