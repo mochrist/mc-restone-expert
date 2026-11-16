@@ -63,7 +63,14 @@ Wähle den nächstliegenden baubaren Wert und sag, wenn er vom Wunsch abweicht. 
 stehen (Parameter output): iron_door (Eisentür), iron_trapdoor (Eisenfalltür), piston, sticky_piston (Kolben nach
 oben), note_block (Notenblock, Ton), dispenser (Spender), dropper (Werfer).
 
-Ehrlichkeit: Sag klar, was die App nicht kann (z. B. Druckplatten, Tageslichtsensoren, Sensoren für Spieler oder
+Statt Hebel oder Knopf kann der Auslöser eine Druckplatte sein (Parameter input: stone_pressure_plate Steindruck-
+platte, oak_pressure_plate Holzdruckplatte), aber nur bei Wünschen mit einem Impuls: monostable, pulse-extender,
+t-flip-flop, rs-latch. Eine Druckplatte ist ein Taster und schaltet sich nach etwa 1 Sekunde ab; für „bleibt an,
+solange ich stehe“ oder Logik mit mehreren Hebeln (a and b) geht sie nicht, dort sagst du das und bleibst beim
+Hebel. Sag bei Druckplatten ehrlich, dass sie nur im Simulator geprüft ist, nicht im echten Spiel (Steinplatten
+reagieren nur auf Lebewesen, Holzplatten auch auf Gegenstände).
+
+Ehrlichkeit: Sag klar, was die App nicht kann (z. B. Tageslichtsensoren, Sensoren für Spieler oder
 Mobs als Auslöser, Kolbentüren aus vielen Kolben, Itemsortierer, Zahlenanzeigen). Biete dann den nächstbesten
 baubaren Ersatz an (z. B. Knopf statt Druckplatte). Behaupte nie, eine Schaltung funktioniere, wenn die Suche
 gescheitert ist; die Entwürfe sind im Simulator geprüft, das darfst du sagen. Nenne Größe und Blockzahl des
@@ -77,10 +84,18 @@ def _actuators() -> list[str]:
     return list(ACTUATORS)
 
 
+def _sensors() -> list[str]:
+    from ..design.sensors import SENSORS
+
+    return list(SENSORS)
+
+
 def tools_schema() -> list[dict]:
     limits = {
         "output": {"type": "string", "enum": _actuators(),
                    "description": "Block statt Lampe am Ausgang (optional)"},
+        "input": {"type": "string", "enum": _sensors(),
+                  "description": "Druckplatte statt Hebel/Knopf als Auslöser (optional, nur für Impuls-Wünsche)"},
         "max_size": {"type": "string", "description": "Höchstmaße X,Y,Z (optional), z. B. 9,5,9"},
         "forbid": {"type": "array", "items": {"type": "string"},
                    "description": "Block-IDs, die nicht vorkommen dürfen (optional), z. B. piston"},
@@ -353,6 +368,12 @@ class Chat:
             raise ToolError("output muss einer von " + ", ".join(_actuators()) + " sein")
         return out
 
+    def _input(self, args: dict) -> str | None:
+        inp = args.get("input") or None
+        if inp is not None and inp not in _sensors():
+            raise ToolError("input muss einer von " + ", ".join(_sensors()) + " sein")
+        return inp
+
     def _design(self, args: dict) -> str:
         from .server import ApiError
 
@@ -365,7 +386,7 @@ class Chat:
             raise ToolError(f"Vorgabe ungültig: {e}") from e
         if group != "specs":
             raise ToolError("Das ist keine Vorgabe (kein Abschnitt build erlaubt)")
-        return self._search(self.state.resolve(rel), name, self._constraints(args), self._output(args), None)
+        return self._search(self.state.resolve(rel), name, self._constraints(args), self._output(args), None, self._input(args))
 
     def _shrink(self, args: dict) -> str:
         if not self.current:
@@ -379,12 +400,12 @@ class Chat:
             path.parent.mkdir(parents=True, exist_ok=True)
             io.save(grid, path)
         outputs = args.get("outputs") or None
-        return self._search(path, title, self._constraints(args), self._output(args), outputs)
+        return self._search(path, title, self._constraints(args), self._output(args), outputs, self._input(args))
 
-    def _search(self, path: Path, title: str, constraints, output, outputs) -> str:
+    def _search(self, path: Path, title: str, constraints, output, outputs, sensor=None) -> str:
         from .server import Job
 
-        job = Job(path, 100, constraints, 60, outputs, 10, output)
+        job = Job(path, 100, constraints, 60, outputs, 10, output, sensor)
         jid = self.state.add_job(job)
         self.emit("job", job=jid, path=self.state.rel(path), title=title)
         self.emit("status", text=f"Suche einen Bauplan für „{title}“ …")

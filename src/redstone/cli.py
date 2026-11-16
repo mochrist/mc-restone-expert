@@ -313,13 +313,15 @@ class RedesignInputError(Exception):
 
 def run_redesign(file, constraints=None, *, compact: int = 100, time_limit: float | None = 60,
                  outputs: str | None = None, out: str | None = None, top: int = 10,
-                 steps: list[str] | None = None, output: str | None = None):
+                 steps: list[str] | None = None, output: str | None = None,
+                 input: str | None = None):
     """`rsx redesign` without the command line: returns (best candidate or None, German report, spec).
 
     file: spec .yaml, scenario .yaml or schematic. Raises RedesignInputError (German message) if no spec can be
     derived from an existing circuit. steps: filled with the compaction log while the search runs.
     output: another block than a lamp at the outputs (key of design.actuators.ACTUATORS); the best design that
-    works with it is returned."""
+    works with it is returned. input: a pressure plate instead of the lever/button at the inputs (key of
+    design.sensors.SENSORS), for designs that react to a single press; the spec returned is then the press version."""
     from pathlib import Path
 
     import yaml
@@ -378,6 +380,27 @@ def run_redesign(file, constraints=None, *, compact: int = 100, time_limit: floa
         else:
             note = (f"\n\n## Ausgang\n\n- Kein funktionierender Entwurf ließ sich mit {ACTUATORS[output][0]} am "
                     f"Ausgang bauen ({why}). Mit Lampe gibt es Entwürfe.\n")
+    if input and ok and best is not None:
+        from .design.robust import check, plan, summary
+        from .design.sensors import SENSORS, button_spec, with_input
+
+        plate, why = with_input(best, input, spec)
+        if plate is not None:
+            note += f"\n\n## Eingang\n\n- Entwurf „{best.name}“. {why}\n"
+            best = plate
+            press_spec = button_spec(spec)
+            if press_spec is not None:
+                spec = press_spec
+                if not output:  # (a door at the output cannot be judged by the spec)
+                    import time
+
+                    t0 = time.perf_counter()
+                    quick, sample = plan(best, spec, constraints, ROBUST_BUDGET)
+                    res = check(best, spec, constraints, quick=quick, sample=sample)
+                    note += f"- Mit Druckplatte: {summary(res, time.perf_counter() - t0)}\n"
+        else:
+            note += (f"\n\n## Eingang\n\n- Mit {SENSORS[input][0]} ist dieser Entwurf nicht möglich ({why}). "
+                     "Der Entwurf mit Hebel oder Knopf bleibt.\n")
     note = robust_note + note
     if out and best is not None:
         target = Path(out)
@@ -439,7 +462,8 @@ def _cmd_redesign(args: argparse.Namespace) -> int:
     )
     try:
         best, text, _ = run_redesign(args.file, constraints, compact=args.compact, time_limit=args.time,
-                                  outputs=args.outputs, out=args.out, top=args.top, output=args.output)
+                                  outputs=args.outputs, out=args.out, top=args.top, output=args.output,
+                                  input=args.input)
     except RedesignInputError as e:
         print(f"Fehler: {e}")
         return 2
@@ -525,6 +549,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--compact", type=int, default=100,
                    help="max evaluations for shrinking each synthesized/original design (0 = off, default 100)")
     p.add_argument("--time", type=float, default=60, help="time limit in seconds for shrinking (default 60)")
+    p.add_argument("--input", default=None, metavar="BLOCK",
+                   help="pressure plate instead of lever/button for designs that react to one press: "
+                        "stone_pressure_plate, oak_pressure_plate")
     p.add_argument("--outputs", default=None, metavar="NAMES",
                    help="outputs of an existing circuit that the redesign must keep: names from `rsx explain` "
                         "(out1,out3) or 'all' (default: all for a truth table, only the lamps for behaviour)")

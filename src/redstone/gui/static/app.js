@@ -768,6 +768,7 @@ function searchOptions() {
     max_size: txt('optSize'), max_delay: num('optDelay'), allow: txt('optAllow'), forbid: txt('optForbid'),
     outputs: S.goal === 'file' ? txt('optOutputs') : undefined, no_qc: $('optNoQc').checked,
     output: S.goal === 'spec' ? wizard.output : undefined,
+    input: S.goal === 'spec' ? wizard.input : undefined,
   };
 }
 
@@ -1022,6 +1023,7 @@ async function init() {
     // task:sim / task:design ... switch the task, a number waits that many milliseconds
     for (const step of (params.get('click') || '').split(',').filter(Boolean)) {
       if (step.startsWith('task:')) setTask(step.slice(5));
+      else if (step.startsWith('wish:')) wizard.select(step.slice(5)); // wish:pulse chooses a wish card
       else if (step.startsWith('set:')) { // set:key=value sets a field of the wish card (select or range)
         const [k, val] = step.slice(4).split('=');
         const el = document.querySelector(`#wizard [data-key="${k}"]`);

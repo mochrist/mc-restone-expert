@@ -40,6 +40,8 @@ function adder(bits) {
 const PULSES = [2, 4, 6, 8, 12, 16, 20, 30, 40];
 const EXTENDS = [4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 26, 30, 34, 40, 42, 50];
 const CLOCKS = [[6, 2], [8, 2], [10, 4], [12, 6], [16, 4], [16, 8], [20, 10], [24, 6], [32, 8], [36, 18]];
+// a pressure plate is a press like a button (design/sensors.py; only checked in the simulator)
+const pressed = (v) => v.kind === 'button' || v.kind === 'plate';
 const beat = (v) => v.beat.split('-').map(Number);
 
 // field: {key, label, type: 'range'|'select', ...}; a range with `steps` moves over those values only.
@@ -69,11 +71,12 @@ const WISHES = [
     id: 'pulse', icon: 'pulse', title: 'Kurzer Impuls', sub: 'Ein Druck gibt ein Signal von fester Länge, egal wie lange man drückt.',
     fields: [
       { key: 'length', label: 'Länge des Impulses', type: 'range', steps: PULSES, value: 8, show: (v) => `${v} Ticks = ${secs(v)}` },
-      { key: 'kind', label: 'Ausgelöst durch', type: 'select', value: 'lever', options: [['lever', 'Hebel'], ['button', 'Knopf']] },
+      { key: 'kind', label: 'Ausgelöst durch', type: 'select', value: 'lever', options: [['lever', 'Hebel'], ['button', 'Knopf'], ['plate', 'Druckplatte (Tritt darauf)']] },
     ],
     name: (v) => `impuls-${v.length}`,
-    yaml: (v) => `behaviour: monostable\nlength: ${v.length}\n${v.kind === 'button' ? 'kind: button\n' : ''}`,
-    say: (v) => `Jedes Einschalten des ${v.kind === 'button' ? 'Knopfs' : 'Hebels'} lässt die Lampe genau ${secs(v.length)} leuchten.`,
+    yaml: (v) => `behaviour: monostable\nlength: ${v.length}\n${pressed(v) ? 'kind: button\n' : ''}`,
+    say: (v) => (v.kind === 'plate' ? `Jeder Tritt auf die Druckplatte lässt die Lampe genau ${secs(v.length)} leuchten.`
+      : `Jedes Einschalten des ${v.kind === 'button' ? 'Knopfs' : 'Hebels'} lässt die Lampe genau ${secs(v.length)} leuchten.`),
   },
   {
     id: 'extend', icon: 'glow', title: 'Nachleuchten', sub: 'Das Signal bleibt nach dem Auslösen eine Mindestzeit an.',
@@ -84,16 +87,18 @@ const WISHES = [
   },
   {
     id: 'toggle', icon: 'toggle', title: 'Ein/Aus per Knopf', sub: 'Jeder Druck schaltet um: an, aus, an …',
-    fields: [{ key: 'kind', label: 'Bedient mit', type: 'select', value: 'button', options: [['button', 'Knopf'], ['lever', 'Hebel (jedes Einschalten zählt)']] }],
+    fields: [{ key: 'kind', label: 'Bedient mit', type: 'select', value: 'button', options: [['button', 'Knopf'], ['plate', 'Druckplatte (Tritt darauf)'], ['lever', 'Hebel (jedes Einschalten zählt)']] }],
     name: () => 'umschalter',
-    yaml: (v) => `behaviour: t-flip-flop\n${v.kind === 'button' ? 'kind: button\n' : ''}`,
-    say: () => 'Der erste Druck schaltet die Lampe an, der nächste wieder aus (ein „T-Flip-Flop“).',
+    yaml: (v) => `behaviour: t-flip-flop\n${pressed(v) ? 'kind: button\n' : ''}`,
+    say: (v) => `Der erste ${v.kind === 'plate' ? 'Tritt auf die Druckplatte' : 'Druck'} schaltet die Lampe an, der nächste wieder aus (ein „T-Flip-Flop“).`,
   },
   {
     id: 'latch', icon: 'latch', title: 'An-Knopf und Aus-Knopf', sub: 'Ein Knopf schaltet ein, ein zweiter wieder aus.',
-    fields: [], name: () => 'speicher',
+    fields: [{ key: 'kind', label: 'Bedient mit', type: 'select', value: 'button', options: [['button', 'Knöpfen'], ['plate', 'Druckplatten (Tritt darauf)']] }],
+    name: () => 'speicher',
     yaml: () => 'behaviour: rs-latch\n',
-    say: () => 'Zwei Knöpfe: Der eine schaltet die Lampe ein, sie bleibt an, bis der andere gedrückt wird (ein „RS-Latch“).',
+    say: (v) => (v.kind === 'plate' ? 'Zwei Druckplatten: Die eine schaltet die Lampe ein, sie bleibt an, bis die andere betreten wird (ein „RS-Latch“).'
+      : 'Zwei Knöpfe: Der eine schaltet die Lampe ein, sie bleibt an, bis der andere gedrückt wird (ein „RS-Latch“).'),
   },
   {
     id: 'clock', icon: 'clock', title: 'Blinker', sub: 'Läuft von selbst und schaltet im Takt an und aus.',
@@ -214,6 +219,8 @@ export function initWizard({ mount, onSpec, onCustom }) {
     select,
     get current() { return current && current.id; },
     /** Key of the chosen block instead of the lamp, or undefined for the lamp. */
+    /** Key of the pressure plate that replaces lever/button, or undefined. */
+    get input() { const v = current && values[current.id]; return v && v.kind === 'plate' ? 'stone_pressure_plate' : undefined; },
     get output() { return output && current && current.id !== 'adder' && !current.custom ? output : undefined; },
   };
 }
