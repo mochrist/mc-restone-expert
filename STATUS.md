@@ -13,7 +13,6 @@ Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1600 Tests grün. Wissensbasi
 Was dem eigentlichen Ziel (ein Laie bekommt einen Bauplan, der in seiner Welt funktioniert) noch fehlt:
 
 1. Entwürfe sind nur an einer Position und in einer Drehung geprüft (Auftrag 01).
-2. Ausgänge wie Tür und Kolben sind ungetestet und nie im Spiel aufgenommen (02).
 3. Große Funktionen brauchen bis zu einer halben Stunde (03).
 4. Druckplatten, Sensoren und fertige Bauwerke (Kolbentür, Itemsortierer) gehen nicht (04, 05).
 5. Berichte sind fachsprachlich, die Bauanleitung ist nur Text (06).
@@ -25,7 +24,6 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
 | 01 | Ortsfestigkeit messen und absichern | Opus | – | `docs/tasks/01-position-robustness.md` |
-| 02 | Aktoren testen und im Spiel aufnehmen | Sonnet | – | `docs/tasks/02-actuator-tests.md` |
 | 03 | Entwurfssuche für große Funktionen beschleunigen | Opus | – | `docs/tasks/03-search-speed.md` |
 | 04 | Druckplatte als Auslöser, danach Tageslichtsensor | Sonnet, Teil 2 Opus | – | `docs/tasks/04-trigger-inputs.md` |
 | 05 | Katalog fertiger Bauwerke | Opus | 01 (Prüfung), nach 04 | `docs/tasks/05-catalog.md` |
@@ -33,7 +31,6 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 | 07 | Kleinere Grundbausteine per Offline-Suche | Opus | – (besser nach 01, 03) | `docs/tasks/07-smaller-gates.md` |
 | 08 | Zerlegung: mehrere Ausgänge mit gemeinsamen Eingängen | Opus | 03 | `docs/tasks/08-multi-output-common-inputs.md` |
 | 09 | Assistent im Browser durchklicken | Sonnet | Nutzer | `docs/tasks/09-assistant-walkthrough.md` |
-| 10 | Aufräumen (alter Worktree, `.cache`) | Sonnet | – | `docs/tasks/10-cleanup.md` |
 
 Gleichzeitig möglich (getrennte Dateibereiche): 01 + 02 + 06 + 10; danach 03 + 04; dann 05, 07, 08.
 Nicht gleichzeitig: 01/02/04 ändern alle `cli.run_redesign` (nacheinander zusammenführen), 04 und 05 beide

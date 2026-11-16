@@ -3,6 +3,14 @@
 Neueste zuerst. Neue Sessions tragen hier 3–6 Zeilen ein (was geändert wurde, Befunde, Messwerte).
 Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tasks/`.
 
+## Session 23 (2026-11-16): Aufträge 02 und 10 (Sonnet-Agents)
+
+- 02 Aktoren: `tests/design/test_actuators.py` (32 Tests, 7 Aktoren × 4 Entwürfe; Fackel-AND geht nur mit
+  Notenblock und Eisenfalltür), `scripts/actuator_scenarios.py`, sieben Szenarien `act-*` mit XOR im Spiel
+  aufgenommen, alle identisch zum Simulator. Wunsch-Karten haben das Feld „Was soll geschaltet werden?“.
+- Oracle aus einem Worktree: `oracle/build` fehlt dort; `redstone.oracle.ORACLE_DIR` auf den Hauptordner setzen.
+- 10 Aufräumen: alter Agent-Worktree entfernt; `.cache`-Zwischenstände (~9 MB) aufgelistet, Löschen wartet auf den Nutzer.
+
 ## Session 22 (2026-11-16): Umplanung (Fable-5.2-Hauptsession, kein Programmcode)
 
 - Übergabe neu gegliedert: `STATUS.md` nur noch Stand, Auftragstabelle, Fakten, Befehle (595 → ~115 Zeilen); der
