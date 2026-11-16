@@ -11,7 +11,7 @@ from pathlib import Path
 from ..model import Grid
 
 SCHEMATIC_FORMATS = ("litematic", "schem", "nbt")
-TEXT_FORMATS = ("materials", "dump", "guide")
+TEXT_FORMATS = ("materials", "dump", "guide", "guide-html")
 GOLDEN_DIR = Path(__file__).resolve().parents[3] / "tests" / "golden"
 
 
@@ -25,9 +25,11 @@ def explain(grid: Grid, title: str) -> dict:
     """`rsx explain`: the Markdown report plus the SVG timing diagrams it links (by file name)."""
     from ..analysis.analyze import analyze
     from ..analysis.explain import explain as explain_text
+    from ..render.plain import plain_analysis
 
     svgs: dict[str, str] = {}
-    return {"markdown": explain_text(analyze(grid), title, ("svg", svgs)), "svgs": svgs}
+    analysis = analyze(grid)
+    return {"markdown": explain_text(analysis, title, ("svg", svgs)), "svgs": svgs, "plain": plain_analysis(analysis)}
 
 
 def dump(grid: Grid, layers: list[int] | None = None, components: bool = True, states: bool = False) -> str:
@@ -92,6 +94,10 @@ def export(grid: Grid, fmt: str, title: str) -> tuple[bytes, str, str]:
         return format_materials(grid).encode("utf-8"), f"{name}-material.txt", "text/plain; charset=utf-8"
     if fmt == "dump":
         return dump(grid, states=True).encode("utf-8"), f"{name}-ebenen.txt", "text/plain; charset=utf-8"
+    if fmt == "guide-html":
+        from .guide_html import guide_html
+
+        return guide_html(grid, title).encode("utf-8"), f"{name}-bauanleitung.html", "text/html; charset=utf-8"
     if fmt == "guide":
         return guide(grid, title).encode("utf-8"), f"{name}-bauanleitung.txt", "text/plain; charset=utf-8"
     raise ValueError(f"unbekanntes Format {fmt!r}")

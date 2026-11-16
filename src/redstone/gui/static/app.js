@@ -316,7 +316,7 @@ function updateActions() {
   const scenario = !!ref && !ref.job && S.modelGroup === 'scenarios';
   $('curName').textContent = m ? m.name : 'Keine Schaltung geladen';
   $('curMeta').textContent = m ? `${m.size.join('×')} · ${m.blocks.length} Blöcke${S.fromJob ? ' · Entwurf der Suche' : ''}` : '';
-  $('btnExplain').disabled = $('btnDump').disabled = $('btnExport').disabled = !ref;
+  $('btnExplain').disabled = $('btnDump').disabled = $('btnExport').disabled = $('btnPrintGuide').disabled = !ref;
   $('sStart').disabled = !ref;
   $('scenarioBox').hidden = !scenario;
   $('btnOracle').disabled = !!oracle;
@@ -461,6 +461,18 @@ function setBuild(n) {
   } else setInfo(`Block 0 von ${total}`);
 }
 
+$('btnPrintGuide').addEventListener('click', () => {
+  const ref = currentRef();
+  if (!ref) return;
+  busyWith($('btnPrintGuide'), 'Erzeuge Bauanleitung ...', async () => {
+    const { blob } = await api.download(ref, 'guide-html');
+    const url = URL.createObjectURL(blob);
+    if (!window.open(url, '_blank')) saveBlob(blob, 'bauanleitung.html');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    setStatus('Bauanleitung geöffnet: dort mit Strg+P drucken oder als PDF speichern.');
+  });
+});
+
 $('btnExport').addEventListener('click', () => {
   const ref = currentRef();
   if (!ref) return;
@@ -473,6 +485,19 @@ $('btnExport').addEventListener('click', () => {
 
 // --- analyze ---------------------------------------------------------------------------------------------------------
 
+/** A report with the everyday-language text on top and the technical report folded below it. */
+function plainReport(plain, detail) {
+  if (!plain) return detail;
+  const box = node('div');
+  box.appendChild(node('h2', 'Kurz erklärt'));
+  box.appendChild(renderMarkdown(plain));
+  const det = node('details');
+  det.appendChild(node('summary', 'Details für Fortgeschrittene'));
+  det.appendChild(detail);
+  box.appendChild(det);
+  return box;
+}
+
 const anDocs = new DocPane({ tabs: $('anDocTabs'), body: $('anDocBody'), save: $('anDocSave') });
 
 $('btnExplain').addEventListener('click', () => {
@@ -481,7 +506,7 @@ $('btnExplain').addEventListener('click', () => {
   busyWith($('btnExplain'), `Untersuche ${name} (bei großen Schaltungen dauert das einige Sekunden) ...`, async () => {
     const r = await api.explain(ref);
     anDocs.set('explain', {
-      title: 'Erklärung', node: renderMarkdown(r.markdown, r.svgs),
+      title: 'Erklärung', node: plainReport(r.plain, renderMarkdown(r.markdown, r.svgs)),
       download: { name: `${name}-analyse.md`, text: r.markdown, type: 'text/markdown;charset=utf-8' },
     });
     setStatus('Erklärung fertig.');
@@ -814,7 +839,7 @@ async function pollJob() {
         j.result = d.result;
         if (d.result.summary) {
           deDocs.set('report', {
-            title: 'Bericht', node: renderMarkdown(d.result.summary),
+            title: 'Bericht', node: plainReport(d.result.plain, renderMarkdown(d.result.summary)),
             download: { name: `${stem(j.path)}-redesign.md`, text: d.result.summary, type: 'text/markdown;charset=utf-8' },
           });
         }
