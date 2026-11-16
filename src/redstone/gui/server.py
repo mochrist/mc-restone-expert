@@ -169,6 +169,7 @@ class Job:
                                                  top=self.top, steps=self.log, output=self.output)
             result = gmodel.of_candidate(best, spec) if best is not None else {}
             result["summary"] = text
+            result["plain"] = self._plain(best, spec)
             with self._lock:
                 self.grid = best.grid if best is not None else None
                 self.result = result
@@ -182,6 +183,24 @@ class Job:
             self.error = f"Fehler in der Entwurfssuche: {type(e).__name__}: {e}"
         finally:
             self.done = True
+
+    @staticmethod
+    def _plain(best, spec) -> str:
+        """Everyday-German explanation of the best design ("" if it cannot be produced)."""
+        if best is None:
+            return ""
+        try:
+            from ..design.evaluate import Evaluation, evaluate_any
+            from ..render.plain import plain_design
+
+            try:
+                ev = evaluate_any(best, spec)
+            except Exception:  # e.g. a door at the output: the lamp version was checked
+                ev = Evaluation(best, correct=True)
+            return plain_design(spec, ev)
+        except Exception:
+            traceback.print_exc()
+            return ""
 
     def snapshot(self, since: int) -> dict:
         with self._lock:

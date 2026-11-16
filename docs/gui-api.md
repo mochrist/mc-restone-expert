@@ -70,7 +70,7 @@ Alle Antworten sind JSON; Fehler als HTTP 4xx/5xx mit `{"error": "<deutscher Tex
 | `GET /api/text?path=P` | Textdatei (`.yaml`, `.md`, `.txt`, `.json`) | `{"path": P, "text": "…"}` |
 | `POST /api/upload?name=N` | Dateiinhalt als Körper (bis 64 MiB; `.litematic`, `.schem`, `.nbt`, `.yaml`) | `{"path": P, "group": "schematics"\|"scenarios"\|"specs"}` |
 | `POST /api/spec` | `{"name": N, "text": YAML}` (Spezifikation aus dem Editor) | wie Upload |
-| `POST /api/explain` | Quelle | `{"markdown": "…", "svgs": {"in1.svg": "<svg…"}}` (`rsx explain`) |
+| `POST /api/explain` | Quelle | `{"markdown": "…", "svgs": {"in1.svg": "<svg…"}, "plain": "…"}` (`plain`: Erklärung in Alltagssprache, Markdown) (`rsx explain`) |
 | `POST /api/dump` | Quelle plus `layers` (Liste), `components` (Standard an), `states` | `{"name": N, "text": "…"}` (`rsx dump`) |
 | `POST /api/scenario` | `{"path": P}` | Szenario-Lauf (unten; `rsx sim --diff`) |
 | `POST /api/oracle` | `{"path": P, "golden": false}` | `{"job": id}`; Aufnahme im Spiel, höchstens eine zugleich (sonst 409) |
@@ -95,7 +95,7 @@ Optionen von `/api/redesign` (alle optional, wie die Schalter von `rsx redesign`
 oder `"all"`), `output` (statt der Lampe ein anderer Block am Ausgang: `iron_door`, `iron_trapdoor`, `piston`,
 `sticky_piston`, `note_block`, `dispenser`, `dropper`; Schlüssel aus `design/actuators.py`).
 
-Formate von `/api/export`: `litematic`, `schem`, `nbt` (`rsx convert`), `materials`, `dump`, `guide` (Material
+Formate von `/api/export`: `litematic`, `schem`, `nbt` (`rsx convert`), `materials`, `dump`, `guide-html` (druckbare Seite, ein Bild je Ebene), `guide` (Material
 plus Ebenen als Text), `scenario` (kompiliertes Szenario-JSON, `rsx compile`; nur Szenario-Dateien), `report`
 (Markdown-Bericht einer Suche; nur `job`).
 
@@ -122,7 +122,7 @@ kein funktionierender Entwurf gefunden wurde (dann `result` nur mit `summary`).
 `phase`: `compose` (ein fertig zusammengesetzter Kandidat) oder `compact` (ein Kompaktier-Versuch; `accepted`
 sagt, ob er funktioniert und übernommen wurde). Einzelbilder sind vollständige Blocklisten, jeweils auf ihre
 eigene Min-Ecke bezogen. Höchstens 3000 Einzelbilder je Job (danach nur noch übernommene). `result` am Ende:
-Modell des besten Entwurfs plus `"summary"` (deutscher Bericht von `rsx redesign`).
+Modell des besten Entwurfs plus `"summary"` (deutscher Bericht von `rsx redesign`) und `"plain"` (Erklärung in Alltagssprache).
 
 ## Aufbau der Oberfläche
 
