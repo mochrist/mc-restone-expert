@@ -3,6 +3,15 @@
 Neueste zuerst. Neue Sessions tragen hier 3–6 Zeilen ein (was geändert wurde, Befunde, Messwerte).
 Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tasks/`.
 
+## Session 24 (2026-11-17): Auftrag 04 abgeschlossen (Opus)
+
+- 04 Teil 2 Tageslichtsensor: Aktion `time` (beide Kerne, Oracle) und Golden `daylight-time` kamen noch aus Session 23
+  (Opus-Agent, DAY-007/008). Neu: `design/sensors.py` ersetzt den einen Hebel eines Entwurfs durch Sensor + Verstärker
+  (`daylight_detector` = Tag, `_inverted` = Nacht), geprüft gegen die Hebelfassung mit Mittag/Mitternacht an 6 Orten × 4
+  Drehungen. Schaltzeiten freier Himmel: normal 22340–13670, invertiert 12040–23970 (≈ 18:02–5:58 Uhr).
+- `rsx redesign --input daylight_detector[_inverted]`, API, Assistent, Wunsch-Karte „Licht nach Tageszeit“ (Entwurf 1×2×3,
+  4 Blöcke); `assistant_eval --only nachtlicht` gelungen (11 s). DAY-008-Statuszeile berichtigt (Linter).
+
 ## Session 23 (2026-11-16): Aufträge 02, 06, 10 (Sonnet-Agents), 01 (Opus), 03 (Opus-Agent)
 
 - 04 Teil 1 Druckplatte (Sonnet-Agent): `design/sensors.py`, `rsx redesign --input stone_pressure_plate`, API,
