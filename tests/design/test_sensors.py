@@ -25,7 +25,7 @@ def _best(spec):
     return next(e.candidate for e in redesign(spec) if e.ok)
 
 
-@pytest.mark.parametrize("kind", list(SENSORS))
+@pytest.mark.parametrize("kind", [k for k in SENSORS if k.endswith("_pressure_plate")])
 @pytest.mark.parametrize("name", ["monoflop", "t-flip-flop"])
 def test_pulse_designs_take_a_plate(name, kind):
     spec = _spec(name)
@@ -84,3 +84,66 @@ def test_wall_button_plate_goes_on_top_of_the_block():
     g.set(Pos(1, 2, 1), "stone")
     new, why = with_input(cand, "stone_pressure_plate")
     assert new is None and why
+
+
+# --- daylight detector instead of the one lever ---
+
+from redstone.design import spec as specmod  # noqa: E402
+from redstone.design.sensors import DAYLIGHT, _switch_traces, daylight_hours  # noqa: E402
+
+
+def _logic(expr: str):
+    return specmod.from_dict({"inputs": ["a"], "function": {"lampe": expr}}, source="t")
+
+
+@pytest.mark.parametrize("kind", list(DAYLIGHT))
+@pytest.mark.parametrize("expr", ["a", "not a"])
+def test_daylight_replaces_the_lever(expr, kind):
+    spec = _logic(expr)
+    cand = _best(spec)
+    new, why = with_input(cand, kind, spec)
+    assert new is not None, why
+    det = new.grid.get(new.inputs[0])
+    assert det.id == "daylight_detector"
+    assert det.get_bool("inverted") == kind.endswith("inverted")
+    x, y, z = new.inputs[0]
+    assert all(new.grid.get(Pos(x, yy, z)).id == "air" for yy in range(y + 1, new.grid.size[1]))
+    assert any(s.id == "repeater" for _, s in new.grid.items())
+    phases = [True, False, True]
+    want = _switch_traces(cand, phases, None)
+    assert _switch_traces(new, phases, DAYLIGHT[kind]) == want
+    # the other clock mapping switches the other way round: the check can tell
+    assert _switch_traces(new, phases, DAYLIGHT[kind][::-1]) != want
+
+
+def test_daylight_with_behaviour():
+    spec = bh.from_dict({"behaviour": "delay", "delay": 6}, source="d")
+    new, why = with_input(_best(spec), "daylight_detector_inverted", spec)
+    assert new is not None, why
+
+
+def test_daylight_refusals():
+    and2 = next(t for t in TEMPLATES if t.name == "and2-torch").build()
+    new, why = with_input(and2, "daylight_detector")
+    assert new is None and "genau einem Hebel" in why
+    spec = bh.monostable(8, kind="button")
+    new, why = with_input(_best(spec), "daylight_detector", spec)
+    assert new is None and "Hebel" in why
+
+
+def test_daylight_hours():
+    day, night = daylight_hours(False), daylight_hours(True)
+    # normal: on from dawn to after dusk; inverted: from dusk to dawn (clock 0 = 6 o'clock)
+    assert 21000 < day[0] < 24000 and 12000 < day[1] < 15000
+    assert 11000 < night[0] < 13500 and 22500 < night[1] < 24000
+
+
+def test_redesign_cli_with_daylight(tmp_path):
+    from redstone.cli import run_redesign
+
+    f = tmp_path / "nacht.yaml"
+    f.write_text("inputs: [nacht]\nfunction:\n  lampe: nacht\n", encoding="utf-8")
+    best, text, _ = run_redesign(f, compact=0, time_limit=10, input="daylight_detector_inverted")
+    assert best is not None
+    assert best.grid.get(best.inputs[0]).id == "daylight_detector"
+    assert "## Eingang" in text and "Tageslichtsensor" in text

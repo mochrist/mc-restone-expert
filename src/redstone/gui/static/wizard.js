@@ -68,6 +68,13 @@ const WISHES = [
     say: () => 'Ein Hebel und eine Lampe. Hebel aus: Lampe an. Hebel an: Lampe aus.',
   },
   {
+    id: 'daylight', icon: 'sun', title: 'Licht nach Tageszeit', sub: 'Ein Tageslichtsensor schaltet die Lampe, wenn es Nacht (oder Tag) wird.',
+    fields: [{ key: 'when', label: 'Die Lampe leuchtet', type: 'select', value: 'night', options: [['night', 'nachts'], ['day', 'tagsüber']] }],
+    name: (v) => (v.when === 'night' ? 'nachtlicht' : 'tageslicht'),
+    yaml: () => 'inputs: [sensor]\nfunction:\n  lampe: sensor\n',
+    say: (v) => `Ein Tageslichtsensor schaltet die Lampe ${v.when === 'night' ? 'abends an und morgens aus' : 'morgens an und abends aus'}. Über dem Sensor darf nichts gebaut werden.`,
+  },
+  {
     id: 'pulse', icon: 'pulse', title: 'Kurzer Impuls', sub: 'Ein Druck gibt ein Signal von fester Länge, egal wie lange man drückt.',
     fields: [
       { key: 'length', label: 'Länge des Impulses', type: 'range', steps: PULSES, value: 8, show: (v) => `${v} Ticks = ${secs(v)}` },
@@ -219,8 +226,12 @@ export function initWizard({ mount, onSpec, onCustom }) {
     select,
     get current() { return current && current.id; },
     /** Key of the chosen block instead of the lamp, or undefined for the lamp. */
-    /** Key of the pressure plate that replaces lever/button, or undefined. */
-    get input() { const v = current && values[current.id]; return v && v.kind === 'plate' ? 'stone_pressure_plate' : undefined; },
+    /** Key of the pressure plate or daylight detector that replaces lever/button, or undefined. */
+    get input() {
+      const v = current && values[current.id];
+      if (current && current.id === 'daylight') return v && v.when === 'day' ? 'daylight_detector' : 'daylight_detector_inverted';
+      return v && v.kind === 'plate' ? 'stone_pressure_plate' : undefined;
+    },
     get output() { return output && current && current.id !== 'adder' && !current.custom ? output : undefined; },
   };
 }

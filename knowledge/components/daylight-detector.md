@@ -73,5 +73,5 @@ Wetter.
 - Version: 26.3
 - Quelle: [SRC-MC-CODE] `ServerClockManager#setTotalTicks`, `ServerClockManager#modifyClock`, `ServerLevel#tick`, `EnvironmentAttributeSystem#invalidateTickCache`
 - Konfidenz: hoch
-- Status: im-Spiel-verifiziert (scenarios/daylight-time.yaml, Sensoren U/V bei Tick 205: Zeit 23500 → 6000 und Rechtsklick; normal geschaltet 12 statt 15, invertiert geschaltet 3 statt 0)
-- Hinweise: Das Oracle setzt die Uhr beim Aufbau jedes Szenarios auf 0 und ruft `updateSkyBrightness` sofort auf, damit kein Szenario die Helligkeit des vorigen sieht.
+- Status: im-Spiel-verifiziert (scenarios/daylight-time.yaml)
+- Hinweise: Im Szenario die Sensoren U/V bei Tick 205: Zeit 23500 → 6000 und Rechtsklick; normal geschaltet 12 statt 15, invertiert geschaltet 3 statt 0. Das Oracle setzt die Uhr beim Aufbau jedes Szenarios auf 0 und ruft `updateSkyBrightness` sofort auf, damit kein Szenario die Helligkeit des vorigen sieht.

@@ -25,6 +25,7 @@ const P = {
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
   // design wishes
   gate: '<path d="M4 7h5M4 17h5M15.5 12H20"/><path d="M9 5h3a7 7 0 0 1 0 14H9V5z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   invert: '<path d="M4 12h3M17.5 12H20"/><path d="M7 6v12l8-6-8-6z"/><circle cx="16.2" cy="12" r="1.3"/>',
   pulse: '<path d="M3 16h5V8h5v8h8"/>',
   glow: '<path d="M3 16h4V8h10l4 8"/>',

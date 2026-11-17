@@ -321,7 +321,8 @@ def run_redesign(file, constraints=None, *, compact: int = 100, time_limit: floa
     derived from an existing circuit. steps: filled with the compaction log while the search runs.
     output: another block than a lamp at the outputs (key of design.actuators.ACTUATORS); the best design that
     works with it is returned. input: a pressure plate instead of the lever/button at the inputs (key of
-    design.sensors.SENSORS), for designs that react to a single press; the spec returned is then the press version."""
+    design.sensors.SENSORS), for designs that react to a single press; the spec returned is then the press version.
+    A daylight detector replaces the one lever of a design (the spec stays the lever version)."""
     from pathlib import Path
 
     import yaml
@@ -382,10 +383,21 @@ def run_redesign(file, constraints=None, *, compact: int = 100, time_limit: floa
                     f"Ausgang bauen ({why}). Mit Lampe gibt es Entwürfe.\n")
     if input and ok and best is not None:
         from .design.robust import check, plan, summary
-        from .design.sensors import SENSORS, button_spec, with_input
+        from .design.sensors import DAYLIGHT, SENSORS, button_spec, with_input
 
         plate, why = with_input(best, input, spec)
-        if plate is not None:
+        if plate is None and input in DAYLIGHT:  # another working design may have its lever where it fits
+            for r in ok[1:ROBUST_TRIES]:
+                if output:
+                    break  # (best carries the output block already)
+                plate, why2 = with_input(r.candidate, input, spec)
+                if plate is not None:
+                    best, why = r.candidate, why2
+                    break
+        if plate is not None and input in DAYLIGHT:
+            note += f"\n\n## Eingang\n\n- Entwurf „{best.name}“. {why}\n"
+            best = plate
+        elif plate is not None:
             note += f"\n\n## Eingang\n\n- Entwurf „{best.name}“. {why}\n"
             best = plate
             press_spec = button_spec(spec)
@@ -551,7 +563,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--time", type=float, default=60, help="time limit in seconds for shrinking (default 60)")
     p.add_argument("--input", default=None, metavar="BLOCK",
                    help="pressure plate instead of lever/button for designs that react to one press: "
-                        "stone_pressure_plate, oak_pressure_plate")
+                        "stone_pressure_plate, oak_pressure_plate; daylight detector instead of the one lever: "
+                        "daylight_detector (on at day), daylight_detector_inverted (on at night)")
     p.add_argument("--outputs", default=None, metavar="NAMES",
                    help="outputs of an existing circuit that the redesign must keep: names from `rsx explain` "
                         "(out1,out3) or 'all' (default: all for a truth table, only the lamps for behaviour)")

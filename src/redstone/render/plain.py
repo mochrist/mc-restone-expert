@@ -130,6 +130,8 @@ def _input_kind_word(sid: str) -> str:
         return "Knopf"
     if sid.endswith("_pressure_plate"):
         return "Druckplatte"
+    if sid == "daylight_detector":
+        return "Tageslichtsensor"
     return "Schalter"
 
 
@@ -141,7 +143,8 @@ def _input_lines(items: list[tuple[str, str]]) -> list[str]:
     for name, sid in items:
         word = _input_kind_word(sid)
         how = {"Hebel": "umlegen (an oder aus)", "Knopf": "kurz drücken",
-               "Druckplatte": "betreten oder etwas darauflegen"}.get(word, "betätigen")
+               "Druckplatte": "betreten oder etwas darauflegen",
+               "Tageslichtsensor": "schaltet von selbst nach der Tageszeit, braucht freien Himmel"}.get(word, "betätigen")
         lines.append(f"- {word} „{name}“: {how}.")
     return lines
 

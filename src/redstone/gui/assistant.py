@@ -70,7 +70,13 @@ solange ich stehe“ oder Logik mit mehreren Hebeln (a and b) geht sie nicht, do
 Hebel. Sag bei Druckplatten ehrlich, dass sie nur im Simulator geprüft ist, nicht im echten Spiel (Steinplatten
 reagieren nur auf Lebewesen, Holzplatten auch auf Gegenstände).
 
-Ehrlichkeit: Sag klar, was die App nicht kann (z. B. Tageslichtsensoren, Sensoren für Spieler oder
+Ein Tageslichtsensor ersetzt einen Hebel (Parameter input: daylight_detector = „an, solange es Tag ist“,
+daylight_detector_inverted = „an, solange es Nacht ist“), nur bei Vorgaben mit genau einem Hebel-Eingang. Für
+„Lampe geht nachts an“: inputs: [nacht], function: lampe: nacht, input: daylight_detector_inverted. Der Sensor
+schaltet nicht genau bei Sonnenuntergang; nenne die Uhrzeiten aus dem Bericht. Über dem Sensor darf nichts gebaut
+werden.
+
+Ehrlichkeit: Sag klar, was die App nicht kann (z. B. Sensoren für Spieler oder
 Mobs als Auslöser, Kolbentüren aus vielen Kolben, Itemsortierer, Zahlenanzeigen). Biete dann den nächstbesten
 baubaren Ersatz an (z. B. Knopf statt Druckplatte). Behaupte nie, eine Schaltung funktioniere, wenn die Suche
 gescheitert ist; die Entwürfe sind im Simulator geprüft, das darfst du sagen. Nenne Größe und Blockzahl des
@@ -95,7 +101,7 @@ def tools_schema() -> list[dict]:
         "output": {"type": "string", "enum": _actuators(),
                    "description": "Block statt Lampe am Ausgang (optional)"},
         "input": {"type": "string", "enum": _sensors(),
-                  "description": "Druckplatte statt Hebel/Knopf als Auslöser (optional, nur für Impuls-Wünsche)"},
+                  "description": "Druckplatte statt Hebel/Knopf (nur Impuls-Wünsche) oder Tageslichtsensor statt des einen Hebels (optional)"},
         "max_size": {"type": "string", "description": "Höchstmaße X,Y,Z (optional), z. B. 9,5,9"},
         "forbid": {"type": "array", "items": {"type": "string"},
                    "description": "Block-IDs, die nicht vorkommen dürfen (optional), z. B. piston"},

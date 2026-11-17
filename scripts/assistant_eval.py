@@ -37,6 +37,8 @@ CASES = [
     ("druckplatte", "Eine Tür, die aufgeht, wenn ich auf eine Druckplatte trete.",
      [["monostable", "pulse-extender"], ["pressure_plate"]],
      "Impuls (Monoflop/Pulsverlängerer) mit Druckplatte als input, Tür; Hinweis: nur im Simulator geprüft"),
+    ("nachtlicht", "Eine Lampe an meinem Haus soll nachts von selbst angehen und morgens wieder aus.",
+     [["function"], ["daylight_detector_inverted"]], "Tageslichtsensor invertiert als input, Lampe"),
     ("itemsortierer", "Bau mir einen Itemsortierer, der Diamanten aus meiner Truhe aussortiert.",
      [], "ehrlich: nicht möglich, keine Suche"),
 ]
