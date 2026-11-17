@@ -27,7 +27,10 @@
       "PowerShell(Format-List)",
       "PowerShell(Format-List *)",
       "PowerShell(Out-String)",
-      "PowerShell(Compare-Object *)"
+      "PowerShell(Compare-Object *)",
+      "PowerShell(Format-Table)",
+      "PowerShell(Format-Table *)",
+      "Bash(cargo search *)"
     ]
   }
 }
