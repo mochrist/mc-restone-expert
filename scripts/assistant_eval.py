@@ -40,8 +40,12 @@ CASES = [
     ("nachtlicht", "Eine Lampe an meinem Haus soll nachts von selbst angehen und morgens wieder aus.",
      [["function"], ["daylight_detector_inverted"]], "Tageslichtsensor invertiert als input, Lampe"),
     ("itemsortierer", "Bau mir einen Itemsortierer, der Diamanten aus meiner Truhe aussortiert.",
-     [], "ehrlich: nicht möglich, keine Suche"),
+     [], "Katalog-Eintrag item-sorter geladen, Hinweis: Bruchstein im Filter durch 41 Diamanten ersetzen"),
+    ("kolbentuer", "Ich hätte gern eine Kolbentür für den Eingang meiner Burg, zwei Blöcke breit und zwei hoch.",
+     [], "Katalog-Eintrag piston-door-2x2 geladen, Bedienung mit Hebel"),
 ]
+# cases answered from the catalog: the catalog key that load_example must load
+LOADS = {"itemsortierer": "item-sorter", "kolbentuer": "piston-door-2x2"}
 
 
 def main() -> None:
@@ -95,7 +99,11 @@ def main() -> None:
         errors = [e["text"] for e in events if e["type"] == "error"]
         found = any(not c["is_error"] and "Gefunden:" in str(c["content"]) for c in results)
         spec_text = " ".join(specs).lower()
-        spec_ok = all(any(k.lower() in spec_text for k in g) for g in groups) if groups else not specs or found
+        if name in LOADS:
+            loaded = [inp.get("path", "") for n, inp in tools if n == "load_example"]
+            found = spec_ok = any(LOADS[name] in p for p in loaded)
+        else:
+            spec_ok = all(any(k.lower() in spec_text for k in g) for g in groups) if groups else not specs or found
         summary.append(f"| {name} | {'ja' if found else 'nein'} | {'ok' if spec_ok else 'PRÜFEN'} | "
                        f"{len(tools)} | {secs:.0f} s | {expect} |")
         lines += [f"## {name}", "", f"**Wunsch:** {text}", "", f"**Erwartung:** {expect}", "",

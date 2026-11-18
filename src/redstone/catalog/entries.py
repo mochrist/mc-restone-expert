@@ -34,6 +34,7 @@ class Entry:
     layout: Callable[[], Built] = field(compare=False)  # unsettled layout
     check: Callable[[Built, Pos], list[str]] = field(compare=False)  # acceptance at an origin; returns problems
     notes: str = ""  # German: limits, e.g. "nur am Ursprung geprüft"
+    display: tuple[tuple[str, str], ...] = ()  # (port, German name) shown in the GUI: inputs first, then outputs
 
     def built(self) -> Built:
         b = _settled(self.key)
@@ -227,6 +228,7 @@ def _piston_door_2x2() -> Built:
     b[(2, 0, 4)] = "lever[face=floor,facing=south,powered=false]"
     ports = {"lever": (2, 0, 4)} | {f"door{i}": p for i, p in enumerate([(2, 1, 0), (3, 1, 0), (2, 2, 0), (3, 2, 0)])}
     ports |= {"pocket_left_low": (1, 1, 0), "pocket_right_high": (4, 2, 0)}
+    ports |= {"piston_l1": (0, 1, 0), "piston_l2": (0, 2, 0), "piston_r1": (5, 1, 0), "piston_r2": (5, 2, 0)}
     return _layout(b, ports)
 
 
@@ -318,7 +320,7 @@ def _hidden_door_1x2() -> Built:
     for (x, y, z), state in low.items():
         b[(x, y, z)] = state
         b[(x, y - 1, z)] = STONE
-    ports = {"button": (4, 1, -1), "door0": (2, 1, 0), "door1": (2, 2, 0)}
+    ports = {"button": (4, 1, -1), "door0": (2, 1, 0), "door1": (2, 2, 0), "piston1": (0, 1, 0), "piston2": (0, 2, 0)}
     return _layout(b, ports)
 
 
@@ -440,6 +442,8 @@ ENTRIES: list[Entry] = [
         layout=_piston_door_2x2,
         check=_check_piston_door,
         notes=PROOF,
+        display=(("lever", "Hebel"), ("piston_l1", "Kolben links unten"), ("piston_l2", "Kolben links oben"),
+                 ("piston_r1", "Kolben rechts unten"), ("piston_r2", "Kolben rechts oben")),
     ),
     Entry(
         key="hidden-door-1x2",
@@ -453,6 +457,7 @@ ENTRIES: list[Entry] = [
         layout=_hidden_door_1x2,
         check=_check_hidden_door,
         notes=PROOF + " Braucht einen Holzknopf (30 gt); ein Steinknopf ist zu kurz.",
+        display=(("button", "Knopf"), ("piston1", "Kolben unten"), ("piston2", "Kolben oben")),
     ),
     Entry(
         key="item-sorter",
@@ -469,6 +474,7 @@ ENTRIES: list[Entry] = [
         layout=_item_sorter,
         check=_check_item_sorter,
         notes=PROOF + " Arbeitet ein Item pro 8 Ticks ab (2,5 pro Sekunde).",
+        display=(("comparator", "Filter-Komparator"), ("inverter", "Sperre")),
     ),
 ]
 

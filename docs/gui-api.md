@@ -58,7 +58,7 @@ Alle Antworten sind JSON; Fehler als HTTP 4xx/5xx mit `{"error": "<deutscher Tex
 | Methode, Pfad | Anfrage | Antwort |
 |---|---|---|
 | `GET /` | – | `static/index.html` (weitere Dateien unter `/static/…`) |
-| `GET /api/files` | – | `{"schematics": [...], "scenarios": [...], "specs": [...]}`: Pfade relativ zum Repo (Beispiele, Szenarien, Spezifikationen) |
+| `GET /api/files` | – | `{"schematics": [...], "scenarios": [...], "specs": [...], "catalog": [{"path", "key", "title"}]}`: Pfade relativ zum Repo (Beispiele, Szenarien, Spezifikationen). Katalog-Bauwerke (`src/redstone/catalog`) liegen als Szenario ohne Ablauf in `.cache/gui/catalog/` und stehen vorn in `scenarios` |
 | `GET /api/model?path=P` | Schaltplan (`.litematic`, `.schem`, `.nbt`) oder Szenario (`.yaml` mit `build`) | Modell |
 | `POST /api/sim` | `{"path": P}` oder `{"job": J}` (Ergebnis einer Suche) | `{"sim": id, "tick": 0, "model": Modell}` |
 | `POST /api/sim/<id>/use` | `{"p": [x, y, z]}` (Hebel umlegen, Knopf drücken) | `{"tick": t, "changed": [Block, ...]}` |

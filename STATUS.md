@@ -1,19 +1,18 @@
 # Projektstatus
 
-Stand: 2026-11-17, Session 24 (04 erledigt; 07: Skript `scripts/mine_templates.py` committet; 08: halbfertig im Branch `worktree-agent-abca7dd8a2401b1da`, Agent beendet). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
+Stand: 2026-11-18, Session 25 (05 erledigt; 07: Skript `scripts/mine_templates.py` committet; 08: halbfertig im Branch `worktree-agent-abca7dd8a2401b1da`, Agent beendet). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
 Vorgeschichte: `docs/history.md`. Zurückgestelltes: `docs/backlog.md`.
 
 ## Wo das Projekt steht
 
 Werkzeug für Redstone in Minecraft Java 26.3: Schaltungen lesen, tick-genau simulieren (Python-Referenz und
-Rust-Kern, 154 Golden Traces aus dem echten Spiel identisch), erklären (`rsx explain`), neu entwerfen
+Rust-Kern, 157 Golden Traces aus dem echten Spiel identisch), erklären (`rsx explain`), neu entwerfen
 (`rsx redesign`: Vorlagen, Fackel-PLA bis 8 Eingänge, Zerlegung bis 11 Eingänge, Kompaktieren) und eine lokale
-Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1740 Tests grün. Wissensbasis: 296 Aussagen, keine offen.
+Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1790 Tests grün. Wissensbasis: 296 Aussagen, keine offen.
 
-Was dem eigentlichen Ziel (ein Laie bekommt einen Bauplan, der in seiner Welt funktioniert) noch fehlt:
-
-1. Fertige Bauwerke (Kolbentür, Itemsortierer) gehen nicht (05); Druckplatte und Tageslichtsensor gehen als
-   Auslöser (Druckplatte nur im Simulator geprüft, Sensorverhalten im Spiel aufgenommen).
+Fertige Bauwerke (`src/redstone/catalog`, `rsx catalog`): Kolbentür 2×2, versteckte Tür 1×2, Itemsortierer für
+eine Sorte, im Spiel aufgenommen (`cat-*`), in GUI („Zum Einstieg“) und Assistent. Druckplatte und
+Tageslichtsensor gehen als Auslöser (Druckplatte nur im Simulator geprüft, Sensorverhalten im Spiel aufgenommen).
 
 ## Aufträge
 
@@ -21,13 +20,11 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
-| 05 | Katalog fertiger Bauwerke | Opus | – | `docs/tasks/05-catalog.md` |
 | 07 | Kleinere Grundbausteine per Offline-Suche | Opus | – (besser nach 01, 03) | `docs/tasks/07-smaller-gates.md` |
 | 08 | Zerlegung: mehrere Ausgänge mit gemeinsamen Eingängen | Opus | 03 | `docs/tasks/08-multi-output-common-inputs.md` |
 | 09 | Assistent im Browser durchklicken | Sonnet | Nutzer | `docs/tasks/09-assistant-walkthrough.md` |
 
-Gleichzeitig möglich (getrennte Dateibereiche): 05 + 07 + 08 (07/08 beide in `design/`, nacheinander zusammenführen).
-Nicht gleichzeitig: 07 und 08 beide `design/evaluate.py` bzw. `design/decompose.py`.
+07 und 08 nacheinander (beide in `design/`).
 
 Stand der Arbeitskopie: alles committet; API-Schlüssel des Nutzers in `.env` (gitignored), Rechtefreigaben in
 `.claude/settings.local.json` (nicht im Repo); Oracle-Sperre frei.
@@ -90,6 +87,7 @@ src/redstone/
                 notes.py, runner.py, blocks/{basic,diode,torch_observer,container,wire,piston,dispenser_hopper,outputs}.py, data/
   analysis/     ports.py, experiment.py, analyze.py, patterns.py, explain.py
   gui/          server.py, tools.py, model.py, materials.py, assistant.py, static/ (Web-Oberfläche)
+  catalog/      entries.py: fertige Bauwerke (Layout, Abnahme), find, rsx catalog
   design/       observe.py, candidate.py, spec.py, behaviour.py, evaluate.py, templates.py, seq_templates.py, synth.py,
                 search.py, compact.py, report.py, compose.py (Router), decompose.py, actuators.py
   knowledge.py  Linter, Index, mark

@@ -62,9 +62,13 @@ def load(path: str | Path) -> tuple[Grid, dict]:
         probes = [(n, Pos(*p)) for n, p in sc.probes.items()]
         named = {p: n for n, p in probes}
         ins = sorted({Pos(*i.pos) for i in sc.inputs if i.action in ("use", "step")})
+        if not ins:  # no test run (e.g. a catalog entry): levers and buttons among the probes are the inputs
+            ins = sorted(p for _, p in probes if input_kind(grid.get(p)) is not None)
         inputs = [(named.get(p, f"in{k + 1}"), p) for k, p in enumerate(ins)]
         outputs = [(n, p) for n, p in probes if p not in set(ins) and input_kind(grid.get(p)) is None]
         notes = [sc.description] if sc.description else []
+        if not sc.inputs and not sc.probes:  # a plain build (e.g. a catalog entry): ports as for a schematic
+            return grid, model(grid, sc.name, notes=notes)
         return grid, model(grid, sc.name, inputs, outputs, notes)
     grid = io.load(path)
     return grid, model(grid, path.stem)

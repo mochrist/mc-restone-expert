@@ -198,3 +198,13 @@ def test_dotenv_key(server, monkeypatch):
     assert call("/api/assistant")[1]["configured"] is True
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-proc")
     assert assistant.api_key() == "sk-ant-proc" and assistant.key_source() == "env"
+
+
+def test_find_examples_puts_catalog_first():
+    from redstone.gui.server import State
+
+    chat = assistant.Chat.__new__(assistant.Chat)
+    chat.state = State()
+    first = chat._find("kolbentür").splitlines()[0]
+    assert first.startswith(".cache/gui/catalog/piston-door-2x2.yaml")
+    assert chat._find("Itemsortierer").splitlines()[0].startswith(".cache/gui/catalog/item-sorter.yaml")

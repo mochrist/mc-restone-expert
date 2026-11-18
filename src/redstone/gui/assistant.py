@@ -76,8 +76,14 @@ daylight_detector_inverted = „an, solange es Nacht ist“), nur bei Vorgaben m
 schaltet nicht genau bei Sonnenuntergang; nenne die Uhrzeiten aus dem Bericht. Über dem Sensor darf nichts gebaut
 werden.
 
+Fertige Bauwerke (Katalog): Kolbentür 2×2 mit Hebel, versteckte Tür 1×2 mit Holzknopf (schließt nach etwa
+3 Sekunden von selbst) und ein Itemsortierer für eine Sorte. Sie lassen sich nicht mit design_circuit entwerfen;
+such sie mit find_examples (z. B. „kolbentür“, „geheimtür“, „itemsortierer“) und lade sie mit load_example. Sie
+sind im echten Spiel aufgenommen und im Simulator an vielen Orten und in allen Drehungen geprüft. Erkläre die
+Bedienung so, wie sie in der Beschreibung steht.
+
 Ehrlichkeit: Sag klar, was die App nicht kann (z. B. Sensoren für Spieler oder
-Mobs als Auslöser, Kolbentüren aus vielen Kolben, Itemsortierer, Zahlenanzeigen). Biete dann den nächstbesten
+Mobs als Auslöser, größere Kolbentüren als 2×2, Sortierer für mehrere Sorten, Zahlenanzeigen). Biete dann den nächstbesten
 baubaren Ersatz an (z. B. Knopf statt Druckplatte). Behaupte nie, eine Schaltung funktioniere, wenn die Suche
 gescheitert ist; die Entwürfe sind im Simulator geprüft, das darfst du sagen. Nenne Größe und Blockzahl des
 Ergebnisses. Beschreibe Aufbau und Bauteile nur so, wie sie im Bericht des Werkzeugs stehen; erfinde nichts
@@ -125,8 +131,9 @@ def tools_schema() -> list[dict]:
              "outputs": {"type": "string", "description": "nur diese Ausgänge erhalten (optional), z. B. out1,out3"},
              **limits}}},
         {"name": "find_examples",
-         "description": "Sucht fertige, meist im echten Spiel geprüfte Beispielschaltungen nach Stichworten "
-                        "(z. B. addierer, blinker, t-flip-flop, xor). Gibt Pfade und Beschreibungen zurück.",
+         "description": "Sucht fertige, meist im echten Spiel geprüfte Beispielschaltungen und Bauwerke des "
+                        "Katalogs nach Stichworten (z. B. addierer, blinker, t-flip-flop, xor, kolbentür, "
+                        "itemsortierer). Gibt Pfade und Beschreibungen zurück, Katalog-Bauwerke zuerst.",
          "input_schema": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}},
         {"name": "load_example",
          "description": "Lädt ein Beispiel (Pfad aus find_examples) als aktuelle Schaltung in die App.",
@@ -464,12 +471,18 @@ class Chat:
         return cache
 
     def _find(self, query: str) -> str:
+        from ..catalog import find
+
         words = [w for w in query.lower().replace(",", " ").split() if w]
+        catalog = {e.key: rel for rel, e in self.state.catalog()}
+        first = [catalog[e.key] for e in find(query) if e.key in catalog]
         hits = [(rel, desc) for rel, desc in self._examples()
-                if not words or any(w in (rel + " " + desc).lower() for w in words)]
+                if rel in first or not words or any(w in (rel + " " + desc).lower() for w in words)]
+        hits.sort(key=lambda h: first.index(h[0]) if h[0] in first else len(first))
         if not hits:
             return "Keine passenden Beispiele."
-        return "\n".join(f"{rel}: {desc[:200]}" for rel, desc in hits[:15])
+        # catalog entries with their whole description and usage (how to change the sorted item ...)
+        return "\n".join(f"{rel}: {desc if rel in first else desc[:200]}" for rel, desc in hits[:15])
 
     def _load(self, rel: str) -> str:
         if rel not in {r for r, _ in self._examples()}:

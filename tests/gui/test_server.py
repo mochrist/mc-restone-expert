@@ -205,3 +205,17 @@ def test_spec_from_text_with_constraints(api):
             assert status == 200 and "Wahrheitstabelle" in r["markdown"]
     finally:
         (ROOT / spec["path"]).unlink(missing_ok=True)
+
+
+def test_catalog_entries_are_files(api):
+    """Catalog builds (src/redstone/catalog) appear on top of the examples and load like any scenario."""
+    _, files = api("/api/files")
+    keys = [c["key"] for c in files["catalog"]]
+    assert "piston-door-2x2" in keys and "item-sorter" in keys
+    door = next(c for c in files["catalog"] if c["key"] == "piston-door-2x2")
+    assert files["scenarios"][: len(keys)] == [c["path"] for c in files["catalog"]]
+    status, model = api(f"/api/model?path={door['path']}")
+    assert status == 200
+    assert [(i["name"], i["p"]) for i in model["inputs"]] == [("Hebel", [2, 1, 4])]
+    assert len(model["outputs"]) == 4
+    assert "Hebel an" in " ".join(model["notes"])

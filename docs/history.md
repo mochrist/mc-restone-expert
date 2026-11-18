@@ -3,6 +3,17 @@
 Neueste zuerst. Neue Sessions tragen hier 3–6 Zeilen ein (was geändert wurde, Befunde, Messwerte).
 Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tasks/`.
 
+## Session 25 (2026-11-18): Auftrag 05 Katalog fertiger Bauwerke (Opus)
+
+- `src/redstone/catalog/`: Kolbentür 2×2 (Hebel, 48 Blöcke), versteckte Tür 1×2 (Holzknopf, ~58 gt offen über
+  eine 30-gt-Verstärkerkette, 70 Blöcke), Itemsortierer ein Fach (16 Blöcke). `rsx catalog [key] [-o datei]`.
+- Sortierer: Fackel als Sperre brennt bei 1 Item/8 gt durch (8 Ausschaltungen in 60 gt) → Inverter ist ein
+  Komparator (Subtraktion, Fass mit 2 Holzschaufeln = 2); Trichter H unter dem gesperrten B leert B, so bleibt
+  nichts hängen. Abnahme 64+64 und gemischt 4×16: Ziel/Überlauf exakt, Filter wieder 41.
+- `cat-*` im Spiel aufgenommen, identisch; alle drei an 48 Ursprüngen × 4 Drehungen bestanden (`tests/catalog`).
+- GUI: Einträge als `.cache/gui/catalog/*.yaml`, oben in „Zum Einstieg“ mit Klarnamen und benannten Ein-/Ausgängen;
+  Assistent findet sie zuerst (volle Bedienung im Ergebnis). `assistant_eval --only itemsortierer,kolbentuer` gelungen.
+
 ## Session 24 (2026-11-17): Auftrag 04 abgeschlossen (Opus)
 
 - 04 Teil 2 Tageslichtsensor: Aktion `time` (beide Kerne, Oracle) und Golden `daylight-time` kamen noch aus Session 23

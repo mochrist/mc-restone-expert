@@ -239,7 +239,8 @@ function renderFiles() {
       box.appendChild(b);
     };
     if (!filt && g === 'scenarios') {
-      const featured = FEATURED.filter(([p]) => list.includes(p));
+      const catalog = (S.groups.catalog || []).map((c) => [c.path, c.title]);
+      const featured = [...catalog, ...FEATURED].filter(([p]) => list.includes(p));
       if (featured.length) box.appendChild(node('h3', 'Zum Einstieg'));
       for (const [p, title] of featured) entry(p, title);
       box.appendChild(node('h3', `Alle Beispiele und Tests (${list.length})`));
@@ -313,7 +314,8 @@ function circuitChanged() {
 function updateActions() {
   const ref = S.demo ? null : currentRef();
   const m = S.model;
-  const scenario = !!ref && !ref.job && S.modelGroup === 'scenarios';
+  const catalog = (S.groups.catalog || []).some((c) => c.path === S.modelPath); // a build without a test run
+  const scenario = !!ref && !ref.job && S.modelGroup === 'scenarios' && !catalog;
   $('curName').textContent = m ? m.name : 'Keine Schaltung geladen';
   $('curMeta').textContent = m ? `${m.size.join('×')} · ${m.blocks.length} Blöcke${S.fromJob ? ' · Entwurf der Suche' : ''}` : '';
   $('btnExplain').disabled = $('btnDump').disabled = $('btnExport').disabled = $('btnPrintGuide').disabled = !ref;
@@ -1020,7 +1022,7 @@ async function init() {
       $('layerY').value = ly; $('layerYVal').textContent = ly; v2.setLayer(ly);
     }
     // ?click=btnExplain,sRun,... presses these buttons one after the other (tests, screenshots);
-    // task:sim / task:design ... switch the task, a number waits that many milliseconds
+    // task:sim / task:design ... switch the task, in:N clicks input N, a number waits that many milliseconds
     for (const step of (params.get('click') || '').split(',').filter(Boolean)) {
       if (step.startsWith('task:')) setTask(step.slice(5));
       else if (step.startsWith('wish:')) wizard.select(step.slice(5)); // wish:pulse chooses a wish card
@@ -1028,6 +1030,10 @@ async function init() {
         const [k, val] = step.slice(4).split('=');
         const el = document.querySelector(`#wizard [data-key="${k}"]`);
         if (el) { el.value = val; el.dispatchEvent(new Event('input')); }
+      }
+      else if (step.startsWith('in:')) { // in:0 clicks the first input of the simulation
+        $('ioIn').querySelectorAll('button')[+step.slice(3)]?.click();
+        await new Promise((r) => setTimeout(r, 1200));
       }
       else if (/^\d+$/.test(step)) await new Promise((r) => setTimeout(r, +step));
       else { $(step)?.click(); await new Promise((r) => setTimeout(r, 1200)); }

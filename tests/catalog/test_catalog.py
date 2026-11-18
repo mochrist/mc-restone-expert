@@ -32,6 +32,8 @@ def test_entries_are_complete():
         built = e.built()
         for name in e.inputs:
             assert name in built.ports
+        for port, _ in e.display:
+            assert port in built.ports
         assert e.title and e.description and e.usage and e.keywords
 
 

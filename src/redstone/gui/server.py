@@ -291,6 +291,33 @@ class State:
         except ValueError:
             return str(p)
 
+    def catalog(self) -> list[tuple[str, object]]:
+        """(path, entry) of every catalog entry (src/redstone/catalog), written as a scenario without inputs to
+        .cache/gui/catalog/<key>.yaml so that all file based requests work on it."""
+        import yaml
+
+        from ..catalog import ENTRIES
+        from ..io.nbtutil import to_nbt
+
+        out = []
+        for e in ENTRIES:
+            path = self.work / "catalog" / f"{e.key}.yaml"
+            built = e.built()
+            grid = built.grid
+            d = {"name": e.key, "description": f"{e.title}: {e.description} Bedienung: {e.usage}",
+                 "build": {"size": list(grid.size),
+                           "blocks": [[*p, str(s).removeprefix("minecraft:")] for p, s in sorted(grid.items())]},
+                 "ticks": 0, "probes": {name: list(built.ports[port]) for port, name in e.display}}
+            if grid.block_entities:
+                d["build"]["block_entities"] = [[*p, to_nbt(be).snbt()]
+                                                for p, be in sorted(grid.block_entities.items())]
+            text = yaml.safe_dump(d, allow_unicode=True, sort_keys=False, width=120, default_flow_style=None)
+            if not path.is_file() or path.read_text(encoding="utf-8") != text:  # new or changed entry
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(text, encoding="utf-8", newline="\n")
+            out.append((self.rel(path), e))
+        return out
+
     def files(self) -> dict:
         def listed(paths) -> list[str]:
             return sorted({self.rel(p) for p in paths if ".cache" not in p.parts and ".venv" not in p.parts})
@@ -300,7 +327,11 @@ class State:
         specs = list((self.root / "examples").rglob("*.yaml"))
         out = {"schematics": listed(schematics), "scenarios": listed((self.root / "scenarios").glob("*.yaml")),
                "specs": listed(specs)}
+        catalog = self.catalog()
+        known = {p for p, _ in catalog}
         for p in sorted(self.work.glob("*/*"), key=lambda p: p.stat().st_mtime):  # newest first in its group
+            if self.rel(p) in known:
+                continue
             if p.suffix in SCHEMATIC_SUFFIXES:
                 out["schematics"].insert(0, self.rel(p))
             elif p.suffix in (".yaml", ".yml"):
@@ -311,6 +342,8 @@ class State:
         if self.extra is not None:
             key = "schematics" if self.extra.suffix in SCHEMATIC_SUFFIXES else "scenarios"
             out[key].insert(0, self.rel(self.extra))
+        out["scenarios"][:0] = [p for p, _ in catalog]
+        out["catalog"] = [{"path": p, "key": e.key, "title": e.title} for p, e in catalog]
         return out
 
     def store(self, folder: str, name: str, data: bytes) -> tuple[str, str]:
