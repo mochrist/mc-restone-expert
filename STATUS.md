@@ -6,7 +6,7 @@ Vorgeschichte: `docs/history.md`. Zurückgestelltes: `docs/backlog.md`.
 ## Wo das Projekt steht
 
 Werkzeug für Redstone in Minecraft Java 26.3: Schaltungen lesen, tick-genau simulieren (Python-Referenz und
-Rust-Kern, 157 Golden Traces aus dem echten Spiel identisch), erklären (`rsx explain`), neu entwerfen
+Rust-Kern, 170 Golden Traces aus dem echten Spiel identisch), erklären (`rsx explain`), neu entwerfen
 (`rsx redesign`: Vorlagen, Fackel-PLA bis 8 Eingänge, Zerlegung bis 11 Eingänge, Kompaktieren) und eine lokale
 Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1790 Tests grün. Wissensbasis: 296 Aussagen, keine offen.
 
