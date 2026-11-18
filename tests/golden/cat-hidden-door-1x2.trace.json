@@ -1,0 +1,116 @@
+{
+ "format": 1,
+ "scenario": "cat-hidden-door-1x2",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 240,
+ "probes": {
+  "button": [
+   4,
+   2,
+   0
+  ],
+  "door0": [
+   2,
+   2,
+   1
+  ],
+  "door1": [
+   2,
+   3,
+   1
+  ]
+ },
+ "samples": {
+  "button": [
+   [
+    0,
+    "minecraft:oak_button[face=wall,facing=north,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:oak_button[face=wall,facing=north,powered=true]"
+   ],
+   [
+    32,
+    "minecraft:oak_button[face=wall,facing=north,powered=false]"
+   ],
+   [
+    102,
+    "minecraft:oak_button[face=wall,facing=north,powered=true]"
+   ],
+   [
+    132,
+    "minecraft:oak_button[face=wall,facing=north,powered=false]"
+   ],
+   [
+    140,
+    "minecraft:oak_button[face=wall,facing=north,powered=true]"
+   ],
+   [
+    170,
+    "minecraft:oak_button[face=wall,facing=north,powered=false]"
+   ]
+  ],
+  "door0": [
+   [
+    0,
+    "minecraft:stone_bricks"
+   ],
+   [
+    8,
+    "minecraft:air"
+   ],
+   [
+    66,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    68,
+    "minecraft:stone_bricks"
+   ],
+   [
+    108,
+    "minecraft:air"
+   ],
+   [
+    204,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    206,
+    "minecraft:stone_bricks"
+   ]
+  ],
+  "door1": [
+   [
+    0,
+    "minecraft:stone_bricks"
+   ],
+   [
+    8,
+    "minecraft:air"
+   ],
+   [
+    66,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    68,
+    "minecraft:stone_bricks"
+   ],
+   [
+    108,
+    "minecraft:air"
+   ],
+   [
+    204,
+    "minecraft:moving_piston[facing=east,type=normal]"
+   ],
+   [
+    206,
+    "minecraft:stone_bricks"
+   ]
+  ]
+ }
+}

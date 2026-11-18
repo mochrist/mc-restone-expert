@@ -487,6 +487,27 @@ def _cmd_redesign(args: argparse.Namespace) -> int:
     return 0 if best is not None else 1
 
 
+def _cmd_catalog(args: argparse.Namespace) -> int:
+    from .catalog import ENTRIES, get
+
+    if not args.name:
+        for e in ENTRIES:
+            print(f"{e.key:<18} {e.title}")
+        return 0
+    try:
+        e = get(args.name)
+    except KeyError:
+        print(f"unbekannter Eintrag {args.name!r}; vorhanden: {', '.join(x.key for x in ENTRIES)}", file=sys.stderr)
+        return 2
+    grid = e.build()
+    size = " x ".join(map(str, grid.size))
+    print(f"{e.title}\n\n{e.description}\n\nBedienung: {e.usage}\n\nGröße: {size}, {len(grid)} Blöcke. {e.notes}")
+    if args.out:
+        io.save(grid, args.out)
+        print(f"wrote {args.out}")
+    return 0
+
+
 def _cmd_gui(args: argparse.Namespace) -> int:
     from .gui.server import serve
 
@@ -572,6 +593,11 @@ def main(argv: list[str] | None = None) -> int:
                    help="put this block at the outputs instead of a lamp: note_block, dispenser, dropper, "
                         "iron_trapdoor, iron_door, piston, sticky_piston (checked in the simulator)")
     p.set_defaults(func=_cmd_redesign)
+
+    p = sub.add_parser("catalog", help="list the finished builds (piston doors, item sorter) or write one")
+    p.add_argument("name", nargs="?", help="entry key, e.g. piston-door-2x2")
+    p.add_argument("-o", "--out", help="write the build as .litematic/.schem/.nbt")
+    p.set_defaults(func=_cmd_catalog)
 
     p = sub.add_parser("gui", help="local web GUI: 3D/2D views, materials, build playback, search, simulation")
     p.add_argument("file", nargs="?", help="schematic or scenario to open first")
