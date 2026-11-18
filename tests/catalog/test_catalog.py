@@ -54,3 +54,14 @@ def test_find(query, key):
 
 def test_find_nothing():
     assert find("Taktgeber") == []
+
+
+@pytest.mark.parametrize("key", [e.key for e in ENTRIES])
+def test_position_and_rotation_proof(key):
+    """Like design/robust.py: several origins (dust update order depends on coordinates) and all rotations."""
+    from redstone.design.robust import origins
+
+    e = get(key)
+    for turns in range(4):
+        for origin in origins(sample=6):
+            assert e.accept(origin, turns) == [], (tuple(origin), turns)

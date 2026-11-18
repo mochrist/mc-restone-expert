@@ -32,7 +32,7 @@ class Entry:
     usage: str  # German: how to use it in the world
     inputs: tuple[str, ...]  # port names of the levers/buttons the player uses
     layout: Callable[[], Built] = field(compare=False)  # unsettled layout
-    check: Callable[[Built], list[str]] = field(compare=False)  # acceptance; returns problems (empty = passed)
+    check: Callable[[Built, Pos], list[str]] = field(compare=False)  # acceptance at an origin; returns problems
     notes: str = ""  # German: limits, e.g. "nur am Ursprung geprüft"
 
     def built(self) -> Built:
@@ -42,8 +42,21 @@ class Entry:
     def build(self) -> Grid:
         return self.built().grid
 
-    def accept(self) -> list[str]:
-        return self.check(self.built())
+    def placed(self, turns: int = 0) -> Built:
+        """The settled build turned clockwise (seen from above) by `turns` quarter turns, ports turned with it."""
+        from ..design.candidate import Candidate
+        from ..design.compose import rotate
+
+        b = self.built()
+        names = list(b.ports)
+        c = rotate(Candidate(name=self.key, grid=b.grid, inputs=[b.ports[n] for n in names], outputs=[]), turns)
+        if c is None:
+            raise ValueError(f"{self.key} cannot be turned")
+        return Built(c.grid, dict(zip(names, c.inputs)))
+
+    def accept(self, origin: Pos = ORACLE_ORIGIN, turns: int = 0) -> list[str]:
+        """Problems of the acceptance check with the min corner at `origin`, turned by `turns` (empty = passed)."""
+        return self.check(self.placed(turns), origin)
 
 
 # --------------------------------------------------------------------------------------------- helpers
@@ -217,13 +230,13 @@ def _piston_door_2x2() -> Built:
     return _layout(b, ports)
 
 
-def _check_piston_door(b: Built) -> list[str]:
+def _check_piston_door(b: Built, origin: Pos = ORACLE_ORIGIN) -> list[str]:
     problems: list[str] = []
     cells = [b.ports[f"door{i}"] for i in range(4)]
     for p in cells:
         if b.grid.get(p).id != DOOR:
             problems.append(f"stored state: no door block at {tuple(p)}")
-    run = Run(b.grid)
+    run = Run(b.grid, origin)
     run.step(5)
 
     def expect(open_: bool, when: str) -> None:
@@ -309,10 +322,10 @@ def _hidden_door_1x2() -> Built:
     return _layout(b, ports)
 
 
-def _check_hidden_door(b: Built) -> list[str]:
+def _check_hidden_door(b: Built, origin: Pos = ORACLE_ORIGIN) -> list[str]:
     problems: list[str] = []
     cells = [b.ports["door0"], b.ports["door1"]]
-    run = Run(b.grid)
+    run = Run(b.grid, origin)
     run.step(5)
 
     def expect(open_: bool, when: str) -> None:
@@ -391,7 +404,7 @@ def _item_sorter() -> Built:
 SORTER_TICKS = 1400
 
 
-def _check_item_sorter(b: Built) -> list[str]:
+def _check_item_sorter(b: Built, origin: Pos = ORACLE_ORIGIN) -> list[str]:
     """64 filter items and 64 others in one go, then the same mixed in small stacks across the input chest."""
     problems: list[str] = []
     mixed = [(s, FILTER_ITEM if s % 2 == 0 else OTHER_ITEM, 16 if s < 8 else 0) for s in range(9)]
@@ -399,7 +412,7 @@ def _check_item_sorter(b: Built) -> list[str]:
                        ("mixed", [m for m in mixed if m[2]])):
         grid = _copy_grid(b.grid)
         grid.block_entities[b.ports["input"]] = items_nbt("minecraft:chest", load)
-        run = Run(grid)
+        run = Run(grid, origin)
         run.step(SORTER_TICKS)
         got = {k: run.items(b.ports[k]) for k in ("input", "overflow", "target", "filter")}
         n_filter = sum(c for _, i, c in load if i == FILTER_ITEM)
@@ -412,6 +425,8 @@ def _check_item_sorter(b: Built) -> list[str]:
 
 
 # --------------------------------------------------------------------------------------------- registry
+PROOF = ("Im echten Spiel aufgenommen (scenarios/cat-*); im Simulator an rund 50 Orten und in allen vier "
+         "Drehungen geprüft.")
 ENTRIES: list[Entry] = [
     Entry(
         key="piston-door-2x2",
@@ -424,7 +439,7 @@ ENTRIES: list[Entry] = [
         inputs=("lever",),
         layout=_piston_door_2x2,
         check=_check_piston_door,
-        notes="Im Simulator am Ursprung geprüft.",
+        notes=PROOF,
     ),
     Entry(
         key="hidden-door-1x2",
@@ -437,7 +452,7 @@ ENTRIES: list[Entry] = [
         inputs=("button",),
         layout=_hidden_door_1x2,
         check=_check_hidden_door,
-        notes="Im Simulator am Ursprung geprüft. Braucht einen Holzknopf (30 gt); ein Steinknopf ist zu kurz.",
+        notes=PROOF + " Braucht einen Holzknopf (30 gt); ein Steinknopf ist zu kurz.",
     ),
     Entry(
         key="item-sorter",
@@ -446,13 +461,14 @@ ENTRIES: list[Entry] = [
                   "trichter", "hopper"),
         description=("Sortiert eine Sorte Gegenstände (hier Bruchstein) aus allem, was du in die obere Truhe legst, "
                      "in die untere Truhe. Alles andere landet in der Truhe daneben."),
-        usage=("Lege Gegenstände in die obere Truhe. Bruchstein kommt unten an, der Rest in der Truhe rechts. Für "
+        usage=("Lege Gegenstände in die obere Truhe. Bruchstein kommt unten an, der Rest in der Truhe daneben. Für "
                "eine andere Sorte: im Filter-Trichter (unter dem oberen Trichter) den Bruchstein durch 41 Stück "
-               "der gewünschten Sorte ersetzen; die vier Stöcke bleiben liegen. Stöcke selbst nicht einsortieren."),
+               "der gewünschten Sorte ersetzen; die vier Stöcke bleiben liegen. Stöcke selbst nicht einsortieren. Die "
+               "zwei Holzschaufeln im Fass hinter dem Filter gehören zur Schaltung: nicht herausnehmen."),
         inputs=(),
         layout=_item_sorter,
         check=_check_item_sorter,
-        notes="Im Simulator am Ursprung geprüft. Arbeitet ein Item pro 8 Ticks ab (2,5 pro Sekunde).",
+        notes=PROOF + " Arbeitet ein Item pro 8 Ticks ab (2,5 pro Sekunde).",
     ),
 ]
 
