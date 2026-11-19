@@ -1,0 +1,76 @@
+{
+ "format": 1,
+ "scenario": "tpl-xor2-stacked",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 82,
+ "probes": {
+  "a": [
+   3,
+   1,
+   1
+  ],
+  "b": [
+   2,
+   2,
+   1
+  ],
+  "y": [
+   0,
+   1,
+   1
+  ]
+ },
+ "samples": {
+  "a": [
+   [
+    0,
+    "minecraft:lever[face=wall,facing=south,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=wall,facing=south,powered=true]"
+   ],
+   [
+    42,
+    "minecraft:lever[face=wall,facing=south,powered=false]"
+   ]
+  ],
+  "b": [
+   [
+    0,
+    "minecraft:lever[face=wall,facing=north,powered=false]"
+   ],
+   [
+    22,
+    "minecraft:lever[face=wall,facing=north,powered=true]"
+   ],
+   [
+    62,
+    "minecraft:lever[face=wall,facing=north,powered=false]"
+   ]
+  ],
+  "y": [
+   [
+    0,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    4,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    28,
+    "minecraft:redstone_lamp[lit=false]"
+   ],
+   [
+    46,
+    "minecraft:redstone_lamp[lit=true]"
+   ],
+   [
+    68,
+    "minecraft:redstone_lamp[lit=false]"
+   ]
+  ]
+ }
+}

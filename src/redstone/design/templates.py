@@ -47,6 +47,11 @@ def LEVER(facing: str = "north") -> str:
     return f"lever[face=floor,facing={facing},powered=false]"
 
 
+def WALL_LEVER(facing: str) -> str:
+    """Lever on the side of a block; `facing` points away from that block."""
+    return f"lever[face=wall,facing={facing},powered=false]"
+
+
 def WALL_TORCH(facing: str) -> str:
     """Wall torch whose `facing` points away from the block it hangs on."""
     return f"redstone_wall_torch[facing={facing},lit=true]"
@@ -439,6 +444,26 @@ _register(
     "Zwei Komparatoren im Subtraktionsmodus, jeder Hebel direkt am eigenen Rückeingang und über einen Verstärker "
     "am Seiteneingang des anderen; b minus a läuft über eine Leitung oben herum auf die Lampe. Verzögerung bis 4 gt.",
     _xor2_repeater)
+
+
+def _xor2_stacked() -> _Layout:
+    # found by scripts/mine_templates.py (task 07); a minus b below, b minus a one level up
+    return _Layout({
+        (0, 1, 1): LAMP, (1, 1, 1): STONE, (2, 1, 1): COMPARATOR("east"), (2, 0, 1): STONE,
+        (3, 1, 1): WALL_LEVER("south"), (3, 1, 0): STONE,  # a, on the block that carries its dust
+        (3, 2, 0): WIRE, (2, 2, 0): REPEATER("east"), (2, 1, 0): STONE, (1, 2, 0): WIRE, (1, 1, 0): STONE,
+        (0, 2, 1): STONE, (1, 2, 1): COMPARATOR("east"),  # b minus a powers the block on the lamp
+        (2, 2, 1): WALL_LEVER("north"), (2, 2, 2): STONE,  # b, on the block over its dust
+        (2, 1, 2): WIRE, (2, 0, 2): STONE,
+    }, ((3, 1, 1), (2, 2, 1)), ((0, 1, 1),))
+
+
+_register(
+    "xor2-stacked", "a b", "y", {"y": "a != b"},
+    "Zwei Komparatoren im Subtraktionsmodus übereinander: der untere (a minus b) versorgt den Block neben der "
+    "Lampe, der obere (b minus a) den Block auf der Lampe. Jeder Hebel hängt am Block, dessen Leitung zum "
+    "Seiteneingang des anderen Komparators führt. 17 Blöcke, Verzögerung bis 8 gt.",
+    _xor2_stacked)
 
 
 def _xnor2() -> _Layout:
