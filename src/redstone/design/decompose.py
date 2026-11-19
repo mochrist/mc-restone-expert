@@ -366,8 +366,9 @@ CHAINS_SEEN = 60  # chains looked at per pair of parts (only those that work cou
 APART_SAMPLE = 128  # combinations checked before tapping
 
 
-def _apart(sp: CommonSplit, gi: list[int], hi: list[int]) -> Spec:
-    """The spec of the chain before tapping: G's inputs, then H's own (common ones again, separate levers).
+def _apart(sp: CommonSplit | SharedCommonSplit, gi: list[int], hi: list[int]) -> Spec:
+    """The spec of the chain before tapping: G's inputs, then H's own (common ones again, separate levers);
+    outputs H's, then G's other ones.
     Wide chains get a partial spec (APART_SAMPLE combinations: all off, every single lever, the rest drawn
     with a fixed seed): it only has to sort out broken joints, the tapped design is checked in full."""
     import random
@@ -383,9 +384,9 @@ def _apart(sp: CommonSplit, gi: list[int], hi: list[int]) -> Spec:
         combos = sorted(picked)
     table = {}
     for x in combos:
-        g = sp.g.table[x[:len(gi)]][0]
-        table[x] = sp.h.table[(g, *x[len(gi):])]
-    return Spec([f"i{k}" for k in range(n)], sp.h.outputs, table, source="Zerlegung",
+        g = sp.g.table[x[:len(gi)]]
+        table[x] = sp.h.table[(g[0], *x[len(gi):])] + g[1:]  # G's other outputs (local) after H's
+    return Spec([f"i{k}" for k in range(n)], sp.h.outputs + sp.g.outputs[1:], table, source="Zerlegung",
                 care=None if len(table) == 2 ** n else set(table))
 
 
@@ -737,6 +738,11 @@ def shared(spec: Spec, depth: int = 3, log: list[str] | None = None, driven: boo
     # a partial spec is the H of a split with two signals (a stage of a cascade): only two signals again,
     # one signal there merges G's signals and the free inputs into a PLA that is never smaller
     out = [] if spec.partial else _shared(spec, shared_splits(spec), depth, log, driven)
+    # one signal with common inputs before two signals: an adder/subtractor with two signals passes the
+    # operation through every stage's PLA as a second signal (4 bits: 2919 blocks, 10 min) instead of tapping
+    # its lever (no split of the comparators or adders so far gets here)
+    if not out and not spec.partial:
+        out = _shared_common(spec, shared_common_splits(spec), depth, log, driven)
     if not out:
         out = _shared(spec, shared_splits(spec, width=2), depth, log, driven)
     return out
@@ -798,6 +804,192 @@ def _shared(spec: Spec, sps: list[SharedSplit], depth: int, log: list[str] | Non
             log.append(f"{COMPOSE_PREFIX}Zerlegung mit {what} {sp.describe(spec)}: "
                        + (f"{found.name}, {found.block_count} Blöcke" if found
                           else "keine funktionierende Verbindung gefunden"))
+        if found is not None:
+            out.append(found)
+    return out
+
+
+# ---------------------------------------------------------------------- shared signal with common inputs
+@dataclass(frozen=True)
+class SharedCommonSplit:
+    """Several outputs through one shared signal g, with common inputs C in both parts (one lever, its line
+    tapped for H, as `CommonSplit`): G computes g and the outputs that depend on C ∪ S only (`local`) from
+    C ∪ S, H the other outputs (`rest`) from g and C ∪ F. It exists when, for every assignment of C, the rest
+    outputs over S × F have at most two distinct columns. An adder/subtractor: C = the operation, which every
+    bit needs, g = the carry of the low bit."""
+    bound: tuple[int, ...]  # S
+    common: tuple[int, ...]  # C
+    free: tuple[int, ...]  # F
+    local: tuple[int, ...]  # spec output indices computed by G
+    rest: tuple[int, ...]  # spec output indices computed by H
+    g: Spec  # inputs = C ∪ S in spec order, outputs = ["g"] + local
+    h: Spec  # inputs = ["g"] + C ∪ F in spec order, outputs = rest
+
+    def describe(self, spec: Spec) -> str:
+        names, outs = spec.inputs, spec.outputs
+        gi = ", ".join(names[i] for i in sorted(self.bound + self.common))
+        hi = ", ".join(names[i] for i in sorted(self.common + self.free))
+        local = "".join(f", {outs[j]}" for j in self.local)
+        return (f"g{local} aus ({gi}), {', '.join(outs[j] for j in self.rest)} aus (g, {hi}) "
+                f"mit gemeinsamen {', '.join(names[i] for i in self.common)}")
+
+
+MAX_SHARED_COMMON_SPLITS = 2
+
+
+def shared_common_splits(spec: Spec) -> list[SharedCommonSplit]:
+    """Decompositions of a full multi-output spec with one shared signal and 1 to MAX_COMMON common inputs
+    (`SharedCommonSplit`); like `shared_splits(width=1)` many local outputs and a small F first, then fewer
+    common inputs. In every slice of C the column of S all off gets g = 0 or 1, whichever needs fewer terms
+    in G and H (only the slice of C all off must keep g = 0, so that g rests off with all levers off)."""
+    n, m = len(spec.inputs), len(spec.outputs)
+    if m < 2 or n < 4 or spec.partial:
+        return []
+    supports = [set(support(spec, j)) for j in range(m)]
+    used = set().union(*supports)
+    combos = list(itertools.product([False, True], repeat=n))
+    rows = [spec.table[c] for c in combos]
+    found = []
+    for k in range(1, MAX_COMMON + 1):
+        for common in itertools.combinations(sorted(used), k):
+            others = [i for i in range(n) if i not in common]
+            for size in range(2, len(others)):
+                for bound in itertools.combinations(others, size):
+                    if not set(bound) <= used:
+                        continue  # a dead lever
+                    free = tuple(i for i in others if i not in bound)
+                    gin = set(common) | set(bound)
+                    local = tuple(j for j in range(m) if supports[j] and supports[j] <= gin)
+                    rest = tuple(j for j in range(m) if j not in local)
+                    if not rest or any(not supports[j] for j in rest) or any(not supports[j] & set(free) for j in rest):
+                        continue  # H would only pass g on
+                    slices = _common_slices(n, rows, common, bound, free, rest)
+                    if slices is None:
+                        continue
+                    found.append(((-len(local), len(free), k, size), common, bound, free, local, rest, slices))
+    found.sort(key=lambda f: f[0])
+    out = []
+    for _, common, bound, free, local, rest, slices in found:
+        sp = _shared_common_split(spec, common, bound, free, local, rest, slices)
+        if sp is not None:
+            out.append(sp)
+        if len(out) >= MAX_SHARED_COMMON_SPLITS:
+            break
+    return out
+
+
+def _common_slices(n: int, rows, common, bound, free, rest) -> list[list[tuple]] | None:
+    """Per assignment of C the columns (rest outputs over F) of every assignment of S; None when a slice has
+    more than two distinct columns or no slice has two (g would be constant)."""
+    perm = _perm(n, tuple(common) + tuple(bound))
+    nb, w = 2 ** len(bound), 2 ** len(free)
+    slices, two = [], False
+    for c in range(2 ** len(common)):
+        cols = []
+        for s in range(nb):
+            base = (c * nb + s) * w
+            cols.append(tuple(tuple(rows[perm[base + f]][j] for j in rest) for f in range(w)))
+        distinct = len(set(cols))
+        if distinct > 2:
+            return None
+        two |= distinct == 2
+        slices.append(cols)
+    return slices if two else None
+
+
+def _shared_common_split(spec: Spec, common, bound, free, local, rest, slices) -> SharedCommonSplit | None:
+    from .synth import minimize_partial
+
+    n = len(spec.inputs)
+    gi, hi = sorted(common + bound), sorted(common + free)
+    names = spec.inputs
+    cbits_all = list(itertools.product([False, True], repeat=len(common)))
+    best = None
+    # flip[c]: in slice c, the column of S all off gets g = 1 (never in the slice of C all off)
+    for flips in itertools.product([False, True], repeat=len(cbits_all) - 1):
+        flip = (False, *flips)
+        g_table, h_table = {}, {}
+        for c, cbits in enumerate(cbits_all):
+            cols = slices[c]
+            zero = cols[0]
+            other = next((col for col in cols if col != zero), zero)
+            low, high = (other, zero) if flip[c] else (zero, other)
+            for s, sbits in enumerate(itertools.product([False, True], repeat=len(bound))):
+                x = dict(zip(common, cbits)) | dict(zip(bound, sbits))
+                full = [False] * n
+                for i, v in x.items():
+                    full[i] = v
+                row = spec.table[tuple(full)]
+                g_table[tuple(x[i] for i in gi)] = (cols[s] == high and high != low, *(row[j] for j in local))
+            for gv in (False, True):
+                col = high if gv else low
+                for f, fbits in enumerate(itertools.product([False, True], repeat=len(free))):
+                    x = dict(zip(common, cbits)) | dict(zip(free, fbits))
+                    h_table[(gv, *(x[i] for i in hi))] = col[f]
+        g = Spec([names[i] for i in gi], ["g"] + [spec.outputs[j] for j in local], g_table, source="Zerlegung")
+        h = Spec(["g"] + [names[i] for i in hi], [spec.outputs[j] for j in rest], h_table, source="Zerlegung")
+        cost = 0
+        for part in (g, h):
+            for j in range(len(part.outputs)):
+                ones = [c for c, v in part.table.items() if v[j]]
+                cost += len(minimize_partial(len(part.inputs), ones, [c for c, v in part.table.items() if not v[j]]))
+        if best is None or cost < best[0]:
+            best = (cost, g, h)
+    _, g, h = best
+    g_sup = set().union(*(support(g, j) for j in range(len(g.outputs))))
+    h_sup = set().union(*(support(h, j) for j in range(len(h.outputs))))
+    if not {gi.index(i) for i in bound + common} <= g_sup or not {1 + hi.index(i) for i in common} <= h_sup:
+        return None  # an input of S or C changes nothing in G, or one of C nothing in H: a dead lever
+    return SharedCommonSplit(tuple(bound), tuple(common), tuple(free), local, rest, g, h)
+
+
+def _shared_common(spec: Spec, sps: list[SharedCommonSplit], depth: int, log: list[str] | None,
+                   driven: bool) -> list[Candidate]:
+    """Candidates from `shared_common_splits`: g drives H's first input (`compose.chains`), the chain is
+    checked with H's common levers still separate (`_apart`), then their lines are fed from G's levers
+    (`_tapped`). Inputs and outputs in spec order."""
+    from .compose import chains
+    from .evaluate import evaluate_any
+
+    out = []
+    for sp in sps:
+        if driven and 0 in sp.common:
+            continue  # a tapped lever cannot take a line from another part
+        gi, hi = sorted(sp.common + sp.bound), sorted(sp.common + sp.free)
+        gs = _best(sp.g, depth, driven and 0 in gi)
+        hs = _best(sp.h, depth, True) + _drivable_pla(sp.h)
+        apart = _apart(sp, gi, hi)
+        found, seen, tried = None, 0, 0
+        for gc, hc in _pairs(gs, hs):
+            tries = 0
+            for k, (_, chained) in enumerate(chains(gc, 0, hc, 0)):
+                if tries >= TRIES or k >= CHAINS_SEEN:
+                    break
+                seen += 1
+                if not evaluate_any(chained, apart, quick=True).correct:
+                    continue
+                tries += 1
+                for cand in _tapped(chained, gi + hi, sp.common):
+                    tried += 1
+                    outs = [None] * len(spec.outputs)
+                    for pos, j in zip(cand.outputs, list(sp.rest) + list(sp.local)):
+                        outs[j] = pos
+                    cand = replace(cand, outputs=outs, name=f"{gc.name} → {hc.name}",
+                                   origin=f"zerlegt: {sp.describe(spec)}; {cand.origin}")
+                    if evaluate_any(cand, spec, quick=True).correct:
+                        found = cand
+                        break
+                if found is not None:
+                    break
+            if found is not None:
+                break
+        if log is not None:
+            from .report import COMPOSE_PREFIX
+
+            log.append(f"{COMPOSE_PREFIX}Zerlegung mit gemeinsamem Teil {sp.describe(spec)}: "
+                       + (f"{found.name}, {found.block_count} Blöcke" if found
+                          else "keine funktionierende Verbindung gefunden")
+                       + f" ({seen} Verbindungen, {tried} angezapft geprüft)")
         if found is not None:
             out.append(found)
     return out

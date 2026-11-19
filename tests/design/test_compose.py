@@ -318,6 +318,38 @@ def test_nondisjoint_split_needs_inputs_of_the_bound_set():
         assert {gi.index(i) for i in sp.bound} <= set(support(sp.g, 0))
 
 
+def test_shared_common_split_of_an_adder_subtractor():
+    """2-bit adder/subtractor: op goes into both bits, so no disjoint split with one signal; with op common,
+    g (the carry of bit 0, inverted when subtracting) and s0 come from (op, a0, b0), s1 and c from (g, op, a1, b1)."""
+    from redstone.design.decompose import shared_common_splits, shared_splits
+    from redstone.design.spec import load
+
+    spec = load(ROOT / "examples/specs/composed/pending/addsub2.yaml")
+    assert shared_splits(spec) == []
+    sp = shared_common_splits(spec)[0]
+    names, outs = spec.inputs, spec.outputs
+    assert [names[i] for i in sp.common] == ["op"] and [names[i] for i in sp.bound] == ["a0", "b0"]
+    assert [outs[j] for j in sp.local] == ["s0"] and [outs[j] for j in sp.rest] == ["s1", "c"]
+    gi, hi = sorted(sp.common + sp.bound), sorted(sp.common + sp.free)
+    assert sp.g.table[(False,) * len(gi)][0] is False  # g rests off with all levers off
+    for combo, row in spec.table.items():
+        g = sp.g.table[tuple(combo[i] for i in gi)]
+        h = sp.h.table[(g[0], *(combo[i] for i in hi))]
+        assert h == tuple(row[j] for j in sp.rest) and g[1:] == tuple(row[j] for j in sp.local)
+
+
+@pytest.mark.slow
+def test_adder_subtractor_from_shared_common_split():
+    """The cascade with the common lever tapped works and is smaller than the PLA (1278 blocks)."""
+    from redstone.design.decompose import _shared_common, shared_common_splits
+    from redstone.design.spec import load
+
+    spec = load(ROOT / "examples/specs/composed/pending/addsub2.yaml")
+    found = _shared_common(spec, shared_common_splits(spec), 3, None, False)
+    assert found and found[0].block_count < 1000
+    assert evaluate_any(found[0], spec).ok
+
+
 # ---------------------------------------------------------------------- Shannon expansion into multiplexers
 def _mux_spec(k: int):
     sel = [f"s{i}" for i in reversed(range(k))]
