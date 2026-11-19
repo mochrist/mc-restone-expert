@@ -1,14 +1,14 @@
 # Projektstatus
 
-Stand: 2026-11-18, Session 25 (05 erledigt; 07: Skript `scripts/mine_templates.py` committet; 08: halbfertig im Branch `worktree-agent-abca7dd8a2401b1da`, Agent beendet). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
+Stand: 2026-11-19, Session 26 (07 erledigt: XOR 17 Blöcke; 08: halbfertig im Branch `worktree-agent-abca7dd8a2401b1da`, Agent beendet). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
 Vorgeschichte: `docs/history.md`. Zurückgestelltes: `docs/backlog.md`.
 
 ## Wo das Projekt steht
 
 Werkzeug für Redstone in Minecraft Java 26.3: Schaltungen lesen, tick-genau simulieren (Python-Referenz und
-Rust-Kern, 170 Golden Traces aus dem echten Spiel identisch), erklären (`rsx explain`), neu entwerfen
+Rust-Kern, 171 Golden Traces aus dem echten Spiel identisch), erklären (`rsx explain`), neu entwerfen
 (`rsx redesign`: Vorlagen, Fackel-PLA bis 8 Eingänge, Zerlegung bis 11 Eingänge, Kompaktieren) und eine lokale
-Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1790 Tests grün. Wissensbasis: 296 Aussagen, keine offen.
+Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1810 Tests grün. Wissensbasis: 296 Aussagen, keine offen.
 
 Fertige Bauwerke (`src/redstone/catalog`, `rsx catalog`): Kolbentür 2×2, versteckte Tür 1×2, Itemsortierer für
 eine Sorte, im Spiel aufgenommen (`cat-*`), in GUI („Zum Einstieg“) und Assistent. Druckplatte und
@@ -20,11 +20,10 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
-| 07 | Kleinere Grundbausteine per Offline-Suche | Opus | – (besser nach 01, 03) | `docs/tasks/07-smaller-gates.md` |
 | 08 | Zerlegung: mehrere Ausgänge mit gemeinsamen Eingängen | Opus | 03 | `docs/tasks/08-multi-output-common-inputs.md` |
 | 09 | Assistent im Browser durchklicken | Sonnet | Nutzer | `docs/tasks/09-assistant-walkthrough.md` |
 
-07 und 08 nacheinander (beide in `design/`).
+08 zuerst den halbfertigen Branch ansehen.
 
 Stand der Arbeitskopie: alles committet; API-Schlüssel des Nutzers in `.env` (gitignored), Rechtefreigaben in
 `.claude/settings.local.json` (nicht im Repo); Oracle-Sperre frei.

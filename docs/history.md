@@ -3,6 +3,17 @@
 Neueste zuerst. Neue Sessions tragen hier 3–6 Zeilen ein (was geändert wurde, Befunde, Messwerte).
 Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tasks/`.
 
+## Session 26 (2026-11-19): Auftrag 07 Kleinere Grundbausteine (Opus)
+
+- `scripts/enum_xor.py` zählt XORs aus zwei Subtraktions-Komparatoren auf (Hebel an der Wand oder auf dem Block, der
+  die Leitung zum anderen Komparator trägt); bester Start 21 Blöcke. `mine_templates.py` (6 Läufe × 10 min, je ~200 000
+  Bewertungen) schrumpft das auf **17 Blöcke** (4×3×3, Verzögerung bis 8 gt), zweite Runde ab 17: kein kleinerer Fund.
+- Neue Vorlage `xor2-stacked` (Komparatoren übereinander), ortsfest, ansteuerbar, `tpl-xor2-stacked` im Spiel identisch.
+  Beispiele vorher → nachher: xor 28 → 17, xor4 93 → 55 (`cmp-xor4` neu aufgenommen, identisch), alle anderen gleich.
+- Mehrheit von 3: Ziel unter 40 nicht erreicht (bleibt 58). Handentwurf aus Fackel-NORs mit 36 Blöcken hat einen falschen
+  Fall (Leck: stark versorgter Block speist fremden Staub); Suche ab dort 4 × 10 min ohne Fund. Rest im Backlog.
+- Suite `--slow`: 1807 grün (Vorlagentest lässt jetzt Wandhebel zu).
+
 ## Session 25 (2026-11-18): Auftrag 05 Katalog fertiger Bauwerke (Opus)
 
 - `src/redstone/catalog/`: Kolbentür 2×2 (Hebel, 48 Blöcke), versteckte Tür 1×2 (Holzknopf, ~58 gt offen über

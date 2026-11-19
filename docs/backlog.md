@@ -52,6 +52,15 @@ daraus (Ziel, Einstieg, Abnahme, Abbruch). Vorgeschichte je Punkt: `docs/history
 - Schnellprüfung: je Lauf kosten Welt aufbauen (`place_grid`, Block-Entities laden) und der Anfangszustand als
   `Pos`-Objekte mehr als die Ticks (mux8: 1,4 s für 2048 Läufe); eine geklonte Rust-Welt je `Circuit` spart das.
 
+## Kleinere Bausteine
+
+- **Kleinere Bausteine (Rest von Auftrag 07):** Mehrheit von 3 unter 40 (heute 58 PLA). Ansatz Fackel-NOR je Paar,
+  ODER-Staub auf einem Block mit Fackel als Umkehrer: Kern ~20 Blöcke; Problem ist das Paar gegenüberliegender NOR-Blöcke
+  und dass ein stark versorgter Block (Hebel daran, Verstärker davor) jeden Staub daneben speist. Ebenso XNOR, AND3,
+  Halbaddierer, mux2 mit `mine_templates.py` und Startentwürfen (`enum_xor.py` als Muster). Idee des Nutzers: bekannte
+  Bauweisen aus Wiki/Community nachbauen und als Startentwürfe geben (eigene Zählweise mit Stützblöcken beachten).
+  Kleine Punkte: mux8 in `_shannon` nebeneinander statt übereinander; `drivable-pla` mit `mux2-comparator-select`.
+
 ## Katalog (Auftrag 05)
 
 - Weitere Bauwerke: Sortierer mit mehreren Fächern (Fächer nebeneinander, Trichterkette oben), Kolbentür 3×3,
