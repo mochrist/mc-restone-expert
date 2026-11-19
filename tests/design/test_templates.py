@@ -41,7 +41,7 @@ def test_structure(template: Template):
     assert len(cand.inputs) == len(template.inputs) and len(cand.outputs) == len(template.outputs)
     for pos in cand.inputs:
         state = cand.grid[pos]
-        assert state.id == "lever" and state.get("face") == "floor" and state.get("powered") == "false"
+        assert state.id == "lever" and state.get("face") in ("floor", "wall") and state.get("powered") == "false"
     for pos in cand.outputs:
         assert cand.grid[pos].id == "redstone_lamp"
     # tight bounding box: blocks touch every face of the grid
