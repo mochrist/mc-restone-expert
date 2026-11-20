@@ -1,16 +1,16 @@
 # Projektstatus
 
-Stand: 2026-11-20, Session 27 (08 erledigt: Addierer/Subtrahierer 2 und 4 Bit). Abgleich zweier PCs über GitHub (`origin/main`). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
+Stand: 2026-11-20, Session 28 (10 erledigt: Kolbentür 3×3 im Katalog). Abgleich zweier PCs über GitHub (`origin/main`). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
 Vorgeschichte: `docs/history.md`. Zurückgestelltes: `docs/backlog.md`.
 
 ## Wo das Projekt steht
 
 Werkzeug für Redstone in Minecraft Java 26.3: Schaltungen lesen, tick-genau simulieren (Python-Referenz und
-Rust-Kern, 171 Golden Traces aus dem echten Spiel identisch), erklären (`rsx explain`), neu entwerfen
+Rust-Kern, 172 Golden Traces aus dem echten Spiel identisch), erklären (`rsx explain`), neu entwerfen
 (`rsx redesign`: Vorlagen, Fackel-PLA bis 8 Eingänge, Zerlegung bis 11 Eingänge, Kompaktieren) und eine lokale
 Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1810 Tests grün. Wissensbasis: 296 Aussagen, keine offen.
 
-Fertige Bauwerke (`src/redstone/catalog`, `rsx catalog`): Kolbentür 2×2, versteckte Tür 1×2, Itemsortierer für
+Fertige Bauwerke (`src/redstone/catalog`, `rsx catalog`): Kolbentür 2×2 und 3×3, versteckte Tür 1×2, Itemsortierer für
 eine Sorte und für vier Sorten, im Spiel aufgenommen (`cat-*`), in GUI („Zum Einstieg“) und Assistent. Druckplatte und
 Tageslichtsensor gehen als Auslöser (Druckplatte nur im Simulator geprüft, Sensorverhalten im Spiel aufgenommen).
 
@@ -21,7 +21,6 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
 | 09 | Assistent im Browser durchklicken | Sonnet | Nutzer | `docs/tasks/09-assistant-walkthrough.md` |
-| 10 | Kolbentür 3×3 im Katalog (erst planen) | Fable, dann Opus | – | `docs/tasks/10-piston-door-3x3.md` |
 
 
 Stand der Arbeitskopie: alles committet; API-Schlüssel des Nutzers in `.env` (gitignored), Rechtefreigaben in

@@ -278,6 +278,256 @@ def _check_piston_door(b: Built, origin: Pos = ORACLE_ORIGIN) -> list[str]:
     return problems
 
 
+# ------------------------------------------------------------------------------------- piston door 3x3
+class _Blocks(dict):
+    """Block map with placement helpers (each component gets a stone floor unless something is there)."""
+
+    def put(self, p: Xyz, state: str) -> None:
+        if p in self and self[p] != state:
+            raise ValueError(f"clash at {p}: {self[p]} vs {state}")
+        self[p] = state
+
+    def on(self, p: Xyz, state: str) -> None:
+        self.put(p, state)
+        self.setdefault((p[0], p[1] - 1, p[2]), STONE)
+
+    def dust(self, p: Xyz) -> None:
+        self.on(p, WIRE)
+
+    def rep(self, p: Xyz, reads_from: str, delay: int = 1) -> None:
+        self.on(p, _rep(reads_from, delay))
+
+    def comp(self, p: Xyz, reads_from: str) -> None:
+        self.on(p, f"comparator[facing={reads_from},mode=subtract,powered=false]")
+
+
+def _line(path: list[Pos], extra: int = 4) -> dict[Pos, str] | None:
+    """Dust along a routed path, with repeaters on straight flat cells as late as possible so the signal never
+    runs out; `extra` cells of strength are left at the end (for a manifold behind the goal)."""
+    from ..design.compose import _direction, _repeater
+
+    n = len(path)
+    straight = [0 < i < n - 1 and path[i - 1].y == path[i].y == path[i + 1].y
+                and _direction(path[i - 1], path[i]) == _direction(path[i], path[i + 1]) for i in range(n)]
+    straight += [False] * extra
+    reps: list[int] = []
+    power, last, i = 15, None, 0
+    while i < n + extra:
+        if straight[i] and (not reps or i > reps[-1]):
+            last = i
+        if power <= 0:
+            if last is None:
+                return None
+            reps.append(last)
+            power, i, last = 15, last + 1, None
+            continue
+        power -= 1
+        i += 1
+    return {c: _repeater(_direction(path[j - 1], c).opposite) if j in reps else WIRE for j, c in enumerate(path)}
+
+
+DOOR3_ROUTES = ("PA", "E1", "E2", "PB", "V", "bottom", "M", "PBbase", "top")  # an order in which all lines fit
+
+
+def _piston_door_3x3() -> Built:
+    """Wall plane z=0, opening x=0..2, y=1..3 (door blocks TL..BR); the lever side is z>0.
+
+    Mechanics: the top row is pulled up and the bottom row down (sticky pistons above and below), the right middle
+    block MR to the right. The left middle block ML is pulled left by the sticky piston P_B and then up by V (into
+    the wall above it). The centre block C needs two steps: P_A (behind P_B) pushes P_B to the right, P_B grabs C
+    and pulls it to (0,2); P_A pulls P_B back, P_B grabs C again and pulls it into the wall at (-1,2). Closing: P_A
+    pushes P_B and C one step and pulls P_B back (C stays at (0,2)), V pushes ML down, P_B pushes ML and C into the
+    opening.
+
+    Order in taps of 4 gt (lever on: open / off: close), each piston on its own line:
+        open:  rows and MR off, P_B off (tap 0) - V off (2) - P_A on (4) - P_B on (5), off (6.5) - P_A off (7.5)
+               - P_B on (9), off (10.5)
+        close: P_A on (2), off (3.5) - V on (4) - P_B on (6) - rows and MR on (6)
+    A delay chain (repeaters, a tap every 3 blocks) folds back on itself so tap a (row A) and tap 6-a (row B) lie
+    side by side: a block between them with a torch on top is NOR(a, 6-a), off a taps after the lever goes on and
+    on 6-a taps after it goes off (rows, P_B base: NOR(0, 6) and NOR(1, 5); V: NOR(2, 4)). P_B's grabs are
+    comparator pulses (rear tap a, side tap a+1 over a repeater), P_A's two pulses come from a second chain.
+    The lever reaches the chains over a delay-4 repeater G that two comparators lock while a run is under way
+    (tap 0 differs from tap 10), so a run always finishes and the door then follows the lever.
+    Lines from the logic to the pistons are routed (design.compose._route) in the order DOOR3_ROUTES."""
+    from ..design.compose import _route
+
+    k = _Blocks()
+    sticky = "sticky_piston[extended=false,facing={}]".format
+    # mechanics, unsettled: blocks in front of the piston faces, pushed into place while settling
+    for x in range(3):
+        k.put((x, 5, 0), sticky("down")); k.put((x, 4, 0), DOOR)  # top row
+        k.put((x, -1, 0), sticky("up")); k.put((x, 0, 0), DOOR)  # bottom row
+        k.put((x, 0, 1), STONE); k.put((x, 0, 2), STONE)  # floor behind the door
+    k.put((4, 2, 0), sticky("west")); k.put((3, 2, 0), DOOR)  # M with MR
+    k.put((-3, 2, 0), sticky("east")); k.put((-2, 2, 0), sticky("east")); k.put((-1, 2, 0), DOOR)  # P_A, P_B, ML
+    k.put((1, 2, 0), DOOR)  # C
+    k.put((-1, 4, 0), sticky("down"))  # V
+    # piston inputs; the routed lines end at `goals`
+    for x in range(3):
+        k.rep((x, 5, 1), "south"); k.dust((x, 5, 2))  # top: repeaters fed by a dust manifold
+        k.rep((x, -1, 1), "south"); k.dust((x, -1, 2))  # bottom
+    k.put((-1, 5, 2), STONE)  # keeps the top manifold from stepping down onto V's dust
+    k.rep((4, 1, 1), "south"); k.put((4, 1, 0), STONE)  # M: repeater into the block under M
+    k.rep((-1, 4, 1), "south"); k.dust((-1, 4, 2))  # V
+    k.rep((-2, 2, 1), "south"); k.rep((-1, 2, 1), "south")  # P_B at both of its places
+    k.dust((-2, 2, 2)); k.dust((-1, 2, 2))
+    k.rep((-4, 2, 0), "west"); k.dust((-5, 2, 0))  # P_A from its back
+    goals = {"top": (3, 5, 2), "bottom": (3, -1, 2), "M": (4, 1, 2), "V": (-1, 4, 3), "PB": (-2, 2, 3),
+             "PA": (-5, 2, 1)}
+    starts: dict[str, Xyz] = {}
+    x0, za, zb = -20, 12, 8  # tap 0, rows A and B of chain A
+    # input gate G; comparators A = E - N (closing) and B = N - E (opening) lock it, E = tap 10 (two lines)
+    g = x0 + 8
+    lever = (g + 3, 2, za)
+    k.put((g + 3, 1, za), STONE); k.put(lever, "lever[face=floor,facing=east,powered=false]")
+    k.rep((g + 2, 2, za), "east"); k.rep((g + 1, 2, za), "east"); k.rep((g, 2, za), "east", 4)
+    for x in range(x0 + 1, g):
+        k.dust((x, 2, za))  # node N
+    k.comp((g, 2, za - 1), "north"); k.rep((g - 1, 2, za - 1), "west"); k.dust((g - 2, 2, za - 1))
+    goals["E1"] = (g, 2, za - 2)
+    k.comp((g, 2, za + 1), "south"); k.rep((g, 2, za + 2), "south")
+    for x, z in ((g - 2, za + 1), (g - 2, za + 2), (g - 2, za + 3), (g - 1, za + 3), (g, za + 3)):
+        k.dust((x, 2, z))
+    k.rep((g + 1, 2, za + 1), "east"); goals["E2"] = (g + 2, 2, za + 1)
+    # chain A: row A flows west (taps 0..3), turns, row B flows east (taps 4..10)
+    ta = {i: x0 - 3 * i for i in range(4)}
+    tb = {i: x0 + 3 * i - 18 for i in range(4, 11)}
+    for i, x in ta.items():
+        k.dust((x, 2, za))
+        if i < 3:
+            k.rep((x - 1, 2, za), "east"); k.rep((x - 2, 2, za), "east")
+    xu = ta[3]
+    k.rep((xu, 2, za - 1), "south"); k.rep((xu, 2, za - 2), "south")
+    for z in range(za - 3, zb - 1, -1):
+        k.dust((xu, 2, z))
+    for x in range(xu + 1, tb[4]):
+        k.dust((x, 2, zb))
+    for i, x in tb.items():
+        k.dust((x, 2, zb))
+        if i < 10:
+            k.rep((x + 1, 2, zb), "west"); k.rep((x + 2, 2, zb), "west")
+    # NOR blocks between the rows, a torch on top powers a block at y=4 (the lines start there)
+    zx = (za + zb) // 2
+    lift = {}
+    for a, name in ((0, "R2"), (1, "R1"), (2, "V")):
+        x = ta[a]
+        k.put((x, 1, zx), STONE); k.put((x, 2, zx), STONE)
+        k.rep((x, 2, zx + 1), "south"); k.rep((x, 2, zx - 1), "north")
+        k.put((x, 3, zx), "redstone_torch[lit=true]"); k.put((x, 4, zx), STONE)
+        lift[name] = x
+    for name, src in (("V", "V"), ("top", "R1"), ("PBbase", "R2")):
+        k.dust((lift[src], 5, zx)); starts[name] = (lift[src], 5, zx)
+    k.rep((lift["R2"] + 1, 4, zx), "west"); starts["M"] = (lift["R2"] + 2, 4, zx)
+    k.rep((lift["R1"], 4, zx - 1), "south"); starts["bottom"] = (lift["R1"], 4, zx - 2)
+    # P_B grabs north of row B: comparator at tap a, side from tap a+1; joined in a lane with P_B's base
+    zp = zb - 1
+    for a in (5, 9):
+        x = tb[a]
+        k.comp((x, 2, zp), "south"); k.rep((x + 1, 2, zp), "east"); k.dust((x + 2, 2, zp)); k.dust((x + 3, 2, zp))
+        k.rep((x, 2, zp - 1), "south"); k.dust((x, 2, zp - 2))
+    for x in range(tb[5], tb[9] + 2):
+        if x in (tb[5] + 1, tb[9] + 1):
+            k.rep((x, 2, zp - 2), "west")
+        else:
+            k.dust((x, 2, zp - 2))
+    starts["PB"] = (tb[9] + 2, 2, zp - 2)
+    goals["PBbase"] = (tb[5] - 1, 2, zp - 2)
+    k.rep((tb[10] + 1, 2, zb), "west"); starts["E1"] = (tb[10] + 2, 2, zb)
+    k.dust((tb[10], 2, zb + 1)); k.rep((tb[10], 2, zb + 2), "north"); starts["E2"] = (tb[10], 2, zb + 3)
+    # chain P for P_A: from N south, then west; fall pulse rear p3 / side p0 (+6 gt), rise pulse rear p4 / side p6
+    # (+6 gt), both south of the chain, joined
+    zq = za + 4
+    for z in range(za + 1, zq + 1):
+        k.dust((x0 + 1, 2, z))
+    tp = {i: x0 + 1 - 3 * i for i in range(7)}
+    for i, x in tp.items():
+        k.dust((x, 2, zq))
+        if i < 6:
+            k.rep((x - 1, 2, zq), "east"); k.rep((x - 2, 2, zq), "east")
+    zs, xs, xr = zq + 1, tp[3], tp[4]
+    for x in range(tp[0], xs, -1):
+        if x in (tp[1], tp[2], xs + 1):
+            k.rep((x, 2, zs), "east")
+        else:
+            k.dust((x, 2, zs))
+    k.comp((xs, 2, zs), "north"); k.comp((xr, 2, zs), "north")
+    for x in range(tp[6], xr):
+        if x == tp[5]:
+            k.rep((x, 2, zs), "west")
+        elif x == xr - 1:
+            k.rep((x, 2, zs), "west", 2)
+        else:
+            k.dust((x, 2, zs))
+    for x in (xs, xr):
+        k.rep((x, 2, zs + 1), "north")
+    for x in range(xr, xs + 1):
+        k.dust((x, 2, zs + 2))
+    k.rep((xs + 1, 2, zs + 2), "west"); starts["PA"] = (xs + 2, 2, zs + 2)
+    # route the lines: never through the passage, one block of air to everything else
+    passage = {Pos(x, y, z) for x in range(3) for y in range(4) for z in range(23)}
+    lo, hi = Pos(-42, -4, 1), Pos(9, 10, 22)
+    for name in DOOR3_ROUTES:
+        st, goal = Pos(*starts[name]), Pos(*goals[name])
+        others = {Pos(*d[n]) for d in (goals, starts) for n in DOOR3_ROUTES if n != name}
+        placed = {Pos(*p) for p in k} | others
+        solid, keep = (placed | passage) - {st}, placed - {st, st + Pos(0, -1, 0)}
+        path = _route(st, {goal}, solid, keep, lo, hi) or _route(st, {goal}, solid, keep, lo, hi, tight=True)
+        line = _line(path) if path is not None else None
+        if line is None:
+            raise RuntimeError(f"piston door 3x3: no line for {name}")
+        for c, state in line.items():
+            k[tuple(c)] = state
+            k.setdefault((c.x, c.y - 1, c.z), STONE)
+    ports = {"lever": lever} | {f"door{3 * (y - 1) + x}": (x, y, 0) for y in (1, 2, 3) for x in range(3)}
+    ports |= {"piston_a": (-3, 2, 0), "piston_b": (-2, 2, 0), "piston_v": (-1, 4, 0), "piston_m": (4, 2, 0),
+              "piston_top": (1, 5, 0), "piston_bottom": (1, -1, 0), "pocket_ml": (-1, 3, 0), "pocket_c": (-1, 2, 0)}
+    return _layout(dict(k), ports)
+
+
+DOOR3_RUN = 90  # gt: one run (open or close) is over well within this
+
+
+def _check_piston_door_3x3(b: Built, origin: Pos = ORACLE_ORIGIN) -> list[str]:
+    """10 slow cycles; then the lever flicked back after 2, 6, 20 and 40 gt from either state: the run under way
+    finishes, then the door follows the lever (it ends in the lever's state). The 9 bricks never change in number."""
+    problems: list[str] = []
+    cells = [b.ports[f"door{i}"] for i in range(9)]
+    lever = b.ports["lever"]
+    run = Run(b.grid, origin)
+    run.step(5)
+    is_open = False
+
+    def expect(when: str) -> None:
+        for p in cells:
+            s = run.state(p)
+            if is_open and not s.is_air or not is_open and s.id != DOOR:
+                problems.append(f"{when}: {tuple(p)} is {s.id}")
+        bricks = sum(1 for s in run.world.blocks.values() if s.id == DOOR)
+        if bricks != 9:
+            problems.append(f"{when}: {bricks} bricks, expected 9")
+
+    expect("start")
+    for cycle in range(10):
+        for _ in range(2):
+            run.use(lever)
+            is_open = not is_open
+            run.step(DOOR3_RUN)
+            expect(f"cycle {cycle} {'open' if is_open else 'closed'}")
+    for gap in (2, 6, 20, 40):
+        for _ in range(2):  # from closed, then from open
+            start = "open" if is_open else "closed"
+            run.use(lever)
+            run.step(gap)
+            run.use(lever)
+            run.step(3 * DOOR3_RUN)
+            expect(f"flick {gap} gt from {start}")
+            run.use(lever)
+            is_open = not is_open
+            run.step(DOOR3_RUN)
+    return problems
+
+
 # --------------------------------------------------------------------------------- hidden door 1x2
 def _rep(reads_from: str, delay: int = 1) -> str:
     return f"repeater[delay={delay},facing={reads_from},locked=false,powered=false]"
@@ -502,6 +752,26 @@ ENTRIES: list[Entry] = [
         notes=PROOF,
         display=(("lever", "Hebel"), ("piston_l1", "Kolben links unten"), ("piston_l2", "Kolben links oben"),
                  ("piston_r1", "Kolben rechts unten"), ("piston_r2", "Kolben rechts oben")),
+    ),
+    Entry(
+        key="piston-door-3x3",
+        title="Kolbentür 3×3",
+        keywords=("kolbentür", "kolben tür", "tür", "tor", "eingang", "groß", "große tür", "piston door", "door",
+                  "3x3", "flush"),
+        description=("Eine Tür aus neun Steinziegeln, drei Blöcke breit und drei hoch, bündig in einer Wand. Die obere "
+                     "Reihe fährt nach oben, die untere nach unten, die Seiten in die Wand. Den mittleren Block holen "
+                     "zwei Kolben hintereinander in zwei Schritten heraus; eine Verzögerungskette schaltet alle "
+                     "Kolben in der richtigen Reihenfolge."),
+        usage=("Hebel an: Die Tür geht auf (gut 3 Sekunden). Hebel aus: Die Tür geht zu. Legst du den Hebel um, "
+               "während die Tür noch läuft, fährt sie erst ganz zu Ende und folgt dann dem Hebel. Die Technik liegt "
+               "hinter der Wand und links davon."),
+        inputs=("lever",),
+        layout=_piston_door_3x3,
+        check=_check_piston_door_3x3,
+        notes=PROOF,
+        display=(("lever", "Hebel"), ("piston_b", "Greifkolben"), ("piston_a", "Schiebekolben"),
+                 ("piston_v", "Kolben über der Tasche"), ("piston_m", "Kolben rechts"),
+                 ("piston_top", "Kolben oben Mitte"), ("piston_bottom", "Kolben unten Mitte")),
     ),
     Entry(
         key="hidden-door-1x2",

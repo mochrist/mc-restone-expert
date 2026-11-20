@@ -70,6 +70,20 @@ def piston_door() -> dict:
                      ticks, inputs, probes)
 
 
+def piston_door_3x3() -> dict:
+    b = get("piston-door-3x3").built()
+    lever = b.ports["lever"]
+    inputs = [(2, lever), (92, lever), (182, lever), (272, lever)]  # slow: open, close, open, close
+    inputs += [(362, lever), (366, lever)]  # flick from closed: opens fully, then closes
+    inputs += [(632, lever), (722, lever), (726, lever)]  # open, then flick from open: closes fully, then opens
+    probes = {"lever": lever} | {f"door{i}": b.ports[f"door{i}"] for i in range(9)}
+    probes |= {k: b.ports[k] for k in ("piston_a", "piston_b", "piston_v", "pocket_ml", "pocket_c")}
+    return _scenario("cat-piston-door-3x3", b.grid,
+                     "Katalog: Kolbentür 3x3 (src/redstone/catalog). Hebel viermal im Abstand von 90 gt, dann "
+                     "schnelles Umlegen mit 4 gt Abstand aus geschlossener und aus offener Tür.",
+                     1000, inputs, probes)
+
+
 def hidden_door() -> dict:
     b = get("hidden-door-1x2").built()
     button = b.ports["button"]
@@ -126,7 +140,7 @@ def item_sorter_4() -> dict:
 
 
 def main() -> None:
-    for d in (piston_door(), hidden_door(), item_sorter(), item_sorter_4()):
+    for d in (piston_door(), piston_door_3x3(), hidden_door(), item_sorter(), item_sorter_4()):
         path = ROOT / "scenarios" / f"{d['name']}.yaml"
         path.write_text(yaml.safe_dump(d, allow_unicode=True, sort_keys=False, width=120, default_flow_style=None),
                         encoding="utf-8", newline="\n")

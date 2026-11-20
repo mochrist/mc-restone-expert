@@ -50,6 +50,8 @@ def test_build_returns_a_fresh_copy():
     ("Itemsortierer für meine Truhen", "item-sorter"),
     ("geheimtür mit knopf", "hidden-door-1x2"),
     ("sortierer mit vier fächern", "item-sorter-4"),
+    ("kolbentür 3x3", "piston-door-3x3"),
+    ("große tür", "piston-door-3x3"),
 ])
 def test_find(query, key):
     assert find(query)[0].key == key
@@ -68,3 +70,15 @@ def test_position_and_rotation_proof(key):
     for turns in range(4):
         for origin in origins(sample=6):
             assert e.accept(origin, turns) == [], (tuple(origin), turns)
+
+
+def test_piston_door_3x3_matches_its_recording():
+    """The 3x3 door is laid out by the router (design.compose._route): a change there would change the build
+    behind the recording scenarios/cat-piston-door-3x3.yaml, which must then be recorded again."""
+    from pathlib import Path
+
+    from redstone.verify.scenario import load
+
+    sc = load(Path(__file__).parents[2] / "scenarios" / "cat-piston-door-3x3.yaml")
+    built = get("piston-door-3x3").build()
+    assert {tuple(p): str(s) for p, s in built.items()} == {tuple(p): str(s) for p, s in sc.grid.items()}

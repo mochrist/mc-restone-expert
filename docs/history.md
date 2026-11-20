@@ -3,6 +3,18 @@
 Neueste zuerst. Neue Sessions tragen hier 3–6 Zeilen ein (was geändert wurde, Befunde, Messwerte).
 Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tasks/`.
 
+## Session 28 (2026-11-20): Auftrag 10 Kolbentür 3×3 geplant und gebaut (Opus statt Fable)
+
+- `piston-door-3x3`: obere Reihe hoch, untere runter, rechter Mittelblock nach rechts; links zieht Greifkolben P_B den
+  Block ML in die Wand, V hebt ihn an, dann holt P_B (von Schiebekolben P_A vor- und zurückgeschoben) den Mittelblock
+  in zwei Griffen. Mechanik zuerst mit gesetzten Redstone-Blöcken geprüft, dann Steuerung: gefaltete Verzögerungskette
+  (Abgriffe a und 6-a nebeneinander → NOR-Blöcke für Reihen, P_B-Grundsignal, V), Komparator-Impulse für die Griffe,
+  zweite Kette für P_A, Leitungen per `compose._route`. 807 Blöcke, 42×13×20, Öffnen ~62 gt, Schließen ~50 gt.
+- Schnelles Umlegen: Eingangsverstärker G (4 Ticks) wird von zwei Komparatoren gesperrt, solange Abgriff 0 und 10
+  verschieden sind; ein Lauf geht immer zu Ende, danach folgt die Tür dem Hebel (Antippen < 8 gt aus offener Tür
+  verschluckt G). Abnahme: 10 Zyklen, Umlegen nach 2/6/20/40 gt, 9 Ziegel; alle Orte/Drehungen; im Simulator
+  Umlegen nach 1–70 gt geprüft. `cat-piston-door-3x3` im Spiel aufgenommen, beide Kerne identisch.
+
 ## Session 27 (2026-11-20): Auftrag 08 Zerlegung mit gemeinsamen Eingängen abgeschlossen (Opus)
 
 - `shared_common_splits`/`_shared_common` (gemeinsamer Hebel angezapft) kommen vor zwei Signalen dran; addsub2 und addsub4

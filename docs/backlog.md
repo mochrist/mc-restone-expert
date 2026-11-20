@@ -68,9 +68,12 @@ daraus (Ziel, Einstieg, Abnahme, Abbruch). Vorgeschichte je Punkt: `docs/history
 
 ## Katalog (Auftrag 05)
 
-- Weitere Bauwerke: Tür mit Druckplatten beidseitig (Kolbentür 3×3 ist Auftrag 10). Vorlage: `catalog/entries.py` (Abnahme zuerst als Check, dann bauen).
+- Weitere Bauwerke: Tür mit Druckplatten beidseitig. Vorlage: `catalog/entries.py` (Abnahme zuerst als Check, dann bauen).
 - Sortierer: Durchsatz ist 1 Item/8 gt; für volle Trichterketten-Geschwindigkeit mit mehreren Sorten müsste die
   Sperre auch bei dauerhaft vollem Filter offen bleiben (bei einem Fach nicht nötig).
+- Kolbentür 3×3 ist groß (807 Blöcke, 42×13×20): Steuerung und Leitungen ließen sich verdichten (kürzere Kette mit
+  Verstärkern Stufe 2, Leitungen enger als `_route` mit einem Block Luft); das Layout hängt vom Router ab (Test
+  `test_piston_door_3x3_matches_its_recording` meldet Änderungen, dann neu aufnehmen).
 - GUI-Simulation zeigt keine Gegenstände in Behältern; beim Sortierer sieht man nur Sperre und Komparatoren.
 
 ## M6 Oberfläche
