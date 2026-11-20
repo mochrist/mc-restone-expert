@@ -82,5 +82,4 @@ daraus (Ziel, Einstieg, Abnahme, Abbruch). Vorgeschichte je Punkt: `docs/history
 ## Notizen aus laufenden Aufträgen
 
 (Hier tragen Sessions Auffälligkeiten ein, die nicht zu ihrem Auftrag gehören.)
-- Wizard: „alle Hebel an“ (AND) mit Eisentür/Kolben/Spender meldet nur „Entwurfssuche ohne Erfolg“; besser eine andere AND-Vorlage nehmen oder dem Laien den Grund nennen (Fackel-AND passt nicht zu diesen Aktoren).
 - GUI 3D: Bilder je Sekunde für seg7/cmp5 mit echter GPU messen (Chrome Performance); headless war nicht aussagekräftig. Screenshot Reiter „Entwerfen“ mit „Kurz erklärt“ fehlt noch.

@@ -1,0 +1,87 @@
+{
+ "format": 1,
+ "scenario": "act-and-iron-door",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 122,
+ "probes": {
+  "a": [
+   0,
+   3,
+   0
+  ],
+  "b": [
+   2,
+   3,
+   0
+  ],
+  "out": [
+   0,
+   1,
+   4
+  ],
+  "oben": [
+   0,
+   2,
+   4
+  ]
+ },
+ "samples": {
+  "a": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=floor,facing=north,powered=true]"
+   ],
+   [
+    62,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ]
+  ],
+  "b": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ],
+   [
+    32,
+    "minecraft:lever[face=floor,facing=north,powered=true]"
+   ],
+   [
+    92,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ]
+  ],
+  "out": [
+   [
+    0,
+    "minecraft:iron_door[facing=north,half=lower,hinge=left,open=false,powered=false]"
+   ],
+   [
+    38,
+    "minecraft:iron_door[facing=north,half=lower,hinge=left,open=true,powered=true]"
+   ],
+   [
+    68,
+    "minecraft:iron_door[facing=north,half=lower,hinge=left,open=false,powered=false]"
+   ]
+  ],
+  "oben": [
+   [
+    0,
+    "minecraft:iron_door[facing=north,half=upper,hinge=left,open=false,powered=false]"
+   ],
+   [
+    38,
+    "minecraft:iron_door[facing=north,half=upper,hinge=left,open=true,powered=true]"
+   ],
+   [
+    68,
+    "minecraft:iron_door[facing=north,half=upper,hinge=left,open=false,powered=false]"
+   ]
+  ]
+ }
+}

@@ -10,6 +10,10 @@ Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tas
 - addsub2: 638 Blöcke (25×5×17) gegen PLA 1278, Suche ~15 s. addsub4 (9 Eingänge): 5452 Blöcke (91×7×54), ~16 min;
   PLA mit 7 Eingängen plus eine Stufe, keine Bit-für-Bit-Kaskade (Befund im Backlog).
 - Repo liegt jetzt auf GitHub (`origin`, Branch `main`, vorher `master`); Arbeitsnotizen aus dem lokalen Gedächtnis in `CLAUDE.md`.
+- Geräte am UND aus Fackeln (Backlog): Die Fackel neben der Lampe speist den Lampenblock nicht (Verstärker dahinter bleibt aus)
+  und hält einen Kolben an ihrer Stelle per Quasi-Connectivity ausgefahren. `actuators.with_output` versucht jetzt auch
+  Staub statt der Lampe vor Verstärker und Gerät; alle 7 Geräte gehen am UND (2 und 4 Hebel). `act-and-{iron-door,piston,
+  dispenser}` im Spiel aufgenommen, identisch. Suite 1822 grün.
 
 ## Session 26 (2026-11-19): Auftrag 07 Kleinere Grundbausteine (Opus)
 

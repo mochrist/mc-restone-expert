@@ -1,0 +1,95 @@
+{
+ "format": 1,
+ "scenario": "act-and-piston",
+ "source": "oracle",
+ "version": "26.3",
+ "ticks": 122,
+ "probes": {
+  "a": [
+   0,
+   3,
+   0
+  ],
+  "b": [
+   2,
+   3,
+   0
+  ],
+  "out": [
+   0,
+   1,
+   4
+  ],
+  "oben": [
+   0,
+   2,
+   4
+  ]
+ },
+ "samples": {
+  "a": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ],
+   [
+    2,
+    "minecraft:lever[face=floor,facing=north,powered=true]"
+   ],
+   [
+    62,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ]
+  ],
+  "b": [
+   [
+    0,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ],
+   [
+    32,
+    "minecraft:lever[face=floor,facing=north,powered=true]"
+   ],
+   [
+    92,
+    "minecraft:lever[face=floor,facing=north,powered=false]"
+   ]
+  ],
+  "out": [
+   [
+    0,
+    "minecraft:piston[extended=false,facing=up]"
+   ],
+   [
+    38,
+    "minecraft:piston[extended=true,facing=up]"
+   ],
+   [
+    68,
+    "minecraft:moving_piston[facing=up,type=normal]"
+   ],
+   [
+    70,
+    "minecraft:piston[extended=false,facing=up]"
+   ]
+  ],
+  "oben": [
+   [
+    0,
+    "minecraft:air"
+   ],
+   [
+    38,
+    "minecraft:moving_piston[facing=up,type=normal]"
+   ],
+   [
+    40,
+    "minecraft:piston_head[facing=up,short=false,type=normal]"
+   ],
+   [
+    68,
+    "minecraft:air"
+   ]
+  ]
+ }
+}

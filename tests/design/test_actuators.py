@@ -14,10 +14,10 @@ EXAMPLES = Path(__file__).parents[2] / "examples" / "behaviour"
 TEMPLATE = {t.name: t for t in TEMPLATES}
 ALL = tuple(ACTUATORS)
 
-# Which actuators work with which design (as of session 19). The torch AND does not work with door, piston and
-# dispenser/dropper: the block does not follow the lamp. That is the expected value, not a bug.
+# Which actuators work with which design. The torch AND lights its lamp with a torch beside it: door, piston and
+# dispenser/dropper only work there with the lamp replaced by dust (session 27; before: note block and trapdoor only).
 WORKS = {
-    "and2-torch": {"note_block", "iron_trapdoor"},
+    "and2-torch": set(ALL),
     "xor2-comparator": set(ALL),
     "t-flip-flop": set(ALL),
     "monostable-8": set(ALL),
@@ -74,3 +74,12 @@ def test_two_outputs_both_get_the_actuator(kind):
     assert all(new.grid.get(p).id == block_id for p in new.outputs)
     steps = _steps(len(cand.inputs))
     assert _traces(new, steps) == _traces(cand, steps)
+
+
+@pytest.mark.parametrize("kind", ["iron_door", "piston", "dispenser"])
+def test_torch_and_gets_dust_instead_of_the_lamp(designs, kind):
+    """The torch beside the lamp powers dust but not the lamp block (a repeater behind it stays off), and it holds
+    a piston in the lamp's place out by quasi-connectivity: the lamp becomes dust in front of the repeater."""
+    new, why = with_output(designs["and2-torch"], kind)
+    assert new is not None and "Redstone" in why
+    assert not any(s.id == "redstone_lamp" for _, s in new.grid.items())

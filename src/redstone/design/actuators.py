@@ -2,9 +2,11 @@
 
 The search designs and proves circuits with redstone lamps as outputs. `with_output` gives every output another
 block that reacts to power and checks in the simulator that it switches like the lamp did: same state after
-every input change and the same number of switch-ons. Two ways are tried: the block in place of the lamp, then
-the block next to the lamp behind a repeater (the lamp stays as an indicator). Returns None (with a German
-reason) when nothing fits or follows."""
+every input change and the same number of switch-ons. Three ways are tried: the block in place of the lamp, the
+block next to the lamp behind a repeater (the lamp stays as an indicator), and the lamp replaced by redstone dust
+with the repeater and the block behind it. The dust is for a lamp lit by a torch beside it: such a lamp is not a
+powered block, so a repeater behind it stays off, and a piston in its place is held out by the torch (quasi-
+connectivity). Returns None (with a German reason) when nothing fits or follows."""
 
 from __future__ import annotations
 
@@ -56,8 +58,12 @@ def _built(cand: Candidate, cells: dict[tuple[int, int, int], str], outputs: lis
                    assembly=None)
 
 
-def _variant(cand: Candidate, kind: str, side: str | None, flip: bool) -> Candidate:
-    """side None: the block replaces the lamp. Else: lamp -> repeater -> block towards that side."""
+DUST = "redstone_wire[east=none,north=none,power=0,south=none,west=none]"
+
+
+def _variant(cand: Candidate, kind: str, side: str | None, flip: bool, dust: bool = False) -> Candidate:
+    """side None: the block replaces the lamp. Else: lamp -> repeater -> block towards that side; dust: the
+    lamp becomes redstone dust (on a solid block) in front of the repeater."""
     from ..sim import blockdata
 
     label, block, above, support = ACTUATORS[kind]
@@ -79,6 +85,13 @@ def _variant(cand: Candidate, kind: str, side: str | None, flip: bool) -> Candid
                 cells[floor] = "stone"
             facing = side if flip else {"north": "south", "south": "north", "west": "east", "east": "west"}[side]
             cells[rep] = f"repeater[delay=1,facing={facing},locked=false,powered=false]"
+            if dust:
+                under = (x, y - 1, z)
+                if free(under):
+                    cells[under] = "stone"
+                elif not blockdata.is_conductor(BlockState.parse(cells[under])):
+                    raise _Fit("unter dem Ausgang ist kein fester Block für Redstone")
+                cells[(x, y, z)] = DUST
         below = (at[0], y - 1, at[2])
         if support:
             if free(below):
@@ -139,14 +152,17 @@ def with_output(cand: Candidate, kind: str) -> tuple[Candidate | None, str]:
     steps = _steps(len(cand.inputs))
     want = _traces(cand, steps)
     why = ""
-    for side, flip in [(None, False)] + [(s, f) for s in SIDES for f in (False, True)]:
+    ways = [(None, False, False)] + [(s, f, d) for d in (False, True) for s in SIDES for f in (False, True)]
+    for side, flip, dust in ways:
         try:
-            new = _variant(cand, kind, side, flip)
+            new = _variant(cand, kind, side, flip, dust)
         except _Fit as e:
             why = why or str(e)
             continue
         if _traces(new, steps) == want:
-            how = "statt der Lampe" if side is None else "neben der Lampe hinter einem Verstärker (die Lampe bleibt als Anzeige)"
+            how = ("statt der Lampe" if side is None else
+                   "statt der Lampe hinter Redstone und einem Verstärker" if dust else
+                   "neben der Lampe hinter einem Verstärker (die Lampe bleibt als Anzeige)")
             note = f"Ausgang: {label} {how}; im Simulator gegen die Lampen-Fassung geprüft."
             return replace(new, description=f"{cand.description} {note}".strip()), note
         why = f"{label} schaltet an diesem Entwurf nicht wie die Lampe"
