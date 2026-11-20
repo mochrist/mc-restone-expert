@@ -9,8 +9,9 @@ geplant; sie nennen Einstiegsstellen und Abnahme, damit niemand die Vorgeschicht
 1. Den Auftrag **ganz** lesen, dann die unter „Einstieg“ genannten Stellen im Code.
 2. Tests sparsam (der Nutzer will Tempo): Keine Ausgangsmessung, wenn der letzte Commit laut `docs/history.md`
    grün war. Während der Arbeit nur die betroffenen Testdateien. Die volle Suite `uv run pytest -q` (~70 s)
-   einmal vor dem Abschluss. `--slow` (~40 min) nur, wenn die Abnahme es verlangt oder Entwurfssuche bzw.
-   Simulator geändert wurden, dann im Hintergrund laufen lassen und derweil weiterarbeiten.
+   einmal vor dem Abschluss. `--slow` (~40 min) nur, wenn die Abnahme es verlangt oder die Entwurfssuche
+   (`design/decompose.py`, `search.py`, `compose.py`, `synth.py`) geändert wurde, dann im Hintergrund laufen
+   lassen und derweil weiterarbeiten.
 3. Die Schritte der Reihe nach; nach jedem sinnvollen Teil committen (Commit-Nachrichten englisch).
 4. Die Abnahme des Auftrags ausführen und das Ergebnis (Zahlen, nicht „läuft“) notieren.
 5. Abschluss: Auftragsdatei löschen, Zeile in `STATUS.md` entfernen, 3–6 Zeilen oben in `docs/history.md`.
