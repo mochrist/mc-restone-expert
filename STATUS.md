@@ -1,6 +1,6 @@
 # Projektstatus
 
-Stand: 2026-11-21, Session 28 (10 erledigt: Kolbentür 3×3; 09 erledigt: Assistent im Browser durchgeklickt). Abgleich zweier PCs über GitHub (`origin/main`). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
+Stand: 2026-11-21, Session 28 (10 erledigt: Kolbentür 3×3; 09 erledigt: Assistent durchgeklickt; 11 erledigt: Suche abbrechbar). Abgleich zweier PCs über GitHub (`origin/main`). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
 Vorgeschichte: `docs/history.md`. Zurückgestelltes: `docs/backlog.md`.
 
 ## Wo das Projekt steht

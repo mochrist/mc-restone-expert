@@ -65,6 +65,7 @@ Alle Antworten sind JSON; Fehler als HTTP 4xx/5xx mit `{"error": "<deutscher Tex
 | `POST /api/sim/<id>/tick` | `{"n": 1}` (1 … 1000 Ticks) | `{"tick": t, "changed": [Block, ...]}` |
 | `POST /api/redesign` | `{"path": P, "compact": 100, …}` (Spezifikation `.yaml` oder Schaltplan; Optionen unten) | `{"job": id}` |
 | `GET /api/job/<id>?since=k` | – | Job (unten), nur Einzelbilder ab Nummer `k` |
+| `POST /api/job/<id>/cancel` | `{}` | `{"cancelled": bool}`; eine Entwurfssuche hält beim nächsten Prüfpunkt an und endet mit `error: "Abgebrochen."` (Oracle-Jobs: 409) |
 | `GET /api/info` | – | `{"core": "rust", "rust": true, "rust_error": null, "formats": [...]}` |
 | `POST /api/core` | `{"core": "rust"\|"python"\|"auto"}` | `{"core": name}`; gilt für neue Welten |
 | `GET /api/text?path=P` | Textdatei (`.yaml`, `.md`, `.txt`, `.json`) | `{"path": P, "text": "…"}` |

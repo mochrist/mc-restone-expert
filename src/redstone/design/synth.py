@@ -44,6 +44,7 @@ from dataclasses import dataclass
 from ..model import Grid, Pos
 from .candidate import Candidate
 from .spec import Spec
+from .observe import check
 
 Implicant = tuple[bool | None, ...]  # per input: True = literal x, False = literal not x, None = unused
 
@@ -135,6 +136,7 @@ def minimize_multi(n: int, ones: list[list[tuple[bool, ...]]]) -> list[list[Impl
     cands: set[Implicant] = set()
     for r in range(1, m + 1):
         for group in itertools.combinations(range(m), r):
+            check()  # a cancelled search stops here (observe.cancelling)
             common = set.intersection(*(sets[j] for j in group))
             if common:
                 cands |= _primes(common)
@@ -257,6 +259,7 @@ def _assign_lines(cols: list[_Col], order: list[int], no_south: set[int],
         if not ks:
             continue
         for q in itertools.count():
+            check()  # a cancelled search stops here (observe.cancelling)
             placed = None
             for reverse in (False, True):
                 cells, last = [], None
@@ -357,6 +360,7 @@ def _crossings(rows, rail_row, imp: Implicant) -> dict[tuple[int, bool], int] | 
         return {}
     best = None
     for choice in itertools.product((1, -1), repeat=len(lits)):
+        check()  # a cancelled search stops here (observe.cancelling)
         slots = [rail_row[lit] + d for lit, d in zip(lits, choice)]
         if len(set(slots)) != len(slots) or not all(_slot_ok(rows, s) for s in slots):
             continue
@@ -687,6 +691,7 @@ def pla(spec: Spec, name: str = "pla", *, share: bool | None = None, drivable: b
     for terms in selections:
         for shared in ((True, False) if share is None else (share,)):
             for order in itertools.islice(itertools.permutations(range(len(lines))), MAX_ORDERS):
+                check()  # a cancelled search stops here (observe.cancelling)
                 cols = _columns(terms, shared, list(order))
                 try:
                     built = _build(n, len(lines), cols, list(order), drivable=drivable, lamp_count=width)

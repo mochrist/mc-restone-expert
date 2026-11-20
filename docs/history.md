@@ -3,7 +3,7 @@
 Neueste zuerst. Neue Sessions tragen hier 3–6 Zeilen ein (was geändert wurde, Befunde, Messwerte).
 Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tasks/`.
 
-## Session 28 (2026-11-20/21): Auftrag 10 Kolbentür 3×3 (Opus statt Fable), Auftrag 09 Assistent durchgeklickt
+## Session 28 (2026-11-20/21): Auftrag 10 Kolbentür 3×3 (Opus statt Fable), Auftrag 09 Assistent durchgeklickt, Auftrag 11 Suche abbrechbar
 
 - `piston-door-3x3`: obere Reihe hoch, untere runter, rechter Mittelblock nach rechts; links zieht Greifkolben P_B den
   Block ML in die Wand, V hebt ihn an, dann holt P_B (von Schiebekolben P_A vor- und zurückgeschoben) den Mittelblock
@@ -20,6 +20,12 @@ Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tas
   Schlüssel erscheinen Hinweis und Eingabefeld. Behoben: Handybreite lief seitlich über (Rasterspalte `minmax(0, 1fr)`,
   Kopfzeile umbrechen); Ansicht zeigte während einer Suche ohne Zwischenschritte die alte Schaltung. Offen (Backlog):
   weiterlaufende lange Suche legt den Server lahm.
+- Auftrag 11 Suche abbrechbar: `observe.cancelling`/`check` (pro Thread), geprüft in `Circuit.run` und in den Schleifen
+  der Zerlegung/Synthese/Suche; `POST /api/job/<id>/cancel`, „Stopp“ im Assistenten bricht seine Suche mit ab, im
+  Reiter Entwerfen wird der Knopf zu „Suche abbrechen“. Abbruch nach 0,2 s. Seite während der 4-Bit-Addierer-Suche:
+  `/api/files` 29,15 s → 0,63 s (Median, `scripts/gui_latency.py`). Ursache war der GIL-Konvoi (jeder Dateizugriff
+  wartet bis ~15 ms auf die rechnende Suche); Abhilfe `sys.setswitchinterval(0.0002)` im Server; zusätzlich gibt
+  `run_recording` und `route` im Rust-Kern die GIL frei (`py.detach`).
 
 ## Session 27 (2026-11-20): Auftrag 08 Zerlegung mit gemeinsamen Eingängen abgeschlossen (Opus)
 

@@ -150,6 +150,7 @@ class Job:
         self.result: dict | None = None
         self.grid: Grid | None = None
         self._lock = threading.Lock()
+        self._cancel = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True, name=f"rsx-job-{path.stem}")
         self._thread.start()
 
@@ -160,12 +161,19 @@ class Job:
             self.frames.append({"i": len(self.frames), "phase": phase, "label": label, "accepted": bool(accepted),
                                 "size": list(cand.grid.size), "blocks": gmodel.blocks(cand.grid)})
 
+    def cancel(self) -> bool:
+        """Stop the search at its next simulator run (False if it is already over)."""
+        if self.done:
+            return False
+        self._cancel.set()
+        return True
+
     def _run(self) -> None:
         from ..cli import RedesignInputError, run_redesign
         from ..design import observe
 
         try:
-            with observe.observing(self._frame):
+            with observe.observing(self._frame), observe.cancelling(self._cancel):
                 best, text, spec = run_redesign(self.path, self.constraints, compact=self.compact,
                                                  time_limit=self.time_limit, outputs=self.outputs,
                                                  top=self.top, steps=self.log, output=self.output,
@@ -181,6 +189,8 @@ class Job:
                                   "Grenzen lockern; Einzelheiten stehen im Bericht.")
         except RedesignInputError as e:
             self.error = str(e)
+        except observe.Cancelled:
+            self.error = CANCELLED
         except Exception as e:  # report to the GUI instead of losing the thread
             traceback.print_exc()
             self.error = f"Fehler in der Entwurfssuche: {type(e).__name__}: {e}"
@@ -209,6 +219,9 @@ class Job:
         with self._lock:
             return {"kind": self.kind, "done": self.done, "error": self.error, "frames": self.frames[max(since, 0):],
                     "log": list(self.log), "result": self.result if self.done else None}
+
+
+CANCELLED = "Abgebrochen."
 
 
 class OracleJob:
@@ -570,6 +583,14 @@ def make_handler(state: State) -> type[BaseHTTPRequestHandler]:
                     raise ApiError("input muss einer von " + ", ".join(SENSORS) + " sein")
                 return {"job": state.add_job(Job(full, compact, _constraints(body), limit, outputs, top, output,
                                                  sensor))}
+            if method == "POST" and len(parts) == 3 and parts[0] == "job" and parts[2] == "cancel":
+                job = state.jobs.get(parts[1])
+                if job is None:
+                    raise ApiError("Suche unbekannt", HTTPStatus.NOT_FOUND)
+                cancel = getattr(job, "cancel", None)
+                if cancel is None:
+                    raise ApiError("Diese Aufgabe lässt sich nicht abbrechen", HTTPStatus.CONFLICT)
+                return {"cancelled": cancel()}
             if method == "GET" and len(parts) == 2 and parts[0] == "job":
                 job = state.jobs.get(parts[1])
                 if job is None:
@@ -745,7 +766,17 @@ class _Server(ThreadingHTTPServer):
         super().server_bind()
 
 
+# GIL switch interval while the server runs. A design search computes in pure Python for minutes; every file
+# system call of a request gives the GIL up and waits for it again, by default up to 5 ms (in practice ~15 ms on
+# Windows). /api/files took ~29 s during a 4-bit adder search, 0.6 s with 0.2 ms (task 11, scripts/gui_latency.py).
+# Only threads that wait for the GIL cause switches, so a search alone does not get slower.
+SWITCH_INTERVAL = 0.0002
+
+
 def make_server(port: int = DEFAULT_PORT, extra: Path | None = None, root: Path = ROOT) -> ThreadingHTTPServer:
+    import sys
+
+    sys.setswitchinterval(min(sys.getswitchinterval(), SWITCH_INTERVAL))
     server = _Server(("127.0.0.1", port), make_handler(State(root, extra)))
     server.daemon_threads = True
     return server

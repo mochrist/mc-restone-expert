@@ -208,3 +208,33 @@ def test_find_examples_puts_catalog_first():
     first = chat._find("kolbentür").splitlines()[0]
     assert first.startswith(".cache/gui/catalog/piston-door-2x2.yaml")
     assert chat._find("Itemsortierer").splitlines()[0].startswith(".cache/gui/catalog/item-sorter.yaml")
+
+
+ADDER4_SPEC = """inputs: [a0, a1, a2, a3, b0, b1, b2, b3]
+function:
+  s0: a0 ^ b0
+  s1: a1 ^ b1 ^ (a0 and b0)
+  s2: a2 ^ b2 ^ ((a1 and b1) or ((a1 ^ b1) and (a0 and b0)))
+  s3: a3 ^ b3 ^ ((a2 and b2) or ((a2 ^ b2) and ((a1 and b1) or ((a1 ^ b1) and (a0 and b0)))))
+"""
+
+
+def test_cancel_stops_the_search(server):
+    """Stop during a design search of the turn: the turn ends and the search is cancelled too."""
+    call, state = server
+    fake = FakeClient([([tool("t1", "design_circuit", {"name": "addierer4", "spec_yaml": ADDER4_SPEC})], "tool_use"),
+                       ([text("Nie gesendet.")], "end_turn")])
+    state.client_factory = lambda: fake
+    _, r = call("/api/chat", {"message": "4-Bit-Addierer"})
+    deadline = time.monotonic() + 30
+    while not state.jobs and time.monotonic() < deadline:
+        time.sleep(0.1)
+    job = next(iter(state.jobs.values()))
+    time.sleep(1)
+    assert call(f"/api/chat/{r['chat']}/cancel", {})[1]["cancelled"] is True
+    events = wait(call, r["chat"])
+    assert events[-1]["type"] == "cancelled"
+    end = time.monotonic() + 10
+    while not job.done and time.monotonic() < end:
+        time.sleep(0.1)
+    assert job.done and job.error == "Abgebrochen."

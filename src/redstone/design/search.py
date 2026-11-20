@@ -16,6 +16,7 @@ from .candidate import Candidate
 from .evaluate import Constraints, Evaluation, evaluate_any
 from .report import COMPOSE_PREFIX
 from .spec import Spec, from_functions
+from .observe import check
 
 MAX_PERMUTED_INPUTS = 4
 
@@ -33,6 +34,7 @@ def _matches(spec: Spec, tspec: Spec) -> list[tuple[tuple[int, ...], tuple[int, 
         return []
     found = []
     for in_perm in itertools.permutations(range(n)):
+        check()  # a cancelled search stops here (observe.cancelling)
         for out_perm in itertools.permutations(range(m)):
             ok = True
             for combo, outs in spec.table.items():
@@ -103,6 +105,7 @@ def seq_candidates(spec, templates: list | None = None) -> list[Candidate]:
         if len(t.inputs) != len(spec.inputs) or len(t.outputs) != len(spec.outputs):
             continue
         for perm in itertools.permutations(range(len(spec.inputs))):
+            check()  # a cancelled search stops here (observe.cancelling)
             if any(t.input_kinds[perm[i]] != k for i, k in enumerate(spec.input_kinds)):
                 continue
             for params, base in t.variants():

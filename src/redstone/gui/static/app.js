@@ -334,8 +334,9 @@ function updateActions() {
   $('goalFileText').textContent = S.modelPath
     ? `Sucht eine kompaktere Schaltung mit demselben Verhalten wie „${stem(S.modelPath)}“. Das Verhalten wird zuerst im Simulator gemessen.`
     : '';
-  $('btnRedesign').disabled = S.demo || (S.goal === 'file' && !S.modelPath) || !!(S.job && !S.job.done);
-  $('btnRedesign').textContent = S.job && !S.job.done ? 'Suche läuft ...' : 'Entwurf suchen';
+  const running = !!(S.job && !S.job.done);
+  $('btnRedesign').disabled = !running && (S.demo || (S.goal === 'file' && !S.modelPath));
+  $('btnRedesign').textContent = running ? (S.job.cancelling ? 'Breche ab ...' : 'Suche abbrechen') : 'Entwurf suchen';
   const hasResult = !!(S.job && S.job.result && S.job.result.blocks);
   $('resultActions').hidden = !hasResult;
   $('btnShowResult').disabled = hasResult && S.fromJob && S.mode !== 'search';
@@ -434,8 +435,8 @@ function setMode(mode, { fit = false } = {}) {
     if (S.job && S.job.frames.length) showFrame(Math.max(0, Math.min(S.job.idx, S.job.frames.length - 1)));
     else {
       // nothing to show yet: an empty view, not the previous circuit (the header already says none is loaded)
-      if (S.job && !S.model) showModel({ blocks: [], size: [1, 1, 1], inputs: [], outputs: [], build_order: [] });
-      setInfo(S.job ? 'Suche läuft, noch keine Zwischenschritte ...' : '');
+      if (S.job && !S.model) showModel({ blocks: [], size: [9, 3, 9], inputs: [], outputs: [], build_order: [] }, { fit: true });
+      setInfo(S.job && !S.job.done ? 'Suche läuft, noch keine Zwischenschritte ...' : '');
     }
   } else {
     if (S.simId && S.simModel) {
@@ -779,6 +780,12 @@ function searchOptions() {
 }
 
 $('btnRedesign').addEventListener('click', async () => {
+  if (S.job && !S.job.done) { // the button stops the running search
+    S.job.cancelling = true;
+    updateActions();
+    try { await api.cancelJob(S.job.id); } catch (e) { fail(e); }
+    return;
+  }
   const path = S.goal === 'file' ? S.modelPath : await specEditor.commit();
   if (path) startRedesign(path);
 });
@@ -852,7 +859,10 @@ async function pollJob() {
           });
         }
       }
-      if (d.error) {
+      if (d.error === 'Abgebrochen.') {
+        st.textContent = 'Die Suche wurde abgebrochen.'; st.className = 'hint';
+        setStatus('Entwurfssuche abgebrochen.');
+      } else if (d.error) {
         st.textContent = d.error; st.className = 'bad';
         setStatus('Entwurfssuche ohne Erfolg: ' + d.error, true);
       } else if (d.result && d.result.blocks) {
@@ -862,6 +872,7 @@ async function pollJob() {
         setStatus(`Entwurfssuche fertig: ${r.name}, ${r.blocks.length} Blöcke.`);
         if (S.mode === 'search' && !S.playing && (j.idx === j.frames.length - 1 || !j.frames.length)) showResult();
       } else { st.textContent = 'Die Suche endete ohne Ergebnis.'; st.className = 'bad'; }
+      if (S.mode === 'search' && !j.frames.length) applyTask(); // drop "Suche läuft ..." under the empty view
       updateActions();
     } else setStatus(`Suche läuft ... ${j.frames.length} Zwischenschritte`);
   } catch (e) {

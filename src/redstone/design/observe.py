@@ -16,6 +16,7 @@ _local = threading.local()
 
 def frame(candidate, phase: str, label: str, accepted: bool = True) -> None:
     """Report one step of the search: phase "compose" (a finished candidate) or "compact" (an attempt)."""
+    check()
     fn = getattr(_local, "observer", None)
     if fn is not None and candidate is not None:
         fn(candidate, phase, label, accepted)
@@ -34,3 +35,27 @@ def observing(fn: Observer) -> Iterator[None]:
         yield
     finally:
         _local.observer = old
+
+
+# --------------------------------------------------------------------------------------------- cancelling
+class Cancelled(Exception):
+    """The search of this thread was cancelled (`cancelling`); raised by `check`."""
+
+
+def check() -> None:
+    """Raise `Cancelled` if this thread's search was cancelled. Every simulation calls this
+    (`analysis.experiment.Circuit.run`), so a search stops within one simulator run."""
+    ev = getattr(_local, "cancel", None)
+    if ev is not None and ev.is_set():
+        raise Cancelled
+
+
+@contextmanager
+def cancelling(event: threading.Event) -> Iterator[None]:
+    """While the block runs, setting `event` (from any thread) cancels the search of this thread."""
+    old = getattr(_local, "cancel", None)
+    _local.cancel = event
+    try:
+        yield
+    finally:
+        _local.cancel = old

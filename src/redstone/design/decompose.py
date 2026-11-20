@@ -17,6 +17,7 @@ from dataclasses import dataclass, replace
 
 from .candidate import Candidate
 from .spec import Spec
+from .observe import check
 
 MAX_SPLITS = 6  # decompositions tried per spec (smallest parts first)
 PARTS = 2  # best designs per part that are combined
@@ -41,6 +42,7 @@ def splits(spec: Spec, out: int = 0) -> list[Split]:
     found, seen = [], set()
     for size in range(2, n):
         for bound in itertools.combinations(range(n), size):
+            check()  # a cancelled search stops here (observe.cancelling)
             free = tuple(i for i in range(n) if i not in bound)
             columns: dict[tuple[bool, ...], tuple[bool, ...]] = {}
             for sb in itertools.product([False, True], repeat=len(bound)):
@@ -263,6 +265,7 @@ def nondisjoint_splits(spec: Spec, out: int = 0) -> list[CommonSplit]:
             others = [i for i in range(n) if i not in common]
             for size in range(2, len(others)):
                 for bound in itertools.combinations(others, size):
+                    check()  # a cancelled search stops here (observe.cancelling)
                     if not set(bound) <= sup:
                         continue
                     free = tuple(i for i in others if i not in bound)
@@ -453,6 +456,7 @@ def shared_splits(spec: Spec, width: int = 1) -> list[SharedSplit]:
     found = []
     for size in range(2, n):
         for bound in itertools.combinations(range(n), size):
+            check()  # a cancelled search stops here (observe.cancelling)
             free = tuple(i for i in range(n) if i not in bound)
             local = tuple(j for j in range(m) if supports[j] and supports[j] <= set(bound))
             rest = tuple(j for j in range(m) if j not in local)
@@ -644,6 +648,7 @@ def _shannon(spec: Spec, sps: list[ShannonSplit], depth: int, log: list[str] | N
         labels = list(sp.high) + list(sp.low) + [sp.select]
         found = None
         for g1, low in itertools.product(g1s, lows):  # in the order of the parts (see `parts`)
+            check()  # a cancelled search stops here (observe.cancelling)
             tries = 0
             for k, (_, chained) in enumerate(chains(g1, 0, low, nl + 1)):
                 if tries >= TRIES or k >= CHAINS_SEEN:
@@ -696,6 +701,7 @@ def _shared_split(spec: Spec, bound, free, local, rest, columns, width: int) -> 
     names = ["g"] if width == 1 else [f"g{k}" for k in range(width)]
     best = None
     for perm in itertools.permutations(codes[1:], len(others)):
+        check()  # a cancelled search stops here (observe.cancelling)
         if width == 2 and len(others) == 3 and perm[0] > perm[1]:
             continue  # all four codes used: swapping g0 and g1 gives the same parts
         code = {zero: codes[0]} | dict(zip(others, perm))
@@ -855,6 +861,7 @@ def shared_common_splits(spec: Spec) -> list[SharedCommonSplit]:
             others = [i for i in range(n) if i not in common]
             for size in range(2, len(others)):
                 for bound in itertools.combinations(others, size):
+                    check()  # a cancelled search stops here (observe.cancelling)
                     if not set(bound) <= used:
                         continue  # a dead lever
                     free = tuple(i for i in others if i not in bound)
@@ -907,6 +914,7 @@ def _shared_common_split(spec: Spec, common, bound, free, local, rest, slices) -
     best = None
     # flip[c]: in slice c, the column of S all off gets g = 1 (never in the slice of C all off)
     for flips in itertools.product([False, True], repeat=len(cbits_all) - 1):
+        check()  # a cancelled search stops here (observe.cancelling)
         flip = (False, *flips)
         g_table, h_table = {}, {}
         for c, cbits in enumerate(cbits_all):

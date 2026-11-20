@@ -33,6 +33,7 @@ export const api = {
   tick: (id, n) => req(`/api/sim/${id}/tick`, { n }),
   redesign: (path, options = {}) => req('/api/redesign', { path, ...options }),
   job: (id, since) => req(`/api/job/${id}?since=${since}`),
+  cancelJob: (id) => req(`/api/job/${id}/cancel`, {}),
   // ref: {path} or {job} (the result of a design search)
   explain: (ref) => req('/api/explain', ref),
   dump: (ref, options = {}) => req('/api/dump', { ...ref, ...options }),

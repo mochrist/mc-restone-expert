@@ -246,7 +246,7 @@ class Chat:
         threading.Thread(target=self._turn, args=(text,), daemon=True, name="rsx-chat").start()
 
     def cancel(self) -> bool:
-        """Stop the running turn as soon as possible (a running design search keeps running in the app)."""
+        """Stop the running turn as soon as possible, and a design search the turn is waiting for."""
         with self._lock:
             if not self.busy:
                 return False
@@ -425,6 +425,7 @@ class Chat:
         start = time.monotonic()
         while not job.done:
             if self._cancel.is_set():
+                job.cancel()
                 raise Cancelled
             if time.monotonic() - start > JOB_WAIT:
                 raise ToolError("Die Suche dauert zu lange; sie läuft in der App weiter.")

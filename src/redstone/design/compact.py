@@ -33,6 +33,7 @@ from . import observe
 from .candidate import Assembly, Candidate, is_line, under
 from .evaluate import Constraints, evaluate_any
 from .spec import Spec
+from .observe import check
 
 MAX_EVALUATIONS = 400
 MAX_UNITS = 16  # blocks and groups of blocks that relocations tries to move (`_units`)
@@ -783,6 +784,7 @@ def _units(groups: list[frozenset[Pos]], found) -> list[frozenset[Pos]]:
         multi = []
         for size in range(2, n - 1 + 1):
             for s in itertools.combinations(range(n), size):
+                check()  # a cancelled search stops here (observe.cancelling)
                 s = frozenset(s)
                 if connected(s) and connected(everything - s):
                     multi.append(frozenset().union(*(groups[i] for i in s)))

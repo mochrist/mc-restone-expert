@@ -131,17 +131,7 @@ impl World {
     }
 
     fn probe(&self, p: Pos) -> String {
-        let state = self.w.get(p);
-        let text = self.w.st.str(state);
-        if self.w.info(state).kind == state::Kind::Comparator {
-            let out = match self.w.raw_block_entity(p).map(|be| &self.w.bes[be].data) {
-                Some(BeData::Comparator { output_signal }) => *output_signal,
-                _ => 0,
-            };
-            format!("{text}|output={out}")
-        } else {
-            text.to_owned()
-        }
+        probe_world(&self.w, p)
     }
 }
 
@@ -524,62 +514,72 @@ impl World {
             }
         }
         self.w.take_dirty();
-        let last_action = actions.iter().map(|a| a.0).max().unwrap_or(0);
-        let mut changes = Vec::new();
-        let mut idle_since: Option<i64> = None;
-        let mut settled_at = None;
-        let mut seen: rustc_hash::FxHashSet<Pos> = rustc_hash::FxHashSet::default();
-        let mut t: i64 = 0;
-        loop {
-            for &(at, p) in &actions {
-                if at == t {
-                    let p = pos(p);
-                    let state = self.w.get(p);
-                    let name = self.w.st.str(state).split('[').next().unwrap_or("");
-                    if name.ends_with("_pressure_plate") {
-                        self.w.step_on(p, state);
-                    } else {
-                        self.w.use_without_item(p, state);
+        // The simulation runs without the GIL (other Python threads, e.g. the GUI server, keep running);
+        // positions become Python objects afterwards.
+        let w = &mut self.w;
+        let (raw, t, settled_at) = py.detach(move || {
+            let last_action = actions.iter().map(|a| a.0).max().unwrap_or(0);
+            let mut raw: Vec<(i64, Pos, String, String)> = Vec::new();
+            let mut idle_since: Option<i64> = None;
+            let mut settled_at = None;
+            let mut seen: rustc_hash::FxHashSet<Pos> = rustc_hash::FxHashSet::default();
+            let mut t: i64 = 0;
+            loop {
+                for &(at, p) in &actions {
+                    if at == t {
+                        let p = pos(p);
+                        let state = w.get(p);
+                        let name = w.st.str(state).split('[').next().unwrap_or("");
+                        if name.ends_with("_pressure_plate") {
+                            w.step_on(p, state);
+                        } else {
+                            w.use_without_item(p, state);
+                        }
                     }
                 }
-            }
-            seen.clear();
-            let mut positions = self.w.take_dirty();
-            for (p, _) in self.w.block_entity_items() {
-                if self.w.info_at(p).kind == state::Kind::Comparator {
-                    positions.push(p);
-                }
-            }
-            for p in positions {
-                if !inside(p) || !seen.insert(p) {
-                    continue;
-                }
-                let v = if self.w.get(p) == AIR { AIR_TEXT.to_owned() } else { self.probe(p) };
-                let old = current.get(&p).map(String::as_str).unwrap_or(AIR_TEXT);
-                if old != v {
-                    changes.push((t, self.pos_out(py, rel(p))?, old.to_owned(), v.clone()));
-                    if v == AIR_TEXT {
-                        current.remove(&p);
-                    } else {
-                        current.insert(p, v);
+                seen.clear();
+                let mut positions = w.take_dirty();
+                for (p, _) in w.block_entity_items() {
+                    if w.info_at(p).kind == state::Kind::Comparator {
+                        positions.push(p);
                     }
                 }
-            }
-            let idle = self.w.is_idle();
-            if t >= last_action && idle {
-                let since = *idle_since.get_or_insert(t);
-                if t - since >= quiet {
-                    settled_at = Some(since);
+                for p in positions {
+                    if !inside(p) || !seen.insert(p) {
+                        continue;
+                    }
+                    let v = if w.get(p) == AIR { AIR_TEXT.to_owned() } else { probe_world(&*w, p) };
+                    let old = current.get(&p).map(String::as_str).unwrap_or(AIR_TEXT);
+                    if old != v {
+                        raw.push((t, rel(p), old.to_owned(), v.clone()));
+                        if v == AIR_TEXT {
+                            current.remove(&p);
+                        } else {
+                            current.insert(p, v);
+                        }
+                    }
+                }
+                let idle = w.is_idle();
+                if t >= last_action && idle {
+                    let since = *idle_since.get_or_insert(t);
+                    if t - since >= quiet {
+                        settled_at = Some(since);
+                        break;
+                    }
+                } else {
+                    idle_since = None;
+                }
+                if t >= max_ticks {
                     break;
                 }
-            } else {
-                idle_since = None;
+                w.tick();
+                t += 1;
             }
-            if t >= max_ticks {
-                break;
-            }
-            self.w.tick();
-            t += 1;
+            (raw, t, settled_at)
+        });
+        let mut changes = Vec::with_capacity(raw.len());
+        for (t, p, old, new) in raw {
+            changes.push((t, self.pos_out(py, p)?, old, new));
         }
         Ok((snapshot, changes, t, settled_at))
     }
@@ -886,10 +886,26 @@ fn item_max_stack_size(item: &str) -> i32 {
     data::item_max_stack_size(item)
 }
 
+/// Probe value of one block: its state, for comparators also the output signal (see `RustWorld.probe_value`).
+fn probe_world(w: &world::World, p: Pos) -> String {
+    let state = w.get(p);
+    let text = w.st.str(state);
+    if w.info(state).kind == state::Kind::Comparator {
+        let out = match w.raw_block_entity(p).map(|be| &w.bes[be].data) {
+            Some(BeData::Comparator { output_signal }) => *output_signal,
+            _ => 0,
+        };
+        format!("{text}|output={out}")
+    } else {
+        text.to_owned()
+    }
+}
+
 /// compose._route: the shortest dust path, or None. The position collections are any iterables of triples.
 #[pyfunction]
 #[pyo3(name = "route", signature = (start, goals, solid, keep_clear, lo, hi, tight=false, strict=false))]
 fn route_dust(
+    py: Python<'_>,
     start: P3,
     goals: &Bound<'_, PyAny>,
     solid: &Bound<'_, PyAny>,
@@ -903,7 +919,7 @@ fn route_dust(
         items.try_iter()?.map(|p| p?.extract::<P3>()).collect()
     }
     let (goals, solid, keep_clear) = (triples(goals)?, triples(solid)?, triples(keep_clear)?);
-    Ok(route::route(start, &goals, &solid, &keep_clear, lo, hi, tight, strict))
+    Ok(py.detach(|| route::route(start, &goals, &solid, &keep_clear, lo, hi, tight, strict)))
 }
 
 #[pymodule]

@@ -219,3 +219,55 @@ def test_catalog_entries_are_files(api):
     assert [(i["name"], i["p"]) for i in model["inputs"]] == [("Hebel", [2, 1, 4])]
     assert len(model["outputs"]) == 4
     assert "Hebel an" in " ".join(model["notes"])
+
+
+ADDER4 = """inputs: [a0, a1, a2, a3, b0, b1, b2, b3]
+function:
+  s0: a0 ^ b0
+  s1: a1 ^ b1 ^ (a0 and b0)
+  s2: a2 ^ b2 ^ ((a1 and b1) or ((a1 ^ b1) and (a0 and b0)))
+  s3: a3 ^ b3 ^ ((a2 and b2) or ((a2 ^ b2) and ((a1 and b1) or ((a1 ^ b1) and (a0 and b0)))))
+  s4: (a3 and b3) or ((a3 ^ b3) and ((a2 and b2) or ((a2 ^ b2) and ((a1 and b1) or ((a1 ^ b1) and (a0 and b0))))))
+"""
+
+
+def wait_job(api, job, timeout=30.0):
+    deadline = time.time() + timeout
+    while True:
+        _, st = api(f"/api/job/{job}?since=999999")
+        if st["done"] or time.time() > deadline:
+            return st
+        time.sleep(0.1)
+
+
+def test_cancel_job(api):
+    """A long search (4-bit adder, minutes) stops soon after POST /api/job/<id>/cancel."""
+    _, spec = api("/api/spec", {"name": "cancel-adder4", "text": ADDER4})
+    _, body = api("/api/redesign", {"path": spec["path"]})
+    job = body["job"]
+    time.sleep(1.5)
+    status, r = api(f"/api/job/{job}/cancel", {})
+    assert status == 200 and r["cancelled"] is True
+    t = time.time()
+    st = wait_job(api, job)
+    assert st["done"] and st["error"] == "Abgebrochen." and time.time() - t < 5
+    assert api(f"/api/job/{job}/cancel", {})[1]["cancelled"] is False
+    assert api("/api/job/999/cancel", {})[0] == 404
+
+
+def test_cancel_is_per_thread():
+    """`observe.cancelling` stops the search of its own thread only; Circuit.run checks it."""
+    from redstone.analysis.experiment import Circuit
+    from redstone.verify.scenario import load
+
+    grid = load("scenarios/tpl-and2-torch.yaml").grid
+    ev = threading.Event()
+    ev.set()
+    other: list[object] = []
+    with observe.cancelling(ev):
+        t = threading.Thread(target=lambda: other.append(Circuit(grid).run([], 20)))
+        t.start()
+        t.join()
+        with pytest.raises(observe.Cancelled):
+            Circuit(grid).run([], 20)
+    assert other and Circuit(grid).run([], 20) is not None

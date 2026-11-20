@@ -103,7 +103,10 @@ class Circuit:
 
         With the Rust core the loop runs in the core (`run_recording`) when every action is a right click;
         `run_python` is the reference (same series, settled_at and ticks; within a tick the changes may come in
-        another order)."""
+        another order). A cancelled design search stops here (`design.observe.check`)."""
+        from ..design.observe import check
+
+        check()
         world = world or self.new_world(kick)
         fast = getattr(world, "run_recording", None) if FAST_RUN else None
         if fast is None or any(a != "use" for _, _, a in actions):

@@ -79,11 +79,6 @@ daraus (Ziel, Einstieg, Abnahme, Abbruch). Vorgeschichte je Punkt: `docs/history
 ## M6 Oberfläche
 
 - `rsx oracle --dump-blocks` nur auf der Kommandozeile (Entwicklerwerkzeug, absichtlich).
-- **Assistent „Stopp“ während einer langen Suche** (Durchklicken Session 28): die Antwort bricht sauber ab, die Suche
-  läuft absichtlich weiter. Beim 4-Bit-Addierer (~400 s CPU, 0 Zwischenschritte) hält sie aber die GIL: jede Anfrage
-  dauert dann ~30 s, die Seite lädt nach dem Neuladen nicht (leere Dateiliste, Reiter tot). Lösung: Suche abbrechbar
-  machen (Abbruch-Flag in `design/search.py`/`decompose.py`, „Stopp“ bricht auch die Suche ab) oder Suchen in einem
-  eigenen Prozess laufen lassen.
 - Dateiliste markierte einmal „Kolbentür 3×3“, obwohl der Assistent den Itemsortierer geladen hatte (`S.path`
   stimmte nicht); nicht nachgestellt, trat während der blockierenden Suche auf.
 - Demo-GIF der GUI liegt nicht im Repo.
