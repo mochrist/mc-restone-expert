@@ -1,6 +1,6 @@
 # Projektstatus
 
-Stand: 2026-11-19, Session 26 (07 erledigt: XOR 17 Blöcke; 08: halbfertig im Branch `worktree-agent-abca7dd8a2401b1da`, Agent beendet). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
+Stand: 2026-11-20, Session 27 (08 erledigt: Addierer/Subtrahierer 2 und 4 Bit). Abgleich zweier PCs über GitHub (`origin/main`). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
 Vorgeschichte: `docs/history.md`. Zurückgestelltes: `docs/backlog.md`.
 
 ## Wo das Projekt steht
@@ -20,10 +20,8 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
-| 08 | Zerlegung: mehrere Ausgänge mit gemeinsamen Eingängen | Opus | 03 | `docs/tasks/08-multi-output-common-inputs.md` |
 | 09 | Assistent im Browser durchklicken | Sonnet | Nutzer | `docs/tasks/09-assistant-walkthrough.md` |
 
-08 zuerst den halbfertigen Branch ansehen.
 
 Stand der Arbeitskopie: alles committet; API-Schlüssel des Nutzers in `.env` (gitignored), Rechtefreigaben in
 `.claude/settings.local.json` (nicht im Repo); Oracle-Sperre frei.

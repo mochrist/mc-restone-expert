@@ -43,6 +43,11 @@ daraus (Ziel, Einstieg, Abnahme, Abbruch). Vorgeschichte je Punkt: `docs/history
   `a-and-not-b-torch` a, Repeater-XOR/XNOR a.
 - Nicht zerlegbare Funktionen über 8 Eingängen ohne Shannon-Schnitt mit höchstens zwei gemeinsamen Eingängen bleiben ungelöst.
 - Verhalten aus Bestandsschaltungen nur bis 6 Eingänge (`cli.MAX_RECORDED_INPUTS`).
+- addsub4 (Auftrag 08) ist keine Bit-für-Bit-Kaskade, sondern ein PLA mit 7 Eingängen plus eine Stufe (5452 Blöcke, 91×7×54).
+  Kleinstes G zuerst (`shared_common_splits`) ergibt 4622 Blöcke, aber mehr Volumen (55×7×98), weil `_pairs` und
+  `_design_part` nach Volumen wählen und das PLA als Teil kompakter ist als die Kaskade (Rest mit 2 Bits: Kaskade
+  954 Blöcke/9576 Volumen gegen PLA 3213/7300). Eine echte Kaskade bräuchte eine Stufenanordnung nebeneinander statt
+  in einer Linie oder Wahl nach Blöcken.
 - Router (`compose._route`) in Python ist nach dem Simulator der nächste Engpass bei kleinen Entwürfen (Rust-Fassung
   `rust/rsx-core/src/route.rs` gibt es für den BFS-Kern).
 - Kompaktieren: es fehlen größere Züge (ganze Kaskadenstufen neu anordnen); Budget ist kein Engpass.

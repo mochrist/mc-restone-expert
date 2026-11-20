@@ -3,6 +3,14 @@
 Neueste zuerst. Neue Sessions tragen hier 3–6 Zeilen ein (was geändert wurde, Befunde, Messwerte).
 Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tasks/`.
 
+## Session 27 (2026-11-20): Auftrag 08 Zerlegung mit gemeinsamen Eingängen abgeschlossen (Opus)
+
+- `shared_common_splits`/`_shared_common` (gemeinsamer Hebel angezapft) kommen vor zwei Signalen dran; addsub2 und addsub4
+  aus `pending/` nach `examples/specs/composed/`, `cmp-addsub2`/`cmp-addsub4` im Spiel aufgenommen, Simulator identisch.
+- addsub2: 638 Blöcke (25×5×17) gegen PLA 1278, Suche ~15 s. addsub4 (9 Eingänge): 5452 Blöcke (91×7×54), ~16 min;
+  PLA mit 7 Eingängen plus eine Stufe, keine Bit-für-Bit-Kaskade (Befund im Backlog).
+- Repo liegt jetzt auf GitHub (`origin`, Branch `main`, vorher `master`); Arbeitsnotizen aus dem lokalen Gedächtnis in `CLAUDE.md`.
+
 ## Session 26 (2026-11-19): Auftrag 07 Kleinere Grundbausteine (Opus)
 
 - `scripts/enum_xor.py` zählt XORs aus zwei Subtraktions-Komparatoren auf (Hebel an der Wand oder auf dem Block, der
