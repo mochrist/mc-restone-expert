@@ -12,7 +12,7 @@ All trials run one after another in one scenario (as in seq_template_scenarios.p
 setup levers on, so every lever that is on at the end of a trial is switched off again before the next one.
 `check_trace` compares a recorded trace with the spec, trial by trial.
 
-uv run python scripts/compose_scenarios.py && uv run rsx oracle scenarios/cmp-*.yaml --golden
+uv run python scripts/compose_scenarios.py [name ...] && uv run rsx oracle scenarios/cmp-*.yaml --golden
 """
 
 from __future__ import annotations
@@ -198,13 +198,20 @@ def check_table_trace(path: Path, trace, step: int | None = None) -> list[str]:
 
 
 def main() -> None:
+    import sys
+
+    only = set(sys.argv[1:])  # optional example names, e.g. addsub2 addsub4
     for path in table_examples():
+        if only and path.stem not in only:
+            continue
         d = table_scenario_for(path)
         (ROOT / "scenarios" / f"{d['name']}.yaml").write_text(
             yaml.safe_dump(d, allow_unicode=True, sort_keys=False, width=120, default_flow_style=None),
             encoding="utf-8", newline="\n")
         print("wrote", d["name"], table_design(path).name, tuple(table_design(path).grid.size))
     for path in examples():
+        if only and path.stem not in only:
+            continue
         d = scenario_for(path)
         (ROOT / "scenarios" / f"{d['name']}.yaml").write_text(
             yaml.safe_dump(d, allow_unicode=True, sort_keys=False, width=120, default_flow_style=None),
