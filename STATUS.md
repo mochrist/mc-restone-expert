@@ -1,6 +1,6 @@
 # Projektstatus
 
-Stand: 2026-11-20, Session 28 (10 erledigt: Kolbentür 3×3 im Katalog). Abgleich zweier PCs über GitHub (`origin/main`). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
+Stand: 2026-11-21, Session 28 (10 erledigt: Kolbentür 3×3; 09 erledigt: Assistent im Browser durchgeklickt). Abgleich zweier PCs über GitHub (`origin/main`). Ablauf für „weiter“: `CLAUDE.md`. Aufträge: `docs/tasks/`.
 Vorgeschichte: `docs/history.md`. Zurückgestelltes: `docs/backlog.md`.
 
 ## Wo das Projekt steht
@@ -20,7 +20,6 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
-| 09 | Assistent im Browser durchklicken | Sonnet | Nutzer | `docs/tasks/09-assistant-walkthrough.md` |
 
 
 Stand der Arbeitskopie: alles committet; API-Schlüssel des Nutzers in `.env` (gitignored), Rechtefreigaben in

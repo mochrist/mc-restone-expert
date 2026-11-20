@@ -3,7 +3,7 @@
 Neueste zuerst. Neue Sessions tragen hier 3–6 Zeilen ein (was geändert wurde, Befunde, Messwerte).
 Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tasks/`.
 
-## Session 28 (2026-11-20): Auftrag 10 Kolbentür 3×3 geplant und gebaut (Opus statt Fable)
+## Session 28 (2026-11-20/21): Auftrag 10 Kolbentür 3×3 (Opus statt Fable), Auftrag 09 Assistent durchgeklickt
 
 - `piston-door-3x3`: obere Reihe hoch, untere runter, rechter Mittelblock nach rechts; links zieht Greifkolben P_B den
   Block ML in die Wand, V hebt ihn an, dann holt P_B (von Schiebekolben P_A vor- und zurückgeschoben) den Mittelblock
@@ -14,6 +14,12 @@ Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tas
   verschieden sind; ein Lauf geht immer zu Ende, danach folgt die Tür dem Hebel (Antippen < 8 gt aus offener Tür
   verschluckt G). Abnahme: 10 Zyklen, Umlegen nach 2/6/20/40 gt, 9 Ziegel; alle Orte/Drehungen; im Simulator
   Umlegen nach 1–70 gt geprüft. `cat-piston-door-3x3` im Spiel aufgenommen, beide Kerne identisch.
+- Auftrag 09 Assistent im Browser durchgeklickt (Chrome): Wunsch Wechselschaltung → xor2-stacked (17 Blöcke), Hebel im
+  Reiter Ausprobieren richtig; Stopp beendet die Runde sauber; Neuladen stellt den Chat ohne neue Suche wieder her;
+  Neue Unterhaltung leert nur den Chat; Diamanten-Sortierer lädt den Katalog-Sortierer mit Umbauanleitung; ohne
+  Schlüssel erscheinen Hinweis und Eingabefeld. Behoben: Handybreite lief seitlich über (Rasterspalte `minmax(0, 1fr)`,
+  Kopfzeile umbrechen); Ansicht zeigte während einer Suche ohne Zwischenschritte die alte Schaltung. Offen (Backlog):
+  weiterlaufende lange Suche legt den Server lahm.
 
 ## Session 27 (2026-11-20): Auftrag 08 Zerlegung mit gemeinsamen Eingängen abgeschlossen (Opus)
 

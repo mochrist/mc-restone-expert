@@ -432,7 +432,11 @@ function setMode(mode, { fit = false } = {}) {
     } else setInfo('');
   } else if (mode === 'search') {
     if (S.job && S.job.frames.length) showFrame(Math.max(0, Math.min(S.job.idx, S.job.frames.length - 1)));
-    else setInfo(S.job ? 'Suche läuft, noch keine Zwischenschritte ...' : '');
+    else {
+      // nothing to show yet: an empty view, not the previous circuit (the header already says none is loaded)
+      if (S.job && !S.model) showModel({ blocks: [], size: [1, 1, 1], inputs: [], outputs: [], build_order: [] });
+      setInfo(S.job ? 'Suche läuft, noch keine Zwischenschritte ...' : '');
+    }
   } else {
     if (S.simId && S.simModel) {
       showModel(S.simModel, { reveal: false, fit });
