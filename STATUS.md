@@ -21,6 +21,7 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
 | 09 | Assistent im Browser durchklicken | Sonnet | Nutzer | `docs/tasks/09-assistant-walkthrough.md` |
+| 10 | Kolbentür 3×3 im Katalog (erst planen) | Fable, dann Opus | – | `docs/tasks/10-piston-door-3x3.md` |
 
 
 Stand der Arbeitskopie: alles committet; API-Schlüssel des Nutzers in `.env` (gitignored), Rechtefreigaben in
