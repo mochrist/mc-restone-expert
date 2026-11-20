@@ -26,3 +26,24 @@ Ist die Tabelle leer, `docs/backlog.md` lesen und dem Nutzer drei Vorschläge ma
   in ihren Auftrag, Zurückgestelltes nach `docs/backlog.md`.
 - In Git Bash für Rust zuerst `export PATH="$HOME/.cargo/bin:$PATH"`.
 - Simulator-Änderungen immer in beiden Kernen (Python und Rust); im Spiel geprüfte Entwürfe nur mit Neuaufnahme ändern.
+  Der Rust-Kern (`rust/rsx-core`, PyO3) ist Standard, der Python-Kern Referenz; `tests/sim/test_core_equivalence.py`
+  vergleicht sie tick-genau.
+- Planungs-Sessions (Fable) ändern keinen Code, sondern schreiben Aufträge (Ziel, Einstieg, Schritte, Abnahme,
+  Abbruchkriterium) für Sonnet/Opus. Arbeits-Sessions bearbeiten genau einen Auftrag.
+- Parallelisierbares an Hintergrund-Agents geben, mit getrennten Dateien bzw. Bereichen. Oracle-Sperre per
+  `mkdir .cache/oracle.lock`; `knowledge/UNVERIFIED.md` erst am Ende neu erzeugen.
+- Echte Daten bevorzugen: Test-Schematics zuerst online als lizenzierte Exporte suchen, statt selbst zu bauen.
+- Der Nutzer spielt nebenbei am selben Rechner: Zeitmessungen nicht belastbar (nur Größen vergleichen); lange
+  Oracle-Läufe (Minecraft-Server) vorher ansagen bzw. fragen.
+- Der Nutzer fragt oft vom Handy (Remote): Screenshots/GIFs per SendUserFile schicken (Datei vorher in den
+  Scratchpad kopieren).
+- Das Projekt wird abwechselnd auf zwei PCs bearbeitet (nie gleichzeitig), Abgleich über GitHub
+  (`origin`, Branch `main`): zu Beginn `git pull`, am Ende einer Arbeitsphase committen und pushen.
+
+## GUI (`rsx gui`)
+
+Der Nutzer ist kein Schaltkreis-Profi: Die Oberfläche muss für Laien einfach sein. Nach Aufgaben gliedern
+(Nachbauen/Ausprobieren/Verstehen/Entwerfen), Alltagssprache statt Fachbegriffen, Auswahlkarten und Regler statt
+Texteingabe, nur Einstellungen anbieten, die wirklich ein Ergebnis liefern. Stil nach Watermelon UI / Cult UI:
+fast schwarzer Grund, schwebende Karten mit großen Radien, Pillen-Knöpfe, eine Akzentfarbe, kleine
+Mono-Überschriften. Gilt für die GUI, nicht für CLI-Berichte oder Code.
