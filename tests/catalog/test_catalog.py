@@ -49,6 +49,7 @@ def test_build_returns_a_fresh_copy():
     ("ich will eine 2x2 piston door", "piston-door-2x2"),
     ("Itemsortierer für meine Truhen", "item-sorter"),
     ("geheimtür mit knopf", "hidden-door-1x2"),
+    ("sortierer mit vier fächern", "item-sorter-4"),
 ])
 def test_find(query, key):
     assert find(query)[0].key == key

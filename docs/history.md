@@ -14,6 +14,9 @@ Der aktuelle Stand und die offenen Aufträge stehen in `STATUS.md` und `docs/tas
   und hält einen Kolben an ihrer Stelle per Quasi-Connectivity ausgefahren. `actuators.with_output` versucht jetzt auch
   Staub statt der Lampe vor Verstärker und Gerät; alle 7 Geräte gehen am UND (2 und 4 Hebel). `act-and-{iron-door,piston,
   dispenser}` im Spiel aufgenommen, identisch. Suite 1822 grün.
+- Katalog: `item-sorter-4` (vier Fächer, Bruchstein/Andesit/Granit/Diorit, 13×6×3): das Fach des Ein-Fach-Sortierers
+  (`_sorter_slot`, unverändert) alle 3 Spalten, die Trichter C über je zwei Trichter verkettet. Abnahme gemischt und 64
+  der letzten Sorte exakt, alle Orte/Drehungen; `cat-item-sorter-4` im Spiel aufgenommen, identisch.
 
 ## Session 26 (2026-11-19): Auftrag 07 Kleinere Grundbausteine (Opus)
 

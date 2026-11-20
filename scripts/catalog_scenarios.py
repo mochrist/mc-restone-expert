@@ -11,7 +11,7 @@ from pathlib import Path
 import yaml
 
 from redstone.catalog import get
-from redstone.catalog.entries import FILTER_ITEM, OTHER_ITEM, items_nbt
+from redstone.catalog.entries import FILTER_ITEM, OTHER_ITEM, SORTER_ITEMS, items_nbt
 from redstone.io.nbtutil import to_nbt
 from redstone.model import Grid, Pos
 
@@ -103,8 +103,30 @@ def item_sorter() -> dict:
                      1100, [], probes)
 
 
+def item_sorter_4() -> dict:
+    b = get("item-sorter-4").built()
+    grid, shift = _grow(b.grid, below=1, east=1, south=1)
+    load = [(s, (*SORTER_ITEMS, OTHER_ITEM)[s % 5], 8) for s in range(20)]
+    grid.block_entities[b.ports["input"] + shift] = items_nbt("minecraft:chest", load)
+    probes = {}
+    # comparators that read every target chest and the overflow chest (only for the recording)
+    reads = [(f"target{k}", b.ports[f"target{k}"] + shift + Pos(0, 0, 1), "north") for k in range(1, 5)]
+    reads.append(("overflow", b.ports["overflow"] + shift + Pos(1, 0, 0), "west"))
+    for name, p, facing in reads:
+        grid.set(p, f"comparator[facing={facing},mode=compare,powered=false]")
+        grid.set(p + Pos(0, -1, 0), "stone")
+        grid.block_entities[p] = {"id": "minecraft:comparator", "OutputSignal": 0}
+        probes[name] = p
+    probes |= {f"filter{k}": b.ports[f"comparator{k}"] + shift for k in range(1, 5)}
+    return _scenario("cat-item-sorter-4", grid,
+                     "Katalog: Itemsortierer mit vier Fächern (src/redstone/catalog). Eingangstruhe mit je 4 x 8 "
+                     "Bruchstein, Andesit, Granit, Diorit und Erde abwechselnd; Komparatoren nur für die Aufnahme "
+                     "lesen die vier Zieltruhen und die Überlauftruhe.",
+                     1400, [], probes)
+
+
 def main() -> None:
-    for d in (piston_door(), hidden_door(), item_sorter()):
+    for d in (piston_door(), hidden_door(), item_sorter(), item_sorter_4()):
         path = ROOT / "scenarios" / f"{d['name']}.yaml"
         path.write_text(yaml.safe_dump(d, allow_unicode=True, sort_keys=False, width=120, default_flow_style=None),
                         encoding="utf-8", newline="\n")

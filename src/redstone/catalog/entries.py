@@ -367,8 +367,9 @@ BARREL = "barrel[facing=up,open=false]"
 CONSTANT_ITEM = "minecraft:wooden_shovel"  # two in the barrel: comparator 2
 
 
-def _item_sorter() -> Built:
-    """One sorter slot. Input chest (top) -> hopper C -> overflow chest (east). The filter hopper F below C pulls
+def _sorter_slot(b: dict, ents: dict, ports: dict, x0: int, item: str, tag: str = "") -> None:
+    """One sorter slot with its column at x = x0 + 1 (blocks, block entities and ports added in place; the
+    overflow is left to the caller). One sorter slot. Input chest (top) -> hopper C -> overflow chest (east). The filter hopper F below C pulls
     only the filter item (its other four slots hold one filler item each) and faces into air, so it never
     pushes. Comparator Cf behind F reads it (41 filter + 4 filler = 2, 42 = 3); one dust lowers that to 1/2 at the
     side of comparator X (subtract mode), whose rear reads a barrel with two tools (2): X outputs 1 normally and
@@ -376,30 +377,59 @@ def _item_sorter() -> Built:
     from F and F is back at 41. Hopper H below B pulls from B regardless of the lock and fills the target chest,
     so B does not keep the last item. A comparator inverts instead of a torch: a torch would burn out at one
     item every 8 ticks."""
-    b: dict[Xyz, str] = {
-        (1, 4, 0): CHEST,  # input
-        (1, 3, 0): _hopper("east"),  # C
-        (2, 3, 0): CHEST,  # overflow
-        (1, 2, 0): _hopper("west"),  # F: faces air, never pushes
-        (1, 1, 0): "hopper[enabled=false,facing=down]",  # B: locked while X is on
-        (1, 0, 0): _hopper("down"),  # H
-        (1, -1, 0): CHEST,  # target
-        (1, 1, 1): STONE,  # lock block, powered by X
-        (1, 2, 1): "comparator[facing=north,mode=compare,powered=true]",  # Cf
-        (1, 1, 2): STONE,
-        (1, 2, 2): WIRE,
-        (0, 0, 2): STONE,
-        (0, 1, 2): WIRE,  # one step down, into the side of X
-        (0, 0, 1): STONE,
-        (0, 1, 1): "comparator[facing=west,mode=subtract,powered=true]",  # X
-        (-1, 1, 1): BARREL,
+    at = lambda x, y, z: (x0 + x, y, z)  # noqa: E731
+    b |= {
+        at(1, 3, 0): _hopper("east"),  # C
+        at(1, 2, 0): _hopper("west"),  # F: faces air, never pushes
+        at(1, 1, 0): "hopper[enabled=false,facing=down]",  # B: locked while X is on
+        at(1, 0, 0): _hopper("down"),  # H
+        at(1, -1, 0): CHEST,  # target
+        at(1, 1, 1): STONE,  # lock block, powered by X
+        at(1, 2, 1): "comparator[facing=north,mode=compare,powered=true]",  # Cf
+        at(1, 1, 2): STONE,
+        at(1, 2, 2): WIRE,
+        at(0, 0, 2): STONE,
+        at(0, 1, 2): WIRE,  # one step down, into the side of X
+        at(0, 0, 1): STONE,
+        at(0, 1, 1): "comparator[facing=west,mode=subtract,powered=true]",  # X
+        at(-1, 1, 1): BARREL,
     }
-    filt = [(0, FILTER_ITEM, FILTER_START)] + [(s, FILLER_ITEM, 1) for s in range(1, 5)]
-    ents = {(1, 2, 0): items_nbt("minecraft:hopper", filt),
-            (-1, 1, 1): items_nbt("minecraft:barrel", [(0, CONSTANT_ITEM, 1), (1, CONSTANT_ITEM, 1)]),
-            (1, 2, 1): _comparator_nbt(2), (0, 1, 1): _comparator_nbt(1)}
-    ports = {"input": (1, 4, 0), "overflow": (2, 3, 0), "target": (1, -1, 0), "filter": (1, 2, 0),
-             "comparator": (1, 2, 1), "lock": (1, 1, 0), "inverter": (0, 1, 1)}
+    filt = [(0, item, FILTER_START)] + [(s, FILLER_ITEM, 1) for s in range(1, 5)]
+    ents |= {at(1, 2, 0): items_nbt("minecraft:hopper", filt),
+             at(-1, 1, 1): items_nbt("minecraft:barrel", [(0, CONSTANT_ITEM, 1), (1, CONSTANT_ITEM, 1)]),
+             at(1, 2, 1): _comparator_nbt(2), at(0, 1, 1): _comparator_nbt(1)}
+    ports |= {f"target{tag}": at(1, -1, 0), f"filter{tag}": at(1, 2, 0), f"comparator{tag}": at(1, 2, 1),
+              f"lock{tag}": at(1, 1, 0), f"inverter{tag}": at(0, 1, 1)}
+
+
+def _item_sorter() -> Built:
+    """One sorter slot (`_sorter_slot`) with the input chest on top and the overflow chest east of C."""
+    b: dict[Xyz, str] = {(1, 4, 0): CHEST, (2, 3, 0): CHEST}  # input, overflow
+    ents: dict = {}
+    ports: dict = {"input": (1, 4, 0), "overflow": (2, 3, 0)}
+    _sorter_slot(b, ents, ports, 0, FILTER_ITEM)
+    return _layout(b, ports, ents)
+
+
+# several slots: one every SLOT_PITCH columns, the hoppers C joined by plain hoppers into a chain
+SORTER_ITEMS = ("minecraft:cobblestone", "minecraft:andesite", "minecraft:granite", "minecraft:diorite")
+SLOT_PITCH = 3
+
+
+def _item_sorter_4() -> Built:
+    """Four sorter slots side by side (one sort each, SORTER_ITEMS). The input chest sits on the first hopper C;
+    every C passes the rest east, over two plain hoppers, to the next C; the last C fills the overflow chest.
+    The barrel of a slot stands next to the lock block of the slot before it, which does not disturb either."""
+    n = len(SORTER_ITEMS)
+    last = 1 + SLOT_PITCH * (n - 1)
+    b: dict[Xyz, str] = {(1, 4, 0): CHEST, (last + 1, 3, 0): CHEST}
+    ents: dict = {}
+    ports: dict = {"input": (1, 4, 0), "overflow": (last + 1, 3, 0)}
+    for k, item in enumerate(SORTER_ITEMS):
+        _sorter_slot(b, ents, ports, SLOT_PITCH * k, item, str(k + 1))
+        if k < n - 1:
+            for dx in range(1, SLOT_PITCH):
+                b[(1 + SLOT_PITCH * k + dx, 3, 0)] = _hopper("east")
     return _layout(b, ports, ents)
 
 
@@ -423,6 +453,34 @@ def _check_item_sorter(b: Built, origin: Pos = ORACLE_ORIGIN) -> list[str]:
         for k in want:
             if got[k] != want[k]:
                 problems.append(f"{name}: {k}: {got[k]}, expected {want[k]}")
+    return problems
+
+
+SORTER_4_TICKS = 2600
+
+
+def _check_item_sorter_4(b: Built, origin: Pos = ORACLE_ORIGIN) -> list[str]:
+    """Every sort and other items: 16 of each sort plus 32 others in small stacks across the input chest (mixed
+    order), then 64 of the last sort alone (it passes all other slots)."""
+    problems: list[str] = []
+    sorts = list(SORTER_ITEMS)
+    mixed = [(s, (sorts + [OTHER_ITEM])[s % 5], 8) for s in range(20)]
+    mixed = [m for m in mixed if m[1] != OTHER_ITEM] + [m for m in mixed if m[1] == OTHER_ITEM][:4]
+    mixed = [(s, i, c) for s, (_, i, c) in enumerate(mixed)]
+    for name, load in (("mixed", mixed), ("last sort", [(0, sorts[-1], 64)])):
+        grid = _copy_grid(b.grid)
+        grid.block_entities[b.ports["input"]] = items_nbt("minecraft:chest", load)
+        run = Run(grid, origin)
+        run.step(SORTER_4_TICKS)
+        count = lambda item: sum(c for _, i, c in load if i == item)  # noqa: E731
+        want = {"input": {}, "overflow": {OTHER_ITEM: count(OTHER_ITEM)} if count(OTHER_ITEM) else {}}
+        for k, item in enumerate(sorts, 1):
+            want[f"target{k}"] = {item: count(item)} if count(item) else {}
+            want[f"filter{k}"] = {item: FILTER_START, FILLER_ITEM: 4}
+        for k, w in want.items():
+            got = run.items(b.ports[k])
+            if got != w:
+                problems.append(f"{name}: {k}: {got}, expected {w}")
     return problems
 
 
@@ -475,6 +533,24 @@ ENTRIES: list[Entry] = [
         check=_check_item_sorter,
         notes=PROOF + " Arbeitet ein Item pro 8 Ticks ab (2,5 pro Sekunde).",
         display=(("comparator", "Filter-Komparator"), ("inverter", "Sperre")),
+    ),
+    Entry(
+        key="item-sorter-4",
+        title="Itemsortierer (vier Fächer)",
+        keywords=("itemsortierer", "sortierer", "sortieren", "sortiermaschine", "item sorter", "sorter", "lager",
+                  "trichter", "hopper", "fächer", "mehrere", "vier", "4"),
+        description=("Sortiert vier Sorten Gegenstände (hier Bruchstein, Andesit, Granit und Diorit) aus allem, was du "
+                     "in die obere Truhe legst, in je eine eigene Truhe darunter. Alles andere landet in der Truhe am "
+                     "Ende der Trichterreihe. Vier Fächer wie der Sortierer mit einem Fach, nebeneinander."),
+        usage=("Lege Gegenstände in die obere Truhe. Jede der vier Sorten kommt in ihrer Truhe unten an, der Rest in "
+               "der Truhe am Ende. Für eine andere Sorte: im Filter-Trichter des Fachs (unter der Trichterreihe) die "
+               "41 Stück durch 41 der gewünschten Sorte ersetzen; die vier Stöcke bleiben liegen. Stöcke selbst nicht "
+               "einsortieren. Die zwei Holzschaufeln in jedem Fass gehören zur Schaltung: nicht herausnehmen."),
+        inputs=(),
+        layout=_item_sorter_4,
+        check=_check_item_sorter_4,
+        notes=PROOF + " Arbeitet ein Item pro 8 Ticks ab (2,5 pro Sekunde).",
+        display=tuple((f"comparator{k}", f"Filter {k}") for k in range(1, 5)),
     ),
 ]
 

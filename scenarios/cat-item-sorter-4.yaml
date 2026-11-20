@@ -1,0 +1,135 @@
+name: cat-item-sorter-4
+description: 'Katalog: Itemsortierer mit vier Fächern (src/redstone/catalog). Eingangstruhe mit je 4 x 8 Bruchstein, Andesit,
+  Granit, Diorit und Erde abwechselnd; Komparatoren nur für die Aufnahme lesen die vier Zieltruhen und die Überlauftruhe.'
+build:
+  size: [14, 7, 4]
+  blocks:
+  - [0, 3, 1, 'barrel[facing=up,open=false]']
+  - [1, 2, 1, stone]
+  - [1, 2, 2, stone]
+  - [1, 3, 1, 'comparator[facing=west,mode=subtract,powered=true]']
+  - [1, 3, 2, 'redstone_wire[east=up,north=side,power=1,south=none,west=none]']
+  - [2, 0, 1, stone]
+  - [2, 1, 0, 'chest[facing=north,type=single,waterlogged=false]']
+  - [2, 1, 1, 'comparator[facing=north,mode=compare,powered=false]']
+  - [2, 2, 0, 'hopper[enabled=true,facing=down]']
+  - [2, 3, 0, 'hopper[enabled=false,facing=down]']
+  - [2, 3, 1, stone]
+  - [2, 3, 2, stone]
+  - [2, 4, 0, 'hopper[enabled=true,facing=west]']
+  - [2, 4, 1, 'comparator[facing=north,mode=compare,powered=true]']
+  - [2, 4, 2, 'redstone_wire[east=none,north=side,power=2,south=none,west=side]']
+  - [2, 5, 0, 'hopper[enabled=true,facing=east]']
+  - [2, 6, 0, 'chest[facing=north,type=single,waterlogged=false]']
+  - [3, 3, 1, 'barrel[facing=up,open=false]']
+  - [3, 5, 0, 'hopper[enabled=true,facing=east]']
+  - [4, 2, 1, stone]
+  - [4, 2, 2, stone]
+  - [4, 3, 1, 'comparator[facing=west,mode=subtract,powered=true]']
+  - [4, 3, 2, 'redstone_wire[east=up,north=side,power=1,south=none,west=none]']
+  - [4, 5, 0, 'hopper[enabled=true,facing=east]']
+  - [5, 0, 1, stone]
+  - [5, 1, 0, 'chest[facing=north,type=single,waterlogged=false]']
+  - [5, 1, 1, 'comparator[facing=north,mode=compare,powered=false]']
+  - [5, 2, 0, 'hopper[enabled=true,facing=down]']
+  - [5, 3, 0, 'hopper[enabled=false,facing=down]']
+  - [5, 3, 1, stone]
+  - [5, 3, 2, stone]
+  - [5, 4, 0, 'hopper[enabled=true,facing=west]']
+  - [5, 4, 1, 'comparator[facing=north,mode=compare,powered=true]']
+  - [5, 4, 2, 'redstone_wire[east=none,north=side,power=2,south=none,west=side]']
+  - [5, 5, 0, 'hopper[enabled=true,facing=east]']
+  - [6, 3, 1, 'barrel[facing=up,open=false]']
+  - [6, 5, 0, 'hopper[enabled=true,facing=east]']
+  - [7, 2, 1, stone]
+  - [7, 2, 2, stone]
+  - [7, 3, 1, 'comparator[facing=west,mode=subtract,powered=true]']
+  - [7, 3, 2, 'redstone_wire[east=up,north=side,power=1,south=none,west=none]']
+  - [7, 5, 0, 'hopper[enabled=true,facing=east]']
+  - [8, 0, 1, stone]
+  - [8, 1, 0, 'chest[facing=north,type=single,waterlogged=false]']
+  - [8, 1, 1, 'comparator[facing=north,mode=compare,powered=false]']
+  - [8, 2, 0, 'hopper[enabled=true,facing=down]']
+  - [8, 3, 0, 'hopper[enabled=false,facing=down]']
+  - [8, 3, 1, stone]
+  - [8, 3, 2, stone]
+  - [8, 4, 0, 'hopper[enabled=true,facing=west]']
+  - [8, 4, 1, 'comparator[facing=north,mode=compare,powered=true]']
+  - [8, 4, 2, 'redstone_wire[east=none,north=side,power=2,south=none,west=side]']
+  - [8, 5, 0, 'hopper[enabled=true,facing=east]']
+  - [9, 3, 1, 'barrel[facing=up,open=false]']
+  - [9, 5, 0, 'hopper[enabled=true,facing=east]']
+  - [10, 2, 1, stone]
+  - [10, 2, 2, stone]
+  - [10, 3, 1, 'comparator[facing=west,mode=subtract,powered=true]']
+  - [10, 3, 2, 'redstone_wire[east=up,north=side,power=1,south=none,west=none]']
+  - [10, 5, 0, 'hopper[enabled=true,facing=east]']
+  - [11, 0, 1, stone]
+  - [11, 1, 0, 'chest[facing=north,type=single,waterlogged=false]']
+  - [11, 1, 1, 'comparator[facing=north,mode=compare,powered=false]']
+  - [11, 2, 0, 'hopper[enabled=true,facing=down]']
+  - [11, 3, 0, 'hopper[enabled=false,facing=down]']
+  - [11, 3, 1, stone]
+  - [11, 3, 2, stone]
+  - [11, 4, 0, 'hopper[enabled=true,facing=west]']
+  - [11, 4, 1, 'comparator[facing=north,mode=compare,powered=true]']
+  - [11, 4, 2, 'redstone_wire[east=none,north=side,power=2,south=none,west=side]']
+  - [11, 5, 0, 'hopper[enabled=true,facing=east]']
+  - [12, 5, 0, 'chest[facing=north,type=single,waterlogged=false]']
+  - [13, 4, 0, stone]
+  - [13, 5, 0, 'comparator[facing=west,mode=compare,powered=false]']
+  block_entities:
+  - [0, 3, 1, '{id: "minecraft:barrel", Items: [{Slot: 0b, id: "minecraft:wooden_shovel", count: 1}, {Slot: 1b, id: "minecraft:wooden_shovel",
+      count: 1}]}']
+  - [1, 3, 1, '{id: "minecraft:comparator", OutputSignal: 1}']
+  - [2, 1, 1, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [2, 4, 0, '{id: "minecraft:hopper", Items: [{Slot: 0b, id: "minecraft:cobblestone", count: 41}, {Slot: 1b, id: "minecraft:stick",
+      count: 1}, {Slot: 2b, id: "minecraft:stick", count: 1}, {Slot: 3b, id: "minecraft:stick", count: 1}, {Slot: 4b, id:
+      "minecraft:stick", count: 1}]}']
+  - [2, 4, 1, '{id: "minecraft:comparator", OutputSignal: 2}']
+  - [2, 6, 0, '{id: "minecraft:chest", Items: [{Slot: 0b, id: "minecraft:cobblestone", count: 8}, {Slot: 1b, id: "minecraft:andesite",
+      count: 8}, {Slot: 2b, id: "minecraft:granite", count: 8}, {Slot: 3b, id: "minecraft:diorite", count: 8}, {Slot: 4b,
+      id: "minecraft:dirt", count: 8}, {Slot: 5b, id: "minecraft:cobblestone", count: 8}, {Slot: 6b, id: "minecraft:andesite",
+      count: 8}, {Slot: 7b, id: "minecraft:granite", count: 8}, {Slot: 8b, id: "minecraft:diorite", count: 8}, {Slot: 9b,
+      id: "minecraft:dirt", count: 8}, {Slot: 10b, id: "minecraft:cobblestone", count: 8}, {Slot: 11b, id: "minecraft:andesite",
+      count: 8}, {Slot: 12b, id: "minecraft:granite", count: 8}, {Slot: 13b, id: "minecraft:diorite", count: 8}, {Slot: 14b,
+      id: "minecraft:dirt", count: 8}, {Slot: 15b, id: "minecraft:cobblestone", count: 8}, {Slot: 16b, id: "minecraft:andesite",
+      count: 8}, {Slot: 17b, id: "minecraft:granite", count: 8}, {Slot: 18b, id: "minecraft:diorite", count: 8}, {Slot: 19b,
+      id: "minecraft:dirt", count: 8}]}']
+  - [3, 3, 1, '{id: "minecraft:barrel", Items: [{Slot: 0b, id: "minecraft:wooden_shovel", count: 1}, {Slot: 1b, id: "minecraft:wooden_shovel",
+      count: 1}]}']
+  - [4, 3, 1, '{id: "minecraft:comparator", OutputSignal: 1}']
+  - [5, 1, 1, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [5, 4, 0, '{id: "minecraft:hopper", Items: [{Slot: 0b, id: "minecraft:andesite", count: 41}, {Slot: 1b, id: "minecraft:stick",
+      count: 1}, {Slot: 2b, id: "minecraft:stick", count: 1}, {Slot: 3b, id: "minecraft:stick", count: 1}, {Slot: 4b, id:
+      "minecraft:stick", count: 1}]}']
+  - [5, 4, 1, '{id: "minecraft:comparator", OutputSignal: 2}']
+  - [6, 3, 1, '{id: "minecraft:barrel", Items: [{Slot: 0b, id: "minecraft:wooden_shovel", count: 1}, {Slot: 1b, id: "minecraft:wooden_shovel",
+      count: 1}]}']
+  - [7, 3, 1, '{id: "minecraft:comparator", OutputSignal: 1}']
+  - [8, 1, 1, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [8, 4, 0, '{id: "minecraft:hopper", Items: [{Slot: 0b, id: "minecraft:granite", count: 41}, {Slot: 1b, id: "minecraft:stick",
+      count: 1}, {Slot: 2b, id: "minecraft:stick", count: 1}, {Slot: 3b, id: "minecraft:stick", count: 1}, {Slot: 4b, id:
+      "minecraft:stick", count: 1}]}']
+  - [8, 4, 1, '{id: "minecraft:comparator", OutputSignal: 2}']
+  - [9, 3, 1, '{id: "minecraft:barrel", Items: [{Slot: 0b, id: "minecraft:wooden_shovel", count: 1}, {Slot: 1b, id: "minecraft:wooden_shovel",
+      count: 1}]}']
+  - [10, 3, 1, '{id: "minecraft:comparator", OutputSignal: 1}']
+  - [11, 1, 1, '{id: "minecraft:comparator", OutputSignal: 0}']
+  - [11, 4, 0, '{id: "minecraft:hopper", Items: [{Slot: 0b, id: "minecraft:diorite", count: 41}, {Slot: 1b, id: "minecraft:stick",
+      count: 1}, {Slot: 2b, id: "minecraft:stick", count: 1}, {Slot: 3b, id: "minecraft:stick", count: 1}, {Slot: 4b, id:
+      "minecraft:stick", count: 1}]}']
+  - [11, 4, 1, '{id: "minecraft:comparator", OutputSignal: 2}']
+  - [13, 5, 0, '{id: "minecraft:comparator", OutputSignal: 0}']
+ticks: 1400
+inputs: []
+probes:
+  target1: [2, 1, 1]
+  target2: [5, 1, 1]
+  target3: [8, 1, 1]
+  target4: [11, 1, 1]
+  overflow: [13, 5, 0]
+  filter1: [2, 4, 1]
+  filter2: [5, 4, 1]
+  filter3: [8, 4, 1]
+  filter4: [11, 4, 1]

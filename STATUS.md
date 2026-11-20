@@ -11,7 +11,7 @@ Rust-Kern, 171 Golden Traces aus dem echten Spiel identisch), erklären (`rsx ex
 Web-Oberfläche mit Assistent (`rsx gui`). Suite: ~1810 Tests grün. Wissensbasis: 296 Aussagen, keine offen.
 
 Fertige Bauwerke (`src/redstone/catalog`, `rsx catalog`): Kolbentür 2×2, versteckte Tür 1×2, Itemsortierer für
-eine Sorte, im Spiel aufgenommen (`cat-*`), in GUI („Zum Einstieg“) und Assistent. Druckplatte und
+eine Sorte und für vier Sorten, im Spiel aufgenommen (`cat-*`), in GUI („Zum Einstieg“) und Assistent. Druckplatte und
 Tageslichtsensor gehen als Auslöser (Druckplatte nur im Simulator geprüft, Sensorverhalten im Spiel aufgenommen).
 
 ## Aufträge

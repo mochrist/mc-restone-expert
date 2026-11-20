@@ -68,8 +68,7 @@ daraus (Ziel, Einstieg, Abnahme, Abbruch). Vorgeschichte je Punkt: `docs/history
 
 ## Katalog (Auftrag 05)
 
-- Weitere Bauwerke: Sortierer mit mehreren Fächern (Fächer nebeneinander, Trichterkette oben), Kolbentür 3×3,
-  Tür mit Druckplatten beidseitig. Vorlage: `catalog/entries.py` (Abnahme zuerst als Check, dann bauen).
+- Weitere Bauwerke: Kolbentür 3×3, Tür mit Druckplatten beidseitig. Vorlage: `catalog/entries.py` (Abnahme zuerst als Check, dann bauen).
 - Sortierer: Durchsatz ist 1 Item/8 gt; für volle Trichterketten-Geschwindigkeit mit mehreren Sorten müsste die
   Sperre auch bei dauerhaft vollem Filter offen bleiben (bei einem Fach nicht nötig).
 - GUI-Simulation zeigt keine Gegenstände in Behältern; beim Sortierer sieht man nur Sperre und Komparatoren.
