@@ -59,6 +59,8 @@ daraus (Ziel, Einstieg, Abnahme, Abbruch). Vorgeschichte je Punkt: `docs/history
 
 ## Kleinere Bausteine
 
+(Zusammengefasst in Auftrag 12 „Kleinere Entwürfe“.)
+
 - **Kleinere Bausteine (Rest von Auftrag 07):** Mehrheit von 3 unter 40 (heute 58 PLA). Ansatz Fackel-NOR je Paar,
   ODER-Staub auf einem Block mit Fackel als Umkehrer: Kern ~20 Blöcke; Problem ist das Paar gegenüberliegender NOR-Blöcke
   und dass ein stark versorgter Block (Hebel daran, Verstärker davor) jeden Staub daneben speist. Ebenso XNOR, AND3,

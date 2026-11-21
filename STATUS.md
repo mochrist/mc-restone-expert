@@ -20,6 +20,7 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
+| 12 | Kleinere Entwürfe (für später) | Opus | – | `docs/tasks/12-smaller-designs.md` |
 
 
 Stand der Arbeitskopie: alles committet; API-Schlüssel des Nutzers in `.env` (gitignored), Rechtefreigaben in
