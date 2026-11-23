@@ -33,6 +33,7 @@ class Grid:
         self.size = Pos(*size)
         self.meta = meta or SchematicMeta()
         self._blocks: dict[Pos, BlockState] = {}
+        self._order: list[Pos] | None = None  # positions in items() order, until a block is added or removed
         self.block_entities: dict[Pos, dict[str, Any]] = {}
 
     def in_bounds(self, pos: tuple[int, int, int]) -> bool:
@@ -51,9 +52,12 @@ class Grid:
         if isinstance(state, str):
             state = BlockState.parse(state)
         if state.is_air:
-            self._blocks.pop(pos, None)
+            if self._blocks.pop(pos, None) is not None:
+                self._order = None
             self.block_entities.pop(pos, None)
         else:
+            if pos not in self._blocks:
+                self._order = None
             self._blocks[pos] = state
 
     def __setitem__(self, pos: tuple[int, int, int], state: BlockState | str) -> None:
@@ -61,8 +65,12 @@ class Grid:
 
     def items(self) -> Iterator[tuple[Pos, BlockState]]:
         """Non-air blocks in y, z, x order (the iteration order of the file formats)."""
-        for pos in sorted(self._blocks, key=lambda p: (p.y, p.z, p.x)):
-            yield pos, self._blocks[pos]
+        order = self._order
+        if order is None:  # sorting every call cost more than the searches using it (Task 13)
+            order = self._order = sorted(self._blocks, key=lambda p: (p.y, p.z, p.x))
+        blocks = self._blocks
+        for pos in order:
+            yield pos, blocks[pos]
 
     def __len__(self) -> int:
         return len(self._blocks)
