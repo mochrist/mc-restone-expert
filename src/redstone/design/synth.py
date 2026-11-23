@@ -198,7 +198,21 @@ def _simulate(length: int, source: int, strength: int, reps: set[int]) -> list[i
     return vals
 
 
+try:
+    from rsx_core import plan_line as _plan_line_rust  # the same planning in the Rust core
+except ImportError:  # no Rust core built, or an older one without it
+    _plan_line_rust = None
+
+
 def _plan_line(length: int, sources: dict[int, int], need: set[int], allowed: set[int]) -> set[int] | None:
+    """Repeaters for a line, see `_plan_line_py`; in the Rust core when it is built (same result)."""
+    if _plan_line_rust is None:
+        return _plan_line_py(length, sources, need, allowed)
+    reps = _plan_line_rust(length, sources, need, allowed)
+    return None if reps is None else set(reps)
+
+
+def _plan_line_py(length: int, sources: dict[int, int], need: set[int], allowed: set[int]) -> set[int] | None:
     """Repeaters for a line of `length` cells in flow direction (the power flows from cell 0 on).
 
     sources: cell -> injected strength; every source alone must power every needed cell behind it.

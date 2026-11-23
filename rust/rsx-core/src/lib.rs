@@ -10,6 +10,7 @@ pub mod dispatch;
 pub mod outputs;
 pub mod piston;
 pub mod route;
+pub mod synth;
 pub mod sculk;
 pub mod state;
 pub mod torch;
@@ -922,6 +923,20 @@ fn route_dust(
     Ok(py.detach(|| route::route(start, &goals, &solid, &keep_clear, lo, hi, tight, strict)))
 }
 
+/// synth._plan_line: the repeater cells of a PLA line (sorted), or None. `sources` maps cell -> strength.
+#[pyfunction]
+fn plan_line(
+    py: Python<'_>,
+    length: usize,
+    sources: std::collections::HashMap<i64, i32>,
+    need: std::collections::HashSet<i64>,
+    allowed: std::collections::HashSet<i64>,
+) -> Option<Vec<i64>> {
+    let sources: Vec<(i64, i32)> = sources.into_iter().collect();
+    let (need, allowed): (Vec<i64>, Vec<i64>) = (need.into_iter().collect(), allowed.into_iter().collect());
+    py.detach(|| synth::plan_line(length, &sources, &need, &allowed))
+}
+
 #[pymodule]
 fn rsx_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<World>()?;
@@ -931,6 +946,7 @@ fn rsx_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(block_pos_hash, m)?)?;
     m.add_function(wrap_pyfunction!(item_max_stack_size, m)?)?;
     m.add_function(wrap_pyfunction!(route_dust, m)?)?;
+    m.add_function(wrap_pyfunction!(plan_line, m)?)?;
     m.add("NOTE_KINDS", world::NOTE_KINDS.to_vec())?;
     m.add("API_VERSION", 1)?;
     Ok(())

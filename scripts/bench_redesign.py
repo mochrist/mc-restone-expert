@@ -2,7 +2,7 @@
 candidates and simulator work (runs and ticks summed over all evaluations), one line per spec.
 
     uv run python scripts/bench_redesign.py [--only xor4,mux8] [--skip cmp5,mux8] [--compact 100] [--time 0]
-                                            [--json out.json] [--compare-transitions]
+                                            [--json out.json] [--extra a.yaml,b.yaml] [--compare-transitions]
 
 --time 0 (default) means no time limit for shrinking, so the results do not depend on the speed of the machine.
 --compare-transitions evaluates every full check a second time with all transitions (`evaluate.TRANSITIONS`
@@ -22,10 +22,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 
-def specs(only: set[str], skip: set[str]) -> list[Path]:
+def specs(only: set[str], skip: set[str], extra: list[str] = ()) -> list[Path]:
     paths = (sorted((ROOT / "examples" / "specs").glob("*.yaml"))
              + sorted((ROOT / "examples" / "specs" / "composed").glob("*.yaml"))
-             + sorted((ROOT / "examples" / "behaviour").glob("*.yaml")))
+             + sorted((ROOT / "examples" / "behaviour").glob("*.yaml"))
+             + [Path(e) for e in extra])
     return [p for p in paths if (not only or p.stem in only) and p.stem not in skip]
 
 
@@ -43,6 +44,7 @@ def main() -> None:
     ap.add_argument("--compact", type=int, default=100)
     ap.add_argument("--time", type=float, default=0)
     ap.add_argument("--json")
+    ap.add_argument("--extra", default="", help="comma-separated further spec files (e.g. the 4-bit adder)")
     ap.add_argument("--compare-transitions", action="store_true")
     args = ap.parse_args()
 
@@ -71,7 +73,8 @@ def main() -> None:
 
     evmod.evaluate = counted
     out = {}
-    for path in specs(set(filter(None, args.only.split(","))), set(filter(None, args.skip.split(",")))):
+    for path in specs(set(filter(None, args.only.split(","))), set(filter(None, args.skip.split(","))),
+                      list(filter(None, args.extra.split(",")))):
         raw = yaml.safe_load(path.read_text(encoding="utf-8"))
         spec = behaviour_from_dict(raw, source=path.name) if "behaviour" in raw else from_dict(raw, source=path.name)
         for k in counts:
