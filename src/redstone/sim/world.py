@@ -486,6 +486,32 @@ class World:
                 return False
         return True
 
+    def settle_box(self, origin: Pos, size: tuple[int, int, int], max_ticks: int) -> list[tuple[Pos, BlockState]]:
+        """Not part of the game: make the stored states in a box consistent, as if every block had just been
+        placed. Every cell (x, then y, then z) sends shape updates, every block gets a neighbour update from
+        itself, then the world ticks until idle (at most `max_ticks`). Returns the non-air states, relative to
+        `origin`, in that cell order (`design.compact.normalize`; one call in the Rust core)."""
+        from .constants import UPDATE_ALL
+
+        sx, sy, sz = size
+        every = [Pos(origin.x + x, origin.y + y, origin.z + z) for x in range(sx) for y in range(sy) for z in range(sz)]
+        for p in every:
+            self.update_neighbour_shapes(p, self.get(p), UPDATE_ALL)
+        for p in every:
+            st = self.get(p)
+            if not st.is_air:
+                self.neighbor_changed_with_state(st, p, self.block(st), False)
+        for _ in range(max_ticks):
+            if self.is_idle():
+                break
+            self.tick()
+        out = []
+        for p in every:
+            st = self.get(p)
+            if not st.is_air:
+                out.append((p - origin, st))
+        return out
+
     # ------------------------------------------------------------------ the game tick
     def tick(self) -> None:
         """One game tick (ServerLevel#tick, redstone-relevant phases only)."""

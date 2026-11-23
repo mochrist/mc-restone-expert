@@ -285,6 +285,49 @@ impl World {
         self.w.is_idle()
     }
 
+    /// `World.settle_box` (Python core): every cell of the box at `origin` sends shape updates, every block
+    /// gets a neighbour update from itself (x, then y, then z), then the world ticks until idle (at most
+    /// `max_ticks`). Returns the non-air states in the box, relative to `origin`, in the same cell order.
+    fn settle_box(&mut self, py: Python<'_>, origin: P3, size: P3, max_ticks: u32) -> PyResult<Vec<(Py<PyAny>, Py<PyAny>)>> {
+        let mut every = Vec::with_capacity((size.0 * size.1 * size.2).max(0) as usize);
+        for x in 0..size.0 {
+            for y in 0..size.1 {
+                for z in 0..size.2 {
+                    every.push(Pos::new(origin.0 + x, origin.1 + y, origin.2 + z));
+                }
+            }
+        }
+        let w = &mut self.w;
+        py.detach(|| {
+            for &p in &every {
+                let s = w.get(p);
+                w.update_neighbour_shapes(p, s, common::UPDATE_ALL, 512);
+            }
+            for &p in &every {
+                let s = w.get(p);
+                let info = w.st.info(s);
+                if !info.is_air() {
+                    w.neighbor_changed_with_state(s, p, info.block, false);
+                }
+            }
+            for _ in 0..max_ticks {
+                if w.is_idle() {
+                    break;
+                }
+                w.tick();
+            }
+        });
+        let mut out = Vec::new();
+        for p in every {
+            let s = self.w.get(p);
+            if !self.w.st.info(s).is_air() {
+                let rel = Pos::new(p.x - origin.0, p.y - origin.1, p.z - origin.2);
+                out.push((self.pos_out(py, rel)?, self.state_out(py, s)?));
+            }
+        }
+        Ok(out)
+    }
+
     fn warnings(&self) -> Vec<String> {
         self.w.warnings.clone()
     }

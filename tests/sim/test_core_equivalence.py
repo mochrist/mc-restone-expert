@@ -463,3 +463,26 @@ def test_note_block_instruments():
                                            BlockState.parse(f"minecraft:{below[(x + 3) % len(below)]}")))
         schedule.setdefault(6, []).append(("use", Pos(x, 2, 0) + ORACLE_ORIGIN, None))
     assert_same(grid, schedule, 10)
+
+
+def _settled(world_cls, grid: Grid) -> tuple:
+    world = world_cls()
+    world.place_grid(grid, ORACLE_ORIGIN)
+    out = world.settle_box(ORACLE_ORIGIN, tuple(grid.size), 200)
+    return [(tuple(p), str(s)) for p, s in out], dump(world)
+
+
+@pytest.mark.parametrize("seed", range(60))
+def test_settle_box_soup(seed: int):
+    """`World.settle_box` (design.compact.normalize) settles a block soup the same way in both cores."""
+    grid, _, _ = _soup(seed)
+    assert _settled(RustWorld, grid) == _settled(PythonWorld, grid)
+
+
+def test_settle_box_templates():
+    from redstone.design.templates import TEMPLATES
+
+    for tpl in TEMPLATES:
+        built = tpl.build()
+        for cand in built if isinstance(built, list) else [built]:
+            assert _settled(RustWorld, cand.grid) == _settled(PythonWorld, cand.grid), tpl.name

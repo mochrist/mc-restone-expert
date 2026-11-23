@@ -3,6 +3,7 @@ candidates and simulator work (runs and ticks summed over all evaluations), one 
 
     uv run python scripts/bench_redesign.py [--only xor4,mux8] [--skip cmp5,mux8] [--compact 100] [--time 0]
                                             [--json out.json] [--extra a.yaml,b.yaml] [--compare-transitions]
+                                            [--python-parts] [--keep-cache]
 
 --time 0 (default) means no time limit for shrinking, so the results do not depend on the speed of the machine.
 --compare-transitions evaluates every full check a second time with all transitions (`evaluate.TRANSITIONS`
@@ -46,7 +47,17 @@ def main() -> None:
     ap.add_argument("--json")
     ap.add_argument("--extra", default="", help="comma-separated further spec files (e.g. the 4-bit adder)")
     ap.add_argument("--compare-transitions", action="store_true")
+    ap.add_argument("--python-parts", action="store_true",
+                    help="search helpers in Python (synth._plan_line, compact._dust_path): the reference")
+    ap.add_argument("--keep-cache", action="store_true",
+                    help="keep the parts designed for one spec for the next (default: each spec starts fresh)")
     args = ap.parse_args()
+
+    from redstone.design import compact, decompose, synth
+
+    if args.python_parts:
+        synth._plan_line_rust = None
+        compact._dust_path_rust = None
 
     counts = {"evaluations": 0, "runs": 0, "ticks": 0, "full": 0, "differ": 0}
     original = evmod.evaluate
@@ -79,6 +90,9 @@ def main() -> None:
         spec = behaviour_from_dict(raw, source=path.name) if "behaviour" in raw else from_dict(raw, source=path.name)
         for k in counts:
             counts[k] = 0
+        if not args.keep_cache:  # parts designed for an earlier spec would change the search (fewer runs)
+            decompose._BEST.clear()
+            decompose._DRIVABLE.clear()
         t = time.perf_counter()
         results = redesign(spec, compact_budget=args.compact, log=[], time_limit=args.time or None)
         dt = time.perf_counter() - t

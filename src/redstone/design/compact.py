@@ -26,7 +26,6 @@ from dataclasses import replace
 
 from ..model import BlockState, Grid, Pos
 from ..sim import blockdata
-from ..sim.constants import UPDATE_ALL
 from ..sim.core import World
 from ..sim.runner import ORACLE_ORIGIN
 from . import observe
@@ -976,29 +975,11 @@ def normalize(c: Candidate, max_ticks: int = 200) -> Candidate:
     The grid is placed in the simulator; every position (also the now empty ones) sends shape updates and
     every block gets a neighbour update, as if it had just been placed. Then the world runs until it is
     idle, and the settled states are read back. Levers keep their stored state."""
-    from ..analysis.experiment import world_is_idle
-
     world = World()
     world.place_grid(c.grid, ORACLE_ORIGIN)
-    sx, sy, sz = c.grid.size
-    every = [Pos(x, y, z) for x in range(sx) for y in range(sy) for z in range(sz)]
-    for p in every:
-        wp = p + ORACLE_ORIGIN
-        world.update_neighbour_shapes(wp, world.get(wp), UPDATE_ALL)
-    for p in every:
-        wp = p + ORACLE_ORIGIN
-        st = world.get(wp)
-        if not st.is_air:
-            world.neighbor_changed_with_state(st, wp, world.block(st), False)
-    for _ in range(max_ticks):
-        if world_is_idle(world):
-            break
-        world.tick()
     g = Grid(tuple(c.grid.size), c.grid.meta)
-    for p in every:
-        st = world.get(p + ORACLE_ORIGIN)
-        if not st.is_air:
-            g[p] = st
+    for p, st in world.settle_box(ORACLE_ORIGIN, tuple(c.grid.size), max_ticks):
+        g[p] = st
     g.block_entities = {p: be for p, be in c.grid.block_entities.items() if not g.get(p).is_air}
     return replace(c, grid=g, assembly=None if c.assembly is None else c.assembly.kept(g))
 

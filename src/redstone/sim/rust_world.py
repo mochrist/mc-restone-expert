@@ -413,6 +413,10 @@ class RustWorld:
         """No scheduled ticks, no block events and no block entity with pending work."""
         return self._c.is_idle()
 
+    def settle_box(self, origin: Pos, size: tuple[int, int, int], max_ticks: int) -> list[tuple[Pos, BlockState]]:
+        """See `World.settle_box` of the Python core; here in one call."""
+        return self._c.settle_box(tuple(origin), tuple(size), max_ticks)
+
     # ------------------------------------------------------------------ block access
     def block(self, state: BlockState) -> RustBlock:
         return REGISTRY.get(state.name)
