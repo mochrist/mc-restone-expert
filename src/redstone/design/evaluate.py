@@ -16,6 +16,7 @@ from ..analysis.experiment import Circuit, Recording
 from ..model import Pos
 from ..sim.runner import ORACLE_ORIGIN
 from ..sim.notes import notes_of
+from . import parallel
 from .candidate import Candidate
 from .spec import Spec
 
@@ -119,6 +120,13 @@ def _fmt(names: list[str], combo: tuple[bool, ...]) -> str:
     return ", ".join(f"{n}={'1' if b else '0'}" for n, b in zip(names, combo))
 
 
+def _run(circuit: Circuit, actions: list, max_ticks: int) -> tuple[Recording, set[str]]:
+    """One run from a fresh world: the recording and the kinds of mechanics notes."""
+    world = circuit.new_world()
+    rec = circuit.run(actions, max_ticks=max_ticks, quiet=QUIET, world=world)
+    return rec, {n.kind for n in notes_of(world)}
+
+
 def evaluate(candidate: Candidate, spec: Spec, constraints: Constraints | None = None,
              full: bool = True, stop_early: bool = False, origin: Pos = ORACLE_ORIGIN) -> Evaluation:
     """Simulate the candidate. With full=False only the fresh-world truth table is checked (cheap prefilter);
@@ -144,17 +152,21 @@ def evaluate(candidate: Candidate, spec: Spec, constraints: Constraints | None =
     if zero in spec.table and _outputs_at(rec, candidate, rec.ticks) != spec.table[zero]:
         ev.errors.append(f"falscher Ruhezustand bei {_fmt(spec.inputs, zero)}")
 
+    todo = []
     for combo in spec.combos():
-        if stop_early and ev.errors:
-            break
         actions = [(1, p, "use") for p, on, st in zip(candidate.inputs, combo, stored) if on != st]
-        if not actions:
-            continue
-        world = circuit.new_world()
-        rec = circuit.run(actions, max_ticks=MAX_TICKS, quiet=QUIET, world=world)
+        if actions:
+            todo.append((combo, actions, MAX_TICKS))
+    # the runs are independent: side by side in threads (`parallel`), looked at in this order
+    runs = parallel.ordered(lambda job: _run(circuit, job[1], job[2]), todo)
+    for combo, _, _ in todo:
+        if stop_early and ev.errors:
+            runs.close()  # drops the runs started ahead
+            break
+        rec, kinds = next(runs)
         ev.runs += 1
         ev.ticks += rec.ticks
-        ev.mechanics |= {n.kind for n in notes_of(world)}
+        ev.mechanics |= kinds
         if rec.settled_at is None:
             ev.errors.append(f"kommt bei {_fmt(spec.inputs, combo)} nicht zur Ruhe")
             continue
@@ -192,6 +204,7 @@ def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: E
     stored = _stored(candidate)
     # slow designs (long chains of parts) get more time per change: twice their delay from a fresh world
     gap = max(GAP, 2 * max(delays, default=0) + QUIET)
+    todo = []  # (combination, actions, max ticks, phases)
     for combo in spec.combos():
         actions = [(1, p, "use") for p, on, st in zip(candidate.inputs, combo, stored) if on != st]
         phases = []  # (start tick, expected combination, label)
@@ -208,11 +221,22 @@ def _check_transitions(candidate: Candidate, spec: Spec, circuit: Circuit, ev: E
                 phases.append((t, want, spec.inputs[i]))
         if not phases and half:
             continue  # nothing to switch (all levers on); the fresh world was checked in evaluate
-        world = circuit.new_world()
-        rec = circuit.run(actions, max_ticks=t + MAX_TICKS, quiet=QUIET, world=world)
+        todo.append((combo, actions, t + MAX_TICKS, phases))
+    # independent runs side by side (`parallel`), looked at in this order; the first error ends the check
+    runs = parallel.ordered(lambda job: _run(circuit, job[1], job[2]), todo)
+    try:
+        _transition_results(candidate, spec, ev, delays, gap, todo, runs)
+    finally:
+        runs.close()  # drops the runs started ahead
+
+
+def _transition_results(candidate: Candidate, spec: Spec, ev: Evaluation, delays: list[int], gap: int,
+                        todo: list, runs) -> None:
+    for combo, _, _, phases in todo:
+        rec, kinds = next(runs)
         ev.runs += 1
         ev.ticks += rec.ticks
-        ev.mechanics |= {k.kind for k in notes_of(world)}
+        ev.mechanics |= kinds
         ends = [p[0] - 1 for p in phases[1:]] + [rec.ticks]
         for (start, want, name), end in zip(phases, ends):
             got = _outputs_at(rec, candidate, end)

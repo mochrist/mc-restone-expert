@@ -523,6 +523,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sim-core", choices=("python", "rust", "auto"), default=None,
                         help="simulator core: the Python reference or the Rust port "
                              "(default: environment variable RSX_SIM_CORE, else auto = Rust if installed)")
+    parser.add_argument("--jobs", type=int, default=None,
+                        help="threads for the simulations of the design search, 1 = serial "
+                             "(default: environment variable RSX_JOBS, else half the logical cores)")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("dump", help="print a schematic layer by layer")
@@ -610,6 +613,10 @@ def main(argv: list[str] | None = None) -> int:
         from .sim import core
 
         core.use(args.sim_core)
+    if args.jobs is not None:
+        from .design import parallel
+
+        parallel.set_jobs(args.jobs)
     return args.func(args)
 
 

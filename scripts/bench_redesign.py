@@ -3,7 +3,7 @@ candidates and simulator work (runs and ticks summed over all evaluations), one 
 
     uv run python scripts/bench_redesign.py [--only xor4,mux8] [--skip cmp5,mux8] [--compact 100] [--time 0]
                                             [--json out.json] [--extra a.yaml,b.yaml] [--compare-transitions]
-                                            [--python-parts] [--keep-cache]
+                                            [--python-parts] [--keep-cache] [--jobs N]
 
 --time 0 (default) means no time limit for shrinking, so the results do not depend on the speed of the machine.
 --compare-transitions evaluates every full check a second time with all transitions (`evaluate.TRANSITIONS`
@@ -49,11 +49,14 @@ def main() -> None:
     ap.add_argument("--compare-transitions", action="store_true")
     ap.add_argument("--python-parts", action="store_true",
                     help="search helpers in Python (synth._plan_line, compact._dust_path): the reference")
+    ap.add_argument("--jobs", type=int, default=None, help="threads for parallel work (default: RSX_JOBS or half the cores)")
     ap.add_argument("--keep-cache", action="store_true",
                     help="keep the parts designed for one spec for the next (default: each spec starts fresh)")
     args = ap.parse_args()
 
-    from redstone.design import compact, decompose, synth
+    from redstone.design import compact, decompose, parallel, synth
+
+    parallel.set_jobs(args.jobs)
 
     if args.python_parts:
         synth._plan_line_rust = None

@@ -50,8 +50,14 @@ def check() -> None:
         raise Cancelled
 
 
+def cancel_event() -> threading.Event | None:
+    """The cancel event of this thread's search (None: not cancellable); worker threads take it over
+    (`design.parallel`)."""
+    return getattr(_local, "cancel", None)
+
+
 @contextmanager
-def cancelling(event: threading.Event) -> Iterator[None]:
+def cancelling(event: threading.Event | None) -> Iterator[None]:
     """While the block runs, setting `event` (from any thread) cancels the search of this thread."""
     old = getattr(_local, "cancel", None)
     _local.cancel = event

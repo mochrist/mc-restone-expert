@@ -46,7 +46,7 @@ const MAX_HELD_STATE_OBJECTS: usize = 8192;
 /// The simulated level. Positions are `(x, y, z)` tuples, directions are indices in Direction order
 /// (down, up, north, south, west, east), block states are `BlockState` objects or their string form,
 /// blocks are full names (`minecraft:lever`).
-#[pyclass(unsendable, module = "rsx_core")]
+#[pyclass(module = "rsx_core")]
 struct World {
     w: world::World,
     /// `make_state(text) -> BlockState` and `make_pos(x, y, z) -> Pos`
