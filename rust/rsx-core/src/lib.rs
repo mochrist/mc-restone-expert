@@ -11,6 +11,7 @@ pub mod outputs;
 pub mod piston;
 pub mod route;
 pub mod synth;
+pub mod dust_path;
 pub mod sculk;
 pub mod state;
 pub mod torch;
@@ -937,6 +938,28 @@ fn plan_line(
     py.detach(|| synth::plan_line(length, &sources, &need, &allowed))
 }
 
+/// compact._dust_path: the shortest dust path, or None. `states` lists (position, kind) with kind 1 = plain
+/// block, 2 = dust, 3 = anything else (`dust_path::PLAIN` ...); lo and hi are the corners of the box.
+#[pyfunction]
+#[allow(clippy::too_many_arguments)]
+#[pyo3(name = "dust_path")]
+fn dust_path_py(
+    py: Python<'_>,
+    states: Vec<(P3, u8)>,
+    start: P3,
+    goal: P3,
+    a: P3,
+    b: P3,
+    limit: i64,
+    lo: P3,
+    hi: P3,
+) -> Option<Vec<P3>> {
+    py.detach(|| {
+        let map: rustc_hash::FxHashMap<P3, u8> = states.into_iter().collect();
+        dust_path::dust_path(&map, start, goal, a, b, limit, lo, hi)
+    })
+}
+
 #[pymodule]
 fn rsx_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<World>()?;
@@ -947,6 +970,7 @@ fn rsx_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(item_max_stack_size, m)?)?;
     m.add_function(wrap_pyfunction!(route_dust, m)?)?;
     m.add_function(wrap_pyfunction!(plan_line, m)?)?;
+    m.add_function(wrap_pyfunction!(dust_path_py, m)?)?;
     m.add("NOTE_KINDS", world::NOTE_KINDS.to_vec())?;
     m.add("API_VERSION", 1)?;
     Ok(())

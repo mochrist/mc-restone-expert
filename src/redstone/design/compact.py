@@ -594,8 +594,33 @@ def _labelled_parts(c: Candidate, states: dict):
     return sorted(groups, key=lambda g: (min(g), len(g))), found, floors, names
 
 
+try:
+    from rsx_core import dust_path as _dust_path_rust  # the same search in the Rust core
+except ImportError:  # no Rust core built, or an older one without it
+    _dust_path_rust = None
+
+_KINDS: dict = {}  # block state -> 1 plain, 2 dust, 3 other (the cell kinds of the Rust search)
+
+
+def _kind(s) -> int:
+    k = _KINDS.get(s)
+    if k is None:
+        k = _KINDS[s] = 1 if _plain(s) else 2 if s.id == WIRE_ID else 3
+    return k
+
+
 def _dust_path(states: dict, start: Pos, goal: Pos, a: Pos, b: Pos, limit: int,
                box: tuple[Pos, Pos]) -> list[Pos] | None:
+    """Shortest dust path, see `_dust_path_py`; in the Rust core when it is built (same path)."""
+    if _dust_path_rust is None:
+        return _dust_path_py(states, start, goal, a, b, limit, box)
+    kind = _kind
+    path = _dust_path_rust([(p, kind(s)) for p, s in states.items()], start, goal, a, b, limit, box[0], box[1])
+    return None if path is None else [Pos(*c) for c in path]
+
+
+def _dust_path_py(states: dict, start: Pos, goal: Pos, a: Pos, b: Pos, limit: int,
+                  box: tuple[Pos, Pos]) -> list[Pos] | None:
     """Shortest dust path from cell `start` (joined to the dust a) to cell `goal` (joined to the dust b), both
     ends included, of at most `limit` cells inside `box` (lowest and highest corner), by breadth-first search;
     steps as in `_dust_route`.
