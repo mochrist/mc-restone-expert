@@ -20,7 +20,7 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
-| 13 | Parallele Entwurfssuche (mehrere Prozesse) | Opus | – | `docs/tasks/13-parallel-search.md` |
+| 13 | Schnellere Entwurfssuche (Engpässe nach Rust, parallel) | Opus | – | `docs/tasks/13-parallel-search.md` |
 | 12 | Kleinere Entwürfe (für später) | Opus | – | `docs/tasks/12-smaller-designs.md` |
 
 
