@@ -59,11 +59,13 @@ def main() -> None:
         synth._plan_line_rust = None
         compact._dust_path_rust = None
 
-    counts = {"evaluations": 0, "runs": 0, "ticks": 0, "full": 0, "differ": 0}
+    counts = {"evaluations": 0, "runs": 0, "ticks": 0, "full": 0, "differ": 0, "eval_seconds": 0.0}
     original = evmod.evaluate
 
     def counted(candidate, spec, constraints=None, full=True, **kw):
+        t0 = time.perf_counter()
         ev = original(candidate, spec, constraints, full=full, **kw)
+        counts["eval_seconds"] += time.perf_counter() - t0
         counts["evaluations"] += 1
         counts["runs"] += ev.runs
         counts["ticks"] += ev.ticks
@@ -90,6 +92,7 @@ def main() -> None:
         spec = behaviour_from_dict(raw, source=path.name) if "behaviour" in raw else from_dict(raw, source=path.name)
         for k in counts:
             counts[k] = 0
+        counts["eval_seconds"] = 0.0
         if not args.keep_cache:  # parts designed for an earlier spec would change the search (fewer runs)
             decompose._BEST.clear()
             decompose._DRIVABLE.clear()
@@ -106,13 +109,13 @@ def main() -> None:
             "candidates": len(results), "working": len(ok),
             "all": sorted([r.candidate.name, list(r.candidate.size), r.candidate.block_count, r.ok]
                           for r in results),
-            **counts, "seconds": round(dt, 1),
+            **counts, "eval_seconds": round(counts["eval_seconds"], 1), "seconds": round(dt, 1),
         }
         out[path.stem] = row
         size = "×".join(map(str, row["size"])) if best else "-"
         print(f"{path.stem:20} {size:9} {row['blocks'] or '-':>4} blocks  {row['delay'] if best else '-':>3} gt  "
               f"{row['candidates']:3} cand ({row['working']} ok)  {counts['evaluations']:5} eval  "
-              f"{counts['runs']:7} runs  {counts['ticks']:9} ticks  {dt:7.1f}s"
+              f"{counts['runs']:7} runs  {counts['ticks']:9} ticks  {dt:7.1f}s (eval {counts['eval_seconds']:6.1f}s)"
               + (f"  differ {counts['differ']}/{counts['full']}" if args.compare_transitions else ""), flush=True)
     if args.json:
         Path(args.json).write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")

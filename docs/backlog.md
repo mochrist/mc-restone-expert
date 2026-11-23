@@ -48,12 +48,12 @@ daraus (Ziel, Einstieg, Abnahme, Abbruch). Vorgeschichte je Punkt: `docs/history
   `_design_part` nach Volumen wählen und das PLA als Teil kompakter ist als die Kaskade (Rest mit 2 Bits: Kaskade
   954 Blöcke/9576 Volumen gegen PLA 3213/7300). Eine echte Kaskade bräuchte eine Stufenanordnung nebeneinander statt
   in einer Linie oder Wahl nach Blöcken.
-- Router (`compose._route`) in Python ist nach dem Simulator der nächste Engpass bei kleinen Entwürfen (Rust-Fassung
-  `rust/rsx-core/src/route.rs` gibt es für den BFS-Kern).
 - Kompaktieren: es fehlen größere Züge (ganze Kaskadenstufen neu anordnen); Budget ist kein Engpass.
-- Kompaktieren großer Entwürfe: `compact.relocations` (`_dust_path`, Python) ist nach Auftrag 03 der Engpass (mux8:
-  354 s von 449 s) und prüft das Zeitlimit nicht, `--time` wird deutlich überzogen. Kandidaten: Zeitlimit in der
-  Suche prüfen, Liste lazy erzeugen, `_dust_path` nach Rust.
+- Kompaktieren großer Entwürfe: `compact.relocations` prüft das Zeitlimit nicht, `--time` wird überzogen
+  (`_dust_path` ist seit Auftrag 13 in Rust).
+- Teile-Cache `decompose._BEST` gilt für den ganzen Prozess und ändert spätere Suchen: cmp5 nach den anderen
+  Beispielen im selben Prozess 2 statt 3 Kandidaten und 79 342 statt 84 751 Läufe (Auftrag 13). Ursache nicht
+  geklärt (Schlüssel enthält Eingänge, Tabelle, Tiefe, driven). `scripts/bench_redesign.py` leert ihn je Beispiel.
 - Schnellprüfung: je Lauf kosten Welt aufbauen (`place_grid`, Block-Entities laden) und der Anfangszustand als
   `Pos`-Objekte mehr als die Ticks (mux8: 1,4 s für 2048 Läufe); eine geklonte Rust-Welt je `Circuit` spart das.
 

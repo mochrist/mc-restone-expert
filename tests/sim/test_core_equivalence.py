@@ -486,3 +486,23 @@ def test_settle_box_templates():
         built = tpl.build()
         for cand in built if isinstance(built, list) else [built]:
             assert _settled(RustWorld, cand.grid) == _settled(PythonWorld, cand.grid), tpl.name
+
+
+@pytest.mark.parametrize("seed", range(40))
+def test_copied_world_runs_like_a_placed_one(seed: int):
+    """`RustWorld.copy` (used by `Circuit.new_world`) gives a world that behaves exactly like a freshly placed
+    one, also after the original has run on."""
+    grid, schedule, ticks = _soup(seed)
+    placed = RustWorld()
+    placed.place_grid(grid, ORACLE_ORIGIN)
+    original = RustWorld()
+    original.place_grid(grid, ORACLE_ORIGIN)
+    copied = original.copy()
+    for t in range(ticks):  # the original runs ahead; the copy must not notice
+        _step(original, t, schedule, t == ticks - 1)
+    assert dump(copied) == dump(placed)
+    for t in range(ticks):
+        _step(copied, t, schedule, t == ticks - 1)
+        _step(placed, t, schedule, t == ticks - 1)
+        assert dump(copied) == dump(placed), t
+    assert dump(copied) == dump(original)

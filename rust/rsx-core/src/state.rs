@@ -176,6 +176,7 @@ pub const BF_WOOL: u8 = 16; // #wool
 pub const BF_CARPET: u8 = 32; // wool carpets (dampen vibrations)
 pub const BF_AMETHYST: u8 = 64; // #vibration_resonators
 
+#[derive(Clone)]
 pub struct BlockInfo {
     pub name: Box<str>,
     pub kind: Kind,
@@ -346,6 +347,7 @@ impl StateInfo {
     }
 }
 
+#[derive(Clone)]
 pub struct States {
     infos: Vec<StateInfo>,
     props: Vec<Box<[(Sym, Sym)]>>,

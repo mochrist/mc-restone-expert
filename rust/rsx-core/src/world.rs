@@ -15,6 +15,7 @@ pub type ItemId = u32;
 /// Dense box around the build plus a hash map for everything outside of it. Every cell also remembers
 /// when it was last filled, so blocks can be listed in the insertion order of the Python dict.
 #[derive(Default)]
+#[derive(Clone)]
 pub struct Store {
     min: Pos,
     size: (i32, i32, i32),
@@ -320,6 +321,7 @@ enum Update {
 }
 
 // ---------------------------------------------------------------------------------- the world
+#[derive(Clone)]
 pub struct World {
     pub st: States,
     pub store: Store,

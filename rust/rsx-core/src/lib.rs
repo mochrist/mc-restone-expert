@@ -155,6 +155,20 @@ impl World {
         })
     }
 
+    /// An independent copy of the whole world (blocks, block entities, ticks, events, counters): a circuit is
+    /// placed once and copied for every run (`analysis.experiment.Circuit.new_world`).
+    fn copy(&self, py: Python<'_>) -> World {
+        World {
+            w: self.w.clone(),
+            make_state: self.make_state.clone_ref(py),
+            make_pos: self.make_pos.clone_ref(py),
+            state_objs: self.state_objs.iter().map(|o| o.as_ref().map(|x| x.clone_ref(py))).collect(),
+            by_ptr: self.by_ptr.clone(),
+            held: self.held.iter().map(|x| x.clone_ref(py)).collect(),
+            scratch: String::new(),
+        }
+    }
+
     // ------------------------------------------------------------------ construction
     /// `place_grid`: `items` is an iterable of `(pos, state)`; block entities are created with defaults.
     fn place_blocks(&mut self, items: &Bound<'_, PyAny>, origin: P3) -> PyResult<()> {

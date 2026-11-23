@@ -342,6 +342,17 @@ class RustWorld:
         self.block_entities = _BlockEntities(self)
         self._dirty: set[Pos] = set()
 
+    def copy(self) -> RustWorld:
+        """An independent copy (one core call instead of placing the grid again). Not in the Python core:
+        `Circuit.new_world` places the grid there each time, which gives the same world."""
+        new = RustWorld.__new__(RustWorld)
+        new._c = self._c.copy()
+        new.registry = self.registry
+        new.blocks = _Blocks(new)
+        new.block_entities = _BlockEntities(new)
+        new._dirty = set(self._dirty)
+        return new
+
     # ------------------------------------------------------------------ construction
     @classmethod
     def from_grid(cls, grid: Grid, registry: Any = None) -> RustWorld:

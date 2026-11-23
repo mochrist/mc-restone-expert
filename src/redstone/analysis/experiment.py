@@ -82,8 +82,19 @@ class Circuit:
         self.grid = grid
         self.origin = origin
         self.positions = [p for p, _ in grid.items()]
+        self._placed: dict[bool, World] = {}  # Rust core: the world placed once per kick flag, copied per run
 
     def new_world(self, kick: bool = False) -> World:
+        placed = self._placed.get(kick)
+        if placed is not None:
+            return placed.copy()
+        world = self._build_world(kick)
+        if hasattr(world, "copy"):  # the Rust core copies a world faster than it places the grid again
+            self._placed[kick] = world
+            return world.copy()
+        return world
+
+    def _build_world(self, kick: bool) -> World:
         world = World()
         world.place_grid(self.grid, self.origin)
         if kick:
