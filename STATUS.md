@@ -20,8 +20,9 @@ Reihenfolge = Priorität. Jeder Auftrag steht vollständig in seiner Datei; Rege
 
 | Nr. | Auftrag | Modell | Hängt ab von | Datei |
 |---|---|---|---|---|
-| 13 | Schnellere Entwurfssuche (Engpässe nach Rust, parallel) | Opus | – | `docs/tasks/13-parallel-search.md` |
-| 12 | Kleinere Entwürfe (für später) | Opus | – | `docs/tasks/12-smaller-designs.md` |
+| 13 | Schnellere Entwurfssuche (Engpässe nach Rust, parallel; teilweise erledigt, siehe Stand) | Opus | – | `docs/tasks/13-parallel-search.md` |
+| 14 | Bewährte Community-Bauweisen übernehmen (Sortierer 1 breit zuerst) | Opus | – | `docs/tasks/14-community-designs.md` |
+| 12 | Kleinere Entwürfe (für später) | Opus | 14 | `docs/tasks/12-smaller-designs.md` |
 
 
 Stand der Arbeitskopie: alles committet; API-Schlüssel des Nutzers in `.env` (gitignored), Rechtefreigaben in

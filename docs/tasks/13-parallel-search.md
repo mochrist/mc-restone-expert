@@ -18,6 +18,30 @@ Entwurf, gleiche Blockzahl), sonst ändern sich im Spiel geprüfte Entwürfe.
 - Rechner des Nutzers: 16 logische Kerne; er spielt oft nebenbei (Messungen nur als Größenordnung, Kernzahl
   begrenzen).
 
+## Stand (Session 29)
+
+Erledigt und committet (alle Ergebnisse identisch zur Referenz `bench_redesign.py --python-parts`, Läufe/Ticks gleich):
+`synth._plan_line` und `compact._dust_path` in Rust (`synth.rs`, `dust_path.rs`, Vergleichstests), `World.settle_box`
+in beiden Kernen (`normalize` in einem Aufruf), `Grid.items` merkt sich die Sortierung, Rust-Welten kopierbar
+(`Circuit` setzt einmal und kopiert je Lauf), Threads in `evaluate` (`design/parallel.py`, `--jobs`, `RSX_JOBS`),
+`compose.connect` mit Hülle je Kette. Bench: jedes Beispiel startet mit leerem `decompose._BEST`.
+
+Profil vorher (cProfile, aufgeblähte Python-Anteile): adder4 77 % `_plan_line`, mux8 70 % `_dust_path`, cmp5/addsub2
+verteilt (Simulation, `normalize`, `connect`). Zeiten (Rechner nicht ruhig, Referenz lief parallel zu Profilen):
+
+| Beispiel | Referenz | 8 Threads | Faktor |
+|---|---|---|---|
+| mux8 | 568 s | 127 s | 4,5× |
+| adder4 | 308 s | 72 s | 4,3× |
+| cmp5 | 267 s | 142 s | 1,9× |
+| addsub2 | 31 s | ~19 s | 1,6× |
+
+Offen: cmp5/addsub2 sind jetzt Python-lastig außerhalb der Bewertung (cmp5, Stoppuhren `.cache/bench/timers.py`:
+`_second_lines`/`compose.wire` 26 s, `_route` 19 s, `chains` 23 s, `compact` 24 s, Bewertung 69 s von 136 s).
+Nächste Kandidaten: `compose.wire`/`_route`-Aufrufe (Mengen je Aufruf neu gebaut), dann Prozesse für Python-Arbeit
+(Schritt 5). Abnahme-Messung muss bei ruhigem Rechner wiederholt werden (Referenz und neu direkt nacheinander).
+Noch nicht angefasst: Schritte 6 (free-threaded), 7 (GUI-Latenz prüfen), `--slow`-Suite.
+
 ## Schritte
 
 1. **Messen, wo die Zeit hingeht.** Profil (cProfile, ggf. py-spy) für die vier Beispiele: Anteil Simulation
