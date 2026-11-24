@@ -72,6 +72,11 @@ class Grid:
         for pos in order:
             yield pos, blocks[pos]
 
+    def positions(self):
+        """Positions of the non-air blocks, in no particular order (a live view: do not change the grid while
+        iterating)."""
+        return self._blocks.keys()
+
     def __len__(self) -> int:
         return len(self._blocks)
 

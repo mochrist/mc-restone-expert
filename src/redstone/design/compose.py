@@ -48,10 +48,14 @@ class Layout:
         return f"{out}, Leitung nach {self.direction.label}, {self.gap} Staub, Eingang als {self.input_mode}"
 
 
-def _near(p: Pos, blocks) -> bool:
-    """Any block of `blocks` within one block of p (also diagonally)."""
-    return any(Pos(p.x + dx, p.y + dy, p.z + dz) in blocks
-               for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1))
+def _near(p: Pos, blocks, skip: Pos | None = None) -> bool:
+    """Any block of `blocks` (other than `skip`) within one block of p (also diagonally)."""
+    x, y, z = p
+    for dx, dy, dz in _AROUND:
+        n = (x + dx, y + dy, z + dz)
+        if n in blocks and n != skip:
+            return True
+    return False
 
 
 _AROUND = [(dx, dy, dz) for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1)]
@@ -136,12 +140,22 @@ def _touches(p: Pos, states: dict, skip: set) -> bool:
     return any(p + s in states and p + s not in skip and states[p + s].id == "redstone_wire" for s in _STEPS)
 
 
+def _source(src: Candidate, out_index: int) -> tuple[dict, set, set]:
+    """What `connect` needs of src for every layout: its blocks, the blocks without the output and the
+    positions within one block of those (`_halo`). `chains` computes it once for all layouts."""
+    q = src.outputs[out_index]
+    a = {p: s for p, s in src.grid.items()}
+    a_body = {x for x in a if x != q}
+    return a, a_body, _halo(a_body)
+
+
 def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layout: Layout,
-            tight: bool = False) -> Candidate | None:
+            tight: bool = False, prep: tuple[dict, set, set] | None = None) -> Candidate | None:
     """src output `out_index` drives dst input `in_index`. None if the layout does not fit.
 
     The line keeps one block of air to both parts, also diagonally. With tight=True it only must not touch
     them (`_touches`): that reaches outputs enclosed by their own part, e.g. the full adder's lamps.
+    prep: `_source(src, out_index)`, when the caller tries many layouts.
 
     The result has the inputs of src followed by the other inputs of dst, and the outputs of dst followed by
     the other outputs of src."""
@@ -150,7 +164,7 @@ def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layou
     rep = _repeater(d.opposite)
     q = src.outputs[out_index]
     p_dst = dst.inputs[in_index]
-    a = {p: s for p, s in src.grid.items()}
+    a, a_body, a_halo = prep if prep is not None else _source(src, out_index)
     if a[q].id != "redstone_lamp":
         return None
     # the line from the output to the input adapter, as (position, block)
@@ -168,15 +182,16 @@ def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layou
     p = Pos(q.x + v.x * k, q.y, q.z + v.z * k)
     line = [(c, rep if (n % 15 == 14 and blk == WIRE) else blk) for n, (c, blk) in enumerate(line)]
     shift = p - p_dst
+    # the parts must not overlap and not touch (one block of air in every direction), apart from the joints;
+    # checked block by block before anything is built (most layouts fail here)
+    sx, sy, sz = shift
+    joints = (tuple(p), tuple(p + DOWN))
+    for x, y, z in dst.grid.positions():
+        w = (x + sx, y + sy, z + sz)
+        if w in a or (w in a_halo and w not in joints):
+            return None
     b = {x + shift: s for x, s in dst.grid.items()}
-    if any(x in a for x in b):
-        return None
-    # parts must not touch (one block of air in every direction), apart from the joints
     b_body = {x for x in b if x not in (p, p + DOWN)}
-    a_body = {x for x in a if x != q}
-    small, large = (a_body, b_body) if len(a_body) <= len(b_body) else (b_body, a_body)
-    if not _halo(small).isdisjoint(large):  # some block of b within one block of a
-        return None
     cells: dict[Pos, str] = {}
     for n, (c, blk) in enumerate(line):
         if c in a or c in b:
@@ -196,7 +211,7 @@ def connect(src: Candidate, out_index: int, dst: Candidate, in_index: int, layou
         if tight:
             if _touches(c, a, {q, floor}) or _touches(c, b, {p, p + DOWN}):
                 return None
-        elif _near(c, a_body - {floor}) or _near(c, b_body):
+        elif _near(c, a_body, floor) or _near(c, b_body):
             return None
     merged: dict[Pos, object] = dict(a)
     if layout.output_mode == "stone":
@@ -649,17 +664,18 @@ def chains(src: Candidate, out_index: int, dst: Candidate, in_index: int, max_ga
     """Every fitting composition (dst turned in all four ways), shortest line first. A generator, so the
     caller can stop at the first one that works."""
     turned = [t for t in (rotate(dst, k) for k in range(4)) if t is not None]
+    prep = _source(src, out_index)  # the same for every layout
     any_found = False
     for lay in layouts(max_gap):
         for t in turned:
-            c = connect(src, out_index, t, in_index, lay)
+            c = connect(src, out_index, t, in_index, lay, prep=prep)
             if c is not None:
                 any_found = True
                 yield lay, c
     if not any_found:  # the output may be enclosed by its own part: lines that only must not touch it
         for lay in layouts(max_gap):
             for t in turned:
-                c = connect(src, out_index, t, in_index, lay, tight=True)
+                c = connect(src, out_index, t, in_index, lay, tight=True, prep=prep)
                 if c is not None:
                     yield lay, c
     found = []
